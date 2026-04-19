@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stanley Cup 2026 – Bracket Tipovačka</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+:root{
+  --bg:#050d1a;--pan:#091828;--bd:#152e50;--bd2:#1e3f68;
+  --ice:#bcd8f0;--neon:#00d0ff;--gold:#ffd700;--mut:#3a6080;
+  --grn:#00e676;--red:#f44336;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--ice);font-family:'Oswald',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    linear-gradient(rgba(0,208,255,.02) 1px,transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg,rgba(0,208,255,.02) 1px,transparent 1px) 0 0/44px 44px,
+    radial-gradient(ellipse at 20% 80%,rgba(0,63,127,.25) 0%,transparent 55%),
+    radial-gradient(ellipse at 80% 10%,rgba(0,208,255,.08) 0%,transparent 45%);}
+
+/* ── SCREENS ── */
+.s{display:none;position:relative;z-index:1;}
+.s.on{display:flex;flex-direction:column;min-height:100vh;}
+
+/* ══════════════════════════════
+   INTRO SCREEN
+══════════════════════════════ */
+#si{align-items:center;justify-content:center;padding:30px 20px;}
+.si-in{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:22px;}
+.logo{text-align:center;}
+.logo h1{font-size:clamp(1.9rem,7vw,3rem);font-weight:700;letter-spacing:5px;color:var(--gold);
+  text-shadow:0 0 30px rgba(255,215,0,.4);line-height:1.15;}
+.logo .sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:7px;
+  color:var(--neon);opacity:.5;margin-top:6px;}
+.cup-ico{font-size:3.2rem;filter:drop-shadow(0 0 18px rgba(255,215,0,.45));margin:4px 0 0;}
+.icard{width:100%;background:var(--pan);border:1px solid var(--bd);border-radius:14px;padding:22px 18px;}
+.lbl{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:4px;
+  color:var(--neon);opacity:.5;margin-bottom:8px;}
+input[type=text]{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:8px;
+  padding:12px 14px;color:var(--ice);font-family:'Oswald',sans-serif;font-size:1.05rem;
+  letter-spacing:2px;outline:none;transition:border-color .2s;margin-bottom:16px;}
+input[type=text]:focus{border-color:var(--neon);}
+.btn-go{width:100%;padding:15px;background:linear-gradient(135deg,#003f7f,#005faa);
+  border:1px solid var(--neon);border-radius:9px;color:#fff;font-family:'Oswald',sans-serif;
+  font-size:.95rem;letter-spacing:5px;text-transform:uppercase;cursor:pointer;
+  transition:all .2s;box-shadow:0 0 18px rgba(0,208,255,.12);}
+.btn-go:hover{background:linear-gradient(135deg,#005faa,var(--neon));color:var(--bg);
+  box-shadow:0 0 32px rgba(0,208,255,.4);}
+.hint-txt{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--mut);
+  text-align:center;line-height:1.95;}
+
+/* ══════════════════════════════
+   BRACKET HEADER (all bracket screens)
+══════════════════════════════ */
+.bk-hdr{display:flex;align-items:center;gap:10px;justify-content:space-between;
+  padding:10px 14px;background:var(--pan);border-bottom:1px solid var(--bd);
+  position:sticky;top:0;z-index:20;}
+.bkh-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
+.bkh-name-wrap{min-width:0;}
+.bkh-sublbl{font-family:'Share Tech Mono',monospace;font-size:.48rem;letter-spacing:3px;
+  color:var(--neon);opacity:.4;display:block;}
+.bkh-name{font-size:.92rem;font-weight:700;letter-spacing:3px;color:var(--gold);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;}
+.prog{display:flex;gap:3px;align-items:center;flex-wrap:wrap;max-width:120px;}
+.pd{width:7px;height:7px;border-radius:50%;background:var(--bd);transition:background .3s;}
+.pd.on{background:var(--neon);box-shadow:0 0 5px rgba(0,208,255,.7);}
+
+/* ── Conference tabs ── */
+.conf-tabs{display:flex;gap:4px;align-items:center;flex-shrink:0;}
+.tab{padding:5px 10px;border:1px solid var(--bd);border-radius:6px;
+  font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:2px;
+  cursor:pointer;transition:all .18s;color:var(--mut);background:transparent;white-space:nowrap;}
+.tab:hover{border-color:var(--neon);color:var(--neon);}
+.tab.act{background:rgba(0,208,255,.1);border-color:var(--neon);color:var(--neon);}
+.tab.gold-tab{border-color:rgba(255,215,0,.35);color:var(--gold);}
+.tab.gold-tab:hover,.tab.gold-tab.act{background:rgba(255,215,0,.08);border-color:var(--gold);}
+
+/* ══════════════════════════════
+   BRACKET LAYOUT
+══════════════════════════════ */
+.bk-sc{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:14px 8px 12px;flex:1;}
+.bk-wr{display:flex;align-items:stretch;gap:0;height:440px;position:relative;}
+
+/* COLUMNS */
+.bc{display:flex;flex-direction:column;justify-content:space-around;height:100%;flex-shrink:0;}
+.bc.r1{width:138px;}
+.bc.r2{width:138px;}
+.bc.cf{width:138px;}
+.bconn{width:30px;flex-shrink:0;height:100%;}
+.bconn svg{width:100%;height:100%;display:block;}
+
+/* CONF TITLE BAR */
+.conf-bar{padding:8px 14px 0;display:flex;align-items:center;gap:10px;}
+.conf-bar-name{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:6px;
+  color:var(--neon);opacity:.35;}
+.rnd-labels{display:flex;gap:0;margin-top:4px;padding:0 8px 4px;}
+.rnd-lbl{font-family:'Share Tech Mono',monospace;font-size:.42rem;letter-spacing:4px;
+  color:var(--neon);opacity:.18;text-align:center;flex-shrink:0;}
+.rnd-lbl.r1w{width:138px;}
+.rnd-lbl.r2w{width:138px;}
+.rnd-lbl.cfw{width:138px;}
+.rnd-lbl.connw{width:30px;}
+
+/* GAME CARD */
+.gc{width:100%;height:84px;background:var(--pan);border:1px solid var(--bd);
+  border-radius:8px;overflow:hidden;display:flex;flex-direction:column;}
+.gcl{font-family:'Share Tech Mono',monospace;font-size:.43rem;letter-spacing:2px;
+  color:var(--neon);opacity:.28;text-align:center;height:18px;line-height:18px;
+  border-bottom:1px solid var(--bd);flex-shrink:0;padding:0 4px;
+  white-space:nowrap;overflow:hidden;}
+.gc.cup-card{border-color:rgba(255,215,0,.4);background:linear-gradient(150deg,#0d2040,#091828);
+  box-shadow:0 0 24px rgba(255,215,0,.07);}
+.gc.cup-card .gcl{color:var(--gold);opacity:.6;border-bottom-color:rgba(255,215,0,.15);}
+
+/* TEAM SLOTS */
+.ts{display:flex;align-items:center;gap:7px;padding:0 8px;height:33px;
+  cursor:pointer;transition:background .12s;flex-shrink:0;position:relative;}
+.ts:hover{background:rgba(0,208,255,.07);}
+.ts.win{background:rgba(0,230,118,.09);}
+.ts.elim{opacity:.22;}
+.ts+.ts{border-top:1px solid var(--bd);}
+.tbar{width:3px;height:18px;border-radius:2px;flex-shrink:0;}
+.ti{flex:1;min-width:0;}
+.tct{font-size:.48rem;opacity:.36;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
+.tn{font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
+.tseed{font-family:'Share Tech Mono',monospace;font-size:.4rem;color:var(--mut);flex-shrink:0;}
+.tck{font-size:.66rem;flex-shrink:0;opacity:0;transition:opacity .15s;margin-left:1px;}
+.ts.win .tck{opacity:1;}
+.tbds{display:flex;align-items:center;justify-content:center;height:33px;
+  font-family:'Share Tech Mono',monospace;font-size:.48rem;letter-spacing:2px;opacity:.17;}
+.tbds+.tbds{border-top:1px solid var(--bd);}
+
+/* ══════════════════════════════
+   FINAL SCREEN
+══════════════════════════════ */
+#sf .bk-sc{display:flex;align-items:center;justify-content:center;}
+.final-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;
+  padding:20px 16px 24px;width:100%;max-width:320px;margin:0 auto;}
+.conf-champs{display:flex;gap:10px;width:100%;justify-content:center;}
+.cc{flex:1;max-width:140px;background:var(--pan);border:1px solid var(--bd);
+  border-radius:10px;padding:10px 8px;text-align:center;}
+.cc-lbl{font-family:'Share Tech Mono',monospace;font-size:.42rem;letter-spacing:3px;
+  color:var(--neon);opacity:.4;margin-bottom:5px;}
+.cc-team{font-size:.75rem;font-weight:700;letter-spacing:1px;line-height:1.3;min-height:36px;
+  display:flex;align-items:center;justify-content:center;}
+.cc-tbd{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--mut);}
+.vs-sep{display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;
+  font-size:.62rem;color:var(--mut);letter-spacing:2px;padding-top:18px;}
+.final-card-wrap{width:100%;max-width:220px;}
+.champ-box{padding:10px;text-align:center;background:rgba(255,215,0,.04);
+  border:1px solid rgba(255,215,0,.22);border-radius:8px;width:100%;margin-top:0;}
+.champ-lbl{font-family:'Share Tech Mono',monospace;font-size:.44rem;letter-spacing:4px;color:var(--gold);opacity:.55;}
+.champ-name{font-size:1rem;font-weight:700;letter-spacing:2px;color:var(--gold);
+  text-shadow:0 0 16px rgba(255,215,0,.4);margin-top:4px;line-height:1.25;}
+.champ-tbd{font-size:.6rem;font-family:'Share Tech Mono',monospace;color:var(--mut);margin-top:5px;}
+
+/* ══════════════════════════════
+   BOTTOM NAV
+══════════════════════════════ */
+.bot-nav{display:flex;gap:8px;padding:10px 14px 16px;background:var(--pan);
+  border-top:1px solid var(--bd);flex-shrink:0;}
+.btn-nav{flex:1;padding:12px 8px;background:transparent;border:1px solid var(--bd);
+  border-radius:9px;color:var(--ice);font-family:'Oswald',sans-serif;
+  font-size:.82rem;letter-spacing:3px;cursor:pointer;transition:all .2s;}
+.btn-nav:hover{border-color:var(--neon);color:var(--neon);}
+.btn-nav.pri{background:linear-gradient(135deg,#003f7f,#005faa);border-color:var(--neon);
+  color:#fff;box-shadow:0 0 14px rgba(0,208,255,.12);}
+.btn-nav.pri:hover{background:linear-gradient(135deg,#005faa,var(--neon));color:var(--bg);}
+.btn-nav.gold{border-color:rgba(255,215,0,.4);color:var(--gold);}
+.btn-nav.gold:hover{background:rgba(255,215,0,.08);border-color:var(--gold);}
+
+/* ══════════════════════════════
+   SHARE SCREEN
+══════════════════════════════ */
+#ss{align-items:center;justify-content:center;padding:20px;}
+.ss-in{width:100%;max-width:460px;display:flex;flex-direction:column;gap:14px;}
+.scard{background:var(--pan);border:1px solid var(--bd);border-radius:12px;padding:20px 18px;}
+.ss-hd{font-size:1.1rem;font-weight:700;letter-spacing:4px;color:var(--gold);}
+.ss-sub{font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:3px;
+  color:var(--neon);opacity:.45;margin-top:4px;}
+.urlb{background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:8px;
+  padding:11px 12px;font-family:'Share Tech Mono',monospace;font-size:.58rem;
+  color:var(--neon);word-break:break-all;cursor:pointer;transition:all .2s;line-height:1.6;
+  user-select:all;}
+.urlb:hover{border-color:var(--neon);}
+.urlb.cp{color:var(--grn);border-color:var(--grn);}
+.cp-hint{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--mut);
+  text-align:center;margin-top:5px;transition:color .2s;}
+.cp-hint.cp{color:var(--grn);}
+.prl{display:flex;flex-direction:column;gap:1px;}
+.pr{display:flex;justify-content:space-between;align-items:center;
+  padding:7px 8px;border-radius:4px;}
+.pr:nth-child(odd){background:rgba(255,255,255,.025);}
+.pr-r{font-family:'Share Tech Mono',monospace;font-size:.46rem;color:var(--mut);}
+.pr-t{font-size:.8rem;font-weight:600;letter-spacing:.5px;}
+.btn-back{padding:13px;background:transparent;border:1px solid var(--bd);
+  border-radius:10px;color:var(--ice);font-family:'Oswald',sans-serif;
+  font-size:.85rem;letter-spacing:4px;cursor:pointer;transition:all .2s;width:100%;}
+.btn-back:hover{border-color:var(--neon);color:var(--neon);}
+
+/* NOTIFICATION */
+.nf{position:fixed;top:62px;left:50%;transform:translateX(-50%);
+  background:rgba(0,230,118,.12);border:1px solid var(--grn);border-radius:8px;
+  padding:7px 20px;font-family:'Share Tech Mono',monospace;font-size:.62rem;
+  letter-spacing:3px;color:var(--grn);z-index:99;transition:opacity .4s;
+  white-space:nowrap;pointer-events:none;}
+.nf.h{opacity:0;}
+</style>
+</head>
+<body>
+
+<div class="nf h" id="nf">✓ ZKOPÍROVÁNO!</div>
+
+<!-- ══ INTRO ══ -->
+<div class="s on" id="si">
+  <div class="si-in">
+    <div class="logo">
+      <div class="cup-ico">🏆</div>
+      <h1>STANLEY CUP<br>TIPOVAČKA</h1>
+      <div class="sub">2026 · BRACKET CHALLENGE</div>
+    </div>
+    <div class="icard">
+      <div class="lbl">TVOJE JMÉNO / PŘEZDÍVKA</div>
+      <input type="text" id="ni" placeholder="Zadej jméno…" maxlength="22" autocomplete="off" spellcheck="false"/>
+      <button class="btn-go" id="startBtn">VYPLNIT BRACKET &rarr;</button>
+    </div>
+    <div class="hint-txt">
+      Klikni na tým → postoupí do dalšího kola.<br>
+      Tipuj zvlášť Eastern a Western konferenci,<br>
+      pak vyber vítěze Stanley Cupu!
+    </div>
+  </div>
+</div>
+
+<!-- ══ EAST CONFERENCE ══ -->
+<div class="s" id="se">
+  <div class="bk-hdr">
+    <div class="bkh-left">
+      <div class="bkh-name-wrap">
+        <span class="bkh-sublbl">TIPOVAČ</span>
+        <div class="bkh-name" id="bkn-e">—</div>
+      </div>
+      <div class="prog" id="prog-e"></div>
+    </div>
+    <div class="conf-tabs">
+      <button class="tab act" onclick="goEast()">EAST</button>
+      <button class="tab" onclick="goWest()">WEST</button>
+      <button class="tab gold-tab" onclick="goFinal()">🏆</button>
+    </div>
+  </div>
+  <div class="conf-bar">
+    <span class="conf-bar-name">EASTERN CONFERENCE</span>
+  </div>
+  <div class="rnd-labels">
+    <span class="rnd-lbl r1w">ROUND 1</span>
+    <span class="rnd-lbl connw"></span>
+    <span class="rnd-lbl r2w">ROUND 2</span>
+    <span class="rnd-lbl connw"></span>
+    <span class="rnd-lbl cfw">CONF FINAL</span>
+  </div>
+  <div class="bk-sc">
+    <div class="bk-wr" id="bkwe"></div>
+  </div>
+  <div class="bot-nav">
+    <button class="btn-nav" onclick="scr('si')">← ÚVOD</button>
+    <button class="btn-nav pri" onclick="goWest()">WEST CONF →</button>
+  </div>
+</div>
+
+<!-- ══ WEST CONFERENCE ══ -->
+<div class="s" id="sw">
+  <div class="bk-hdr">
+    <div class="bkh-left">
+      <div class="bkh-name-wrap">
+        <span class="bkh-sublbl">TIPOVAČ</span>
+        <div class="bkh-name" id="bkn-w">—</div>
+      </div>
+      <div class="prog" id="prog-w"></div>
+    </div>
+    <div class="conf-tabs">
+      <button class="tab" onclick="goEast()">EAST</button>
+      <button class="tab act" onclick="goWest()">WEST</button>
+      <button class="tab gold-tab" onclick="goFinal()">🏆</button>
+    </div>
+  </div>
+  <div class="conf-bar">
+    <span class="conf-bar-name">WESTERN CONFERENCE</span>
+  </div>
+  <div class="rnd-labels">
+    <span class="rnd-lbl r1w">ROUND 1</span>
+    <span class="rnd-lbl connw"></span>
+    <span class="rnd-lbl r2w">ROUND 2</span>
+    <span class="rnd-lbl connw"></span>
+    <span class="rnd-lbl cfw">CONF FINAL</span>
+  </div>
+  <div class="bk-sc">
+    <div class="bk-wr" id="bkww"></div>
+  </div>
+  <div class="bot-nav">
+    <button class="btn-nav" onclick="goEast()">← EAST CONF</button>
+    <button class="btn-nav pri" onclick="goFinal()">FINÁLE →</button>
+  </div>
+</div>
+
+<!-- ══ FINAL ══ -->
+<div class="s" id="sf">
+  <div class="bk-hdr">
+    <div class="bkh-left">
+      <div class="bkh-name-wrap">
+        <span class="bkh-sublbl">TIPOVAČ</span>
+        <div class="bkh-name" id="bkn-f">—</div>
+      </div>
+      <div class="prog" id="prog-f"></div>
+    </div>
+    <div class="conf-tabs">
+      <button class="tab" onclick="goEast()">EAST</button>
+      <button class="tab" onclick="goWest()">WEST</button>
+      <button class="tab gold-tab act" onclick="goFinal()">🏆</button>
+    </div>
+  </div>
+  <div class="bk-sc" style="display:flex;align-items:center;justify-content:center;">
+    <div class="final-wrap" id="fwrap"></div>
+  </div>
+  <div class="bot-nav">
+    <button class="btn-nav" onclick="goWest()">← WEST CONF</button>
+    <button class="btn-nav gold" onclick="toShare()">SDÍLET 🔗</button>
+  </div>
+</div>
+
+<!-- ══ SHARE ══ -->
+<div class="s" id="ss">
+  <div class="ss-in">
+    <div class="scard">
+      <div class="ss-hd">🏒 MŮJ BRACKET</div>
+      <div class="ss-sub" id="ssub"></div>
+    </div>
+    <div class="scard">
+      <div class="lbl">SDÍLECÍ ODKAZ</div>
+      <div class="urlb" id="urlb" onclick="cpUrl()"></div>
+      <div class="cp-hint" id="cph">↑ klikni pro zkopírování</div>
+    </div>
+    <div class="scard">
+      <div class="lbl">PŘEHLED MÝCH TIPŮ</div>
+      <div class="prl" id="prl"></div>
+    </div>
+    <button class="btn-back" onclick="toBack()">← ZPĚT NA BRACKET</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════
+// DATA
+// ══════════════════════════════
+const T = {
+  // EAST – Atlantic
+  BUF:{n:'Sabres',    c:'Buffalo',      col:'#003087', s:'A1'},
+  BOS:{n:'Bruins',    c:'Boston',       col:'#c9a800', s:'A4'},
+  TB: {n:'Lightning', c:'Tampa Bay',    col:'#0038a8', s:'A2'},
+  MTL:{n:'Canadiens', c:'Montréal',     col:'#AF1E2D', s:'A3'},
+  // EAST – Metropolitan
+  CAR:{n:'Hurricanes',c:'Carolina',     col:'#CC0000', s:'M1'},
+  OTT:{n:'Senators',  c:'Ottawa',       col:'#C2912C', s:'M4'},
+  PIT:{n:'Penguins',  c:'Pittsburgh',   col:'#c9a800', s:'M2'},
+  PHI:{n:'Flyers',    c:'Philadelphia', col:'#F74902', s:'M3'},
+  // WEST – Central
+  COL:{n:'Avalanche', c:'Colorado',     col:'#6F263D', s:'C1'},
+  LAK:{n:'Kings',     c:'Los Angeles',  col:'#aaaaaa', s:'C4'},
+  DAL:{n:'Stars',     c:'Dallas',       col:'#006847', s:'C2'},
+  MIN:{n:'Wild',      c:'Minnesota',    col:'#154734', s:'C3'},
+  // WEST – Pacific
+  VGK:{n:'Golden Kn.',c:'Vegas',        col:'#B4975A', s:'P1'},
+  UTA:{n:'Mammoth',   c:'Utah',         col:'#2255AA', s:'P4'},
+  EDM:{n:'Oilers',    c:'Edmonton',     col:'#FF4C00', s:'P2'},
+  ANA:{n:'Ducks',     c:'Anaheim',      col:'#B5985A', s:'P3'},
+};
+
+// id 0-7: R1, 8-11: R2, 12-13: CF, 14: SCF
+const GAMES = [
+  {id:0, t:['BUF','BOS'], l:'ATL · R1'},
+  {id:1, t:['TB','MTL'],  l:'ATL · R1'},
+  {id:2, t:['CAR','OTT'], l:'MET · R1'},
+  {id:3, t:['PIT','PHI'], l:'MET · R1'},
+  {id:4, t:['COL','LAK'], l:'CEN · R1'},
+  {id:5, t:['DAL','MIN'], l:'CEN · R1'},
+  {id:6, t:['VGK','UTA'], l:'PAC · R1'},
+  {id:7, t:['EDM','ANA'], l:'PAC · R1'},
+  {id:8,  s:[0,1],   l:'ATL · R2'},
+  {id:9,  s:[2,3],   l:'MET · R2'},
+  {id:10, s:[4,5],   l:'CEN · R2'},
+  {id:11, s:[6,7],   l:'PAC · R2'},
+  {id:12, s:[8,9],   l:'EAST FINAL'},
+  {id:13, s:[10,11], l:'WEST FINAL'},
+  {id:14, s:[12,13], l:'STANLEY CUP FINAL'},
+];
+
+const DS = {
+  0:[8,12,14],1:[8,12,14],2:[9,12,14],3:[9,12,14],
+  4:[10,13,14],5:[10,13,14],6:[11,13,14],7:[11,13,14],
+  8:[12,14],9:[12,14],10:[13,14],11:[13,14],12:[14],13:[14],14:[]
+};
+
+const PICK_LABELS = [
+  'ATL R1 (BUF/BOS)','ATL R1 (TB/MTL)','MET R1 (CAR/OTT)','MET R1 (PIT/PHI)',
+  'CEN R1 (COL/LAK)','CEN R1 (DAL/MIN)','PAC R1 (VGK/UTA)','PAC R1 (EDM/ANA)',
+  'Atlantic R2','Metro R2','Central R2','Pacific R2',
+  'East Conference Final','West Conference Final','🏆 Stanley Cup Final'
+];
+
+let pk = new Array(15).fill(null);
+let nm = '';
+let lastBracketScreen = 'se';
+
+// ══════════════════════════════
+// LOGIC
+// ══════════════════════════════
+function gTeams(id) {
+  const g = GAMES[id];
+  return g.t ? [...g.t] : [gWin(g.s[0]), gWin(g.s[1])];
+}
+function gWin(id) {
+  if (pk[id] == null) return null;
+  return gTeams(id)[pk[id]];
+}
+function setPk(id, sl) {
+  const ow = gWin(id);
+  pk[id] = sl;
+  if (ow !== gWin(id)) DS[id].forEach(i => pk[i] = null);
+  renderAll();
+  updProg();
+}
+
+// ══════════════════════════════
+// ENCODE / DECODE
+// ══════════════════════════════
+function enc() {
+  let mask = 0, bits = 0;
+  for (let i = 0; i < 15; i++) {
+    if (pk[i] != null) { mask |= (1<<i); if (pk[i]) bits |= (1<<i); }
+  }
+  return mask.toString(36) + '_' + bits.toString(36);
+}
+function dec(str) {
+  const p = str.split('_');
+  if (p.length !== 2) return;
+  const mask = parseInt(p[0],36), bits = parseInt(p[1],36);
+  for (let i = 0; i < 15; i++)
+    pk[i] = (mask&(1<<i)) ? ((bits&(1<<i)) ? 1 : 0) : null;
+}
+function shareUrl() {
+  return location.href.split('#')[0] + '#n=' + encodeURIComponent(nm) + '&p=' + enc();
+}
+function loadUrl() {
+  const h = location.hash.slice(1);
+  if (!h) return false;
+  const q = new URLSearchParams(h);
+  const n = q.get('n'), p = q.get('p');
+  if (!n && !p) return false;
+  if (n) nm = decodeURIComponent(n);
+  if (p) dec(p);
+  return true;
+}
+
+// ══════════════════════════════
+// SCREENS
+// ══════════════════════════════
+function scr(id) {
+  document.querySelectorAll('.s').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+function goEast()  { lastBracketScreen='se'; renderAll(); updProg(); scr('se'); }
+function goWest()  { lastBracketScreen='sw'; renderAll(); updProg(); scr('sw'); }
+function goFinal() { lastBracketScreen='sf'; renderFinal(); updProg(); scr('sf'); }
+
+function start() {
+  const v = document.getElementById('ni').value.trim();
+  if (!v) { document.getElementById('ni').focus(); return; }
+  nm = v;
+  ['e','w','f'].forEach(k => {
+    const el = document.getElementById('bkn-'+k);
+    if (el) el.textContent = nm.toUpperCase();
+  });
+  renderAll(); updProg(); scr('se');
+}
+function toShare() {
+  const filled = pk.filter(x=>x!=null).length;
+  document.getElementById('ssub').textContent = nm.toUpperCase() + ' · ' + filled + ' / 15 VYPLNĚNO';
+  renderPL();
+  const u = shareUrl();
+  const ub = document.getElementById('urlb');
+  ub.textContent = u; ub.classList.remove('cp');
+  const ch = document.getElementById('cph');
+  ch.classList.remove('cp'); ch.textContent = '↑ klikni pro zkopírování';
+  scr('ss');
+}
+function toBack() { scr(lastBracketScreen || 'se'); }
+function cpUrl() {
+  navigator.clipboard.writeText(shareUrl()).then(() => {
+    document.getElementById('urlb').classList.add('cp');
+    const h = document.getElementById('cph');
+    h.classList.add('cp'); h.textContent = '✓ zkopírováno!';
+    showNf('✓ ODKAZ ZKOPÍROVÁN!');
+  }).catch(() => {
+    const u = document.getElementById('urlb');
+    const range = document.createRange(); range.selectNodeContents(u);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  });
+}
+function showNf(msg) {
+  const n = document.getElementById('nf'); n.textContent = msg;
+  n.classList.remove('h');
+  clearTimeout(n._t); n._t = setTimeout(() => n.classList.add('h'), 2200);
+}
+function updProg() {
+  ['e','w','f'].forEach(key => {
+    const p = document.getElementById('prog-'+key);
+    if (!p) return;
+    p.innerHTML = '';
+    for (let i = 0; i < 15; i++) {
+      const d = document.createElement('div');
+      d.className = 'pd' + (pk[i]!=null?' on':'');
+      d.title = PICK_LABELS[i];
+      p.appendChild(d);
+    }
+  });
+}
+
+// ══════════════════════════════
+// RENDER HELPERS
+// ══════════════════════════════
+const NS = 'http://www.w3.org/2000/svg';
+const LC = '#1a3a5c', LW = '1.5';
+
+function card(id) {
+  const g = GAMES[id];
+  const isSCF = id===14;
+  const gc = document.createElement('div');
+  gc.className = 'gc'+(isSCF?' cup-card':'');
+  const lbl = document.createElement('div'); lbl.className='gcl';
+  lbl.textContent = isSCF ? '🏆 STANLEY CUP FINAL' : g.l;
+  gc.appendChild(lbl);
+  const ts = gTeams(id);
+  const w = pk[id]!=null ? ts[pk[id]] : null;
+  for (let sl=0; sl<2; sl++) {
+    const tm = ts[sl];
+    const slot = document.createElement('div');
+    if (!tm) {
+      slot.className='tbds'; slot.textContent='TBD';
+    } else {
+      const info = T[tm];
+      const isW = w===tm, isL = w&&w!==tm;
+      slot.className = 'ts'+(isW?' win':'')+(isL?' elim':'');
+      slot.innerHTML =
+        '<div class="tbar" style="background:'+info.col+'"></div>'+
+        '<div class="ti"><div class="tct">'+info.c+'</div><div class="tn">'+info.n+'</div></div>'+
+        (info.s && id<8 ? '<span class="tseed">'+info.s+'</span>' : '')+
+        '<span class="tck">✓</span>';
+      slot.addEventListener('click', ()=>setPk(id,sl));
+    }
+    gc.appendChild(slot);
+  }
+  return gc;
+}
+
+function col(cls, ids) {
+  const c = document.createElement('div'); c.className='bc '+cls;
+  ids.forEach(id => c.appendChild(card(id)));
+  return c;
+}
+
+function conn(type) {
+  const d = document.createElement('div'); d.className='bconn';
+  const svg = document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','0 0 30 800');
+  svg.setAttribute('preserveAspectRatio','none');
+  function ln(x1,y1,x2,y2){
+    const l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',x1);l.setAttribute('y1',y1);
+    l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+    l.setAttribute('stroke',LC);l.setAttribute('stroke-width',LW);
+    svg.appendChild(l);
+  }
+  if (type==='r12') {
+    // R1(4) → R2(2): left=from R1, right=toward R2
+    ln(0,100,20,100);ln(0,300,20,300);ln(20,100,20,300);ln(20,200,30,200);
+    ln(0,500,20,500);ln(0,700,20,700);ln(20,500,20,700);ln(20,600,30,600);
+  } else if (type==='r2c') {
+    // R2(2) → CF(1)
+    ln(0,200,20,200);ln(0,600,20,600);ln(20,200,20,600);ln(20,400,30,400);
+  }
+  d.appendChild(svg); return d;
+}
+
+// ── EAST bracket ──
+function renderEast() {
+  const wr = document.getElementById('bkwe'); if(!wr) return; wr.innerHTML='';
+  wr.appendChild(col('r1',[0,1,2,3]));
+  wr.appendChild(conn('r12'));
+  wr.appendChild(col('r2',[8,9]));
+  wr.appendChild(conn('r2c'));
+  wr.appendChild(col('cf',[12]));
+}
+
+// ── WEST bracket ──
+function renderWest() {
+  const wr = document.getElementById('bkww'); if(!wr) return; wr.innerHTML='';
+  wr.appendChild(col('r1',[4,5,6,7]));
+  wr.appendChild(conn('r12'));
+  wr.appendChild(col('r2',[10,11]));
+  wr.appendChild(conn('r2c'));
+  wr.appendChild(col('cf',[13]));
+}
+
+// ── FINAL screen ──
+function renderFinal() {
+  const fw = document.getElementById('fwrap'); if(!fw) return; fw.innerHTML='';
+
+  // Conference winners display
+  const eastW = gWin(12);
+  const westW = gWin(13);
+
+  const ccs = document.createElement('div'); ccs.className='conf-champs';
+  function champBox(title, win) {
+    const cc = document.createElement('div'); cc.className='cc';
+    cc.innerHTML = '<div class="cc-lbl">'+title+'</div>';
+    const t = document.createElement('div'); t.className='cc-team';
+    if (win) {
+      t.style.color = T[win].col;
+      t.style.textShadow = '0 0 12px '+T[win].col+'66';
+      t.innerHTML = T[win].c.toUpperCase()+'<br>'+T[win].n.toUpperCase();
+    } else {
+      t.innerHTML = '<span class="cc-tbd">— tipuj —</span>';
+    }
+    cc.appendChild(t);
+    return cc;
+  }
+  const vs = document.createElement('div'); vs.className='vs-sep'; vs.textContent='VS';
+  ccs.appendChild(champBox('VÍTĚZ EAST',eastW));
+  ccs.appendChild(vs);
+  ccs.appendChild(champBox('VÍTĚZ WEST',westW));
+  fw.appendChild(ccs);
+
+  // SCF card
+  const cw = document.createElement('div'); cw.className='final-card-wrap';
+  cw.appendChild(card(14));
+  fw.appendChild(cw);
+
+  // Champion box
+  const cb = document.createElement('div'); cb.className='champ-box';
+  const champion = gWin(14);
+  if (champion) {
+    cb.innerHTML='<div class="champ-lbl">🏒 ŠAMPION STANLEY CUPU</div>'+
+      '<div class="champ-name" style="color:'+T[champion].col+';text-shadow:0 0 18px '+T[champion].col+'88">'+
+      T[champion].c.toUpperCase()+'<br>'+T[champion].n.toUpperCase()+'</div>';
+  } else {
+    cb.innerHTML='<div class="champ-lbl">🏒 ŠAMPION STANLEY CUPU</div>'+
+      '<div class="champ-tbd">— tipuj vítěze —</div>';
+  }
+  fw.appendChild(cb);
+}
+
+function renderAll() {
+  renderEast();
+  renderWest();
+  renderFinal();
+}
+
+// ══════════════════════════════
+// PICK LIST (Share Screen)
+// ══════════════════════════════
+function renderPL() {
+  const el = document.getElementById('prl'); el.innerHTML='';
+  for (let i=0; i<15; i++) {
+    const w = gWin(i);
+    const r = document.createElement('div'); r.className='pr';
+    r.innerHTML=
+      '<span class="pr-r">'+PICK_LABELS[i]+'</span>'+
+      '<span class="pr-t" style="color:'+(w?T[w].col:'var(--mut)')+'">'+
+      (w?T[w].c+' '+T[w].n:'—')+'</span>';
+    el.appendChild(r);
+  }
+}
+
+// ══════════════════════════════
+// INIT
+// ══════════════════════════════
+(function init() {
+  document.getElementById('ni').addEventListener('keydown', e => {
+    if (e.key==='Enter') start();
+  });
+  document.getElementById('startBtn').addEventListener('click', start);
+
+  if (loadUrl()) {
+    ['e','w','f'].forEach(k => {
+      const el = document.getElementById('bkn-'+k);
+      if (el) el.textContent = nm.toUpperCase();
+    });
+    renderAll(); updProg(); scr('se');
+  }
+})();
+</script>
+</body>
+</html>
