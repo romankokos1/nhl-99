@@ -209,6 +209,103 @@ input[type=text]:focus{border-color:var(--red);}
   letter-spacing:3px;font-weight:700;color:var(--grn);z-index:99;transition:opacity .4s;
   white-space:nowrap;pointer-events:none;box-shadow:0 2px 12px rgba(21,128,61,.15);}
 .nf.h{opacity:0;}
+
+/* ── AWARDS GRID ── */
+.aw-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.aw-grid .aw-card{padding:10px 12px;}
+.aw-grid .aw-icon{font-size:1.1rem;margin-bottom:3px;}
+.aw-grid .lbl{font-size:.6rem;letter-spacing:2px;margin-bottom:5px;}
+.aw-grid input[type=text]{font-size:.82rem;padding:7px 9px;}
+
+/* ── TICKET ── */
+#ss{align-items:center;justify-content:center;}
+.ss-in{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;padding:16px 14px 24px;}
+.scard{background:var(--surface);border:1px solid var(--bd);border-radius:12px;
+  padding:16px;box-shadow:0 2px 10px rgba(10,35,81,.07);}
+
+.ticket{background:var(--surface);border-radius:16px;overflow:hidden;
+  box-shadow:0 8px 32px rgba(10,35,81,.18),0 2px 8px rgba(10,35,81,.1);
+  position:relative;}
+.ticket-stripe{height:6px;background:linear-gradient(90deg,var(--red) 0%,var(--red) 60%,var(--blue) 60%,var(--blue) 80%,#FFFFFF 80%);}
+.ticket-header{display:flex;align-items:center;gap:10px;padding:14px 18px 8px;
+  background:var(--blue);}
+.ticket-flag{font-size:1.8rem;flex-shrink:0;}
+.ticket-title-wrap{flex:1;}
+.ticket-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.1rem;
+  letter-spacing:3px;color:#FFFFFF;text-transform:uppercase;}
+.ticket-sub{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;letter-spacing:4px;
+  color:rgba(255,255,255,.5);margin-top:1px;font-weight:600;}
+.ticket-medal{font-size:1.6rem;}
+.ticket-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:clamp(1.5rem,6vw,2.2rem);letter-spacing:2px;color:var(--blue);
+  padding:10px 18px 6px;text-transform:uppercase;
+  border-bottom:1px dashed var(--bd);}
+
+.ticket-divider{display:flex;align-items:center;gap:0;padding:0 18px;margin:8px 0 6px;}
+.ticket-divider span{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;
+  letter-spacing:5px;font-weight:700;color:var(--red);text-transform:uppercase;
+  background:var(--surface);padding-right:8px;white-space:nowrap;}
+.ticket-divider::after{content:'';flex:1;height:1px;background:var(--bd);}
+
+/* Czech games mini grid on ticket */
+.ticket-games{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 18px 4px;}
+.tg-cell{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.tg-date{font-family:'Barlow Condensed',sans-serif;font-size:.44rem;letter-spacing:1px;
+  color:var(--mut);font-weight:600;}
+.tg-flag{font-size:.85rem;line-height:1;}
+.tg-score{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;
+  color:var(--text);letter-spacing:.5px;}
+.tg-score.win{color:var(--grn);}
+.tg-score.lose{color:var(--red);}
+.tg-score.tbd{color:var(--mut);font-size:.5rem;}
+.tg-type{font-family:'Barlow Condensed',sans-serif;font-size:.4rem;color:var(--mut);letter-spacing:1px;}
+
+/* Groups on ticket */
+.ticket-groups{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 18px 6px;}
+.tgrp{display:flex;flex-direction:column;gap:2px;}
+.tgrp-hdr{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:800;
+  letter-spacing:4px;color:var(--mut);text-transform:uppercase;margin-bottom:1px;}
+.tgrp-row{display:flex;align-items:center;gap:4px;}
+.tgrp-pos{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;
+  color:var(--mut);width:12px;flex-shrink:0;}
+.tgrp-flag{font-size:.82rem;flex-shrink:0;line-height:1.2;}
+.tgrp-nm{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;
+  color:var(--text);flex:1;}
+.tgrp-row.qual .tgrp-nm{color:var(--blue);}
+.tgrp-row.out .tgrp-nm{color:var(--mut);opacity:.6;}
+.tgrp-row.cze .tgrp-nm{color:var(--red);font-weight:800;}
+
+/* Playoff on ticket */
+.ticket-playoff{padding:0 18px 6px;display:flex;flex-direction:column;gap:3px;}
+.tpo-round{display:flex;gap:4px;align-items:flex-start;margin-bottom:2px;}
+.tpo-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.52rem;font-weight:700;
+  letter-spacing:3px;color:var(--mut);width:32px;flex-shrink:0;padding-top:2px;text-transform:uppercase;}
+.tpo-games{display:flex;flex-wrap:wrap;gap:3px;flex:1;}
+.tpo-game{display:flex;align-items:center;gap:3px;background:var(--surface2);
+  border:1px solid var(--bd);border-radius:5px;padding:2px 6px;white-space:nowrap;}
+.tpo-game.medal-g{border-color:rgba(153,102,0,.35);background:rgba(255,248,210,.6);}
+.tpo-game.medal-b{border-color:rgba(120,80,20,.25);}
+.tpo-tm{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;color:var(--text);}
+.tpo-tm.win{color:var(--grn);}
+.tpo-tm.tbd{color:var(--mut);font-weight:400;font-size:.55rem;}
+.tpo-sep{font-family:'Barlow Condensed',sans-serif;font-size:.5rem;color:var(--mut);}
+
+/* Picks (awards) on ticket — keep compact */
+.ticket-picks{padding:0 18px 8px;display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.tp-row{display:flex;align-items:baseline;gap:5px;}
+.tp-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.52rem;letter-spacing:2px;
+  font-weight:700;color:var(--mut);text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+.tp-val{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;
+  color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tp-val.highlight{color:var(--red);}
+.tp-row.full{grid-column:1/-1;}
+
+.ticket-foot{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 18px 12px;margin-top:4px;border-top:1px dashed var(--bd);}
+.ticket-date{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;letter-spacing:2px;
+  color:var(--mut);font-weight:600;}
+.ticket-code{font-family:'Barlow Condensed',sans-serif;font-size:.52rem;letter-spacing:3px;
+  color:var(--bd2);font-weight:700;}
 </style>
 </head>
 <body>
@@ -308,31 +405,72 @@ input[type=text]:focus{border-color:var(--red);}
 <div class="s" id="so">
   <div class="hdr" id="hdr-so"></div>
   <div class="sc">
-    <div class="sec-lbl">INDIVIDUÁLNÍ OCENĚNÍ</div>
-    <div class="aw-card">
-      <div class="aw-icon">🇨🇿🥅</div>
-      <span class="lbl">NEJLEPŠÍ ČESKÝ STŘELEC (počet gólů)</span>
-      <input type="text" id="aw0" placeholder="Jméno hráče…" autocomplete="off">
+
+    <div class="sec-lbl">🇨🇿 ČESKÁ REPUBLIKA</div>
+
+    <div class="aw-grid">
+      <div class="aw-card">
+        <div class="aw-icon">🥅</div>
+        <span class="lbl">NEJLEPŠÍ STŘELEC ČR</span>
+        <input type="text" id="aw0" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
+      <div class="aw-card">
+        <div class="aw-icon">🎯</div>
+        <span class="lbl">NEJLEPŠÍ NAHRÁVAČ ČR</span>
+        <input type="text" id="aw1" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
+      <div class="aw-card">
+        <div class="aw-icon">📊</div>
+        <span class="lbl">NEJLEPŠÍ BODOVAČ ČR</span>
+        <input type="text" id="aw2" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
+      <div class="aw-card">
+        <div class="aw-icon">📈</div>
+        <span class="lbl">NEJLEPŠÍ +/- ČR</span>
+        <input type="text" id="aw3" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
+      <div class="aw-card">
+        <div class="aw-icon">😤</div>
+        <span class="lbl">NEJVÍCE TREST. MINUT ČR</span>
+        <input type="text" id="aw4" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
     </div>
-    <div class="aw-card">
-      <div class="aw-icon">🇨🇿📊</div>
-      <span class="lbl">NEJLEPŠÍ ČESKÝ HRÁČ V BODOVÁNÍ</span>
-      <input type="text" id="aw1" placeholder="Jméno hráče…" autocomplete="off">
+
+    <div class="sec-lbl" style="margin-top:4px;">🌍 CELKOVÝ TURNAJ</div>
+
+    <div class="aw-grid">
+      <div class="aw-card">
+        <div class="aw-icon">🥅</div>
+        <span class="lbl">NEJLEPŠÍ STŘELEC TURNAJE</span>
+        <input type="text" id="aw5" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
+      <div class="aw-card">
+        <div class="aw-icon">🎯</div>
+        <span class="lbl">NEJLEPŠÍ NAHRÁVAČ TURNAJE</span>
+        <input type="text" id="aw6" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
+      <div class="aw-card">
+        <div class="aw-icon">⭐</div>
+        <span class="lbl">NEJLEPŠÍ BODOVAČ TURNAJE</span>
+        <input type="text" id="aw7" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
+      <div class="aw-card">
+        <div class="aw-icon">📈</div>
+        <span class="lbl">NEJLEPŠÍ +/- TURNAJE</span>
+        <input type="text" id="aw8" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
+      <div class="aw-card">
+        <div class="aw-icon">😤</div>
+        <span class="lbl">NEJVÍCE TREST. MINUT TURNAJE</span>
+        <input type="text" id="aw9" placeholder="Jméno hráče…" autocomplete="off">
+      </div>
     </div>
+
+    <div class="sec-lbl" style="margin-top:4px;">🧤 BRANKÁŘ</div>
     <div class="aw-card">
-      <div class="aw-icon">🏒🥇</div>
-      <span class="lbl">NEJLEPŠÍ STŘELEC TURNAJE CELKEM</span>
-      <input type="text" id="aw2" placeholder="Jméno hráče…" autocomplete="off">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">🧤📈</div>
+      <div class="aw-icon">🧤</div>
       <span class="lbl">NEJLEPŠÍ BRANKÁŘ (% zákroků)</span>
-      <input type="text" id="aw3" placeholder="Jméno brankáře…" autocomplete="off">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">⭐📊</div>
-      <span class="lbl">NEJLEPŠÍ HRÁČ TURNAJE V BODOVÁNÍ</span>
-      <input type="text" id="aw4" placeholder="Jméno hráče…" autocomplete="off">
+      <input type="text" id="aw10" placeholder="Jméno brankáře…" autocomplete="off">
     </div>
 
     <!-- no player suggestions - nominace není známá -->
@@ -347,20 +485,45 @@ input[type=text]:focus{border-color:var(--red);}
 <!-- ══ SHARE ══ -->
 <div class="s" id="ss">
   <div class="ss-in">
-    <div class="scard">
-      <div class="ss-hd">🏅 MŮJ TIKET</div>
-      <div class="ss-sub" id="ssub"></div>
+
+    <!-- TICKET CARD -->
+    <div class="ticket" id="ticketCard">
+      <div class="ticket-stripe"></div>
+      <div class="ticket-header">
+        <div class="ticket-flag">🇨🇿</div>
+        <div class="ticket-title-wrap">
+          <div class="ticket-title">MS HOKEJ 2026</div>
+          <div class="ticket-sub">ŠVÝCARSKO · 15–31 KVĚTNA</div>
+        </div>
+        <div class="ticket-medal">🏅</div>
+      </div>
+      <div class="ticket-name" id="ticketName">—</div>
+      <div class="ticket-divider"><span>ČESKÉ ZÁPASY</span></div>
+      <div class="ticket-games" id="ticketGames"></div>
+
+      <div class="ticket-divider"><span>SKUPINY — KONEČNÉ POŘADÍ</span></div>
+      <div class="ticket-groups" id="ticketGroups"></div>
+
+      <div class="ticket-divider"><span>PLAY-OFF</span></div>
+      <div class="ticket-playoff" id="ticketPlayoff"></div>
+
+      <div class="ticket-divider"><span>OCENĚNÍ</span></div>
+      <div class="ticket-picks" id="ticketPicks"></div>
+
+      <div class="ticket-foot">
+        <div class="ticket-date" id="ticketDate"></div>
+        <div class="ticket-code" id="ticketCode">●●●●●●</div>
+      </div>
     </div>
+
+    <!-- URL -->
     <div class="scard">
       <span class="lbl">SDÍLECÍ ODKAZ</span>
       <div class="urlb" id="urlb" onclick="cpUrl()"></div>
       <div class="cp-hint" id="cph">↑ klikni pro zkopírování</div>
     </div>
-    <div class="scard">
-      <span class="lbl">PŘEHLED TIPŮ</span>
-      <div id="sumList"></div>
-    </div>
-    <button class="btn btn-sec" onclick="scr('so')">← ZPĚT</button>
+
+    <button class="btn btn-sec" onclick="scr('so')">← ZPĚT NA OCENĚNÍ</button>
   </div>
 </div>
 
@@ -399,7 +562,7 @@ let S = {
   gB: [...GRP_B_INIT],
   gA: [...GRP_A_INIT],
   po: Array(8).fill(null),  // QF1-4(0-3), SF1-2(4-5), BM(6), GM(7) — 0=top advances,1=bottom
-  aw: ['','','','','']
+  aw: Array(11).fill('')
 };
 
 // ══ SCREENS ══
@@ -627,14 +790,16 @@ function setPo(m,s) {
   renderPlayoff();
 }
 
-// ══ SHARE ══
+// ══ SHARE / TICKET ══
+const AW_LBLS_SHORT = [
+  'Střelec ČR','Nahrávač ČR','Bodovač ČR','+/- ČR','TM ČR',
+  'Střelec celk.','Nahrávač celk.','Bodovač celk.','+/- celk.','TM celk.',
+  'Brankář'
+];
+
 function toShare() {
   saveAwards();
-  const filled = S.games.filter(g=>g.cz!==null).length;
-  const poPicked = S.po.filter(x=>x!==null).length;
-  document.getElementById('ssub').textContent =
-    nm.toUpperCase()+' · '+filled+'/7 výsledků · '+poPicked+'/8 play-off';
-  buildSumList();
+  buildTicket();
   const u=shareUrl();
   const ub=document.getElementById('urlb');
   ub.textContent=u; ub.classList.remove('cp');
@@ -642,38 +807,148 @@ function toShare() {
   scr('ss');
 }
 
-function saveAwards() {
-  for(let i=0;i<5;i++){
-    const el=document.getElementById('aw'+i);
-    if(el) S.aw[i]=el.value.trim();
+function buildTicket() {
+  // Name
+  document.getElementById('ticketName').textContent = nm.toUpperCase();
+
+  // Date
+  document.getElementById('ticketDate').textContent =
+    'VYPLNĚNO ' + new Date().toLocaleDateString('cs-CZ',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  // Code (short hash of picks)
+  const filled = S.games.filter(g=>g.cz!==null).length;
+  const poPicked = S.po.filter(x=>x!==null).length;
+  document.getElementById('ticketCode').textContent =
+    filled+'/7 ZÁP · '+poPicked+'/8 PO';
+
+  // Games mini grid
+  const gamesEl = document.getElementById('ticketGames');
+  gamesEl.innerHTML = '';
+  CZ_OPPS.forEach((opp,i)=>{
+    const g = S.games[i];
+    const cell = document.createElement('div'); cell.className='tg-cell';
+    const hasScore = g.cz!==null && g.op!==null;
+    const win = hasScore && g.cz > g.op;
+    const lose = hasScore && g.cz < g.op;
+    const scoreCls = !hasScore?'tbd':win?'win':lose?'lose':'';
+    cell.innerHTML =
+      `<span class="tg-date">${CZ_DATES[i]}</span>` +
+      `<span class="tg-flag">${TM[opp].f}</span>` +
+      `<span class="tg-score ${scoreCls}">${hasScore?g.cz+':'+g.op:'?'}</span>` +
+      `<span class="tg-type">${hasScore?g.t:''}</span>`;
+    gamesEl.appendChild(cell);
+  });
+
+  // Picks grid — now just awards (groups/playoff have own sections)
+  const picksEl = document.getElementById('ticketPicks');
+  picksEl.innerHTML = '';
+
+  const gm = getMatchTeams(7);
+  const gold = S.po[7]!==null?(S.po[7]===0?gm.top:gm.bot):null;
+  const bm = getMatchTeams(6);
+  const bronze = S.po[6]!==null?(S.po[6]===0?bm.top:bm.bot):null;
+
+  // Group standings section
+  const grpsEl = document.getElementById('ticketGroups');
+  grpsEl.innerHTML = '';
+  ['gB','gA'].forEach(key=>{
+    const grp = document.createElement('div'); grp.className='tgrp';
+    const lbl = document.createElement('div'); lbl.className='tgrp-hdr';
+    lbl.textContent = key==='gB' ? 'Sk. B · Fribourg' : 'Sk. A · Zürich';
+    grp.appendChild(lbl);
+    S[key].forEach((code,i)=>{
+      const tm = TM[code];
+      const row = document.createElement('div');
+      const isCze = code==='CZE';
+      const qual = i<4;
+      row.className = 'tgrp-row'+(isCze?' cze':qual?' qual':' out');
+      row.innerHTML =
+        `<span class="tgrp-pos">${i+1}.</span>` +
+        `<span class="tgrp-flag">${tm.f}</span>` +
+        `<span class="tgrp-nm">${tm.n}</span>`;
+      grp.appendChild(row);
+    });
+    grpsEl.appendChild(grp);
+  });
+
+  // Playoff section
+  const poEl = document.getElementById('ticketPlayoff');
+  poEl.innerHTML = '';
+
+  function poWinner(m) {
+    const g=S.po[m]; if(g===null) return null;
+    const {top,bot}=getMatchTeams(m);
+    return g===0?top:bot;
+  }
+  function tpoGame(topCode, botCode, winCode, cls='') {
+    const top = topCode?TM[topCode]:null;
+    const bot = botCode?TM[botCode]:null;
+    const div = document.createElement('div'); div.className='tpo-game'+( cls?' '+cls:'');
+    if(!top&&!bot) {
+      div.innerHTML='<span class="tpo-tm tbd">TBD</span>';
+    } else {
+      const tw = winCode&&winCode===topCode?'win':'';
+      const bw = winCode&&winCode===botCode?'win':'';
+      div.innerHTML =
+        `<span class="tpo-tm ${tw}">${top?top.f+''+top.n.split(' ')[0]:'TBD'}</span>` +
+        `<span class="tpo-sep">–</span>` +
+        `<span class="tpo-tm ${bw}">${bot?bot.f+''+bot.n.split(' ')[0]:'TBD'}</span>`;
+    }
+    return div;
+  }
+
+  // QF row
+  const qfRow = document.createElement('div'); qfRow.className='tpo-round';
+  const qfLbl = document.createElement('div'); qfLbl.className='tpo-lbl'; qfLbl.textContent='ČF';
+  const qfGames = document.createElement('div'); qfGames.className='tpo-games';
+  for(let m=0;m<4;m++){
+    const {top,bot}=getMatchTeams(m);
+    qfGames.appendChild(tpoGame(top,bot,poWinner(m)));
+  }
+  qfRow.appendChild(qfLbl); qfRow.appendChild(qfGames);
+  poEl.appendChild(qfRow);
+
+  // SF row
+  const sfRow = document.createElement('div'); sfRow.className='tpo-round';
+  const sfLbl = document.createElement('div'); sfLbl.className='tpo-lbl'; sfLbl.textContent='SF';
+  const sfGames = document.createElement('div'); sfGames.className='tpo-games';
+  for(let m=4;m<6;m++){
+    const {top,bot}=getMatchTeams(m);
+    sfGames.appendChild(tpoGame(top,bot,poWinner(m)));
+  }
+  sfRow.appendChild(sfLbl); sfRow.appendChild(sfGames);
+  poEl.appendChild(sfRow);
+
+  // Bronze + Gold
+  const finRow = document.createElement('div'); finRow.className='tpo-round';
+  const finLbl = document.createElement('div'); finLbl.className='tpo-lbl'; finLbl.textContent='FIN';
+  const finGames = document.createElement('div'); finGames.className='tpo-games';
+  const {top:bt,bot:bb}=getMatchTeams(6);
+  finGames.appendChild(tpoGame(bt,bb,bronze,'medal-b'));
+  const {top:gt,bot:gb}=getMatchTeams(7);
+  finGames.appendChild(tpoGame(gt,gb,gold,'medal-g'));
+  finRow.appendChild(finLbl); finRow.appendChild(finGames);
+  poEl.appendChild(finRow);
+
+  // Awards (compact, skip empty)
+  const awFilled = S.aw.filter(v=>v).length;
+  if(awFilled > 0) {
+    S.aw.forEach((v,i)=>{
+      if(!v) return;
+      const row = document.createElement('div'); row.className='tp-row';
+      row.innerHTML = `<span class="tp-lbl">${AW_LBLS_SHORT[i]}</span><span class="tp-val">${esc(v)}</span>`;
+      picksEl.appendChild(row);
+    });
   }
 }
 
-function buildSumList() {
-  const el=document.getElementById('sumList'); el.innerHTML='';
-  // Czech game results
-  CZ_OPPS.forEach((opp,i)=>{
-    const g=S.games[i];
-    const row=document.createElement('div'); row.className='sum-row';
-    const score=g.cz!==null?`${g.cz}:${g.op} (${g.t})`:'—';
-    row.innerHTML=`<span class="sum-lbl">CZE vs ${TM[opp].n.toUpperCase()}</span><span class="sum-val">${score}</span>`;
-    el.appendChild(row);
-  });
-  // Group standings top4
-  const b4=S.gB.slice(0,4).map((c,i)=>`${i+1}.${TM[c].f}`).join(' ');
-  const a4=S.gA.slice(0,4).map((c,i)=>`${i+1}.${TM[c].f}`).join(' ');
-  addRow(el,'Sk.B top4',b4);
-  addRow(el,'Sk.A top4',a4);
-  // Playoff
-  const gm=getMatchTeams(7);
-  const gold=S.po[7]!==null?(S.po[7]===0?gm.top:gm.bot):null;
-  const bm=getMatchTeams(6);
-  const bronze=S.po[6]!==null?(S.po[6]===0?bm.top:bm.bot):null;
-  addRow(el,'🥇 Zlato',gold?TM[gold].f+' '+TM[gold].n:'—');
-  addRow(el,'🥉 Bronz',bronze?TM[bronze].f+' '+TM[bronze].n:'—');
-  // Awards
-  const awLbls=['🇨🇿🥅 Čes. střelec','🇨🇿📊 Čes. bod.','🏒 Střelec turn.','🧤 Brank.','⭐ Bod. turn.'];
-  S.aw.forEach((v,i)=>addRow(el,awLbls[i],v||'—'));
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function saveAwards() {
+  for(let i=0;i<11;i++){
+    const el=document.getElementById('aw'+i);
+    if(el) S.aw[i]=el.value.trim();
+  }
 }
 
 function addRow(el,l,v) {
