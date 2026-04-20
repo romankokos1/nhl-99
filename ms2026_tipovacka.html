@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS 2026 – Výsledky & Žebříček</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+:root{
+  --bg:#050d1a;--pan:#091828;--bd:#152e50;--bd2:#1e3f68;
+  --ice:#bcd8f0;--neon:#00d0ff;--gold:#ffd700;--mut:#3a6080;
+  --grn:#00e676;--red:#f44336;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ice);font-family:'Oswald',sans-serif;min-height:100vh;padding-bottom:50px;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(rgba(0,208,255,.02) 1px,transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg,rgba(0,208,255,.02) 1px,transparent 1px) 0 0/44px 44px,
+    radial-gradient(ellipse at 20% 80%,rgba(0,63,127,.25) 0%,transparent 55%),
+    radial-gradient(ellipse at 80% 10%,rgba(0,208,255,.08) 0%,transparent 45%);}
+
+/* HEADER */
+.hdr{background:var(--pan);border-bottom:1px solid var(--bd);padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  position:sticky;top:0;z-index:30;}
+.hdr-title{font-size:1.05rem;font-weight:700;letter-spacing:4px;color:var(--gold);}
+.hdr-sub{font-family:'Share Tech Mono',monospace;font-size:.44rem;letter-spacing:4px;color:var(--neon);opacity:.35;margin-top:2px;}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.hdr-cnt{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--neon);opacity:.45;}
+.btn-sm{padding:6px 12px;font-family:'Oswald',sans-serif;font-size:.72rem;letter-spacing:3px;
+  border-radius:6px;cursor:pointer;transition:all .2s;border:1px solid;white-space:nowrap;}
+.btn-admin{border-color:rgba(255,165,0,.4);color:#ffa500;background:transparent;}
+.btn-admin:hover,.btn-admin.act{background:rgba(255,165,0,.1);border-color:#ffa500;}
+.btn-danger{border-color:rgba(244,67,54,.3);color:rgba(244,67,54,.6);background:transparent;}
+.btn-danger:hover{border-color:var(--red);color:var(--red);}
+.btn-pri-sm{border-color:var(--neon);color:var(--neon);background:rgba(0,208,255,.06);}
+.btn-pri-sm:hover{background:rgba(0,208,255,.15);}
+.btn-gold-sm{border-color:rgba(255,215,0,.4);color:var(--gold);background:transparent;}
+.btn-gold-sm:hover{background:rgba(255,215,0,.08);}
+
+/* TABS */
+.tabs{display:flex;gap:0;background:var(--pan);border-bottom:1px solid var(--bd);position:sticky;top:57px;z-index:25;}
+.tab{flex:1;padding:10px 8px;font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:3px;
+  text-align:center;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent;
+  transition:all .18s;background:transparent;border-top:none;border-left:none;border-right:none;}
+.tab:hover{color:var(--ice);}
+.tab.act{color:var(--neon);border-bottom-color:var(--neon);}
+.tab.admin-tab.act{color:#ffa500;border-bottom-color:#ffa500;}
+
+/* VIEWS */
+.view{display:none;}
+.view.on{display:block;}
+
+/* MAIN WRAP */
+.main{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:18px 16px;display:flex;flex-direction:column;gap:16px;}
+
+/* CARD */
+.card{background:var(--pan);border:1px solid var(--bd);border-radius:12px;padding:18px;}
+.lbl{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:4px;color:var(--neon);opacity:.45;margin-bottom:8px;display:block;}
+
+/* ADD BOX */
+.url-row{display:flex;gap:8px;}
+textarea{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--bd);border-radius:8px;
+  padding:11px 13px;color:var(--ice);font-family:'Share Tech Mono',monospace;font-size:.58rem;
+  letter-spacing:1px;outline:none;transition:border-color .2s;resize:none;height:54px;line-height:1.5;}
+textarea:focus{border-color:var(--neon);}
+textarea::placeholder{color:var(--mut);opacity:.5;}
+.btn-add{padding:0 18px;background:linear-gradient(135deg,#003f7f,#005faa);border:1px solid var(--neon);
+  border-radius:8px;color:#fff;font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:3px;
+  cursor:pointer;transition:all .2s;white-space:nowrap;min-width:88px;}
+.btn-add:hover{background:linear-gradient(135deg,#005faa,var(--neon));color:var(--bg);}
+.err-msg{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--red);margin-top:5px;display:none;}
+
+/* TABLE - picks overview */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:500px;}
+thead tr{background:var(--pan);border-bottom:2px solid var(--bd2);}
+th{padding:8px 10px;font-family:'Share Tech Mono',monospace;font-size:.43rem;letter-spacing:3px;
+  color:var(--neon);opacity:.4;text-align:left;font-weight:400;white-space:nowrap;}
+th.nm-col{min-width:100px;position:sticky;left:0;background:var(--pan);z-index:5;}
+td{padding:8px 10px;border-bottom:1px solid rgba(21,46,80,.5);font-size:.76rem;vertical-align:middle;}
+td.nm-col{position:sticky;left:0;background:var(--bg);z-index:4;font-weight:700;letter-spacing:1px;}
+tr:hover td{background:rgba(0,208,255,.025);}
+tr:hover td.nm-col{background:rgba(0,208,255,.04);}
+.del-btn{background:none;border:none;color:var(--mut);cursor:pointer;font-size:.7rem;
+  padding:1px 5px;border-radius:3px;transition:color .12s;float:right;margin-left:4px;}
+.del-btn:hover{color:var(--red);}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 5px;
+  border-radius:4px;background:rgba(0,0,0,.25);white-space:nowrap;font-size:.7rem;}
+.chip-bar{width:3px;height:11px;border-radius:2px;flex-shrink:0;}
+.tbd{font-family:'Share Tech Mono',monospace;font-size:.47rem;color:var(--mut);opacity:.45;}
+
+/* LEADERBOARD */
+.lb-wrap{display:flex;flex-direction:column;gap:6px;}
+.lb-row{display:flex;align-items:center;gap:10px;background:var(--pan);border:1px solid var(--bd);
+  border-radius:10px;padding:10px 14px;transition:border-color .2s;}
+.lb-row.gold-row{border-color:rgba(255,215,0,.35);background:rgba(255,215,0,.03);}
+.lb-row.silver-row{border-color:rgba(192,192,192,.3);}
+.lb-row.bronze-row{border-color:rgba(205,127,50,.3);}
+.lb-pos{font-family:'Share Tech Mono',monospace;font-size:.82rem;width:28px;text-align:center;
+  flex-shrink:0;color:var(--mut);}
+.lb-pos.p1{color:var(--gold);}
+.lb-pos.p2{color:#c0c0c0;}
+.lb-pos.p3{color:#cd7f32;}
+.lb-medal{font-size:1.2rem;flex-shrink:0;}
+.lb-name{flex:1;font-size:.95rem;font-weight:700;letter-spacing:2px;}
+.lb-pts{font-family:'Share Tech Mono',monospace;font-size:1rem;color:var(--neon);font-weight:700;flex-shrink:0;}
+.lb-pts-lbl{font-family:'Share Tech Mono',monospace;font-size:.42rem;color:var(--mut);flex-shrink:0;}
+.lb-breakdown{font-family:'Share Tech Mono',monospace;font-size:.42rem;color:var(--mut);
+  line-height:1.9;margin-top:4px;display:none;}
+.lb-row:hover .lb-breakdown{display:block;}
+.no-results{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--mut);
+  text-align:center;padding:30px;letter-spacing:3px;}
+
+/* ADMIN PANEL */
+.admin-locked{display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 16px;}
+.admin-locked p{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--mut);letter-spacing:2px;}
+.pw-row{display:flex;gap:8px;width:100%;max-width:320px;}
+input[type=password]{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--bd);
+  border-radius:8px;padding:10px 13px;color:var(--ice);font-family:'Share Tech Mono',monospace;
+  font-size:.7rem;letter-spacing:4px;outline:none;transition:border-color .2s;}
+input[type=password]:focus{border-color:#ffa500;}
+.btn-unlock{padding:10px 16px;background:rgba(255,165,0,.1);border:1px solid #ffa500;
+  border-radius:8px;color:#ffa500;font-family:'Oswald',sans-serif;font-size:.8rem;
+  letter-spacing:3px;cursor:pointer;transition:all .2s;}
+.btn-unlock:hover{background:rgba(255,165,0,.2);}
+.pw-err{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--red);display:none;}
+
+/* ADMIN RESULTS FORM */
+.admin-panel{display:none;}
+.admin-panel.on{display:block;}
+.res-section{margin-bottom:16px;}
+.res-sec-title{font-family:'Share Tech Mono',monospace;font-size:.48rem;letter-spacing:5px;
+  color:#ffa500;opacity:.6;padding-bottom:4px;border-bottom:1px solid rgba(255,165,0,.2);margin-bottom:10px;}
+.game-row{display:flex;align-items:center;gap:8px;background:var(--pan);border:1px solid var(--bd);
+  border-radius:8px;padding:8px 12px;margin-bottom:5px;}
+.gr-opp{font-family:'Share Tech Mono',monospace;font-size:.48rem;letter-spacing:2px;color:var(--mut);width:90px;flex-shrink:0;}
+.gr-score{display:flex;align-items:center;gap:6px;}
+.sc-inp{width:36px;text-align:center;background:rgba(0,0,0,.35);border:1px solid var(--bd);
+  border-radius:5px;color:var(--ice);font-family:'Share Tech Mono',monospace;font-size:.85rem;
+  padding:4px;outline:none;transition:border-color .2s;}
+.sc-inp:focus{border-color:#ffa500;}
+.sc-sep{color:var(--mut);font-weight:700;}
+.res-btns{display:flex;gap:4px;flex:1;justify-content:flex-end;}
+.rt{padding:4px 8px;font-family:'Share Tech Mono',monospace;font-size:.42rem;letter-spacing:1px;
+  border:1px solid var(--bd);border-radius:4px;cursor:pointer;color:var(--mut);
+  background:transparent;transition:all .12s;}
+.rt.act{border-color:#ffa500;color:#ffa500;background:rgba(255,165,0,.07);}
+.rank-admin{display:flex;flex-direction:column;gap:3px;}
+.ra-item{display:flex;align-items:center;gap:6px;background:var(--pan);border:1px solid var(--bd);
+  border-radius:7px;padding:7px 10px;}
+.ra-pos{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--neon);
+  opacity:.35;width:16px;text-align:center;flex-shrink:0;}
+.ra-flag{font-size:1rem;flex-shrink:0;}
+.ra-nm{flex:1;font-size:.78rem;font-weight:600;}
+.ra-btns{display:flex;gap:2px;}
+.ra-btn{background:rgba(255,165,0,.06);border:1px solid var(--bd);border-radius:3px;
+  color:var(--mut);font-size:.6rem;width:22px;height:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .12s;padding:0;}
+.ra-btn:hover:not(:disabled){border-color:#ffa500;color:#ffa500;}
+.ra-btn:disabled{opacity:.18;cursor:default;}
+.po-admin{display:flex;flex-direction:column;gap:4px;}
+.pa-card{background:var(--pan);border:1px solid var(--bd);border-radius:8px;overflow:hidden;}
+.pa-lbl{font-family:'Share Tech Mono',monospace;font-size:.42rem;letter-spacing:2px;
+  color:#ffa500;opacity:.45;text-align:center;padding:4px;border-bottom:1px solid var(--bd);}
+.pa-slot{display:flex;align-items:center;gap:7px;padding:6px 10px;height:34px;
+  cursor:pointer;transition:background .12s;}
+.pa-slot:hover{background:rgba(255,165,0,.05);}
+.pa-slot.win{background:rgba(0,230,118,.07);}
+.pa-slot.elim{opacity:.25;}
+.pa-slot+.pa-slot{border-top:1px solid var(--bd);}
+.pa-bar{width:3px;height:15px;border-radius:2px;flex-shrink:0;}
+.pa-flag{font-size:.9rem;flex-shrink:0;}
+.pa-nm{flex:1;font-size:.74rem;font-weight:600;}
+.pa-sd{font-family:'Share Tech Mono',monospace;font-size:.38rem;color:var(--mut);}
+.pa-ck{font-size:.62rem;opacity:0;transition:opacity .12s;}
+.pa-slot.win .pa-ck{opacity:1;}
+.pa-tbd{font-family:'Share Tech Mono',monospace;font-size:.46rem;color:var(--mut);opacity:.3;}
+.aw-adm{display:flex;flex-direction:column;gap:5px;}
+.aw-row{display:flex;align-items:center;gap:8px;background:var(--pan);border:1px solid var(--bd);border-radius:7px;padding:8px 12px;}
+.aw-lbl{font-family:'Share Tech Mono',monospace;font-size:.44rem;color:var(--mut);width:130px;flex-shrink:0;}
+.aw-inp{flex:1;background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:5px;
+  padding:6px 10px;color:var(--ice);font-family:'Oswald',sans-serif;font-size:.82rem;
+  letter-spacing:1px;outline:none;transition:border-color .2s;}
+.aw-inp:focus{border-color:#ffa500;}
+.btn-score{width:100%;padding:13px;background:linear-gradient(135deg,rgba(255,165,0,.2),rgba(255,165,0,.1));
+  border:1px solid #ffa500;border-radius:9px;color:#ffa500;font-family:'Oswald',sans-serif;
+  font-size:.9rem;letter-spacing:5px;cursor:pointer;transition:all .2s;margin-top:8px;}
+.btn-score:hover{background:rgba(255,165,0,.25);}
+
+/* SHARE RESULTS */
+.share-url{background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:8px;
+  padding:11px 12px;font-family:'Share Tech Mono',monospace;font-size:.52rem;
+  color:var(--neon);word-break:break-all;cursor:pointer;line-height:1.65;user-select:all;
+  transition:all .2s;}
+.share-url:hover{border-color:var(--neon);}
+.share-url.cp{color:var(--grn);border-color:var(--grn);}
+
+/* NOTIFICATION */
+.nf{position:fixed;top:58px;left:50%;transform:translateX(-50%);
+  background:rgba(0,230,118,.12);border:1px solid var(--grn);border-radius:8px;
+  padding:7px 20px;font-family:'Share Tech Mono',monospace;font-size:.6rem;
+  letter-spacing:3px;color:var(--grn);z-index:99;transition:opacity .4s;
+  white-space:nowrap;pointer-events:none;}
+.nf.h{opacity:0;}
+</style>
+</head>
+<body>
+<div class="nf h" id="nf"></div>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">🏅 MS HOKEJ 2026</div>
+    <div class="hdr-sub">VÝSLEDKY · TIPOVAČKA · ŽEBŘÍČEK</div>
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-cnt" id="hdrCnt">0 tipovačů</span>
+    <button class="btn-sm btn-admin" id="adminTabBtn" onclick="toggleAdminTab()">⚙ ADMIN</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab act" id="tab-picks" onclick="showTab('picks')">TIPY</button>
+  <button class="tab" id="tab-lb" onclick="showTab('lb')">🏆 ŽEBŘÍČEK</button>
+  <button class="tab admin-tab" id="tab-admin" onclick="showTab('admin')" style="display:none">⚙ ADMIN</button>
+</div>
+
+<!-- ══ PICKS TAB ══ -->
+<div class="view on" id="view-picks">
+  <div class="main">
+    <div class="card">
+      <span class="lbl">VLOŽ ODKAZ Z TIPOVAČKY</span>
+      <div class="url-row">
+        <textarea id="urlIn" placeholder="Vlož odkaz (https://...#n=Jméno&d=...) — lze více najednou, každý na nový řádek"></textarea>
+        <button class="btn-add" onclick="addEntries()">PŘIDAT</button>
+      </div>
+      <div class="err-msg" id="errMsg">⚠ Odkaz se nepodařilo načíst.</div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:12px 18px;">
+      <span style="font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--mut);" id="picksInfo">Žádné tipy</span>
+      <button class="btn-sm btn-danger" onclick="clearAll()">SMAZAT VŠE</button>
+    </div>
+    <div id="picksTable"></div>
+  </div>
+</div>
+
+<!-- ══ LEADERBOARD TAB ══ -->
+<div class="view" id="view-lb">
+  <div class="main">
+    <div class="card" id="lbStatus">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--mut);line-height:1.9;">
+        Žebříček se zobrazí po zadání skutečných výsledků v admin sekci.<br>
+        <span style="color:var(--neon);opacity:.6;">Body: přesné skóre 5pt · správný výsledek 2pt · skupinové pořadí 2pt · správný postup 1pt</span><br>
+        <span style="color:var(--neon);opacity:.6;">Play-off: ČF 1pt · SF 2pt · bronz 3pt · zlato 5pt · ocenění 3pt/každé</span>
+      </div>
+    </div>
+    <div id="lbContent"></div>
+    <div id="lbShare" style="display:none">
+      <div class="card">
+        <span class="lbl">SDÍLEJ ŽEBŘÍČEK</span>
+        <div class="share-url" id="lbUrl" onclick="cpLbUrl()"></div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.47rem;color:var(--mut);text-align:center;margin-top:5px;" id="lbUrlHint">↑ klikni pro zkopírování</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN TAB ══ -->
+<div class="view" id="view-admin">
+  <div class="main">
+
+    <!-- LOCKED -->
+    <div class="card admin-locked" id="adminLocked">
+      <p>🔒 ADMIN SEKCE</p>
+      <p>Zadej heslo pro zadání skutečných výsledků</p>
+      <div class="pw-row">
+        <input type="password" id="pwInput" placeholder="heslo…" onkeydown="if(event.key==='Enter')unlock()">
+        <button class="btn-unlock" onclick="unlock()">VSTOUPIT</button>
+      </div>
+      <div class="pw-err" id="pwErr">⚠ Špatné heslo</div>
+      <p style="font-size:.44rem;margin-top:8px;">Výchozí heslo: <span style="color:var(--neon);">hokej2026</span></p>
+    </div>
+
+    <!-- PANEL -->
+    <div class="admin-panel" id="adminPanel">
+
+      <div class="card">
+        <span class="lbl">⚙ SPRÁVA HESLA</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="password" id="newPw" placeholder="nové heslo…" style="flex:1;min-width:120px;background:rgba(0,0,0,.35);border:1px solid var(--bd);border-radius:7px;padding:8px 11px;color:var(--ice);font-family:'Share Tech Mono',monospace;font-size:.65rem;outline:none;">
+          <button class="btn-sm btn-pri-sm" onclick="changePassword()">ZMĚNIT</button>
+          <button class="btn-sm btn-danger" onclick="lockAdmin()">ZAMKNOUT</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="lbl" style="color:#ffa500;opacity:.7;">SKUTEČNÉ VÝSLEDKY – ZADEJ PO SKONČENÍ TURNAJE</span>
+
+        <!-- CZECH GAMES -->
+        <div class="res-section">
+          <div class="res-sec-title">ČESKÉ ZÁPASY</div>
+          <div id="adminGames"></div>
+        </div>
+
+        <!-- GROUP B -->
+        <div class="res-section">
+          <div class="res-sec-title">SKUTEČNÉ POŘADÍ – SKUPINA B</div>
+          <div class="rank-admin" id="adminRankB"></div>
+        </div>
+
+        <!-- GROUP A -->
+        <div class="res-section">
+          <div class="res-sec-title">SKUTEČNÉ POŘADÍ – SKUPINA A</div>
+          <div class="rank-admin" id="adminRankA"></div>
+        </div>
+
+        <!-- PLAYOFF -->
+        <div class="res-section">
+          <div class="res-sec-title">PLAY-OFF VÝSLEDKY</div>
+          <div class="po-admin" id="adminPO"></div>
+        </div>
+
+        <!-- AWARDS -->
+        <div class="res-section">
+          <div class="res-sec-title">INDIVIDUÁLNÍ OCENĚNÍ</div>
+          <div class="aw-adm" id="adminAwards"></div>
+        </div>
+
+        <button class="btn-score" onclick="saveAndScore()">⚡ ULOŽIT A SPOČÍTAT VÝSLEDKY</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════
+// TEAM DATA
+// ══════════════════════════════
+const TM = {
+  CZE:{n:'Česko',     f:'🇨🇿',col:'#D7141A'},CAN:{n:'Kanada',    f:'🇨🇦',col:'#FF2222'},
+  SWE:{n:'Švédsko',   f:'🇸🇪',col:'#006AA7'},DEN:{n:'Dánsko',    f:'🇩🇰',col:'#C60C30'},
+  SVK:{n:'Slovensko', f:'🇸🇰',col:'#0B4EA2'},NOR:{n:'Norsko',    f:'🇳🇴',col:'#EF2B2D'},
+  SLO:{n:'Slovinsko', f:'🇸🇮',col:'#003DA5'},ITA:{n:'Itálie',    f:'🇮🇹',col:'#009246'},
+  USA:{n:'USA',       f:'🇺🇸',col:'#002868'},SUI:{n:'Švýcarsko', f:'🇨🇭',col:'#FF0000'},
+  FIN:{n:'Finsko',    f:'🇫🇮',col:'#003580'},GER:{n:'Německo',   f:'🇩🇪',col:'#888888'},
+  LAT:{n:'Lotyšsko',  f:'🇱🇻',col:'#9E3039'},AUT:{n:'Rakousko',  f:'🇦🇹',col:'#ED2939'},
+  HUN:{n:'Maďarsko',  f:'🇭🇺',col:'#477050'},GBR:{n:'Británie',  f:'🇬🇧',col:'#012169'},
+};
+const CZ_OPPS = ['CAN','SWE','DEN','SVK','NOR','SLO','ITA'];
+const GRP_B_INIT = ['CAN','SWE','CZE','DEN','SVK','NOR','SLO','ITA'];
+const GRP_A_INIT = ['USA','FIN','SUI','GER','LAT','AUT','HUN','GBR'];
+const AW_LBLS = ['🇨🇿🥅 Nejl. čes. střelec','🇨🇿📊 Nejl. čes. bodovač','🏒 Nejl. střelec celkem','🧤 Nejl. brankář','⭐ Nejl. bodovač celkem'];
+
+// ══════════════════════════════
+// STORAGE
+// ══════════════════════════════
+const KEY_PICKS='ms2026_picks', KEY_REAL='ms2026_real', KEY_PW='ms2026_pw';
+function loadPicks(){try{return JSON.parse(localStorage.getItem(KEY_PICKS)||'[]');}catch{return[];}}
+function savePicks(a){localStorage.setItem(KEY_PICKS,JSON.stringify(a));}
+function loadReal(){try{return JSON.parse(localStorage.getItem(KEY_REAL)||'null');}catch{return null;}}
+function saveReal(r){localStorage.setItem(KEY_REAL,JSON.stringify(r));}
+function getAdminPw(){return localStorage.getItem(KEY_PW)||'hokej2026';}
+
+// ══════════════════════════════
+// URL PARSING (tipovačka format)
+// ══════════════════════════════
+function parseTipUrl(url) {
+  try {
+    const hash = url.includes('#')?url.split('#')[1]:url;
+    const q = new URLSearchParams(hash);
+    const n=q.get('n'), d=q.get('d');
+    if(!d) return null;
+    const raw = JSON.parse(decodeURIComponent(escape(atob(d))));
+    return {
+      name: n?decodeURIComponent(n):'?',
+      games: (raw.games||[]).map(g=>({cz:g.c,op:g.o,t:g.t||'R'})),
+      gB: raw.gB||[...GRP_B_INIT],
+      gA: raw.gA||[...GRP_A_INIT],
+      po: raw.po||Array(8).fill(null),
+      aw: raw.aw||['','','','','']
+    };
+  } catch(e){return null;}
+}
+
+// ══════════════════════════════
+// ADD ENTRIES
+// ══════════════════════════════
+function addEntries() {
+  const raw=document.getElementById('urlIn').value.trim();
+  const err=document.getElementById('errMsg'); err.style.display='none';
+  if(!raw) return;
+  const lines=raw.split(/[\n\r]+/).map(s=>s.trim()).filter(Boolean);
+  const picks=loadPicks(); let added=0;
+  for(const line of lines){
+    const p=parseTipUrl(line);
+    if(!p){err.style.display='block';continue;}
+    const dup=picks.some(x=>x.name===p.name&&JSON.stringify(x.games)===JSON.stringify(p.games));
+    if(!dup){picks.push(p);added++;}
+  }
+  if(added>0){savePicks(picks);document.getElementById('urlIn').value='';showNf('✓ PŘIDÁNO '+added+' TIP'+(added===1?'':'Ů'));renderAll();}
+}
+
+function delEntry(i) {
+  const picks=loadPicks(); picks.splice(i,1); savePicks(picks); renderAll();
+}
+function clearAll() {
+  if(!confirm('Smazat všechny tipy?')) return;
+  localStorage.removeItem(KEY_PICKS); renderAll();
+}
+
+// ══════════════════════════════
+// PICKS TABLE
+// ══════════════════════════════
+function chip(code) {
+  if(!code) return '<span class="tbd">—</span>';
+  const tm=TM[code]; if(!tm) return '<span class="tbd">?</span>';
+  return `<span class="chip"><span class="chip-bar" style="background:${tm.col}"></span>${tm.f}${tm.n}</span>`;
+}
+
+function getPlayoffWinner(po, gB, gA, matchIdx) {
+  return poTeam({match:matchIdx,side:'win'}, po, gB, gA);
+}
+function poTeam(slot, po, gB, gA) {
+  if(!slot) return null;
+  if(slot.grp) return (slot.grp==='B'?gB:gA)[slot.seed-1]||null;
+  const {top,bot}=getMatchTeamsFromArrays(slot.match,po,gB,gA);
+  const g=po[slot.match];
+  if(g===null) return null;
+  const w=g===0?top:bot, l=g===0?bot:top;
+  return slot.side==='win'?w:l;
+}
+function getMatchTeamsFromArrays(m, po, gB, gA) {
+  const defs=[
+    {top:{grp:'A',seed:1},bot:{grp:'B',seed:4}},
+    {top:{grp:'A',seed:2},bot:{grp:'B',seed:3}},
+    {top:{grp:'B',seed:1},bot:{grp:'A',seed:4}},
+    {top:{grp:'B',seed:2},bot:{grp:'A',seed:3}},
+    {top:{match:0,side:'win'},bot:{match:1,side:'win'}},
+    {top:{match:2,side:'win'},bot:{match:3,side:'win'}},
+    {top:{match:4,side:'lose'},bot:{match:5,side:'lose'}},
+    {top:{match:4,side:'win'},bot:{match:5,side:'win'}},
+  ];
+  const d=defs[m];
+  return {top:poTeam(d.top,po,gB,gA), bot:poTeam(d.bot,po,gB,gA)};
+}
+
+function renderPicksTable() {
+  const picks=loadPicks();
+  document.getElementById('hdrCnt').textContent=picks.length+' tipovač'+(picks.length===1?'':'ů');
+  document.getElementById('picksInfo').textContent=picks.length+' tipovač'+(picks.length===1?'':'ů');
+  const wrap=document.getElementById('picksTable');
+  if(picks.length===0){wrap.innerHTML='<div style="text-align:center;padding:30px;font-family:\'Share Tech Mono\',monospace;font-size:.56rem;color:var(--mut);letter-spacing:2px;">Zatím žádné tipy — vlož odkaz výše.</div>';return;}
+
+  const cols=['CAN','SWE','DEN','SVK','NOR','SLO','ITA'];
+  let html='<div class="tbl-wrap"><table>';
+  html+='<thead><tr><th class="nm-col">TIPOVAČ</th>';
+  cols.forEach(c=>html+=`<th>vs ${TM[c].f}</th>`);
+  html+='<th>B1-4</th><th>A1-4</th><th>🥇 ZLATO</th><th>🥉 BRONZ</th>';
+  AW_LBLS.forEach((l,i)=>html+=`<th>${l.split(' ').slice(1).join(' ')}</th>`);
+  html+='</tr></thead><tbody>';
+
+  picks.forEach((p,idx)=>{
+    html+=`<tr><td class="nm-col">${esc(p.name)}<button class="del-btn" onclick="delEntry(${idx})">✕</button></td>`;
+    // Czech game scores
+    CZ_OPPS.forEach((opp,i)=>{
+      const g=p.games[i];
+      const score=g&&g.cz!==null?`${g.cz}:${g.op}<br><span style="font-family:'Share Tech Mono',monospace;font-size:.38rem;color:var(--mut)">${g.t}</span>`:'<span class="tbd">—</span>';
+      html+=`<td>${score}</td>`;
+    });
+    // Group B top 4
+    html+=`<td>${(p.gB||[]).slice(0,4).map(c=>TM[c]?TM[c].f:'?').join(' ')}</td>`;
+    // Group A top 4
+    html+=`<td>${(p.gA||[]).slice(0,4).map(c=>TM[c]?TM[c].f:'?').join(' ')}</td>`;
+    // Gold/Bronze
+    const gold=getPlayoffWinner(p.po,p.gB,p.gA,7);
+    const bronze=getPlayoffWinner(p.po,p.gB,p.gA,6);
+    html+=`<td>${chip(gold)}</td><td>${chip(bronze)}</td>`;
+    // Awards
+    (p.aw||[]).forEach(v=>html+=`<td style="font-size:.72rem">${esc(v)||'<span class="tbd">—</span>'}</td>`);
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  wrap.innerHTML=html;
+}
+
+// ══════════════════════════════
+// SCORING
+// ══════════════════════════════
+const POINTS = {exactScore:5, correctResult:2, groupPos:2, groupTop4:1,
+  qf:1, sf:2, bronze:3, gold:5, award:3};
+
+function scoreEntry(pick, real) {
+  let pts=0, breakdown=[];
+  // Czech games
+  let gamesPts=0;
+  CZ_OPPS.forEach((opp,i)=>{
+    const p=pick.games[i], r=real.games[i];
+    if(!p||p.cz===null||!r||r.cz===null) return;
+    if(p.cz===r.cz&&p.op===r.op){gamesPts+=POINTS.exactScore;}
+    else if(getRes(p)===getRes(r)){gamesPts+=POINTS.correctResult;}
+  });
+  if(gamesPts>0) breakdown.push(`zápasy: ${gamesPts}b`); pts+=gamesPts;
+  // Group B standings
+  let gBpts=0;
+  (real.gB||[]).forEach((code,i)=>{
+    const pi=(pick.gB||[]).indexOf(code);
+    if(pi===i) gBpts+=POINTS.groupPos;
+    else if(i<4&&pi<4) gBpts+=POINTS.groupTop4;
+  });
+  if(gBpts>0) breakdown.push(`sk.B: ${gBpts}b`); pts+=gBpts;
+  // Group A standings
+  let gApts=0;
+  (real.gA||[]).forEach((code,i)=>{
+    const pi=(pick.gA||[]).indexOf(code);
+    if(pi===i) gApts+=POINTS.groupPos;
+    else if(i<4&&pi<4) gApts+=POINTS.groupTop4;
+  });
+  if(gApts>0) breakdown.push(`sk.A: ${gApts}b`); pts+=gApts;
+  // Playoff
+  const poLabels=['ČF1','ČF2','ČF3','ČF4','SF1','SF2','Bronz','Zlato'];
+  const poP=[POINTS.qf,POINTS.qf,POINTS.qf,POINTS.qf,POINTS.sf,POINTS.sf,POINTS.bronze,POINTS.gold];
+  let poPts=0;
+  for(let m=0;m<8;m++){
+    const rw=getPlayoffWinner(real.po,real.gB,real.gA,m);
+    const pw=getPlayoffWinner(pick.po,pick.gB,pick.gA,m);
+    if(rw&&pw&&rw===pw) poPts+=poP[m];
+  }
+  if(poPts>0) breakdown.push(`play-off: ${poPts}b`); pts+=poPts;
+  // Awards
+  let awPts=0;
+  (real.aw||[]).forEach((rv,i)=>{
+    if(rv&&(pick.aw||[])[i]&&norm(rv)===norm((pick.aw||[])[i])) awPts+=POINTS.award;
+  });
+  if(awPts>0) breakdown.push(`ocenění: ${awPts}b`); pts+=awPts;
+  return {pts, breakdown};
+}
+
+function getRes(g) {
+  if(!g||g.cz===null) return null;
+  const czWin=g.cz>g.op;
+  if(g.t==='R') return czWin?'W':'L';
+  return czWin?'OTW':'OTL';
+}
+function norm(s){return (s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+
+// ══════════════════════════════
+// LEADERBOARD
+// ══════════════════════════════
+function renderLeaderboard() {
+  const real=loadReal(), picks=loadPicks();
+  const lbEl=document.getElementById('lbContent');
+  const shareEl=document.getElementById('lbShare');
+
+  if(!real){
+    lbEl.innerHTML='';
+    shareEl.style.display='none';
+    return;
+  }
+
+  const scored=picks.map(p=>{const {pts,breakdown}=scoreEntry(p,real);return{name:p.name,pts,breakdown};});
+  scored.sort((a,b)=>b.pts-a.pts);
+
+  if(scored.length===0){lbEl.innerHTML='<div class="no-results">Nejdřív přidej tipy v záložce TIPY.</div>';return;}
+
+  const medals=['🥇','🥈','🥉'];
+  const rowCls=['gold-row','silver-row','bronze-row'];
+  const posCls=['p1','p2','p3'];
+
+  let html='<div class="lb-wrap">';
+  scored.forEach((s,i)=>{
+    const cls=i<3?rowCls[i]:'';
+    const medal=i<3?medals[i]:'';
+    html+=`<div class="lb-row ${cls}">
+      <span class="lb-pos ${i<3?posCls[i]:''}">${i+1}.</span>
+      <span class="lb-medal">${medal}</span>
+      <div style="flex:1;min-width:0">
+        <div class="lb-name">${esc(s.name)}</div>
+        <div class="lb-breakdown">${s.breakdown.join(' · ')||'—'}</div>
+      </div>
+      <span class="lb-pts-lbl">BODŮ&nbsp;</span>
+      <span class="lb-pts">${s.pts}</span>
+    </div>`;
+  });
+  html+='</div>';
+  lbEl.innerHTML=html;
+
+  // Share URL
+  shareEl.style.display='block';
+  buildLbShareUrl(real, picks, scored);
+}
+
+function buildLbShareUrl(real, picks, scored) {
+  const data={real,picks:picks.map(p=>({name:p.name,pts:scoreEntry(p,real).pts})),scored};
+  const enc=btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  const url=location.href.split('#')[0]+'#lb='+enc;
+  document.getElementById('lbUrl').textContent=url;
+}
+
+function cpLbUrl() {
+  const u=document.getElementById('lbUrl').textContent;
+  navigator.clipboard.writeText(u).then(()=>{
+    document.getElementById('lbUrl').classList.add('cp');
+    document.getElementById('lbUrlHint').textContent='✓ zkopírováno!';
+    showNf('✓ ODKAZ ŽEBŘÍČKU ZKOPÍROVÁN!');
+  });
+}
+
+// ══════════════════════════════
+// ADMIN
+// ══════════════════════════════
+let adminUnlocked=false;
+function toggleAdminTab(){
+  const t=document.getElementById('tab-admin');
+  t.style.display=t.style.display==='none'?'':'none';
+  if(t.style.display!=='none') showTab('admin');
+}
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('act');
+  document.getElementById('view-'+id).classList.add('on');
+  if(id==='lb') renderLeaderboard();
+}
+function unlock(){
+  const v=document.getElementById('pwInput').value;
+  if(v===getAdminPw()){
+    adminUnlocked=true;
+    document.getElementById('adminLocked').style.display='none';
+    document.getElementById('adminPanel').classList.add('on');
+    renderAdminForm();
+  } else {
+    document.getElementById('pwErr').style.display='block';
+  }
+}
+function lockAdmin(){adminUnlocked=false;document.getElementById('adminLocked').style.display='flex';document.getElementById('adminPanel').classList.remove('on');}
+function changePassword(){
+  const v=document.getElementById('newPw').value.trim();
+  if(!v) return;
+  localStorage.setItem(KEY_PW,v);
+  showNf('✓ HESLO ZMĚNĚNO');
+  document.getElementById('newPw').value='';
+}
+
+// Admin state (mirrors real results)
+let AR = null;
+function initAR(){
+  const saved=loadReal();
+  AR=saved||{
+    games:CZ_OPPS.map(()=>({cz:null,op:null,t:'R'})),
+    gB:[...GRP_B_INIT],gA:[...GRP_A_INIT],
+    po:Array(8).fill(null),
+    aw:['','','','','']
+  };
+}
+
+function renderAdminForm(){
+  initAR();
+  renderAdminGames();
+  renderAdminRank('adminRankB','gB');
+  renderAdminRank('adminRankA','gA');
+  renderAdminPO();
+  renderAdminAwards();
+}
+
+function renderAdminGames(){
+  const el=document.getElementById('adminGames'); el.innerHTML='';
+  CZ_OPPS.forEach((opp,i)=>{
+    const g=AR.games[i];
+    const row=document.createElement('div'); row.className='game-row';
+    row.innerHTML=`
+      <span class="gr-opp">${TM.CZE.f} vs ${TM[opp].f} ${TM[opp].n}</span>
+      <div class="gr-score">
+        <input class="sc-inp" type="number" min="0" max="15" value="${g.cz!==null?g.cz:''}" placeholder="?" id="acz${i}" onchange="AR.games[${i}].cz=parseInt(this.value)||0">
+        <span class="sc-sep">:</span>
+        <input class="sc-inp" type="number" min="0" max="15" value="${g.op!==null?g.op:''}" placeholder="?" id="aop${i}" onchange="AR.games[${i}].op=parseInt(this.value)||0">
+      </div>
+      <div class="res-btns">
+        <button class="rt ${g.t==='R'?'act':''}" onclick="setART(${i},'R',this)">REG</button>
+        <button class="rt ${g.t==='OT'?'act':''}" onclick="setART(${i},'OT',this)">OT</button>
+        <button class="rt ${g.t==='SO'?'act':''}" onclick="setART(${i},'SO',this)">SN</button>
+      </div>`;
+    el.appendChild(row);
+  });
+}
+function setART(i,t,btn){
+  AR.games[i].t=t;
+  btn.closest('.res-btns').querySelectorAll('.rt').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+}
+
+function renderAdminRank(elId,key){
+  const el=document.getElementById(elId); el.innerHTML='';
+  AR[key].forEach((code,i)=>{
+    const tm=TM[code];
+    const item=document.createElement('div'); item.className='ra-item';
+    item.innerHTML=`
+      <span class="ra-pos">${i+1}.</span>
+      <span style="width:3px;height:18px;border-radius:2px;background:${tm.col};flex-shrink:0"></span>
+      <span class="ra-flag">${tm.f}</span>
+      <span class="ra-nm">${tm.n}</span>
+      <div class="ra-btns">
+        <button class="ra-btn" onclick="moveAR('${key}',${i},-1)" ${i===0?'disabled':''}>↑</button>
+        <button class="ra-btn" onclick="moveAR('${key}',${i},+1)" ${i===AR[key].length-1?'disabled':''}>↓</button>
+      </div>`;
+    el.appendChild(item);
+  });
+}
+function moveAR(key,i,d){
+  const a=AR[key], ni=i+d;
+  if(ni<0||ni>=a.length) return;
+  [a[i],a[ni]]=[a[ni],a[i]];
+  renderAdminRank(key==='gB'?'adminRankB':'adminRankA',key);
+}
+
+function renderAdminPO(){
+  const el=document.getElementById('adminPO'); el.innerHTML='';
+  const labels=['ČF1: A1 vs B4','ČF2: A2 vs B3','ČF3: B1 vs A4','ČF4: B2 vs A3',
+                 'SF1: vít.ČF1 vs vít.ČF2','SF2: vít.ČF3 vs vít.ČF4','O BRONZ','🏅 O ZLATO'];
+  const classes=['','','','','','','bm','gm'];
+  for(let m=0;m<8;m++){
+    const{top,bot}=getMatchTeamsFromArrays(m,AR.po,AR.gB,AR.gA);
+    const g=AR.po[m];
+    const card=document.createElement('div'); card.className=`pa-card ${classes[m]}`;
+    card.innerHTML=`<div class="pa-lbl">${labels[m]}</div>
+      ${paSlot(m,0,top,g)}${paSlot(m,1,bot,g)}`;
+    el.appendChild(card);
+  }
+}
+function paSlot(m,s,code,g){
+  const isW=g!==null&&g===s, isL=g!==null&&g!==s;
+  return `<div class="pa-slot ${isW?'win':''} ${isL?'elim':''}" onclick="setARPO(${m},${s})">
+    ${code?`<div class="pa-bar" style="background:${TM[code].col}"></div>
+      <span class="pa-flag">${TM[code].f}</span>
+      <span class="pa-nm">${TM[code].n}</span>
+      <span class="pa-ck">✓</span>`
+    :`<span class="pa-tbd">TBD</span>`}
+  </div>`;
+}
+function setARPO(m,s){
+  const old=AR.po[m];
+  AR.po[m]=s;
+  if(old!==s&&old!==null){
+    const downs={0:[4,6,7],1:[4,6,7],2:[5,6,7],3:[5,6,7],4:[6,7],5:[6,7],6:[],7:[]};
+    downs[m].forEach(i=>AR.po[i]=null);
+  }
+  renderAdminPO();
+}
+
+function renderAdminAwards(){
+  const el=document.getElementById('adminAwards'); el.innerHTML='';
+  AW_LBLS.forEach((lbl,i)=>{
+    const row=document.createElement('div'); row.className='aw-row';
+    row.innerHTML=`<span class="aw-lbl">${lbl}</span>
+      <input class="aw-inp" type="text" value="${esc(AR.aw[i]||'')}" placeholder="Jméno hráče…"
+        onchange="AR.aw[${i}]=this.value.trim()">`;
+    el.appendChild(row);
+  });
+}
+
+function saveAndScore(){
+  // Sync score inputs
+  CZ_OPPS.forEach((_,i)=>{
+    const czEl=document.getElementById('acz'+i), opEl=document.getElementById('aop'+i);
+    if(czEl&&czEl.value!=='') AR.games[i].cz=parseInt(czEl.value)||0;
+    if(opEl&&opEl.value!=='') AR.games[i].op=parseInt(opEl.value)||0;
+  });
+  document.querySelectorAll('.aw-inp').forEach((inp,i)=>AR.aw[i]=inp.value.trim());
+  saveReal(AR);
+  showNf('✓ VÝSLEDKY ULOŽENY');
+  showTab('lb');
+}
+
+// ══════════════════════════════
+// SHARE FROM URL (read-only leaderboard)
+// ══════════════════════════════
+function tryLoadLbFromUrl(){
+  const h=location.hash.slice(1); if(!h) return false;
+  const q=new URLSearchParams(h);
+  const lb=q.get('lb'); if(!lb) return false;
+  try{
+    const d=JSON.parse(decodeURIComponent(escape(atob(lb))));
+    if(!d.scored) return false;
+    // show read-only leaderboard
+    const scored=d.scored;
+    const medals=['🥇','🥈','🥉'];
+    const rowCls=['gold-row','silver-row','bronze-row'];
+    const posCls=['p1','p2','p3'];
+    let html='<div class="lb-wrap">';
+    scored.forEach((s,i)=>{
+      const cls=i<3?rowCls[i]:'';
+      html+=`<div class="lb-row ${cls}">
+        <span class="lb-pos ${i<3?posCls[i]:''}">${i+1}.</span>
+        <span class="lb-medal">${i<3?medals[i]:''}</span>
+        <div style="flex:1"><div class="lb-name">${esc(s.name)}</div></div>
+        <span class="lb-pts-lbl">BODŮ&nbsp;</span>
+        <span class="lb-pts">${s.pts}</span>
+      </div>`;
+    });
+    html+='</div>';
+    document.getElementById('lbContent').innerHTML=html;
+    showTab('lb');
+    return true;
+  }catch(e){return false;}
+}
+
+// ══════════════════════════════
+// RENDER ALL
+// ══════════════════════════════
+function renderAll(){renderPicksTable();renderLeaderboard();}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showNf(msg){
+  const n=document.getElementById('nf');n.textContent=msg;n.classList.remove('h');
+  clearTimeout(n._t);n._t=setTimeout(()=>n.classList.add('h'),2200);
+}
+document.getElementById('urlIn').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addEntries();}
+});
+if(!tryLoadLbFromUrl()) renderAll();
+</script>
+</body>
+</html>
