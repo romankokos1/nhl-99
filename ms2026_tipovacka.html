@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS Hokej 2026 – Tipovačka</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600&display=swap');
+:root{
+  --bg:#E8EFF8;--surface:#FFFFFF;--surface2:#F2F6FC;
+  --bd:#CDD8EC;--bd2:#B0C2DC;
+  --red:#C8102E;--red2:#A00C23;--redl:rgba(200,16,46,.07);
+  --blue:#0A2351;--blue2:#1B4080;
+  --text:#0A1929;--text2:#3D5068;--mut:#7A90A8;
+  --grn:#15803D;--grnl:rgba(21,128,61,.08);
+  --gold:#996600;--goldl:rgba(153,102,0,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+/* Rink background: faint center-ice circle + blue lines */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle at 50% 48%, transparent 118px, rgba(27,64,128,.055) 119px, rgba(27,64,128,.055) 122px, transparent 123px),
+    radial-gradient(circle at 50% 48%, rgba(27,64,128,.025) 0px, rgba(27,64,128,.025) 116px, transparent 117px),
+    linear-gradient(90deg, transparent 32%, rgba(200,16,46,.04) 32%, rgba(200,16,46,.04) calc(32% + 2px), transparent calc(32% + 2px)),
+    linear-gradient(90deg, transparent 68%, rgba(200,16,46,.04) 68%, rgba(200,16,46,.04) calc(68% + 2px), transparent calc(68% + 2px)),
+    linear-gradient(180deg, rgba(255,255,255,.5) 0%, transparent 30%, transparent 70%, rgba(255,255,255,.3) 100%);}
+.s{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;}
+.s.on{display:flex;}
+
+/* ── HEADER ── */
+.hdr{background:var(--blue);padding:9px 14px;
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  box-shadow:0 2px 8px rgba(10,35,81,.18);}
+.hdr-nm{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:3px;color:rgba(255,255,255,.55);}
+.hdr-nm span{color:#FFFFFF;font-size:.85rem;font-weight:700;}
+.steps{display:flex;gap:4px;}
+.ws{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;
+  color:rgba(255,255,255,.4);cursor:pointer;transition:all .18s;flex-shrink:0;}
+.ws:hover{border-color:rgba(255,255,255,.5);color:rgba(255,255,255,.7);}
+.ws.act{border-color:#FFFFFF;color:#FFFFFF;background:rgba(255,255,255,.15);}
+.ws.done{border-color:var(--grn);color:var(--grn);background:rgba(21,128,61,.2);}
+
+/* ── BODY WRAP ── */
+.sc{flex:1;padding:16px 14px 12px;max-width:520px;margin:0 auto;width:100%;
+  display:flex;flex-direction:column;gap:12px;}
+
+/* ── INTRO ── */
+#si{align-items:center;justify-content:center;}
+.si-in{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:18px;padding:30px 16px;}
+.logo h1{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2rem,7vw,3rem);
+  font-weight:800;letter-spacing:3px;color:var(--blue);line-height:1.1;text-align:center;}
+.logo h1 .accent{color:var(--red);}
+.logo .sub{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;letter-spacing:8px;
+  color:var(--mut);margin-top:4px;text-align:center;font-weight:600;}
+.logo .ico{font-size:3rem;text-align:center;margin-bottom:4px;}
+.icard{width:100%;background:var(--surface);border:1px solid var(--bd);border-radius:14px;
+  padding:20px;box-shadow:0 4px 16px rgba(10,35,81,.08);}
+.lbl{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:4px;
+  font-weight:700;color:var(--blue2);opacity:.65;margin-bottom:8px;display:block;text-transform:uppercase;}
+input[type=text]{width:100%;background:var(--surface2);border:1.5px solid var(--bd);
+  border-radius:8px;padding:11px 13px;color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:1rem;outline:none;transition:border-color .2s;margin-bottom:14px;}
+input[type=text]:focus{border-color:var(--red);}
+.si-hint{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:2px;
+  color:var(--mut);text-align:center;line-height:2;}
+
+/* ── BUTTONS ── */
+.btn{padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;
+  font-weight:700;letter-spacing:4px;border-radius:9px;cursor:pointer;
+  transition:all .2s;border:2px solid;width:100%;text-transform:uppercase;}
+.btn-pri{background:var(--red);border-color:var(--red);color:#FFF;
+  box-shadow:0 3px 10px rgba(200,16,46,.3);}
+.btn-pri:hover{background:var(--red2);border-color:var(--red2);box-shadow:0 4px 14px rgba(200,16,46,.4);}
+.btn-sec{background:transparent;border-color:var(--bd2);color:var(--text2);}
+.btn-sec:hover{border-color:var(--blue);color:var(--blue);}
+.btn-gold{background:transparent;border-color:rgba(153,102,0,.4);color:var(--gold);}
+.btn-gold:hover{background:var(--goldl);border-color:var(--gold);}
+.btn-row{display:flex;gap:8px;}
+.btn-row .btn{flex:1;}
+
+/* ── SECTION LABEL ── */
+.sec-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:5px;
+  font-weight:700;color:var(--red);padding-bottom:6px;border-bottom:2px solid var(--red);
+  text-transform:uppercase;}
+
+/* ── GAME CARD ── */
+.game-card{background:var(--surface);border:1px solid var(--bd);border-radius:10px;
+  padding:12px 14px;display:flex;flex-direction:column;gap:8px;
+  box-shadow:0 2px 8px rgba(10,35,81,.06);border-left:3px solid var(--bd2);}
+.game-card:hover{border-left-color:var(--red);}
+.game-opp{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:3px;
+  font-weight:600;color:var(--mut);text-align:center;text-transform:uppercase;}
+.game-vs{display:flex;align-items:center;justify-content:center;gap:10px;}
+.tm-side{display:flex;align-items:center;gap:6px;flex:1;}
+.tm-side.right{flex-direction:row-reverse;text-align:right;}
+.tm-flag{font-size:1.3rem;flex-shrink:0;}
+.tm-nm{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:1px;color:var(--blue);}
+.score-box{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.sc-side{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.sc-val{font-size:1.7rem;font-weight:700;font-family:'Barlow Condensed',sans-serif;
+  width:36px;text-align:center;line-height:1;color:var(--text);}
+.sc-val.empty{color:var(--mut);}
+.sc-btn{background:var(--surface2);border:1.5px solid var(--bd);border-radius:5px;
+  color:var(--blue2);font-size:.6rem;width:30px;height:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .12s;padding:0;font-weight:700;}
+.sc-btn:hover{background:var(--redl);border-color:var(--red);color:var(--red);}
+.sc-sep{font-size:1.2rem;color:var(--mut);font-weight:800;padding:0 2px;}
+.res-row{display:flex;gap:4px;}
+.rt-btn{flex:1;padding:5px;font-family:'Barlow Condensed',sans-serif;font-size:.65rem;
+  letter-spacing:2px;font-weight:700;border:1.5px solid var(--bd);border-radius:5px;
+  cursor:pointer;color:var(--mut);background:transparent;transition:all .15s;text-transform:uppercase;}
+.rt-btn.act{border-color:var(--red);color:var(--red);background:var(--redl);}
+
+/* ── RANK LIST ── */
+.rank-list{display:flex;flex-direction:column;gap:4px;}
+.rank-item{display:flex;align-items:center;gap:8px;background:var(--surface);
+  border:1px solid var(--bd);border-radius:8px;padding:8px 12px;
+  transition:all .18s;box-shadow:0 1px 4px rgba(10,35,81,.05);}
+.rank-item.qual{border-color:rgba(27,64,128,.25);background:rgba(242,246,252,.8);}
+.rank-item.out{opacity:.55;}
+.rk-pos{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;
+  color:var(--mut);width:18px;text-align:center;flex-shrink:0;}
+.rk-bar{width:4px;height:20px;border-radius:2px;flex-shrink:0;}
+.rk-flag{font-size:1.1rem;flex-shrink:0;}
+.rk-nm{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:.92rem;font-weight:700;
+  letter-spacing:.5px;color:var(--text);}
+.rk-tag{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;letter-spacing:2px;
+  font-weight:700;color:var(--grn);flex-shrink:0;}
+.rk-btns{display:flex;gap:2px;flex-shrink:0;}
+.rk-btn{background:var(--surface2);border:1.5px solid var(--bd);border-radius:4px;
+  color:var(--mut);font-size:.65rem;width:24px;height:24px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .12s;padding:0;font-weight:700;}
+.rk-btn:hover:not(:disabled){border-color:var(--red);color:var(--red);background:var(--redl);}
+.rk-btn:disabled{opacity:.2;cursor:default;}
+.rank-divider{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:4px;
+  font-weight:700;color:var(--red);opacity:.6;text-align:center;padding:3px 0;
+  border-top:1px dashed rgba(200,16,46,.25);}
+
+/* ── PLAYOFF ── */
+.po-group{display:flex;flex-direction:column;gap:4px;}
+.po-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:5px;
+  font-weight:800;color:var(--blue);opacity:.45;margin-bottom:2px;text-transform:uppercase;}
+.po-card{background:var(--surface);border:1px solid var(--bd);border-radius:9px;
+  overflow:hidden;box-shadow:0 2px 8px rgba(10,35,81,.06);}
+.po-card.gm{border-color:rgba(153,102,0,.4);background:rgba(255,252,235,.6);}
+.po-card.bm{border-color:rgba(120,80,20,.25);}
+.po-hdr{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;letter-spacing:2px;
+  font-weight:700;color:var(--blue2);opacity:.5;text-align:center;padding:5px;
+  border-bottom:1px solid var(--bd);background:var(--surface2);text-transform:uppercase;}
+.po-card.gm .po-hdr{color:var(--gold);opacity:.9;border-bottom-color:rgba(153,102,0,.2);
+  background:rgba(255,248,210,.8);}
+.po-card.bm .po-hdr{color:#8B5E00;opacity:.8;background:rgba(255,248,230,.6);}
+.po-slot{display:flex;align-items:center;gap:8px;padding:7px 12px;height:38px;
+  cursor:pointer;transition:background .12s;}
+.po-slot:hover{background:rgba(200,16,46,.04);}
+.po-slot.win{background:var(--grnl);}
+.po-slot.elim{opacity:.3;}
+.po-slot+.po-slot{border-top:1px solid var(--bd);}
+.po-sbar{width:3px;height:16px;border-radius:2px;flex-shrink:0;}
+.po-sflag{font-size:.95rem;flex-shrink:0;}
+.po-snm{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-weight:700;color:var(--text);}
+.po-sseed{font-family:'Barlow Condensed',sans-serif;font-size:.5rem;font-weight:600;
+  color:var(--mut);flex-shrink:0;letter-spacing:1px;}
+.po-sck{font-size:.68rem;opacity:0;transition:opacity .12s;margin-left:2px;color:var(--grn);}
+.po-slot.win .po-sck{opacity:1;}
+.po-stbd{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;color:var(--mut);
+  opacity:.5;letter-spacing:2px;font-weight:600;}
+.po-arrow{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.55rem;
+  color:var(--blue);opacity:.2;padding:2px 0;letter-spacing:2px;}
+
+/* ── AWARDS ── */
+.aw-card{background:var(--surface);border:1px solid var(--bd);border-radius:10px;
+  padding:13px;box-shadow:0 2px 8px rgba(10,35,81,.05);}
+.aw-icon{font-size:1.3rem;margin-bottom:5px;}
+.aw-card input[type=text]{margin-bottom:0;font-size:.95rem;padding:9px 11px;letter-spacing:.5px;}
+.aw-card input[type=text]:focus{border-color:var(--red);}
+
+/* ── SHARE ── */
+#ss{align-items:center;justify-content:center;}
+.ss-in{width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;padding:20px 14px;}
+.scard{background:var(--surface);border:1px solid var(--bd);border-radius:12px;
+  padding:18px;box-shadow:0 2px 10px rgba(10,35,81,.07);}
+.ss-hd{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;
+  letter-spacing:4px;color:var(--blue);text-transform:uppercase;}
+.ss-sub{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:3px;
+  font-weight:600;color:var(--mut);margin-top:4px;text-transform:uppercase;}
+.urlb{background:var(--surface2);border:1.5px solid var(--bd);border-radius:8px;
+  padding:11px 12px;font-family:'DM Sans',sans-serif;font-size:.6rem;
+  color:var(--blue2);word-break:break-all;cursor:pointer;transition:all .2s;
+  line-height:1.65;user-select:all;}
+.urlb:hover{border-color:var(--red);}
+.urlb.cp{color:var(--grn);border-color:var(--grn);}
+.cp-hint{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:2px;
+  color:var(--mut);text-align:center;margin-top:5px;font-weight:600;}
+.sum-row{display:flex;justify-content:space-between;align-items:center;
+  padding:7px 8px;border-radius:4px;font-size:.82rem;}
+.sum-row:nth-child(odd){background:var(--surface2);}
+.sum-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;letter-spacing:2px;
+  color:var(--mut);font-weight:600;text-transform:uppercase;}
+.sum-val{font-weight:600;letter-spacing:.5px;color:var(--text);}
+
+/* NOTIFICATION */
+.nf{position:fixed;top:58px;left:50%;transform:translateX(-50%);
+  background:rgba(21,128,61,.1);border:1.5px solid var(--grn);border-radius:8px;
+  padding:7px 20px;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;
+  letter-spacing:3px;font-weight:700;color:var(--grn);z-index:99;transition:opacity .4s;
+  white-space:nowrap;pointer-events:none;box-shadow:0 2px 12px rgba(21,128,61,.15);}
+.nf.h{opacity:0;}
+</style>
+</head>
+<body>
+<div class="nf h" id="nf"></div>
+
+<!-- ══ INTRO ══ -->
+<div class="s on" id="si">
+  <div class="si-in">
+    <div class="logo">
+      <div class="ico">🏅</div>
+      <h1>MS HOKEJ<br><span class="accent">2026</span></h1>
+      <div class="sub">TIPOVAČKA · ŠVÝCARSKO · 15–31 KVĚTNA</div>
+    </div>
+    <div class="icard">
+      <span class="lbl">TVOJE JMÉNO / PŘEZDÍVKA</span>
+      <input type="text" id="ni" placeholder="Zadej jméno…" maxlength="20" autocomplete="off" spellcheck="false">
+      <button class="btn btn-pri" id="startBtn">ZAČÍT TIPOVAT →</button>
+    </div>
+    <div class="si-hint">
+      🇨🇿 Skupina B · Fribourg<br>
+      Kanada · Švédsko · Dánsko · Slovensko<br>
+      Norsko · Slovinsko · Itálie<br><br>
+      Výsledky → Skupina → Play-off → Ocenění
+    </div>
+  </div>
+</div>
+
+<!-- ══ ZÁPASY ══ -->
+<div class="s" id="sg">
+  <div class="hdr" id="hdr-sg"></div>
+  <div class="sc">
+    <div class="sec-lbl">ČESKÉ ZÁPASY – TIPNI SKÓRE</div>
+    <div id="gamesList"></div>
+    <div class="btn-row">
+      <button class="btn btn-sec" onclick="scr('si')">← ZPĚT</button>
+      <button class="btn btn-pri" onclick="scr('sb')">SKUPINA B →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SKUPINA B ══ -->
+<div class="s" id="sb">
+  <div class="hdr" id="hdr-sb"></div>
+  <div class="sc">
+    <div class="sec-lbl">SKUPINA B – KONEČNÉ POŘADÍ</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--mut);line-height:1.8;">
+      Top 4 postupují do čtvrtfinále · přesuň týmy šipkami
+    </div>
+    <div class="rank-list" id="rankB"></div>
+    <div class="btn-row">
+      <button class="btn btn-sec" onclick="scr('sg')">← ZÁPASY</button>
+      <button class="btn btn-pri" onclick="scr('sa')">SKUPINA A →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SKUPINA A ══ -->
+<div class="s" id="sa">
+  <div class="hdr" id="hdr-sa"></div>
+  <div class="sc">
+    <div class="sec-lbl">SKUPINA A – KONEČNÉ POŘADÍ</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--mut);line-height:1.8;">
+      Zürich · top 4 postupují · ovlivní čtvrtfinálové parovníky
+    </div>
+    <div class="rank-list" id="rankA"></div>
+    <div class="btn-row">
+      <button class="btn btn-sec" onclick="scr('sb')">← SKUPINA B</button>
+      <button class="btn btn-pri" onclick="scr('sp')">PLAY-OFF →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLAY-OFF ══ -->
+<div class="s" id="sp">
+  <div class="hdr" id="hdr-sp"></div>
+  <div class="sc">
+    <div class="sec-lbl">PLAY-OFF BRACKET</div>
+    <div class="po-group" id="poQF">
+      <div class="po-lbl">ČTVRTFINÁLE</div>
+    </div>
+    <div class="po-arrow">▼</div>
+    <div class="po-group" id="poSF">
+      <div class="po-lbl">SEMIFINÁLE</div>
+    </div>
+    <div class="po-arrow">▼</div>
+    <div class="po-group" id="poFin">
+      <div class="po-lbl">FINÁLE</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-sec" onclick="scr('sa')">← SKUPINA A</button>
+      <button class="btn btn-pri" onclick="scr('so')">OCENĚNÍ →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OCENĚNÍ ══ -->
+<div class="s" id="so">
+  <div class="hdr" id="hdr-so"></div>
+  <div class="sc">
+    <div class="sec-lbl">INDIVIDUÁLNÍ OCENĚNÍ</div>
+    <div class="aw-card">
+      <div class="aw-icon">🇨🇿🥅</div>
+      <span class="lbl">NEJLEPŠÍ ČESKÝ STŘELEC (počet gólů)</span>
+      <input type="text" id="aw0" placeholder="Jméno hráče…" autocomplete="off">
+    </div>
+    <div class="aw-card">
+      <div class="aw-icon">🇨🇿📊</div>
+      <span class="lbl">NEJLEPŠÍ ČESKÝ HRÁČ V BODOVÁNÍ</span>
+      <input type="text" id="aw1" placeholder="Jméno hráče…" autocomplete="off">
+    </div>
+    <div class="aw-card">
+      <div class="aw-icon">🏒🥇</div>
+      <span class="lbl">NEJLEPŠÍ STŘELEC TURNAJE CELKEM</span>
+      <input type="text" id="aw2" placeholder="Jméno hráče…" autocomplete="off">
+    </div>
+    <div class="aw-card">
+      <div class="aw-icon">🧤📈</div>
+      <span class="lbl">NEJLEPŠÍ BRANKÁŘ (% zákroků)</span>
+      <input type="text" id="aw3" placeholder="Jméno brankáře…" autocomplete="off">
+    </div>
+    <div class="aw-card">
+      <div class="aw-icon">⭐📊</div>
+      <span class="lbl">NEJLEPŠÍ HRÁČ TURNAJE V BODOVÁNÍ</span>
+      <input type="text" id="aw4" placeholder="Jméno hráče…" autocomplete="off">
+    </div>
+
+    <!-- no player suggestions - nominace není známá -->
+
+    <div class="btn-row">
+      <button class="btn btn-sec" onclick="scr('sp')">← PLAY-OFF</button>
+      <button class="btn btn-gold" onclick="toShare()">SDÍLET 🔗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHARE ══ -->
+<div class="s" id="ss">
+  <div class="ss-in">
+    <div class="scard">
+      <div class="ss-hd">🏅 MŮJ TIKET</div>
+      <div class="ss-sub" id="ssub"></div>
+    </div>
+    <div class="scard">
+      <span class="lbl">SDÍLECÍ ODKAZ</span>
+      <div class="urlb" id="urlb" onclick="cpUrl()"></div>
+      <div class="cp-hint" id="cph">↑ klikni pro zkopírování</div>
+    </div>
+    <div class="scard">
+      <span class="lbl">PŘEHLED TIPŮ</span>
+      <div id="sumList"></div>
+    </div>
+    <button class="btn btn-sec" onclick="scr('so')">← ZPĚT</button>
+  </div>
+</div>
+
+<script>
+// ══ TEAM DATA ══
+const TM = {
+  CZE:{n:'Česko',       f:'🇨🇿', col:'#D7141A'},
+  CAN:{n:'Kanada',      f:'🇨🇦', col:'#FF2222'},
+  SWE:{n:'Švédsko',     f:'🇸🇪', col:'#006AA7'},
+  DEN:{n:'Dánsko',      f:'🇩🇰', col:'#C60C30'},
+  SVK:{n:'Slovensko',   f:'🇸🇰', col:'#0B4EA2'},
+  NOR:{n:'Norsko',      f:'🇳🇴', col:'#EF2B2D'},
+  SLO:{n:'Slovinsko',   f:'🇸🇮', col:'#003DA5'},
+  ITA:{n:'Itálie',      f:'🇮🇹', col:'#009246'},
+  USA:{n:'USA',         f:'🇺🇸', col:'#002868'},
+  SUI:{n:'Švýcarsko',   f:'🇨🇭', col:'#FF0000'},
+  FIN:{n:'Finsko',      f:'🇫🇮', col:'#003580'},
+  GER:{n:'Německo',     f:'🇩🇪', col:'#888888'},
+  LAT:{n:'Lotyšsko',    f:'🇱🇻', col:'#9E3039'},
+  AUT:{n:'Rakousko',    f:'🇦🇹', col:'#ED2939'},
+  HUN:{n:'Maďarsko',    f:'🇭🇺', col:'#477050'},
+  GBR:{n:'Británie',    f:'🇬🇧', col:'#012169'},
+};
+
+// Chronological order per official IIHF schedule
+const CZ_OPPS = ['DEN','SLO','SWE','ITA','SVK','NOR','CAN'];
+const CZ_DATES = ['15.5.','16.5.','18.5.','20.5.','23.5.','25.5.','26.5.'];
+const GRP_B_INIT = ['CAN','SWE','CZE','DEN','SVK','NOR','SLO','ITA'];
+const CZ_DAYS = ['15.5.','16.5.','18.5.','20.5.','23.5.','25.5.','26.5.']; // fallback if not using CZ_DATES
+const GRP_A_INIT = ['USA','FIN','SUI','GER','LAT','AUT','HUN','GBR'];
+
+// ══ STATE ══
+let nm = '';
+let S = {
+  games: CZ_OPPS.map(()=>({cz:null,op:null,t:'R'})),
+  gB: [...GRP_B_INIT],
+  gA: [...GRP_A_INIT],
+  po: Array(8).fill(null),  // QF1-4(0-3), SF1-2(4-5), BM(6), GM(7) — 0=top advances,1=bottom
+  aw: ['','','','','']
+};
+
+// ══ SCREENS ══
+function scr(id) {
+  document.querySelectorAll('.s').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+  if(id==='sg') renderGames();
+  if(id==='sb') renderRank('rankB','gB',true);
+  if(id==='sa') renderRank('rankA','gA',false);
+  if(id==='sp') renderPlayoff();
+  if(['sg','sb','sa','sp','so'].includes(id)) updateHeaders();
+}
+
+function getStepClass(cur, target) {
+  const ord = ['sg','sb','sa','sp','so'];
+  const ci = ord.indexOf(cur), ti = ord.indexOf(target);
+  if(ti < ci) return 'done'; if(ti===ci) return 'act'; return '';
+}
+
+function headerHTML(cur) {
+  const steps=[
+    {id:'sg',l:'1'},
+    {id:'sb',l:'2'},
+    {id:'sa',l:'3'},
+    {id:'sp',l:'4'},
+    {id:'so',l:'5'},
+  ];
+  const stepsHTML = steps.map(s=>
+    `<button class="ws ${getStepClass(cur,s.id)}" onclick="scr('${s.id}')" title="${
+      {sg:'Zápasy ČR',sb:'Skupina B',sa:'Skupina A',sp:'Play-off',so:'Ocenění'}[s.id]
+    }">${s.l}</button>`
+  ).join('');
+  return `<div class="hdr-nm">TIPOVAČ&nbsp;<span>${nm.toUpperCase()}</span></div><div class="steps">${stepsHTML}</div>`;
+}
+
+function updateHeaders() {
+  ['sg','sb','sa','sp','so'].forEach(id=>{
+    const el = document.getElementById('hdr-'+id);
+    if(el) el.innerHTML = headerHTML(id);
+  });
+}
+
+// ══ GAMES ══
+function renderGames() {
+  const el = document.getElementById('gamesList'); el.innerHTML='';
+  CZ_OPPS.forEach((opp,i)=>{
+    const g = S.games[i];
+    const tm = TM[opp];
+    const div = document.createElement('div'); div.className='game-card';
+    div.innerHTML=`
+      <div class="game-opp">${CZ_DATES[i]} &nbsp;·&nbsp; ČR vs ${tm.n.toUpperCase()}</div>
+      <div class="game-vs">
+        <div class="tm-side">
+          <span class="tm-flag">🇨🇿</span>
+          <div class="tm-nm">Česko</div>
+        </div>
+        <div class="score-box">
+          <div class="sc-side">
+            <button class="sc-btn" onclick="adjScore(${i},'cz',1)">▲</button>
+            <div class="sc-val ${g.cz===null?'empty':''}" id="sv-cz-${i}">${g.cz===null?'–':g.cz}</div>
+            <button class="sc-btn" onclick="adjScore(${i},'cz',-1)">▼</button>
+          </div>
+          <div class="sc-sep">:</div>
+          <div class="sc-side">
+            <button class="sc-btn" onclick="adjScore(${i},'op',1)">▲</button>
+            <div class="sc-val ${g.op===null?'empty':''}" id="sv-op-${i}">${g.op===null?'–':g.op}</div>
+            <button class="sc-btn" onclick="adjScore(${i},'op',-1)">▼</button>
+          </div>
+        </div>
+        <div class="tm-side right">
+          <span class="tm-flag">${tm.f}</span>
+          <div class="tm-nm">${tm.n}</div>
+        </div>
+      </div>
+      <div class="res-row">
+        <button class="rt-btn ${g.t==='R'?'act':''}" onclick="setType(${i},'R')">REG</button>
+        <button class="rt-btn ${g.t==='OT'?'act':''}" onclick="setType(${i},'OT')">OT</button>
+        <button class="rt-btn ${g.t==='SO'?'act':''}" onclick="setType(${i},'SO')">NÁJEZDY</button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function adjScore(gi,side,d) {
+  const g = S.games[gi];
+  const key = side==='cz'?'cz':'op';
+  if(g[key]===null) g[key]=0;
+  g[key]=Math.max(0,Math.min(15,g[key]+d));
+  const el=document.getElementById(`sv-${side}-${gi}`);
+  el.textContent=g[key]; el.classList.remove('empty');
+}
+function setType(gi,t) {
+  S.games[gi].t=t;
+  renderGames();
+}
+
+// ══ RANK LIST ══
+function renderRank(elId, key, isB) {
+  const el=document.getElementById(elId); el.innerHTML='';
+  const arr = S[key];
+  arr.forEach((code,i)=>{
+    const tm=TM[code];
+    const qual = i<4;
+    const item=document.createElement('div');
+    item.className='rank-item'+(qual?' qual':' out');
+    item.innerHTML=`
+      <span class="rk-pos">${i+1}</span>
+      <div class="rk-bar" style="background:${tm.col}"></div>
+      <span class="rk-flag">${tm.f}</span>
+      <span class="rk-nm">${tm.n}</span>
+      ${qual?`<span class="rk-tag">${key==='gB'?'B'+''+(i+1):'A'+''+(i+1)} ✓</span>`:''}
+      <div class="rk-btns">
+        <button class="rk-btn" onclick="moveRank('${key}',${i},-1)" ${i===0?'disabled':''}>↑</button>
+        <button class="rk-btn" onclick="moveRank('${key}',${i},+1)" ${i===arr.length-1?'disabled':''}>↓</button>
+      </div>`;
+    el.appendChild(item);
+    if(i===3 && isB) {
+      const div=document.createElement('div'); div.className='rank-divider';
+      div.textContent='── postupují 4 týmy ──';
+      el.appendChild(div);
+    }
+  });
+}
+
+function moveRank(key,i,d) {
+  const arr=S[key];
+  const ni=i+d;
+  if(ni<0||ni>=arr.length) return;
+  [arr[i],arr[ni]]=[arr[ni],arr[i]];
+  renderRank(key==='gB'?'rankB':'rankA',key,key==='gB');
+}
+
+// ══ PLAYOFF ══
+// Bracket: QF1(0)=A1vsB4, QF2(1)=A2vsB3, QF3(2)=B1vsA4, QF4(3)=B2vsA3
+// SF1(4)=QF1w vs QF2w, SF2(5)=QF3w vs QF4w
+// BM(6)=SF1-loser vs SF2-loser, GM(7)=SF1w vs SF2w
+
+function poTeam(slot) {
+  // slot: {grp:'A'|'B', seed:1-4} or derived from QF/SF winner
+  if(!slot) return null;
+  if(slot.grp) {
+    const arr = slot.grp==='B'?S.gB:S.gA;
+    return arr[slot.seed-1];
+  }
+  // derived from match result
+  const match=slot.match, side=slot.side; // side: 'win'|'lose'
+  const g=S.po[match];
+  if(g===null) return null;
+  const {top,bot}=getMatchTeams(match);
+  const w=g===0?top:bot, l=g===0?bot:top;
+  return side==='win'?w:l;
+}
+
+function getMatchTeams(m) {
+  const defs = [
+    // QF1: A1 vs B4
+    {top:{grp:'A',seed:1}, bot:{grp:'B',seed:4}},
+    // QF2: A2 vs B3
+    {top:{grp:'A',seed:2}, bot:{grp:'B',seed:3}},
+    // QF3: B1 vs A4
+    {top:{grp:'B',seed:1}, bot:{grp:'A',seed:4}},
+    // QF4: B2 vs A3
+    {top:{grp:'B',seed:2}, bot:{grp:'A',seed:3}},
+    // SF1: QF1w vs QF2w
+    {top:{match:0,side:'win'}, bot:{match:1,side:'win'}},
+    // SF2: QF3w vs QF4w
+    {top:{match:2,side:'win'}, bot:{match:3,side:'win'}},
+    // BM: SF1-loser vs SF2-loser
+    {top:{match:4,side:'lose'}, bot:{match:5,side:'lose'}},
+    // GM: SF1w vs SF2w
+    {top:{match:4,side:'win'}, bot:{match:5,side:'win'}},
+  ];
+  const d=defs[m];
+  return {top:poTeam(d.top), bot:poTeam(d.bot)};
+}
+
+function renderPlayoff() {
+  const poSlot=(m,s,code,seed,isCzeMark)=>{
+    const g=S.po[m], w=g!==null?(g===0?getMatchTeams(m).top:getMatchTeams(m).bot):null;
+    const isW=code&&w===code, isL=code&&w&&w!==code;
+    return `<div class="po-slot ${isW?'win':''} ${isL?'elim':''}" onclick="setPo(${m},${s})">
+      ${code?`<div class="po-sbar" style="background:${TM[code].col}"></div>
+        <span class="po-sflag">${TM[code].f}</span>
+        <span class="po-snm">${TM[code].n}</span>
+        <span class="po-sseed">${seed||''}</span>
+        <span class="po-sck">✓</span>`
+      :`<span class="po-stbd">TBD</span>`}
+    </div>`;
+  };
+
+  function card(m,label,cls=''){
+    const {top,bot}=getMatchTeams(m);
+    const seeds=[['A1','B4'],['A2','B3'],['B1','A4'],['B2','A3'],[],[],[],[]];
+    const [ts,bs]=seeds[m]||['',''];
+    return `<div class="po-card ${cls}">
+      <div class="po-hdr">${label}</div>
+      ${poSlot(m,0,top,ts)}
+      ${poSlot(m,1,bot,bs)}
+    </div>`;
+  }
+
+  document.getElementById('poQF').innerHTML=`
+    <div class="po-lbl">ČTVRTFINÁLE</div>
+    ${card(0,'ČF1: A1 vs B4')} ${card(1,'ČF2: A2 vs B3')}
+    ${card(2,'ČF3: B1 vs A4')} ${card(3,'ČF4: B2 vs A3')}`;
+
+  document.getElementById('poSF').innerHTML=`
+    <div class="po-lbl">SEMIFINÁLE</div>
+    ${card(4,'SF1: vít. ČF1 vs vít. ČF2')} ${card(5,'SF2: vít. ČF3 vs vít. ČF4')}`;
+
+  document.getElementById('poFin').innerHTML=`
+    <div class="po-lbl">FINÁLE</div>
+    ${card(6,'O BRONZ','bm')} ${card(7,'🏅 O ZLATO','gm')}`;
+}
+
+function setPo(m,s) {
+  // If changing result, clear downstream
+  if(S.po[m]===s) return;
+  const old=S.po[m];
+  S.po[m]=s;
+  // Clear downstream
+  const downs={0:[4,6,7],1:[4,6,7],2:[5,6,7],3:[5,6,7],4:[6,7],5:[6,7],6:[],7:[]};
+  if(old!==null && old!==s) downs[m].forEach(i=>S.po[i]=null);
+  renderPlayoff();
+}
+
+// ══ SHARE ══
+function toShare() {
+  saveAwards();
+  const filled = S.games.filter(g=>g.cz!==null).length;
+  const poPicked = S.po.filter(x=>x!==null).length;
+  document.getElementById('ssub').textContent =
+    nm.toUpperCase()+' · '+filled+'/7 výsledků · '+poPicked+'/8 play-off';
+  buildSumList();
+  const u=shareUrl();
+  const ub=document.getElementById('urlb');
+  ub.textContent=u; ub.classList.remove('cp');
+  document.getElementById('cph').textContent='↑ klikni pro zkopírování';
+  scr('ss');
+}
+
+function saveAwards() {
+  for(let i=0;i<5;i++){
+    const el=document.getElementById('aw'+i);
+    if(el) S.aw[i]=el.value.trim();
+  }
+}
+
+function buildSumList() {
+  const el=document.getElementById('sumList'); el.innerHTML='';
+  // Czech game results
+  CZ_OPPS.forEach((opp,i)=>{
+    const g=S.games[i];
+    const row=document.createElement('div'); row.className='sum-row';
+    const score=g.cz!==null?`${g.cz}:${g.op} (${g.t})`:'—';
+    row.innerHTML=`<span class="sum-lbl">CZE vs ${TM[opp].n.toUpperCase()}</span><span class="sum-val">${score}</span>`;
+    el.appendChild(row);
+  });
+  // Group standings top4
+  const b4=S.gB.slice(0,4).map((c,i)=>`${i+1}.${TM[c].f}`).join(' ');
+  const a4=S.gA.slice(0,4).map((c,i)=>`${i+1}.${TM[c].f}`).join(' ');
+  addRow(el,'Sk.B top4',b4);
+  addRow(el,'Sk.A top4',a4);
+  // Playoff
+  const gm=getMatchTeams(7);
+  const gold=S.po[7]!==null?(S.po[7]===0?gm.top:gm.bot):null;
+  const bm=getMatchTeams(6);
+  const bronze=S.po[6]!==null?(S.po[6]===0?bm.top:bm.bot):null;
+  addRow(el,'🥇 Zlato',gold?TM[gold].f+' '+TM[gold].n:'—');
+  addRow(el,'🥉 Bronz',bronze?TM[bronze].f+' '+TM[bronze].n:'—');
+  // Awards
+  const awLbls=['🇨🇿🥅 Čes. střelec','🇨🇿📊 Čes. bod.','🏒 Střelec turn.','🧤 Brank.','⭐ Bod. turn.'];
+  S.aw.forEach((v,i)=>addRow(el,awLbls[i],v||'—'));
+}
+
+function addRow(el,l,v) {
+  const row=document.createElement('div'); row.className='sum-row';
+  row.innerHTML=`<span class="sum-lbl">${l}</span><span class="sum-val">${v}</span>`;
+  el.appendChild(row);
+}
+
+// ══ ENCODE / DECODE ══
+function enc() {
+  const d={
+    games:S.games.map(g=>({c:g.cz,o:g.op,t:g.t})),
+    gB:S.gB,gA:S.gA,po:S.po,aw:S.aw
+  };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+}
+
+function dec(str) {
+  try {
+    const d=JSON.parse(decodeURIComponent(escape(atob(str))));
+    if(d.games) S.games=d.games.map(g=>({cz:g.c,op:g.o,t:g.t||'R'}));
+    if(d.gB) S.gB=d.gB;
+    if(d.gA) S.gA=d.gA;
+    if(d.po) S.po=d.po;
+    if(d.aw) S.aw=d.aw;
+    // restore award inputs
+    S.aw.forEach((v,i)=>{const el=document.getElementById('aw'+i);if(el)el.value=v;});
+    return true;
+  } catch(e){ return false; }
+}
+
+function shareUrl() {
+  saveAwards();
+  return location.href.split('#')[0]+'#n='+encodeURIComponent(nm)+'&d='+enc();
+}
+
+function loadUrl() {
+  const h=location.hash.slice(1); if(!h) return false;
+  const q=new URLSearchParams(h);
+  const n=q.get('n'),d=q.get('d');
+  if(!n&&!d) return false;
+  if(n) nm=decodeURIComponent(n);
+  if(d) dec(d);
+  return true;
+}
+
+function cpUrl() {
+  navigator.clipboard.writeText(shareUrl()).then(()=>{
+    document.getElementById('urlb').classList.add('cp');
+    const h=document.getElementById('cph'); h.classList.add('cp'); h.textContent='✓ zkopírováno!';
+    showNf('✓ ODKAZ ZKOPÍROVÁN!');
+  }).catch(()=>{
+    const u=document.getElementById('urlb');
+    const r=document.createRange(); r.selectNodeContents(u);
+    window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
+  });
+}
+
+function showNf(msg) {
+  const n=document.getElementById('nf'); n.textContent=msg;
+  n.classList.remove('h');
+  clearTimeout(n._t); n._t=setTimeout(()=>n.classList.add('h'),2200);
+}
+
+// ══ START ══
+function start() {
+  const v=document.getElementById('ni').value.trim();
+  if(!v){document.getElementById('ni').focus();return;}
+  nm=v; updateHeaders(); scr('sg');
+}
+
+document.getElementById('ni').addEventListener('keydown',e=>{if(e.key==='Enter')start();});
+document.getElementById('startBtn').addEventListener('click',start);
+
+if(loadUrl()){
+  updateHeaders();
+  renderGames();
+  scr('sg');
+}
+</script>
+</body>
+</html>
