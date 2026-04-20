@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stanley Cup 2026 – Výsledky</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+:root{
+  --bg:#050d1a;--pan:#091828;--bd:#152e50;--bd2:#1e3f68;
+  --ice:#bcd8f0;--neon:#00d0ff;--gold:#ffd700;--mut:#3a6080;
+  --grn:#00e676;--red:#f44336;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ice);font-family:'Oswald',sans-serif;min-height:100vh;padding:0 0 40px;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    linear-gradient(rgba(0,208,255,.02) 1px,transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg,rgba(0,208,255,.02) 1px,transparent 1px) 0 0/44px 44px,
+    radial-gradient(ellipse at 20% 80%,rgba(0,63,127,.25) 0%,transparent 55%),
+    radial-gradient(ellipse at 80% 10%,rgba(0,208,255,.08) 0%,transparent 45%);}
+
+/* HEADER */
+.hdr{background:var(--pan);border-bottom:1px solid var(--bd);padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;}
+.hdr-title{font-size:1.1rem;font-weight:700;letter-spacing:4px;color:var(--gold);}
+.hdr-sub{font-family:'Share Tech Mono',monospace;font-size:.46rem;letter-spacing:4px;color:var(--neon);opacity:.4;margin-top:2px;}
+.hdr-count{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:2px;color:var(--neon);opacity:.5;}
+
+/* MAIN */
+.main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:18px;}
+
+/* ADD BOX */
+.add-box{background:var(--pan);border:1px solid var(--bd);border-radius:12px;padding:18px;}
+.lbl{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:4px;color:var(--neon);opacity:.45;margin-bottom:8px;}
+.url-row{display:flex;gap:8px;}
+textarea{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--bd);border-radius:8px;
+  padding:11px 13px;color:var(--ice);font-family:'Share Tech Mono',monospace;font-size:.6rem;
+  letter-spacing:1px;outline:none;transition:border-color .2s;resize:none;height:56px;line-height:1.5;}
+textarea:focus{border-color:var(--neon);}
+textarea::placeholder{color:var(--mut);opacity:.6;}
+.btn-add{padding:0 18px;background:linear-gradient(135deg,#003f7f,#005faa);border:1px solid var(--neon);
+  border-radius:8px;color:#fff;font-family:'Oswald',sans-serif;font-size:.82rem;letter-spacing:3px;
+  cursor:pointer;transition:all .2s;white-space:nowrap;min-width:90px;}
+.btn-add:hover{background:linear-gradient(135deg,#005faa,var(--neon));color:var(--bg);}
+.err{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--red);margin-top:6px;display:none;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:520px;}
+thead tr{background:var(--pan);border-bottom:2px solid var(--bd2);}
+th{padding:10px 10px;font-family:'Share Tech Mono',monospace;font-size:.46rem;letter-spacing:3px;
+  color:var(--neon);opacity:.45;text-align:left;font-weight:400;white-space:nowrap;}
+th.rnd-col{min-width:90px;}
+th.name-col{min-width:110px;position:sticky;left:0;background:var(--pan);z-index:5;}
+td{padding:9px 10px;border-bottom:1px solid rgba(21,46,80,.6);font-size:.78rem;vertical-align:middle;}
+td.name-col{position:sticky;left:0;background:var(--bg);z-index:4;font-weight:700;letter-spacing:1px;}
+tr:hover td{background:rgba(0,208,255,.03);}
+tr:hover td.name-col{background:rgba(0,208,255,.05);}
+.del-btn{background:none;border:none;color:var(--mut);cursor:pointer;font-size:.75rem;
+  padding:2px 6px;border-radius:4px;transition:color .15s;float:right;margin-left:4px;}
+.del-btn:hover{color:var(--red);}
+
+/* SECTION HEADER IN TABLE */
+.sec-hdr td{background:rgba(0,208,255,.04);border-bottom:1px solid var(--bd2);
+  font-family:'Share Tech Mono',monospace;font-size:.44rem;letter-spacing:5px;
+  color:var(--neon);opacity:.3;padding:5px 10px;}
+
+/* TEAM CHIP */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;
+  border-radius:4px;background:rgba(0,0,0,.3);white-space:nowrap;font-size:.72rem;}
+.chip-bar{width:3px;height:12px;border-radius:2px;flex-shrink:0;}
+.tbd{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--mut);opacity:.5;}
+
+/* CHAMPION ROW highlight */
+tr.champ-row td{background:rgba(255,215,0,.04)!important;border-bottom:2px solid rgba(255,215,0,.15);}
+tr.champ-row td:first-child{border-left:3px solid var(--gold);}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;font-family:'Share Tech Mono',monospace;
+  font-size:.58rem;letter-spacing:3px;color:var(--mut);}
+.empty .big{font-size:2.5rem;margin-bottom:12px;opacity:.3;}
+
+/* CLEAR ALL */
+.clear-btn{background:transparent;border:1px solid rgba(244,67,54,.3);border-radius:7px;
+  color:rgba(244,67,54,.5);font-family:'Oswald',sans-serif;font-size:.72rem;letter-spacing:3px;
+  padding:6px 12px;cursor:pointer;transition:all .2s;}
+.clear-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* NOTIFICATION */
+.nf{position:fixed;top:66px;left:50%;transform:translateX(-50%);
+  background:rgba(0,230,118,.12);border:1px solid var(--grn);border-radius:8px;
+  padding:7px 20px;font-family:'Share Tech Mono',monospace;font-size:.62rem;
+  letter-spacing:3px;color:var(--grn);z-index:99;transition:opacity .4s;
+  white-space:nowrap;pointer-events:none;}
+.nf.h{opacity:0;}
+</style>
+</head>
+<body>
+
+<div class="nf h" id="nf"></div>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">🏒 VÝSLEDKY TIPOVAČKY</div>
+    <div class="hdr-sub">STANLEY CUP 2026 · BRACKET CHALLENGE</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="hdr-count" id="cnt">0 tipovačů</span>
+    <button class="clear-btn" onclick="clearAll()">SMAZAT VŠE</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ADD -->
+  <div class="add-box">
+    <div class="lbl">VLOŽ ODKAZ Z TIPOVAČKY</div>
+    <div class="url-row">
+      <textarea id="urlIn" placeholder="Sem vlož odkaz z tipovačky (https://…#n=Jméno&p=…)"></textarea>
+      <button class="btn-add" onclick="addEntry()">PŘIDAT</button>
+    </div>
+    <div class="err" id="err">⚠ Odkaz se nepodařilo načíst. Zkontroluj, zda je správný.</div>
+  </div>
+
+  <!-- TABLE -->
+  <div id="tblWrap"></div>
+
+</div>
+
+<script>
+// ══════════════════════════════
+// TEAM DATA (same as tipovačka)
+// ══════════════════════════════
+const T = {
+  BUF:{n:'Sabres',    c:'Buffalo',      col:'#003087'},
+  BOS:{n:'Bruins',    c:'Boston',       col:'#c9a800'},
+  TB: {n:'Lightning', c:'Tampa Bay',    col:'#0038a8'},
+  MTL:{n:'Canadiens', c:'Montréal',     col:'#AF1E2D'},
+  CAR:{n:'Hurricanes',c:'Carolina',     col:'#CC0000'},
+  OTT:{n:'Senators',  c:'Ottawa',       col:'#C2912C'},
+  PIT:{n:'Penguins',  c:'Pittsburgh',   col:'#c9a800'},
+  PHI:{n:'Flyers',    c:'Philadelphia', col:'#F74902'},
+  COL:{n:'Avalanche', c:'Colorado',     col:'#6F263D'},
+  LAK:{n:'Kings',     c:'L.A.',         col:'#aaaaaa'},
+  DAL:{n:'Stars',     c:'Dallas',       col:'#006847'},
+  MIN:{n:'Wild',      c:'Minnesota',    col:'#154734'},
+  VGK:{n:'Golden Kn.',c:'Vegas',        col:'#B4975A'},
+  UTA:{n:'Mammoth',   c:'Utah',         col:'#2255AA'},
+  EDM:{n:'Oilers',    c:'Edmonton',     col:'#FF4C00'},
+  ANA:{n:'Ducks',     c:'Anaheim',      col:'#B5985A'},
+};
+
+const GAMES = [
+  {id:0,t:['BUF','BOS']},{id:1,t:['TB','MTL']},
+  {id:2,t:['CAR','OTT']},{id:3,t:['PIT','PHI']},
+  {id:4,t:['COL','LAK']},{id:5,t:['DAL','MIN']},
+  {id:6,t:['VGK','UTA']},{id:7,t:['EDM','ANA']},
+  {id:8, s:[0,1]},{id:9, s:[2,3]},{id:10,s:[4,5]},{id:11,s:[6,7]},
+  {id:12,s:[8,9]},{id:13,s:[10,11]},{id:14,s:[12,13]},
+];
+
+const COL_LABELS = [
+  'ATL R1 A','ATL R1 B','MET R1 A','MET R1 B',
+  'CEN R1 A','CEN R1 B','PAC R1 A','PAC R1 B',
+  'Atlantic R2','Metro R2','Central R2','Pacific R2',
+  'East Final','West Final','🏆 Stanley Cup'
+];
+
+const SECTIONS = [
+  {label:'EASTERN CONFERENCE – R1', ids:[0,1,2,3]},
+  {label:'EASTERN CONFERENCE – R2 + FINAL', ids:[8,9,12]},
+  {label:'WESTERN CONFERENCE – R1', ids:[4,5,6,7]},
+  {label:'WESTERN CONFERENCE – R2 + FINAL', ids:[10,11,13]},
+  {label:'STANLEY CUP FINAL', ids:[14]},
+];
+
+// ══════════════════════════════
+// DECODE
+// ══════════════════════════════
+function decPicks(str) {
+  const p = str.split('_');
+  if (p.length!==2) return null;
+  const mask=parseInt(p[0],36), bits=parseInt(p[1],36);
+  if (isNaN(mask)||isNaN(bits)) return null;
+  const pk = new Array(15).fill(null);
+  for (let i=0;i<15;i++)
+    pk[i] = (mask&(1<<i)) ? ((bits&(1<<i))?1:0) : null;
+  return pk;
+}
+
+function gTeams(id, pk) {
+  const g = GAMES[id];
+  return g.t ? [...g.t] : [gWin(g.s[0],pk), gWin(g.s[1],pk)];
+}
+function gWin(id, pk) {
+  if (pk[id]==null) return null;
+  return gTeams(id,pk)[pk[id]];
+}
+
+function parseUrl(url) {
+  try {
+    const hash = url.includes('#') ? url.split('#')[1] : url;
+    const q = new URLSearchParams(hash);
+    const n = q.get('n'), p = q.get('p');
+    if (!p) return null;
+    const pk = decPicks(p);
+    if (!pk) return null;
+    return { name: n ? decodeURIComponent(n) : '?', pk };
+  } catch(e) { return null; }
+}
+
+// ══════════════════════════════
+// STORAGE
+// ══════════════════════════════
+const KEY = 'sc2026_entries';
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)||'[]'); } catch(e){ return []; }
+}
+function save(entries) {
+  localStorage.setItem(KEY, JSON.stringify(entries));
+}
+
+// ══════════════════════════════
+// ADD ENTRY
+// ══════════════════════════════
+function addEntry() {
+  const raw = document.getElementById('urlIn').value.trim();
+  const err = document.getElementById('err');
+  err.style.display='none';
+  if (!raw) return;
+
+  // support multiple URLs pasted at once (newline separated)
+  const urls = raw.split(/\s+/).filter(Boolean);
+  const entries = load();
+  let added = 0;
+
+  for (const url of urls) {
+    const parsed = parseUrl(url);
+    if (!parsed) { err.style.display='block'; continue; }
+    // avoid exact duplicates
+    const dup = entries.some(e => e.name===parsed.name && JSON.stringify(e.pk)===JSON.stringify(parsed.pk));
+    if (!dup) { entries.push(parsed); added++; }
+  }
+
+  if (added > 0) {
+    save(entries);
+    document.getElementById('urlIn').value='';
+    render();
+    showNf('✓ PŘIDÁNO ' + added + ' TIP'+(added===1?'':'Ů'));
+  }
+}
+
+function delEntry(idx) {
+  const entries = load();
+  entries.splice(idx,1);
+  save(entries);
+  render();
+}
+
+function clearAll() {
+  if (!confirm('Smazat všechny záznamy?')) return;
+  localStorage.removeItem(KEY);
+  render();
+}
+
+// ══════════════════════════════
+// RENDER
+// ══════════════════════════════
+function chip(teamId) {
+  if (!teamId) return '<span class="tbd">—</span>';
+  const info = T[teamId];
+  if (!info) return '<span class="tbd">?</span>';
+  return '<span class="chip"><span class="chip-bar" style="background:'+info.col+'"></span>'+info.n+'</span>';
+}
+
+function render() {
+  const entries = load();
+  document.getElementById('cnt').textContent = entries.length + ' tipovač'+(entries.length===1?'':'ů');
+  const wrap = document.getElementById('tblWrap');
+
+  if (entries.length===0) {
+    wrap.innerHTML='<div class="empty"><div class="big">🏒</div>Zatím žádné tipy.<br>Vlož odkaz z tipovačky výše.</div>';
+    return;
+  }
+
+  // Pre-compute wins
+  const wins = entries.map(e => {
+    const w = [];
+    for(let i=0;i<15;i++) w.push(gWin(i, e.pk));
+    return w;
+  });
+
+  let html='<div class="tbl-wrap"><table>';
+
+  // HEADER
+  html+='<thead><tr>';
+  html+='<th class="name-col">TIPOVAČ</th>';
+  for(const sec of SECTIONS) {
+    for(const id of sec.ids) {
+      html+='<th class="rnd-col">'+COL_LABELS[id]+'</th>';
+    }
+  }
+  html+='</tr></thead><tbody>';
+
+  // ROWS
+  entries.forEach((e, idx) => {
+    const isChamp = wins[idx][14] != null;
+    html+='<tr'+(isChamp?' class="champ-row"':'')+' data-idx="'+idx+'">';
+    html+='<td class="name-col">'+escHtml(e.name)+
+      '<button class="del-btn" onclick="delEntry('+idx+')" title="Odstranit">✕</button></td>';
+    for(const sec of SECTIONS) {
+      for(const id of sec.ids) {
+        html+='<td>'+chip(wins[idx][id])+'</td>';
+      }
+    }
+    html+='</tr>';
+  });
+
+  html+='</tbody></table></div>';
+  wrap.innerHTML=html;
+}
+
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showNf(msg) {
+  const n=document.getElementById('nf'); n.textContent=msg;
+  n.classList.remove('h');
+  clearTimeout(n._t); n._t=setTimeout(()=>n.classList.add('h'),2200);
+}
+
+// Enter to add
+document.getElementById('urlIn').addEventListener('keydown', e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addEntry();}
+});
+
+render();
+</script>
+</body>
+</html>
