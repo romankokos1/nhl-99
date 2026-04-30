@@ -207,6 +207,152 @@ input[type=text]:focus{border-color:var(--neon);}
   letter-spacing:3px;color:var(--grn);z-index:99;transition:opacity .4s;
   white-space:nowrap;pointer-events:none;}
 .nf.h{opacity:0;}
+
+/* ── RESULTS BUTTON ── */
+.tab.res-tab{border-color:rgba(255,215,0,.5);color:rgba(255,215,0,.8);padding:5px 9px;}
+.tab.res-tab:hover{background:rgba(255,215,0,.1);border-color:var(--gold);color:var(--gold);}
+
+/* ══ RESULTS OVERLAY ══ */
+.ov{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:#050d1a;}
+.ov.on{display:flex;}
+.ov-hdr{background:#091828;border-bottom:1px solid #152e50;padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;}
+.ov-title{font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:4px;color:var(--gold);}
+.ov-close{background:rgba(255,255,255,.05);border:1px solid #152e50;border-radius:7px;
+  color:var(--ice);font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:2px;
+  padding:6px 12px;cursor:pointer;transition:all .15s;}
+.ov-close:hover{border-color:var(--neon);color:var(--neon);}
+.ov-tabs{display:flex;background:#091828;border-bottom:1px solid #152e50;flex-shrink:0;}
+.ov-tab{flex:1;padding:9px 8px;font-family:'Share Tech Mono',monospace;font-size:.5rem;
+  letter-spacing:3px;text-align:center;cursor:pointer;color:#3a6080;
+  border-bottom:2px solid transparent;transition:all .15s;background:transparent;
+  border-top:none;border-left:none;border-right:none;}
+.ov-tab:hover{color:var(--ice);}
+.ov-tab.act{color:var(--neon);border-bottom-color:var(--neon);}
+.ov-tab.gold-t.act{color:var(--gold);border-bottom-color:var(--gold);}
+.ov-body{flex:1;overflow-y:auto;padding:16px 14px 30px;}
+.ov-inner{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+
+/* PANEL CARDS */
+.pc{background:#091828;border:1px solid #152e50;border-radius:12px;padding:16px;}
+.pc-title{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:4px;
+  color:var(--neon);margin-bottom:10px;}
+.pc-title.gold{color:var(--gold);}
+
+/* Picks collection */
+.url-row2{display:flex;gap:8px;align-items:flex-start;}
+.url-area2{flex:1;background:rgba(0,0,0,.35);border:1px solid #152e50;border-radius:8px;
+  padding:9px 12px;color:var(--ice);font-family:'Share Tech Mono',monospace;font-size:.58rem;
+  outline:none;resize:none;height:56px;line-height:1.5;transition:border-color .2s;}
+.url-area2:focus{border-color:var(--neon);}
+.url-area2::placeholder{color:#3a6080;opacity:.7;}
+.btn-add2{padding:0 16px;background:linear-gradient(135deg,#003f7f,#005faa);border:1px solid var(--neon);
+  border-radius:8px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;
+  cursor:pointer;transition:all .2s;white-space:nowrap;align-self:stretch;}
+.btn-add2:hover{background:linear-gradient(135deg,#005faa,var(--neon));color:#050d1a;}
+.picks-list{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
+.pick-item{display:flex;align-items:center;gap:10px;padding:7px 12px;
+  background:rgba(0,0,0,.2);border:1px solid #152e50;border-radius:8px;}
+.pick-name{flex:1;font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--ice);}
+.pick-meta{font-family:'Share Tech Mono',monospace;font-size:.48rem;color:#3a6080;}
+.pick-del{background:none;border:none;color:#3a6080;cursor:pointer;font-size:.75rem;
+  padding:2px 6px;border-radius:3px;transition:color .12s;}
+.pick-del:hover{color:#f44336;}
+
+/* Admin lock */
+.adm-locked{display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 16px;}
+.adm-locked p{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:3px;color:#3a6080;}
+.pw-row2{display:flex;gap:8px;width:100%;max-width:300px;}
+input.pw-inp{flex:1;background:rgba(0,0,0,.35);border:1px solid #152e50;border-radius:8px;
+  padding:9px 12px;color:var(--ice);font-family:'Share Tech Mono',monospace;
+  font-size:.7rem;letter-spacing:4px;outline:none;transition:border-color .2s;}
+input.pw-inp:focus{border-color:var(--gold);}
+.btn-unlock2{padding:9px 16px;background:rgba(255,215,0,.08);border:1px solid var(--gold);
+  border-radius:8px;color:var(--gold);font-family:'Share Tech Mono',monospace;
+  font-size:.6rem;letter-spacing:3px;cursor:pointer;transition:all .2s;}
+.btn-unlock2:hover{background:rgba(255,215,0,.18);}
+.pw-err2{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:#f44336;display:none;letter-spacing:2px;}
+.adm-panel{display:none;}
+.adm-panel.on{display:flex;flex-direction:column;gap:12px;}
+.adm-sec{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:5px;
+  color:var(--gold);padding-bottom:4px;border-bottom:1px solid rgba(255,215,0,.2);margin-bottom:8px;opacity:.7;}
+
+/* Admin bracket slots */
+.adm-bracket-group{display:flex;flex-direction:column;gap:4px;}
+.adm-card{background:rgba(0,0,0,.2);border:1px solid #152e50;border-radius:8px;overflow:hidden;}
+.adm-card-lbl{font-family:'Share Tech Mono',monospace;font-size:.42rem;letter-spacing:2px;
+  color:var(--neon);opacity:.3;text-align:center;padding:4px;border-bottom:1px solid #152e50;}
+.adm-slot{display:flex;align-items:center;gap:7px;padding:6px 10px;height:34px;
+  cursor:pointer;transition:background .1s;}
+.adm-slot:hover{background:rgba(255,215,0,.04);}
+.adm-slot.win{background:rgba(0,230,118,.07);}
+.adm-slot.elim{opacity:.25;}
+.adm-slot+.adm-slot{border-top:1px solid #152e50;}
+.adm-sbar{width:3px;height:14px;border-radius:2px;flex-shrink:0;}
+.adm-sflag{font-size:.88rem;flex-shrink:0;}  
+.adm-snm{flex:1;font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--ice);}
+.adm-ck{font-size:.6rem;opacity:0;color:#00e676;}
+.adm-slot.win .adm-ck{opacity:1;}
+.adm-stbd{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:#3a6080;opacity:.5;}
+.btn-save2{width:100%;padding:12px;background:rgba(255,215,0,.08);border:1px solid var(--gold);
+  border-radius:9px;color:var(--gold);font-family:'Share Tech Mono',monospace;
+  font-size:.7rem;letter-spacing:5px;cursor:pointer;transition:all .2s;margin-top:4px;}
+.btn-save2:hover{background:rgba(255,215,0,.18);}
+
+/* Leaderboard */
+.lb-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table.lb-table{width:100%;border-collapse:collapse;min-width:500px;}
+.lb-table th{padding:8px 10px;font-family:'Share Tech Mono',monospace;font-size:.46rem;
+  letter-spacing:3px;color:var(--neon);opacity:.4;text-align:center;
+  border-bottom:1px solid #1e3f68;white-space:nowrap;font-weight:400;}
+.lb-table th.nm-th{text-align:left;min-width:110px;position:sticky;left:0;background:#091828;z-index:5;}
+.lb-table td{padding:8px 10px;border-bottom:1px solid rgba(21,46,80,.5);text-align:center;vertical-align:middle;}
+.lb-table td.nm-td{text-align:left;position:sticky;left:0;background:#050d1a;z-index:4;
+  font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:2px;cursor:pointer;}
+.lb-table tr:hover td{background:rgba(0,208,255,.025);}
+.lb-table tr:hover td.nm-td{background:rgba(0,208,255,.04);}
+.lb-table tr.rank-1 td.nm-td{color:var(--gold);}
+.lb-table tr.rank-2 td.nm-td{color:#888;}
+.lb-table tr.rank-3 td.nm-td{color:#cd7f32;}
+.pts-cell{display:inline-flex;align-items:center;justify-content:center;gap:4px;}
+.pts-val{font-family:'Share Tech Mono',monospace;font-size:.8rem;color:var(--neon);min-width:22px;text-align:center;}
+.pts-val.zero{color:#3a6080;}
+.pts-adj{display:flex;flex-direction:column;gap:1px;}
+.adj-btn{background:rgba(0,208,255,.05);border:1px solid #152e50;border-radius:2px;
+  color:#3a6080;font-size:.45rem;width:15px;height:11px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0;transition:all .1s;line-height:1;}
+.adj-btn.plus:hover{border-color:#00e676;color:#00e676;}
+.adj-btn.minus:hover{border-color:#f44336;color:#f44336;}
+.pts-total{font-family:'Share Tech Mono',monospace;font-size:.9rem;color:var(--gold);}
+.no-real{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:3px;
+  color:#3a6080;text-align:center;padding:30px;}
+
+/* Detail panel */
+.lb-table tr.det-row td{padding:0;border-bottom:1px solid #1e3f68;}
+.det-panel{padding:12px 14px 14px;background:rgba(0,0,0,.25);}
+.det-sec{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:5px;
+  color:var(--neon);opacity:.4;padding-bottom:3px;border-bottom:1px solid #152e50;margin:8px 0 5px;}
+.det-sec:first-child{margin-top:0;}
+.det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:3px;}
+.det-row{display:flex;align-items:center;gap:6px;padding:4px 8px;
+  background:rgba(0,0,0,.2);border:1px solid #152e50;border-radius:5px;border-left:3px solid #152e50;}
+.det-row.ok{border-left-color:#00e676;}
+.det-row.manual{border-left-color:var(--gold);}
+.det-row.no{opacity:.55;}
+.det-q{font-family:'Share Tech Mono',monospace;font-size:.48rem;color:#3a6080;flex-shrink:0;min-width:70px;}
+.det-pick{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--ice);flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.det-real{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:#3a6080;flex-shrink:0;white-space:nowrap;}
+.det-pts{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:2px;}
+.det-pts-val{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--neon);min-width:16px;text-align:center;}
+.det-pts-val.zero{color:#3a6080;}
+.det-pts-val.bonus{color:var(--gold);}
+.det-adj2{display:flex;flex-direction:column;gap:1px;}
+.det-adj-btn{background:rgba(0,0,0,.2);border:1px solid #152e50;border-radius:2px;
+  font-size:.42rem;width:13px;height:10px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;padding:0;line-height:1;transition:all .1s;}
+.det-adj-btn.plus:hover{border-color:#00e676;color:#00e676;}
+.det-adj-btn.minus:hover{border-color:#f44336;color:#f44336;}
 </style>
 </head>
 <body>
@@ -248,6 +394,7 @@ input[type=text]:focus{border-color:var(--neon);}
       <button class="tab act" onclick="goEast()">EAST</button>
       <button class="tab" onclick="goWest()">WEST</button>
       <button class="tab gold-tab" onclick="goFinal()">🏆</button>
+      <button class="tab res-tab" onclick="openResults()">📊</button>
     </div>
   </div>
   <div class="conf-bar">
@@ -283,6 +430,7 @@ input[type=text]:focus{border-color:var(--neon);}
       <button class="tab" onclick="goEast()">EAST</button>
       <button class="tab act" onclick="goWest()">WEST</button>
       <button class="tab gold-tab" onclick="goFinal()">🏆</button>
+      <button class="tab res-tab" onclick="openResults()">📊</button>
     </div>
   </div>
   <div class="conf-bar">
@@ -349,27 +497,113 @@ input[type=text]:focus{border-color:var(--neon);}
   </div>
 </div>
 
+<!-- ══ RESULTS OVERLAY ══ -->
+<div class="ov" id="ovResults">
+  <div class="ov-hdr">
+    <div class="ov-title">🏒 STANLEY CUP 2026 · VÝSLEDKY</div>
+    <button class="ov-close" onclick="closeResults()">✕ ZAVŘÍT</button>
+  </div>
+  <div class="ov-tabs">
+    <button class="ov-tab act" id="ov-tab-picks" onclick="ovTab('picks')">TIPY</button>
+    <button class="ov-tab gold-t" id="ov-tab-admin" onclick="ovTab('admin')">⚙ VÝSLEDKY</button>
+    <button class="ov-tab" id="ov-tab-lb" onclick="ovTab('lb')">🏆 ŽEBŘÍČEK</button>
+  </div>
+  <div class="ov-body">
+    <div class="ov-inner">
+
+      <!-- TIPY -->
+      <div id="ov-picks">
+        <div class="pc">
+          <div class="pc-title">PŘIDEJ TIPY KAMARÁDŮ</div>
+          <div class="url-row2">
+            <textarea class="url-area2" id="ovUrlIn" placeholder="Vlož odkaz z tipovačky (https://...#n=Jméno&p=...) — více najednou na nové řádky"></textarea>
+            <button class="btn-add2" onclick="ovAddPicks()">PŘIDAT</button>
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:#f44336;margin-top:5px;display:none;" id="ovAddErr">⚠ Odkaz se nepodařilo načíst</div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #152e50;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:#3a6080;letter-spacing:3px;margin-bottom:8px;">NEBO IMPORTUJ Z vysledky.html</div>
+            <button onclick="importFromVysledky()" style="width:100%;padding:9px;background:rgba(0,208,255,.06);border:1px solid var(--neon);border-radius:8px;color:var(--neon);font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:3px;cursor:pointer;transition:all .2s;">
+              📥 IMPORTOVAT TIPY ZE SDÍLENÉHO ÚLOŽIŠTĚ
+            </button>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.46rem;color:#3a6080;margin-top:5px;line-height:1.8;">
+              Funguje pokud máš vysledky.html otevřenou ve stejném prohlížeči na stejné doméně (GitHub Pages).
+            </div>
+          </div>
+        </div>
+        <div class="pc">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div class="pc-title" style="margin-bottom:0;" id="picksCountLbl">0 tipovačů</div>
+            <button onclick="ovClearPicks()" style="background:transparent;border:1px solid rgba(244,67,54,.3);border-radius:5px;color:rgba(244,67,54,.6);font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:2px;padding:4px 9px;cursor:pointer;">SMAZAT VŠE</button>
+          </div>
+          <div class="picks-list" id="picksList"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div id="ov-admin" style="display:none;">
+        <div class="pc">
+          <div class="adm-locked" id="admLocked">
+            <p>🔒 ADMIN — SPRÁVNÉ VÝSLEDKY</p>
+            <p>Zadej heslo pro přístup</p>
+            <div class="pw-row2">
+              <input type="password" class="pw-inp" id="admPwInp" placeholder="heslo…" onkeydown="if(event.key==='Enter')admUnlock()">
+              <button class="btn-unlock2" onclick="admUnlock()">VSTOUPIT</button>
+            </div>
+            <div class="pw-err2" id="admPwErr">⚠ Špatné heslo</div>
+            <p style="font-family:'Share Tech Mono',monospace;font-size:.46rem;color:#3a6080;margin-top:6px;">Výchozí: <span style="color:var(--neon);">nhl2026</span></p>
+          </div>
+          <div class="adm-panel" id="admPanel">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+              <div class="pc-title gold" style="margin-bottom:0;">SKUTEČNÉ VÝSLEDKY BRACKETŮ</div>
+              <div style="display:flex;gap:8px;">
+                <button onclick="admChangePw()" style="background:transparent;border:1px solid #1e3f68;border-radius:5px;color:#3a6080;font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:2px;padding:4px 9px;cursor:pointer;">HESLO</button>
+                <button onclick="admLock()" style="background:transparent;border:1px solid rgba(244,67,54,.3);border-radius:5px;color:rgba(244,67,54,.6);font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:2px;padding:4px 9px;cursor:pointer;">ZAMKNOUT</button>
+              </div>
+            </div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:#3a6080;letter-spacing:2px;margin-bottom:12px;line-height:1.9;">
+              R1 = 1b · R2 = 2b · Conf. Final = 4b · Stanley Cup Final = 8b · MAX 32b
+            </div>
+            <div class="adm-sec">ROUND 1 (8 sérií)</div>
+            <div class="adm-bracket-group" id="admR1"></div>
+            <div class="adm-sec" style="margin-top:10px;">ROUND 2 (4 série)</div>
+            <div class="adm-bracket-group" id="admR2"></div>
+            <div class="adm-sec" style="margin-top:10px;">CONFERENCE FINALS</div>
+            <div class="adm-bracket-group" id="admCF"></div>
+            <div class="adm-sec" style="margin-top:10px;">🏆 STANLEY CUP FINAL</div>
+            <div class="adm-bracket-group" id="admSCF"></div>
+            <button class="btn-save2" onclick="admSave()">⚡ ULOŽIT A PŘEPOČÍTAT</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ŽEBŘÍČEK -->
+      <div id="ov-lb" style="display:none;">
+        <div class="pc" id="lbWrap">
+          <div class="no-real">Nejdřív zadej správné výsledky v záložce ⚙ VÝSLEDKY.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════
 // DATA
 // ══════════════════════════════
 const T = {
-  // EAST – Atlantic
   BUF:{n:'Sabres',    c:'Buffalo',      col:'#003087', s:'A1'},
   BOS:{n:'Bruins',    c:'Boston',       col:'#c9a800', s:'A4'},
   TB: {n:'Lightning', c:'Tampa Bay',    col:'#0038a8', s:'A2'},
   MTL:{n:'Canadiens', c:'Montréal',     col:'#AF1E2D', s:'A3'},
-  // EAST – Metropolitan
   CAR:{n:'Hurricanes',c:'Carolina',     col:'#CC0000', s:'M1'},
   OTT:{n:'Senators',  c:'Ottawa',       col:'#C2912C', s:'M4'},
   PIT:{n:'Penguins',  c:'Pittsburgh',   col:'#c9a800', s:'M2'},
   PHI:{n:'Flyers',    c:'Philadelphia', col:'#F74902', s:'M3'},
-  // WEST – Central
   COL:{n:'Avalanche', c:'Colorado',     col:'#6F263D', s:'C1'},
   LAK:{n:'Kings',     c:'Los Angeles',  col:'#aaaaaa', s:'C4'},
   DAL:{n:'Stars',     c:'Dallas',       col:'#006847', s:'C2'},
   MIN:{n:'Wild',      c:'Minnesota',    col:'#154734', s:'C3'},
-  // WEST – Pacific
   VGK:{n:'Golden Kn.',c:'Vegas',        col:'#B4975A', s:'P1'},
   UTA:{n:'Mammoth',   c:'Utah',         col:'#2255AA', s:'P4'},
   EDM:{n:'Oilers',    c:'Edmonton',     col:'#FF4C00', s:'P2'},
@@ -408,12 +642,14 @@ const PICK_LABELS = [
   'East Conference Final','West Conference Final','🏆 Stanley Cup Final'
 ];
 
+const RND_PTS = [1,1,1,1,1,1,1,1, 2,2,2,2, 4,4, 8]; // per game id
+
 let pk = new Array(15).fill(null);
 let nm = '';
 let lastBracketScreen = 'se';
 
 // ══════════════════════════════
-// LOGIC
+// TIPOVAČKA LOGIC
 // ══════════════════════════════
 function gTeams(id) {
   const g = GAMES[id];
@@ -427,8 +663,7 @@ function setPk(id, sl) {
   const ow = gWin(id);
   pk[id] = sl;
   if (ow !== gWin(id)) DS[id].forEach(i => pk[i] = null);
-  renderAll();
-  updProg();
+  renderAll(); updProg();
 }
 
 // ══════════════════════════════
@@ -452,8 +687,7 @@ function shareUrl() {
   return location.href.split('#')[0] + '#n=' + encodeURIComponent(nm) + '&p=' + enc();
 }
 function loadUrl() {
-  const h = location.hash.slice(1);
-  if (!h) return false;
+  const h = location.hash.slice(1); if (!h) return false;
   const q = new URLSearchParams(h);
   const n = q.get('n'), p = q.get('p');
   if (!n && !p) return false;
@@ -563,13 +797,11 @@ function card(id) {
   }
   return gc;
 }
-
 function col(cls, ids) {
   const c = document.createElement('div'); c.className='bc '+cls;
   ids.forEach(id => c.appendChild(card(id)));
   return c;
 }
-
 function conn(type) {
   const d = document.createElement('div'); d.className='bconn';
   const svg = document.createElementNS(NS,'svg');
@@ -583,17 +815,13 @@ function conn(type) {
     svg.appendChild(l);
   }
   if (type==='r12') {
-    // R1(4) → R2(2): left=from R1, right=toward R2
     ln(0,100,20,100);ln(0,300,20,300);ln(20,100,20,300);ln(20,200,30,200);
     ln(0,500,20,500);ln(0,700,20,700);ln(20,500,20,700);ln(20,600,30,600);
   } else if (type==='r2c') {
-    // R2(2) → CF(1)
     ln(0,200,20,200);ln(0,600,20,600);ln(20,200,20,600);ln(20,400,30,400);
   }
   d.appendChild(svg); return d;
 }
-
-// ── EAST bracket ──
 function renderEast() {
   const wr = document.getElementById('bkwe'); if(!wr) return; wr.innerHTML='';
   wr.appendChild(col('r1',[0,1,2,3]));
@@ -602,8 +830,6 @@ function renderEast() {
   wr.appendChild(conn('r2c'));
   wr.appendChild(col('cf',[12]));
 }
-
-// ── WEST bracket ──
 function renderWest() {
   const wr = document.getElementById('bkww'); if(!wr) return; wr.innerHTML='';
   wr.appendChild(col('r1',[4,5,6,7]));
@@ -612,15 +838,9 @@ function renderWest() {
   wr.appendChild(conn('r2c'));
   wr.appendChild(col('cf',[13]));
 }
-
-// ── FINAL screen ──
 function renderFinal() {
   const fw = document.getElementById('fwrap'); if(!fw) return; fw.innerHTML='';
-
-  // Conference winners display
-  const eastW = gWin(12);
-  const westW = gWin(13);
-
+  const eastW = gWin(12), westW = gWin(13);
   const ccs = document.createElement('div'); ccs.className='conf-champs';
   function champBox(title, win) {
     const cc = document.createElement('div'); cc.className='cc';
@@ -633,21 +853,15 @@ function renderFinal() {
     } else {
       t.innerHTML = '<span class="cc-tbd">— tipuj —</span>';
     }
-    cc.appendChild(t);
-    return cc;
+    cc.appendChild(t); return cc;
   }
   const vs = document.createElement('div'); vs.className='vs-sep'; vs.textContent='VS';
   ccs.appendChild(champBox('VÍTĚZ EAST',eastW));
   ccs.appendChild(vs);
   ccs.appendChild(champBox('VÍTĚZ WEST',westW));
   fw.appendChild(ccs);
-
-  // SCF card
   const cw = document.createElement('div'); cw.className='final-card-wrap';
-  cw.appendChild(card(14));
-  fw.appendChild(cw);
-
-  // Champion box
+  cw.appendChild(card(14)); fw.appendChild(cw);
   const cb = document.createElement('div'); cb.className='champ-box';
   const champion = gWin(14);
   if (champion) {
@@ -660,27 +874,339 @@ function renderFinal() {
   }
   fw.appendChild(cb);
 }
-
-function renderAll() {
-  renderEast();
-  renderWest();
-  renderFinal();
-}
-
-// ══════════════════════════════
-// PICK LIST (Share Screen)
-// ══════════════════════════════
+function renderAll() { renderEast(); renderWest(); renderFinal(); }
 function renderPL() {
   const el = document.getElementById('prl'); el.innerHTML='';
   for (let i=0; i<15; i++) {
     const w = gWin(i);
     const r = document.createElement('div'); r.className='pr';
-    r.innerHTML=
-      '<span class="pr-r">'+PICK_LABELS[i]+'</span>'+
+    r.innerHTML='<span class="pr-r">'+PICK_LABELS[i]+'</span>'+
       '<span class="pr-t" style="color:'+(w?T[w].col:'var(--mut)')+'">'+
       (w?T[w].c+' '+T[w].n:'—')+'</span>';
     el.appendChild(r);
   }
+}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ══════════════════════════════
+// RESULTS OVERLAY — STORAGE
+// ══════════════════════════════
+const RK_PICKS='sc2026_picks', RK_REAL='sc2026_real', RK_PW='sc2026_pw', RK_ADJ='sc2026_adj';
+function rLoadPicks(){try{return JSON.parse(localStorage.getItem(RK_PICKS)||'[]');}catch{return[];}}
+function rSavePicks(a){localStorage.setItem(RK_PICKS,JSON.stringify(a));}
+function rLoadReal(){try{const v=localStorage.getItem(RK_REAL);return v?JSON.parse(v):null;}catch{return null;}}
+function rSaveReal(r){localStorage.setItem(RK_REAL,JSON.stringify(r));}
+function rGetPw(){return localStorage.getItem(RK_PW)||'nhl2026';}
+function rLoadAdj(){try{return JSON.parse(localStorage.getItem(RK_ADJ)||'{}');}catch{return{};}}
+function rSaveAdj(a){localStorage.setItem(RK_ADJ,JSON.stringify(a));}
+
+// ══════════════════════════════
+// OVERLAY
+// ══════════════════════════════
+function openResults(){document.getElementById('ovResults').classList.add('on');ovTab('picks');}
+function closeResults(){document.getElementById('ovResults').classList.remove('on');}
+function ovTab(t){
+  ['picks','admin','lb'].forEach(id=>{
+    document.getElementById('ov-tab-'+id).classList.toggle('act',id===t);
+    document.getElementById('ov-'+id).style.display=id===t?'':'none';
+  });
+  if(t==='picks') renderPicksList();
+  if(t==='admin') renderAdmPanel();
+  if(t==='lb')    renderLB();
+}
+
+// ── PICKS ──
+function ovAddPicks(){
+  const raw=document.getElementById('ovUrlIn').value.trim();
+  const errEl=document.getElementById('ovAddErr'); errEl.style.display='none';
+  if(!raw) return;
+  const picks=rLoadPicks(); let added=0;
+  raw.split(/[\n\r]+/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
+    const p=parseTipUrl(line);
+    if(!p){errEl.style.display='block';return;}
+    if(!picks.some(x=>x.name===p.name&&x.enc===p.enc)){picks.push(p);added++;}
+  });
+  if(added>0){rSavePicks(picks);document.getElementById('ovUrlIn').value='';showNf('✓ PŘIDÁNO '+added);renderPicksList();}
+}
+function parseTipUrl(url){
+  try{
+    const hash=url.includes('#')?url.split('#')[1]:url;
+    const q=new URLSearchParams(hash);
+    const n=q.get('n'), p=q.get('p'); if(!p) return null;
+    // decode picks
+    const parts=p.split('_'); if(parts.length!==2) return null;
+    const mask=parseInt(parts[0],36), bits=parseInt(parts[1],36);
+    if(isNaN(mask)||isNaN(bits)) return null;
+    const pickArr=new Array(15).fill(null);
+    for(let i=0;i<15;i++) pickArr[i]=(mask&(1<<i))?((bits&(1<<i))?1:0):null;
+    return{name:n?decodeURIComponent(n):'?', picks:pickArr, enc:p};
+  }catch{return null;}
+}
+function ovDelPick(i){const p=rLoadPicks();p.splice(i,1);rSavePicks(p);renderPicksList();}
+function ovClearPicks(){if(!confirm('Smazat vše?'))return;localStorage.removeItem(RK_PICKS);localStorage.removeItem(RK_ADJ);renderPicksList();}
+
+function importFromVysledky(){
+  // vysledky.html stores entries under 'sc2026_entries' as [{name, pk: number[]}]
+  let raw;
+  try{ raw=localStorage.getItem('sc2026_entries'); }catch(e){ raw=null; }
+  if(!raw){ showNf('⚠ sc2026_entries nenalezeno'); return; }
+  let entries;
+  try{ entries=JSON.parse(raw); }catch(e){ showNf('⚠ Chyba při čtení dat'); return; }
+  if(!entries||!entries.length){ showNf('⚠ Žádné tipy k importu'); return; }
+  const picks=rLoadPicks(); let added=0;
+  entries.forEach(e=>{
+    // vysledky uses {name, pk} — pk is already decoded number[]
+    const pickArr=e.pk||e.picks;
+    if(!pickArr||pickArr.length<15) return;
+    // re-encode to get enc string
+    let mask=0,bits=0;
+    for(let i=0;i<15;i++){
+      if(pickArr[i]!=null){mask|=(1<<i);if(pickArr[i])bits|=(1<<i);}
+    }
+    const enc=mask.toString(36)+'_'+bits.toString(36);
+    if(!picks.some(x=>x.name===e.name&&x.enc===enc)){
+      picks.push({name:e.name,picks:pickArr,enc});
+      added++;
+    }
+  });
+  if(added>0){rSavePicks(picks);showNf('✓ IMPORTOVÁNO '+added+' tipovačů');renderPicksList();}
+  else showNf('⚠ Vše už bylo přidáno nebo žádné nové tipy');
+}
+function renderPicksList(){
+  const picks=rLoadPicks();
+  document.getElementById('picksCountLbl').textContent=picks.length+' tipovač'+(picks.length===1?'':'ů');
+  const el=document.getElementById('picksList'); el.innerHTML='';
+  if(!picks.length){el.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:.55rem;color:#3a6080;letter-spacing:2px;padding:10px 0;">Zatím nikdo.</div>';return;}
+  picks.forEach((p,i)=>{
+    const filled=p.picks.filter(x=>x!=null).length;
+    const item=document.createElement('div');item.className='pick-item';
+    item.innerHTML=`<span class="pick-name">${esc(p.name)}</span>
+      <span class="pick-meta">${filled}/15 tipů</span>
+      <button class="pick-del" onclick="ovDelPick(${i})">✕</button>`;
+    el.appendChild(item);
+  });
+}
+
+// ── ADMIN ──
+let admUnlocked=false, AR=null;
+
+// AR = array of 15 picks (0/1/null) representing real results
+function admUnlock(){
+  if(document.getElementById('admPwInp').value===rGetPw()){
+    admUnlocked=true;
+    document.getElementById('admLocked').style.display='none';
+    document.getElementById('admPanel').classList.add('on');
+    initAR(); renderAdmPanel();
+  }else{document.getElementById('admPwErr').style.display='block';}
+}
+function admLock(){admUnlocked=false;document.getElementById('admLocked').style.display='flex';document.getElementById('admPanel').classList.remove('on');}
+function admChangePw(){const v=prompt('Nové heslo:','');if(!v)return;localStorage.setItem(RK_PW,v);showNf('✓ HESLO ZMĚNĚNO');}
+
+function initAR(){
+  const saved=rLoadReal();
+  AR=saved?JSON.parse(JSON.stringify(saved)):new Array(15).fill(null);
+}
+
+// AR-based winner resolution (same logic as tipovačka but uses AR array)
+function arTeams(id){
+  const g=GAMES[id];
+  if(g.t) return [...g.t];
+  return [arWin(g.s[0]),arWin(g.s[1])];
+}
+function arWin(id){
+  if(AR[id]==null) return null;
+  return arTeams(id)[AR[id]];
+}
+function setAR(id,sl){
+  AR[id]=sl;
+  // clear downstream
+  DS[id].forEach(i=>AR[i]=null);
+  renderAdmPanel();
+}
+
+function renderAdmPanel(){
+  if(!admUnlocked) return;
+  renderAdmGroup('admR1',[0,1,2,3,4,5,6,7]);
+  renderAdmGroup('admR2',[8,9,10,11]);
+  renderAdmGroup('admCF',[12,13]);
+  renderAdmGroup('admSCF',[14]);
+}
+function renderAdmGroup(elId, ids){
+  const el=document.getElementById(elId); if(!el) return; el.innerHTML='';
+  ids.forEach(id=>{
+    const g=GAMES[id], ts=arTeams(id), w=AR[id]!=null?ts[AR[id]]:null;
+    const card=document.createElement('div'); card.className='adm-card';
+    const lbl=document.createElement('div'); lbl.className='adm-card-lbl';
+    lbl.textContent=id===14?'🏆 STANLEY CUP FINAL':g.l;
+    card.appendChild(lbl);
+    for(let sl=0;sl<2;sl++){
+      const tm=ts[sl];
+      const slot=document.createElement('div');
+      if(!tm){
+        slot.className='adm-slot'; slot.innerHTML='<span class="adm-stbd">TBD</span>';
+      }else{
+        const info=T[tm], isW=w===tm, isL=w&&w!==tm;
+        slot.className='adm-slot'+(isW?' win':'')+(isL?' elim':'');
+        slot.innerHTML=`<div class="adm-sbar" style="background:${info.col}"></div>
+          <span class="adm-sflag">${info.col?'':''}</span>
+          <span class="adm-snm">${info.c} ${info.n}</span>
+          <span class="adm-ck">✓</span>`;
+        slot.addEventListener('click',()=>setAR(id,sl));
+      }
+      card.appendChild(slot);
+    }
+    el.appendChild(card);
+  });
+}
+function admSave(){
+  rSaveReal(AR);
+  showNf('✓ ULOŽENO');
+  ovTab('lb');
+}
+
+// ══════════════════════════════
+// SCORING
+// ══════════════════════════════
+// Returns array of 15 detail rows for a pick vs real
+function scoreDetail(pickArr, realArr){
+  const rows=[];
+  // We need to resolve winners using realArr, not global AR
+  function rTeams(id){
+    const g=GAMES[id];
+    if(g.t) return [...g.t];
+    return [rWin(g.s[0]),rWin(g.s[1])];
+  }
+  function rWin(id){
+    if(realArr[id]==null) return null;
+    return rTeams(id)[realArr[id]];
+  }
+  function pWin(id){
+    if(pickArr[id]==null) return null;
+    return rTeams(id)[pickArr[id]]; // use real team resolution to get team codes
+  }
+
+  for(let id=0;id<15;id++){
+    const rw=rWin(id), pw=pWin(id);
+    const played=rw!==null;
+    const correct=played&&pw!==null&&rw===pw;
+    const pts=correct?RND_PTS[id]:0;
+    rows.push({id, label:PICK_LABELS[id],
+      pickVal:pw?T[pw]?T[pw].c+' '+T[pw].n:pw:'—',
+      realVal:rw?T[rw]?T[rw].c+' '+T[rw].n:rw:'?',
+      autoPts:pts, maxPts:RND_PTS[id], played,
+      section:id<8?'r1':id<12?'r2':id<14?'cf':'scf'});
+  }
+  return rows;
+}
+
+function totalFromDetail(rows,adjMap){
+  let r1=0,r2=0,cf=0,scf=0;
+  rows.forEach(r=>{
+    const pts=(r.autoPts||0)+(adjMap[r.id]||0);
+    if(r.section==='r1') r1+=pts;
+    else if(r.section==='r2') r2+=pts;
+    else if(r.section==='cf') cf+=pts;
+    else scf+=pts;
+  });
+  return{r1,r2,cf,scf,total:r1+r2+cf+scf};
+}
+
+// ══════════════════════════════
+// LEADERBOARD
+// ══════════════════════════════
+let openDetailIdx=null;
+
+function renderLB(){
+  const real=rLoadReal(), picks=rLoadPicks();
+  const el=document.getElementById('lbWrap');
+  if(!real){el.innerHTML='<div class="no-real">Nejdřív zadej správné výsledky v záložce ⚙ VÝSLEDKY.</div>';return;}
+  if(!picks.length){el.innerHTML='<div class="no-real">Přidej tipy kamarádů v záložce TIPY.</div>';return;}
+  const adj=rLoadAdj();
+  const scored=picks.map((p,idx)=>{
+    const rows=scoreDetail(p.picks,real);
+    const adjMap=adj[idx]||{};
+    const secs=totalFromDetail(rows,adjMap);
+    return{name:p.name,secs,rows,adjMap,idx};
+  });
+  scored.sort((a,b)=>b.secs.total-a.secs.total);
+  const medals=['🥇','🥈','🥉'];
+  const secKeys=['r1','r2','cf','scf'];
+  const secLabels=['R1','R2','CONF FINAL','SCF'];
+  const maxPts=[8,8,8,8];
+  let html=`<div class="pc-title" style="margin-bottom:10px;">🏆 ŽEBŘÍČEK · STANLEY CUP 2026</div>
+  <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:#3a6080;letter-spacing:2px;margin-bottom:12px;line-height:1.9;">
+    Klikni na jméno → detail · ± = manuální korekce · R1=1b R2=2b CF=4b SCF=8b
+  </div>
+  <div class="lb-scroll"><table class="lb-table">
+  <thead><tr><th class="nm-th">JMÉNO</th>`;
+  secLabels.forEach((l,i)=>html+=`<th>${l}<br><span style="font-weight:400;font-size:.42rem;opacity:.5;">max ${maxPts[i]}</span></th>`);
+  html+=`<th>CELKEM</th></tr></thead><tbody>`;
+
+  scored.forEach((row,rank)=>{
+    const isOpen=openDetailIdx===row.idx;
+    html+=`<tr class="${rank<3?'rank-'+(rank+1):''}">
+      <td class="nm-td" onclick="toggleDetail(${row.idx})">
+        ${rank<3?medals[rank]+' ':''}${esc(row.name)} <span style="font-size:.55rem;opacity:.35;">${isOpen?'▲':'▼'}</span>
+      </td>`;
+    secKeys.forEach(k=>{
+      const pts=row.secs[k];
+      html+=`<td><div class="pts-cell"><span class="pts-val ${pts===0?'zero':''}">${pts}</span></div></td>`;
+    });
+    html+=`<td><span class="pts-total">${row.secs.total}</span></td></tr>`;
+    if(isOpen){
+      html+=`<tr class="det-row"><td colspan="6">
+        <div class="det-panel" id="det-${row.idx}">${buildDetailHTML(row.rows,row.adjMap,row.idx)}</div>
+      </td></tr>`;
+    }
+  });
+  html+=`</tbody></table></div>`;
+  el.innerHTML=html;
+}
+
+function buildDetailHTML(rows,adjMap,pickIdx){
+  const secMeta={
+    r1:{label:'ROUND 1',color:'var(--neon)'},
+    r2:{label:'ROUND 2',color:'var(--neon)'},
+    cf:{label:'CONFERENCE FINALS',color:'var(--gold)'},
+    scf:{label:'🏆 STANLEY CUP FINAL',color:'var(--gold)'}
+  };
+  let html='', lastSec='';
+  rows.forEach(r=>{
+    if(r.section!==lastSec){
+      if(lastSec) html+=`</div>`;
+      const m=secMeta[r.section];
+      html+=`<div class="det-sec" style="color:${m.color};border-bottom-color:${m.color};opacity:.55;">${m.label}</div><div class="det-grid">`;
+      lastSec=r.section;
+    }
+    const manAdj=adjMap[r.id]||0, totalPts=(r.autoPts||0)+manAdj;
+    const rowCls=manAdj!==0?'manual':r.autoPts>0?'ok':'no';
+    html+=`<div class="det-row ${rowCls}">
+      <span class="det-q">${esc(r.label)}</span>
+      <span class="det-pick" title="${esc(r.pickVal)}">${esc(r.pickVal)}</span>
+      <span class="det-real">→ ${esc(r.realVal)}</span>
+      <div class="det-pts">
+        <span class="det-pts-val ${totalPts===0?'zero':manAdj!==0?'bonus':''}">${totalPts}</span>
+        <div class="det-adj2">
+          <button class="det-adj-btn plus" onclick="adjQ(${pickIdx},${r.id},1)">▲</button>
+          <button class="det-adj-btn minus" onclick="adjQ(${pickIdx},${r.id},-1)">▼</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  if(lastSec) html+=`</div>`;
+  return html;
+}
+
+function toggleDetail(pickIdx){
+  openDetailIdx=openDetailIdx===pickIdx?null:pickIdx;
+  renderLB();
+  if(openDetailIdx===pickIdx) setTimeout(()=>{const el=document.getElementById('det-'+pickIdx);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
+}
+function adjQ(pickIdx,gameId,delta){
+  const adj=rLoadAdj();
+  if(!adj[pickIdx]) adj[pickIdx]={};
+  adj[pickIdx][gameId]=(adj[pickIdx][gameId]||0)+delta;
+  rSaveAdj(adj); renderLB();
 }
 
 // ══════════════════════════════
@@ -691,7 +1217,6 @@ function renderPL() {
     if (e.key==='Enter') start();
   });
   document.getElementById('startBtn').addEventListener('click', start);
-
   if (loadUrl()) {
     ['e','w','f'].forEach(k => {
       const el = document.getElementById('bkn-'+k);
