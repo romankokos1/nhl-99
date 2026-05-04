@@ -2,378 +2,506 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Plán výletu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Výlet</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --ink:#18180f;--muted:#6b6b60;--faint:#eceade;--paper:#f6f4ed;
-  --white:#fff;--accent:#bf4e1a;
-  --green:#2a6040;--green-bg:#e6f2ec;
-  --blue:#1a3f70;--blue-bg:#e3edf7;
-  --amber:#8a5010;--amber-bg:#faf0df;
-  --line:#ddd9cf;--shadow:0 2px 16px rgba(0,0,0,.09);
-  --r:10px;
+  --navy:#1b2d45;--navy2:#243750;--cream:#f4f0e8;--paper:#faf8f4;
+  --coral:#d95f35;--coral2:#c24d22;--sage:#3a6b52;--sage2:#2d5340;
+  --gold:#c49a2a;--muted:#7a7060;--line:#e0dbd0;--white:#fff;
+  --shadow:0 2px 20px rgba(27,45,69,.1);--shadow2:0 8px 40px rgba(27,45,69,.18);
+  --r:14px;--rb:20px;
 }
-html{font-size:15px}
-body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+html{font-size:15px;-webkit-font-smoothing:antialiased}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);min-height:100vh;overflow-x:hidden}
 
-/* ── HEADER ─────────────────────────────────────── */
-header{background:var(--ink);color:#fff;padding:1.4rem 2rem;display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.h-left{flex:1;min-width:0}
-.trip-name{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:700;background:transparent;border:none;border-bottom:1.5px solid rgba(255,255,255,.2);color:#fff;outline:none;width:100%;max-width:420px;padding:0 0 3px;letter-spacing:-.01em}
-.trip-name::placeholder{color:rgba(255,255,255,.28)}
-.trip-name:focus{border-bottom-color:rgba(255,255,255,.6)}
-.h-meta{display:flex;align-items:center;gap:10px;margin-top:5px;font-size:13px;color:rgba(255,255,255,.45)}
-.h-meta input[type=date]{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
-.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
-.h-stats{font-size:12px;color:rgba(255,255,255,.45);text-align:right;line-height:1.8}
-.h-stats strong{color:#fff}
-.h-btns{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.hbtn{padding:6px 13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;color:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;white-space:nowrap}
+/* ══ HEADER ══════════════════════════════════════════ */
+.hdr{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  color:#fff;padding:1.5rem 1.5rem 1.25rem;
+  position:relative;overflow:hidden
+}
+.hdr::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events:none
+}
+.hdr-inner{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.hdr-left{flex:1;min-width:0}
+.trip-input{
+  font-family:'Lora',serif;font-size:1.65rem;font-weight:600;
+  background:transparent;border:none;color:#fff;outline:none;
+  width:100%;padding:0;letter-spacing:-.01em;line-height:1.2
+}
+.trip-input::placeholder{color:rgba(255,255,255,.3)}
+.hdr-meta{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.hdr-date{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;padding:1px 0}
+.hdr-stats{font-size:12px;color:rgba(255,255,255,.45);margin-top:2px}
+.hdr-stats strong{color:rgba(255,255,255,.85)}
+.hdr-btns{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.hbtn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 13px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);border-radius:30px;
+  color:rgba(255,255,255,.85);font-family:'DM Sans',sans-serif;
+  font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap
+}
 .hbtn:hover{background:rgba(255,255,255,.2)}
+.hbtn.collab-on{background:rgba(58,107,82,.5);border-color:rgba(100,200,140,.4);color:#8df0b4}
 
-/* ── API BANNER ───────────────────────────────── */
-.apib{background:var(--amber-bg);border-bottom:1px solid #dfc070;padding:9px 2rem;font-size:13px;color:var(--amber);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.apib input{padding:4px 9px;border:1px solid #d4a040;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:#fff;outline:none;width:220px}
-.apib a{color:var(--amber);font-weight:500}
+/* ══ COLLAB BAR ══════════════════════════════════════ */
+.collab-bar{
+  background:var(--sage);color:#fff;
+  padding:9px 1.5rem;font-size:13px;
+  display:none;align-items:center;gap:10px;flex-wrap:wrap
+}
+.collab-bar.show{display:flex}
+.room-code{
+  font-family:'Lora',serif;font-size:1.1rem;font-weight:600;
+  letter-spacing:.15em;background:rgba(255,255,255,.15);
+  padding:3px 12px;border-radius:6px;cursor:pointer;
+  transition:.1s;user-select:all
+}
+.room-code:hover{background:rgba(255,255,255,.25)}
+.collab-dot{width:8px;height:8px;border-radius:50%;background:#6ede9a;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.collab-hint{font-size:12px;color:rgba(255,255,255,.65)}
+.leave-btn{margin-left:auto;cursor:pointer;opacity:.5;font-size:18px;line-height:1}
+.leave-btn:hover{opacity:1}
+
+/* ══ API BANNER ══════════════════════════════════════ */
+.apib{
+  background:#fef9ed;border-bottom:1px solid #e8d88a;
+  padding:9px 1.5rem;font-size:12px;color:#7a5f10;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap
+}
+.apib input{padding:4px 9px;border:1px solid #d4b040;border-radius:6px;
+  font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:210px;background:#fff;color:var(--navy)}
+.apib a{color:var(--gold);font-weight:500}
 .apib .xb{margin-left:auto;cursor:pointer;opacity:.4;font-size:17px;line-height:1}
 .apib .xb:hover{opacity:1}
 
-/* ── TABS (mobile) ───────────────────────────── */
-.tab-bar{display:none;position:sticky;top:0;z-index:60;background:var(--paper);border-bottom:1px solid var(--line)}
-.tab-bar button{flex:1;padding:11px 5px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:.1s}
-.tab-bar button.on{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
+/* ══ BOTTOM NAV (mobile) ════════════════════════════ */
+.bnav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:rgba(250,248,244,.95);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);z-index:90;
+  padding:6px 0 max(6px, env(safe-area-inset-bottom))
+}
+.bnav-inner{display:flex}
+.bnav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 0;border:none;background:transparent;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:10px;color:var(--muted);transition:.1s
+}
+.bnav-btn .ico{font-size:20px;line-height:1}
+.bnav-btn.on{color:var(--navy);font-weight:500}
+.bnav-btn.on .ico{filter:saturate(1.5)}
 
-/* ── APP LAYOUT ──────────────────────────────── */
-.app{display:grid;grid-template-columns:1fr 360px;max-width:1160px;margin:0 auto;padding:0}
-.left-panel{padding:2rem 2rem 4rem;min-width:0;border-right:1px solid var(--line)}
-.right-panel{padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem}
-.right-sticky{position:sticky;top:0;max-height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem}
+/* ══ LAYOUT ═══════════════════════════════════════════ */
+.app{display:grid;grid-template-columns:1fr 380px;max-width:1200px;margin:0 auto}
 
-/* ── ORIGIN BOX ──────────────────────────────── */
-.origin-box{background:var(--ink);color:#fff;border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin-bottom:6px}
-.o-dot{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.o-fields{flex:1;display:grid;grid-template-columns:1fr 90px;gap:10px;align-items:center}
-.o-fields input{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.25);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;padding:2px 0;width:100%}
-.o-fields input::placeholder{color:rgba(255,255,255,.3)}
-.o-fields input:focus{border-bottom-color:rgba(255,255,255,.7)}
+/* panel visibility on desktop */
+.panel-plan,.panel-map,.panel-budget{display:block}
 
-/* ── TIMELINE ────────────────────────────────── */
-.timeline{position:relative;margin-top:6px}
-.tl-rail{position:absolute;left:16px;top:20px;bottom:20px;width:2px;background:var(--line);z-index:0;border-radius:2px}
+.left{padding:2rem 2rem 5rem;min-width:0;border-right:1px solid var(--line)}
+.right{background:var(--paper)}
+.right-sticky{
+  position:sticky;top:0;max-height:100vh;overflow-y:auto;
+  padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem
+}
 
-.empty-msg{text-align:center;padding:3rem 1rem;color:var(--muted)}
-.empty-msg .ico{font-size:2.5rem;margin-bottom:.6rem}
+/* ══ ORIGIN BOX ══════════════════════════════════════ */
+.origin{
+  background:var(--navy);color:#fff;
+  border-radius:var(--r);padding:1rem 1.25rem;
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:8px
+}
+.o-pin{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0
+}
+.o-row{flex:1;display:grid;grid-template-columns:1fr 88px;gap:10px;align-items:center}
+.o-inp{
+  background:transparent;border:none;
+  border-bottom:1px solid rgba(255,255,255,.2);
+  color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;padding:2px 0;width:100%
+}
+.o-inp::placeholder{color:rgba(255,255,255,.3)}
+.o-inp:focus{border-bottom-color:rgba(255,255,255,.65)}
 
-/* Transfer row */
-.tr-row{display:flex;align-items:center;gap:12px;padding:2px 0;position:relative;z-index:1}
-.tr-gap{width:34px;height:34px;flex-shrink:0}
-.tr-content{flex:1;display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:2px 0}
-.tr-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 11px;border-radius:20px;border:1px solid var(--line);background:var(--paper);cursor:pointer;color:var(--muted);transition:.1s;line-height:1.4}
-.tr-badge:hover{border-color:#aaa}
-.tr-badge.car{background:var(--amber-bg);border-color:#d4a060;color:var(--amber)}
-.tr-badge.train,.tr-badge.bus{background:var(--blue-bg);border-color:#8ab0d4;color:var(--blue)}
-.tr-badge.walk{background:var(--faint);border-color:#ccc;color:var(--muted)}
-.tr-badge.bike{background:#edf7e6;border-color:#96c870;color:#325010}
-.tr-badge.boat{background:#e6f0f8;border-color:#80acd0;color:#1a3c60}
-.tr-dur-lbl{font-size:11px;opacity:.65}
-.mapy-lnk{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--blue);text-decoration:none;padding:4px 10px;border:1px solid #8ab0d4;background:var(--blue-bg);border-radius:20px}
-.mapy-lnk:hover{background:#c4d8f0}
-.rt-res{font-size:12px;color:var(--green);background:var(--green-bg);border:1px solid #80b890;border-radius:20px;padding:4px 9px;display:none}
-.elev-sparkline{display:none;align-items:flex-end;gap:4px;cursor:pointer;padding:3px 8px;border:1px solid var(--line);border-radius:20px;background:var(--white)}
-.elev-sparkline svg{display:block}
-.elev-sparkline span{font-size:11px;color:var(--muted)}
+/* ══ TIMELINE ════════════════════════════════════════ */
+.timeline{position:relative;padding-top:4px}
+.tl-rail{position:absolute;left:17px;top:24px;bottom:24px;width:2px;background:var(--line);border-radius:2px}
 
-/* Stop card */
-.sc{display:flex;align-items:flex-start;gap:12px;padding:4px 0;position:relative;z-index:1}
-.sc-dot{width:34px;height:34px;border-radius:50%;background:var(--white);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'Playfair Display',serif;flex-shrink:0;margin-top:2px;transition:.15s}
-.sc-dot.fin{background:var(--accent);border-color:var(--accent);color:#fff}
-.sc-box{flex:1;background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:.85rem 1rem;box-shadow:var(--shadow);transition:.15s}
-.sc-box:hover{border-color:#bbb;box-shadow:0 4px 20px rgba(0,0,0,.12)}
+.empty{text-align:center;padding:3.5rem 1rem;color:var(--muted)}
+.empty .ico{font-size:3rem;margin-bottom:.75rem;opacity:.6}
+.empty p{font-size:14px}
+
+/* ── TRANSFER ── */
+.tr-row{display:flex;align-items:center;gap:12px;padding:1px 0;position:relative;z-index:1}
+.tr-gap{width:36px;flex-shrink:0}
+.tr-pills{flex:1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:3px 0}
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:12px;padding:4px 11px;border-radius:20px;
+  border:1px solid var(--line);background:var(--paper);
+  cursor:pointer;color:var(--muted);transition:.1s;line-height:1.4
+}
+.badge:hover{border-color:#aaa}
+.badge.car{background:#fef8ec;border-color:#e0c060;color:#7a5010}
+.badge.train,.badge.bus{background:#e8f0fa;border-color:#90b0e0;color:#1a3870}
+.badge.walk{background:#f0ede8;border-color:#ccc8c0;color:var(--muted)}
+.badge.bike{background:#edf7e4;border-color:#90c870;color:#2a5010}
+.badge.boat{background:#e6eef8;border-color:#80acd4;color:#1a3860}
+.badge.mapy{background:var(--navy);color:#fff;border-color:transparent;text-decoration:none}
+.badge.mapy:hover{background:var(--navy2)}
+.badge.rt{background:var(--sage);color:#fff;border-color:transparent;display:none}
+.badge.elev{background:#f0ede8;border-color:var(--line);color:var(--muted);display:none}
+
+/* ── STOP CARD ── */
+.sc{display:flex;align-items:flex-start;gap:12px;padding:4px 0;position:relative;z-index:1;touch-action:pan-y}
+.sc-num{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--white);border:2px solid var(--navy);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;font-family:'Lora',serif;
+  flex-shrink:0;margin-top:2px;transition:.15s;z-index:2;position:relative
+}
+.sc-num.fin{background:var(--coral);border-color:var(--coral);color:#fff}
+.sc-num.drag-handle{cursor:grab}
+.sc-num:active{cursor:grabbing}
+
+.sc-card{
+  flex:1;background:var(--white);border:1px solid var(--line);
+  border-radius:var(--r);box-shadow:var(--shadow);
+  transition:.15s;overflow:hidden;position:relative
+}
+.sc-card:hover{box-shadow:var(--shadow2);border-color:#bbb}
+.sc-card.dragging{opacity:.5;box-shadow:var(--shadow2)}
+
+.sc-inner{padding:.9rem 1rem}
 .sc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.sc-time{font-size:13px;color:var(--muted);min-width:38px;font-variant-numeric:tabular-nums}
-.sc-time.auto{color:var(--blue);font-style:italic}
-.sc-name{font-size:15px;font-weight:500;flex:1;min-width:0}
-.sc-stay{font-size:11px;color:var(--muted);background:var(--faint);padding:2px 8px;border-radius:20px;white-space:nowrap}
-.sc-cost-lbl{font-size:11px;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:20px}
-.sc-note{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
-.sc-actions{display:flex;gap:3px;opacity:0;transition:.15s;margin-left:auto}
-.sc-box:hover .sc-actions{opacity:1}
-.ib{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
-.ib:hover{background:var(--faint);color:var(--ink)}
-.ib.del:hover{background:#fce8e6;color:#a02020;border-color:#f0b0a8}
+.sc-time{font-size:13px;color:var(--muted);min-width:38px;font-variant-numeric:tabular-nums;flex-shrink:0}
+.sc-time.auto{color:var(--sage);font-style:italic}
+.sc-name{font-size:15px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-stay{font-size:11px;color:var(--muted);background:var(--cream);padding:2px 8px;border-radius:20px;flex-shrink:0}
+.sc-cost{font-size:11px;color:var(--sage);background:#edf7e4;padding:2px 8px;border-radius:20px;flex-shrink:0}
+.sc-note{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.5}
+.sc-actions{display:flex;gap:4px;opacity:0;transition:.15s;flex-shrink:0}
+.sc-card:hover .sc-actions{opacity:1}
+.ib{
+  width:26px;height:26px;border-radius:7px;border:1px solid var(--line);
+  background:transparent;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:12px;color:var(--muted);transition:.1s
+}
+.ib:hover{background:var(--cream);color:var(--navy)}
+.ib.del:hover{background:#fce8e6;color:#b02020;border-color:#f0a8a0}
 
-/* ── ADD FORM ────────────────────────────────── */
-.add-section{margin-top:1.5rem;background:var(--white);border:1.5px dashed var(--line);border-radius:var(--r);padding:1.4rem}
+/* swipe reveal */
+.sc-swipe-bg{
+  position:absolute;right:0;top:0;bottom:0;width:120px;
+  display:flex;align-items:center;justify-content:flex-end;gap:0;
+  border-radius:0 var(--r) var(--r) 0;overflow:hidden;
+  pointer-events:none;
+}
+.swipe-act{
+  flex:1;height:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;font-size:11px;gap:3px;cursor:pointer;
+  color:#fff;pointer-events:auto
+}
+.swipe-act.edit-sw{background:#1a3f70}
+.swipe-act.del-sw{background:#b02020}
+.swipe-act svg{width:18px;height:18px}
+
+/* drag-over line */
+.drop-line{height:3px;background:var(--coral);border-radius:2px;margin:2px 0 2px 48px;display:none}
+.drop-line.show{display:block}
+
+/* ══ FAB ══════════════════════════════════════════════ */
+.fab{
+  position:fixed;bottom:calc(68px + env(safe-area-inset-bottom));right:1.25rem;
+  width:56px;height:56px;border-radius:50%;
+  background:var(--coral);color:#fff;border:none;cursor:pointer;
+  font-size:26px;display:none;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(217,95,53,.5);z-index:80;transition:.2s
+}
+.fab:hover{background:var(--coral2);transform:scale(1.07)}
+.fab:active{transform:scale(.95)}
+
+/* ══ BOTTOM SHEET ════════════════════════════════════ */
+.sheet-backdrop{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
+  z-index:150;backdrop-filter:blur(2px)
+}
+.sheet-backdrop.on{display:block}
+.sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:160;
+  background:var(--white);border-radius:20px 20px 0 0;
+  padding:0 0 env(safe-area-inset-bottom);
+  max-height:92vh;overflow-y:auto;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.32,0,.67,0)
+}
+.sheet.open{transform:translateY(0);transition:transform .32s cubic-bezier(.33,1,.68,1)}
+.sheet-handle{width:40px;height:4px;background:var(--line);border-radius:2px;margin:12px auto 0}
+.sheet-title{font-family:'Lora',serif;font-size:1.1rem;font-weight:600;padding:1rem 1.25rem .75rem;border-bottom:1px solid var(--line)}
+.sheet-body{padding:1rem 1.25rem 1.5rem}
+
+/* ══ ADD FORM ════════════════════════════════════════ */
+.add-section{
+  margin-top:1.5rem;background:var(--white);
+  border:1.5px dashed var(--line);border-radius:var(--r);padding:1.35rem
+}
 .sect-h{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:1rem}
 .fg{display:grid;gap:9px;margin-bottom:9px}
-.fg4{grid-template-columns:90px 1fr 115px 120px}
+.fg4{grid-template-columns:88px 1fr 115px 120px}
 .fg3{grid-template-columns:1fr 1fr 1fr}
 .fg2{grid-template-columns:1fr 1fr}
-.fl{display:flex;gap:9px;margin-bottom:9px}
 .field label{display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
-.field input,.field select,.field textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:.12s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ink)}
-.field textarea{resize:vertical;min-height:50px}
-.time-hint{font-size:11px;color:var(--blue);margin-top:3px;display:none;cursor:pointer}
-.time-hint:hover{text-decoration:underline}
-.tr-sect{background:var(--faint);border-radius:8px;padding:.85rem;margin-bottom:9px}
+.field input,.field select,.field textarea{
+  width:100%;padding:8px 10px;border:1px solid var(--line);
+  border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;
+  color:var(--navy);background:var(--white);outline:none;transition:.12s
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,45,69,.08)}
+.field textarea{resize:vertical;min-height:52px}
+.time-sug{font-size:11px;color:var(--sage);margin-top:3px;cursor:pointer;display:none}
+.time-sug:hover{text-decoration:underline}
+
+.tr-sect{background:var(--cream);border-radius:10px;padding:.9rem;margin-bottom:9px}
 .tr-sect h4{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
 .tp-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
-.tp{padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);transition:.1s}
-.tp.on,.tp:hover{border-color:var(--ink);color:var(--ink);background:var(--faint)}
-.tp.on{font-weight:500}
-.form-btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
-.btn-p{display:inline-flex;align-items:center;gap:5px;padding:9px 20px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer}
-.btn-p:hover{background:#2c2c20}
-.btn-s{display:inline-flex;align-items:center;gap:5px;padding:9px 14px;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
-.btn-s:hover{color:var(--ink);border-color:#999}
-.recalc-btn{font-size:12px;padding:5px 12px;background:var(--blue-bg);color:var(--blue);border:1px solid #8ab0d4;border-radius:20px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-left:auto}
-.recalc-btn:hover{background:#c4d8f0}
+.tp{padding:5px 12px;border-radius:20px;border:1px solid var(--line);background:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);transition:.1s}
+.tp.on,.tp:hover{border-color:var(--navy);color:var(--navy);background:var(--cream);font-weight:500}
 
-/* ── AUTOCOMPLETE ────────────────────────────── */
-.ac-wrap{position:relative}
-.ac-drop{position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:300;overflow:hidden;display:none}
-.ac-drop.show{display:block}
-.ac-item{padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--faint)}
-.ac-item:last-child{border-bottom:none}
-.ac-item:hover,.ac-item.hl{background:var(--faint)}
-.ac-item .ac-name{font-weight:500}
-.ac-item .ac-sub{font-size:11px;color:var(--muted)}
-
-/* ── RIGHT PANEL ─────────────────────────────── */
-.map-box{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--faint)}
-#mapEl{height:340px;width:100%}
-.map-caption{font-size:11px;color:var(--muted);padding:6px 10px;border-top:1px solid var(--line)}
-
-.budget-box{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;box-shadow:var(--shadow)}
-.budget-box h3{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.85rem}
-.budget-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0;border-bottom:1px solid var(--faint);gap:8px}
-.budget-row:last-child{border-bottom:none}
-.budget-row.total{font-weight:500;font-size:14px;border-top:1px solid var(--line);margin-top:4px;padding-top:8px}
-.budget-name{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.budget-amount{white-space:nowrap;font-variant-numeric:tabular-nums}
-.no-costs{font-size:13px;color:var(--muted);text-align:center;padding:1rem 0}
-.currency-row{display:flex;align-items:center;gap:8px;margin-bottom:.85rem}
-.currency-row label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.currency-row select{padding:4px 8px;border:1px solid var(--line);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none}
-
-/* ── OVERLAYS ─────────────────────────────────── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:400;align-items:center;justify-content:center;padding:1rem}
-.overlay.on{display:flex}
-.modal{background:var(--white);border-radius:14px;padding:1.75rem;width:520px;max-width:100%;max-height:92vh;overflow-y:auto}
-.modal h3{font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1.2rem}
-.share-row{display:flex;gap:7px;margin:1rem 0}
-.share-row input{flex:1;padding:8px 11px;border:1px solid var(--line);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);outline:none;min-width:0}
-.copy-btn{padding:8px 14px;background:var(--ink);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;white-space:nowrap}
-
-/* ── MOBILE ──────────────────────────────────── */
-@media(max-width:768px){
-  header{padding:1.1rem 1.1rem}
-  .trip-name{font-size:1.4rem}
-  .h-stats{display:none}
-  .apib{padding:8px 1.1rem}
-  .tab-bar{display:flex}
-  .app{display:block}
-  .left-panel,.right-panel{padding:1rem 1rem 2rem;border-right:none}
-  .right-panel{padding-top:.5rem}
-  .fg4{grid-template-columns:1fr 1fr}
-  .fg4 .f-time{order:-1}
-  .fg4 .f-stay{order:1}
-  .modal{padding:1.25rem}
-  #mapEl{height:280px}
-  .right-sticky{max-height:none;position:static}
-  .plan-panel,.map-panel,.budget-panel{display:none}
-  .plan-panel.show,.map-panel.show,.budget-panel.show{display:block}
-  .sc-actions{opacity:1}
-  .add-section{border-radius:var(--r)}
-  .budget-box{margin-top:.5rem}
+.form-btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn-p{
+  display:inline-flex;align-items:center;gap:5px;padding:10px 22px;
+  background:var(--coral);color:#fff;border:none;border-radius:30px;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s
 }
-@media(min-width:769px){
-  .plan-panel,.map-panel,.budget-panel{display:block!important}
+.btn-p:hover{background:var(--coral2)}
+.btn-s{
+  display:inline-flex;align-items:center;gap:5px;padding:10px 15px;
+  background:transparent;color:var(--muted);border:1px solid var(--line);
+  border-radius:30px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:.12s
+}
+.btn-s:hover{color:var(--navy);border-color:#999}
+.recalc{
+  font-size:12px;padding:6px 13px;background:var(--navy);color:rgba(255,255,255,.85);
+  border:none;border-radius:20px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-left:auto
+}
+.recalc:hover{background:var(--navy2)}
+
+/* ══ AUTOCOMPLETE ════════════════════════════════════ */
+.ac-wrap{position:relative}
+.ac-drop{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;
+  background:var(--white);border:1px solid var(--line);border-radius:10px;
+  box-shadow:var(--shadow2);z-index:400;overflow:hidden;display:none
+}
+.ac-drop.on{display:block}
+.ac-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--cream)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.hl{background:var(--cream)}
+.ac-name{font-size:13px;font-weight:500;color:var(--navy)}
+.ac-sub{font-size:11px;color:var(--muted)}
+
+/* ══ RIGHT PANEL ═══════════════════════════════════ */
+.map-box{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
+#mapEl{height:360px}
+.map-cap{font-size:11px;color:var(--muted);padding:7px 12px;border-top:1px solid var(--line);background:var(--white)}
+
+.budget-box{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:1.1rem;box-shadow:var(--shadow)}
+.budget-box h3{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.9rem;display:flex;align-items:center;justify-content:space-between}
+.curr-sel{padding:3px 7px;border:1px solid var(--line);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--navy);background:var(--white);outline:none}
+.brow{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid var(--cream);gap:8px}
+.brow:last-child{border-bottom:none}
+.brow.total{font-weight:500;font-size:14px;border-top:2px solid var(--line);margin-top:5px;padding-top:8px}
+.bn{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ba{white-space:nowrap;font-variant-numeric:tabular-nums}
+.no-c{font-size:13px;color:var(--muted);text-align:center;padding:1rem 0}
+
+/* ══ OVERLAYS ════════════════════════════════════════ */
+.ovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:500;align-items:center;justify-content:center;padding:1rem}
+.ovl.on{display:flex}
+.modal{background:var(--white);border-radius:var(--rb);padding:1.75rem;width:530px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow2)}
+.modal h3{font-family:'Lora',serif;font-size:1.2rem;font-weight:600;margin-bottom:1.2rem}
+.share-row{display:flex;gap:7px;margin:1rem 0}
+.share-row input{flex:1;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);outline:none;min-width:0}
+.copybtn{padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;white-space:nowrap}
+.copybtn:hover{background:var(--navy2)}
+
+/* ══ COLLAB MODAL ═══════════════════════════════════ */
+.collab-options{display:flex;flex-direction:column;gap:10px;margin:1rem 0}
+.collab-card{
+  border:1.5px solid var(--line);border-radius:var(--r);padding:1.1rem 1.25rem;cursor:pointer;transition:.15s
+}
+.collab-card:hover{border-color:var(--navy);box-shadow:var(--shadow)}
+.collab-card h4{font-size:15px;font-weight:500;margin-bottom:3px}
+.collab-card p{font-size:13px;color:var(--muted)}
+.room-input-row{display:flex;gap:8px;margin-top:1rem}
+.room-input-row input{
+  flex:1;padding:9px 12px;border:1.5px solid var(--line);border-radius:8px;
+  font-family:'Lora',serif;font-size:1.1rem;letter-spacing:.12em;
+  color:var(--navy);text-transform:uppercase;outline:none;
+  transition:.12s
+}
+.room-input-row input:focus{border-color:var(--navy)}
+
+/* ══ RESPONSIVE ════════════════════════════════════ */
+@media(max-width:800px){
+  .bnav{display:flex}
+  .fab{display:flex}
+  .apib{padding:8px 1rem}
+  .app{display:block}
+  .left{padding:1rem 1rem calc(80px + env(safe-area-inset-bottom)) 1rem;border-right:none}
+  .right{display:block}
+  .right-sticky{position:static;max-height:none;padding:1rem}
+  .panel-plan,.panel-map,.panel-budget{display:none}
+  .panel-plan.show,.panel-map.show,.panel-budget.show{display:block}
+  .add-section{display:none}
+  .fg4{grid-template-columns:1fr 1fr}
+  .sc-actions{opacity:1}
+  #mapEl{height:300px}
+}
+@media(min-width:801px){
+  .panel-plan,.panel-map,.panel-budget{display:block!important}
+  .bnav,.fab,.sheet,.sheet-backdrop{display:none!important}
 }
 @media print{
-  header{background:#111!important;-webkit-print-color-adjust:exact}
-  .add-section,.sc-actions,.apib,.h-btns,.mapy-lnk,.rt-res,.tab-bar,.right-panel{display:none!important}
+  .hdr{background:var(--navy)!important;-webkit-print-color-adjust:exact}
+  .add-section,.sc-actions,.apib,.hdr-btns,.badge.mapy,.badge.rt,.badge.elev,.collab-bar,.bnav,.fab{display:none!important}
+  .app{display:block}.left{padding:1rem}.right{display:none}
   body{background:#fff}
-  .app{display:block}
-  .left-panel{border:none;padding:1rem}
 }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="h-left">
-    <input class="trip-name" id="tripName" placeholder="Název výletu…">
-    <div class="h-meta">
-      <span>Datum:</span>
-      <input type="date" id="tripDate">
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-left">
+      <input class="trip-input" id="tripName" placeholder="Název výletu…">
+      <div class="hdr-meta">
+        <input type="date" class="hdr-date" id="tripDate">
+        <div class="hdr-stats" id="hStats"></div>
+      </div>
     </div>
-  </div>
-  <div class="h-right">
-    <div class="h-btns">
+    <div class="hdr-btns">
+      <button class="hbtn" id="collabBtn" onclick="openCollabModal()">👥 Spolupráce</button>
       <button class="hbtn" onclick="openShare()">🔗 Sdílet</button>
-      <button class="hbtn" onclick="print()">🖨️ Tisk</button>
+      <button class="hbtn" onclick="print()">🖨️</button>
     </div>
-    <div class="h-stats" id="hStats"></div>
   </div>
-</header>
+</div>
 
+<!-- COLLAB BAR -->
+<div class="collab-bar" id="collabBar">
+  <span class="collab-dot"></span>
+  <span>Místnost:</span>
+  <span class="room-code" id="roomCodeDisplay" onclick="copyRoomCode()" title="Klikni pro kopírování"></span>
+  <span class="collab-hint" id="collabHint">Sdílej kód spolucestovatelům</span>
+  <span class="leave-btn" onclick="leaveRoom()">×</span>
+</div>
+
+<!-- API BANNER -->
 <div class="apib" id="apib">
-  <span>🗺️ <strong>Mapy.cz API klíč</strong> — pro autocomplete, výpočet tras a výšk. profil:</span>
+  🗺️ <strong>Mapy.cz API klíč</strong> — autocomplete + trasy + výšk. profil:
   <input type="text" id="apiKeyInp" placeholder="API klíč z developer.mapy.com" oninput="onApiKey()">
   <a href="https://developer.mapy.com/account/" target="_blank">Získat →</a>
   <span class="xb" onclick="hideApib()">×</span>
 </div>
 
-<div class="tab-bar" id="tabBar">
-  <button class="on" onclick="switchTab('plan',this)">📋 Plán</button>
-  <button onclick="switchTab('map',this)">🗺️ Mapa</button>
-  <button onclick="switchTab('budget',this)">💰 Náklady</button>
-</div>
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <div class="bnav-inner">
+    <button class="bnav-btn on" id="bnav-plan" onclick="switchTab('plan')">
+      <span class="ico">📋</span>Plán
+    </button>
+    <button class="bnav-btn" id="bnav-map" onclick="switchTab('map')">
+      <span class="ico">🗺️</span>Mapa
+    </button>
+    <button class="bnav-btn" id="bnav-budget" onclick="switchTab('budget')">
+      <span class="ico">💰</span>Náklady
+    </button>
+  </div>
+</nav>
 
+<!-- FAB -->
+<button class="fab" onclick="openSheet()">+</button>
+
+<!-- MAIN APP -->
 <div class="app">
-  <!-- LEFT: timeline + form -->
-  <div class="left-panel plan-panel show" id="planPanel">
+  <!-- LEFT -->
+  <div class="left panel-plan show" id="panelPlan">
 
-    <div class="origin-box">
-      <div class="o-dot">🚩</div>
-      <div class="o-fields">
+    <!-- Origin -->
+    <div class="origin">
+      <div class="o-pin">🚩</div>
+      <div class="o-row">
         <div class="ac-wrap">
-          <input id="originName" placeholder="Výchozí místo…" oninput="acInput(this,'acOrigin');saveState()" autocomplete="off">
+          <input class="o-inp" id="originName" placeholder="Výchozí místo…" oninput="acInput(this,'acOrigin');saveState()" autocomplete="off">
           <div class="ac-drop" id="acOrigin"></div>
         </div>
-        <input id="originTime" type="time" value="08:00" oninput="saveState()">
+        <input class="o-inp" id="originTime" type="time" value="08:00" oninput="saveState()">
       </div>
     </div>
 
+    <!-- Timeline -->
     <div class="timeline" id="timeline">
       <div class="tl-rail"></div>
-      <div class="empty-msg" id="emptyMsg">
+      <div class="empty" id="emptyMsg">
         <div class="ico">🗺️</div>
-        <p>Přidej první zastávku pomocí formuláře níže.</p>
+        <p>Zatím žádné zastávky.<br>Přidej první zastávku formulářem níže.</p>
       </div>
     </div>
 
+    <!-- ADD FORM (desktop) -->
     <div class="add-section">
       <div class="sect-h">➕ Přidat zastávku</div>
-
-      <div class="fg fg4">
-        <div class="field f-time">
-          <label>Čas příjezdu</label>
-          <input type="time" id="fTime" value="10:00" oninput="clearAutoTime()">
-          <div class="time-hint" id="timeHint" onclick="applyHintTime()"></div>
-        </div>
-        <div class="field" style="grid-column:2/3">
-          <label>Místo / název</label>
-          <div class="ac-wrap">
-            <input type="text" id="fName" placeholder="např. Hrad Karlštejn…" oninput="acInput(this,'acName')" autocomplete="off" onkeydown="acKey(event,'acName')">
-            <div class="ac-drop" id="acName"></div>
-          </div>
-        </div>
-        <div class="field f-stay">
-          <label>Délka pobytu</label>
-          <input type="text" id="fStay" placeholder="1 h 30 min" oninput="updateTimeHint()">
-        </div>
-        <div class="field">
-          <label>Typ</label>
-          <select id="fType">
-            <option value="">—</option>
-            <option value="🏰">🏰 Památka</option>
-            <option value="🍽️">🍽️ Jídlo</option>
-            <option value="🏕️">🏕️ Příroda</option>
-            <option value="🏊">🏊 Koupání</option>
-            <option value="🛏️">🛏️ Nocování</option>
-            <option value="🎭">🎭 Kultura</option>
-            <option value="🛒">🛒 Nákupy</option>
-            <option value="📍">📍 Zastávka</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="fg fg2">
-        <div class="field">
-          <label>Poznámka</label>
-          <textarea id="fNote" placeholder="Vstupné, otevírací doba…"></textarea>
-        </div>
-        <div class="field">
-          <label>Náklady (vstupné, ubytování…)</label>
-          <input type="text" id="fCost" placeholder="200">
-        </div>
-      </div>
-
-      <div class="tr-sect">
-        <h4>🚌 Přesun z předchozí zastávky</h4>
-        <div class="tp-row" id="tpAdd">
-          <button class="tp on" data-v="car">🚗 Auto</button>
-          <button class="tp" data-v="train">🚆 Vlak</button>
-          <button class="tp" data-v="bus">🚌 Bus</button>
-          <button class="tp" data-v="walk">🚶 Pěšky</button>
-          <button class="tp" data-v="bike">🚲 Kolo</button>
-          <button class="tp" data-v="boat">⛵ Loď</button>
-          <button class="tp" data-v="">— Žádný</button>
-        </div>
-        <div class="fg fg3">
-          <div class="field">
-            <label>Trvání</label>
-            <input type="text" id="fTDur" placeholder="45 min" oninput="updateTimeHint()">
-          </div>
-          <div class="field">
-            <label>Odkud</label>
-            <input type="text" id="fTFrom" placeholder="(z předchozí)">
-          </div>
-          <div class="field">
-            <label>Cena přesunu</label>
-            <input type="text" id="fTCost" placeholder="120">
-          </div>
-        </div>
-      </div>
-
-      <div class="form-btns">
-        <button class="btn-p" onclick="addStop()">Přidat zastávku</button>
-        <button class="recalc-btn" onclick="recalcTimes()" title="Přepočítat časy od začátku">⏱ Přepočítat časy</button>
-        <button class="btn-s" style="margin-left:auto" onclick="clearAll()">🗑️ Vymazat vše</button>
-      </div>
+      <div id="addFormInner"></div>
     </div>
 
   </div><!-- /left -->
 
-  <!-- RIGHT: map + budget -->
-  <div class="right-panel">
+  <!-- RIGHT -->
+  <div class="right">
     <div class="right-sticky">
-
-      <div class="map-panel" id="mapPanel">
+      <div class="panel-map" id="panelMap">
         <div class="map-box">
           <div id="mapEl"></div>
-          <div class="map-caption" id="mapCaption">Zastávky se zobrazí po přidání míst.</div>
+          <div class="map-cap" id="mapCap">Zastávky se zobrazí po přidání míst.</div>
         </div>
       </div>
-
-      <div class="budget-panel" id="budgetPanel">
+      <div class="panel-budget" id="panelBudget">
         <div class="budget-box">
-          <div class="currency-row">
-            <label>Náklady —</label>
-            <select id="currSel" onchange="saveState();renderBudget()">
-              <option value="Kč">Kč</option>
-              <option value="€">€</option>
-              <option value="$">$</option>
-              <option value="PLN">PLN</option>
-            </select>
-          </div>
-          <div id="budgetList"><div class="no-costs">Zatím žádné náklady.</div></div>
+          <h3>Náklady <select class="curr-sel" id="currSel" onchange="saveState();renderBudget()"><option>Kč</option><option>€</option><option>$</option><option>PLN</option></select></h3>
+          <div id="budgetList"></div>
         </div>
       </div>
-
     </div>
   </div>
-</div><!-- /app -->
+</div>
+
+<!-- BOTTOM SHEET (mobile) -->
+<div class="sheet-backdrop" id="sheetBd" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Přidat zastávku</div>
+  <div class="sheet-body" id="sheetFormInner"></div>
+</div>
 
 <!-- EDIT OVERLAY -->
-<div class="overlay" id="editOv" onclick="closeEdit(event)">
+<div class="ovl" id="editOvl" onclick="closeEditOvl(event)">
   <div class="modal">
     <h3>Upravit zastávku</h3>
     <input type="hidden" id="eIdx">
@@ -381,25 +509,10 @@ header{background:var(--ink);color:#fff;padding:1.4rem 2rem;display:flex;align-i
       <div class="field"><label>Čas</label><input type="time" id="eTime"></div>
       <div class="field" style="grid-column:2/3">
         <label>Místo</label>
-        <div class="ac-wrap">
-          <input type="text" id="eName" oninput="acInput(this,'acEdit')" autocomplete="off">
-          <div class="ac-drop" id="acEdit"></div>
-        </div>
+        <div class="ac-wrap"><input type="text" id="eName" oninput="acInput(this,'acEdit')" autocomplete="off"><div class="ac-drop" id="acEdit"></div></div>
       </div>
       <div class="field"><label>Pobyt</label><input type="text" id="eStay"></div>
-      <div class="field"><label>Typ</label>
-        <select id="eType">
-          <option value="">—</option>
-          <option value="🏰">🏰 Památka</option>
-          <option value="🍽️">🍽️ Jídlo</option>
-          <option value="🏕️">🏕️ Příroda</option>
-          <option value="🏊">🏊 Koupání</option>
-          <option value="🛏️">🛏️ Nocování</option>
-          <option value="🎭">🎭 Kultura</option>
-          <option value="🛒">🛒 Nákupy</option>
-          <option value="📍">📍 Zastávka</option>
-        </select>
-      </div>
+      <div class="field"><label>Typ</label><select id="eType"></select></div>
     </div>
     <div class="fg fg2" style="margin-bottom:9px">
       <div class="field"><label>Poznámka</label><textarea id="eNote"></textarea></div>
@@ -407,15 +520,7 @@ header{background:var(--ink);color:#fff;padding:1.4rem 2rem;display:flex;align-i
     </div>
     <div class="tr-sect">
       <h4>🚌 Přesun</h4>
-      <div class="tp-row" id="tpEdit">
-        <button class="tp" data-v="car">🚗 Auto</button>
-        <button class="tp" data-v="train">🚆 Vlak</button>
-        <button class="tp" data-v="bus">🚌 Bus</button>
-        <button class="tp" data-v="walk">🚶 Pěšky</button>
-        <button class="tp" data-v="bike">🚲 Kolo</button>
-        <button class="tp" data-v="boat">⛵ Loď</button>
-        <button class="tp on" data-v="">— Žádný</button>
-      </div>
+      <div class="tp-row" id="tpEdit"></div>
       <div class="fg fg3">
         <div class="field"><label>Trvání</label><input type="text" id="eTDur"></div>
         <div class="field"><label>Odkud</label><input type="text" id="eTFrom"></div>
@@ -424,79 +529,153 @@ header{background:var(--ink);color:#fff;padding:1.4rem 2rem;display:flex;align-i
     </div>
     <div class="form-btns">
       <button class="btn-p" onclick="saveEdit()">Uložit</button>
-      <button class="btn-s" onclick="closeEdit()">Zrušit</button>
+      <button class="btn-s" onclick="closeEditOvl()">Zrušit</button>
     </div>
   </div>
 </div>
 
 <!-- SHARE OVERLAY -->
-<div class="overlay" id="shareOv" onclick="closeShareOv(event)">
+<div class="ovl" id="shareOvl" onclick="closeShareOvl(event)">
   <div class="modal">
-    <h3>🔗 Sdílet plán výletu</h3>
-    <p style="color:var(--muted);font-size:14px">Plán je zakódovaný přímo v odkazu — žádný server není potřeba.</p>
+    <h3>🔗 Sdílet plán</h3>
+    <p style="color:var(--muted);font-size:14px">Plán je zakódovaný přímo v odkazu — bez serveru.</p>
     <div class="share-row">
       <input type="text" id="shareUrl" readonly>
-      <button class="copy-btn" id="copyBtn" onclick="copyUrl()">Kopírovat</button>
+      <button class="copybtn" id="copyBtn" onclick="copyShareUrl()">Kopírovat</button>
     </div>
     <p id="shareHint" style="font-size:12px;color:var(--muted)">Pošli přes WhatsApp, email nebo Messenger.</p>
     <hr style="margin:1.1rem 0;border:none;border-top:1px solid var(--line)">
-    <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Nebo jako JSON soubor:</p>
     <div style="display:flex;gap:7px;flex-wrap:wrap">
-      <button class="btn-s" onclick="exportJSON()">⬇️ Stáhnout</button>
-      <label class="btn-s" style="cursor:pointer">⬆️ Načíst<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
+      <button class="btn-s" onclick="exportJSON()">⬇️ Stáhnout JSON</button>
+      <label class="btn-s" style="cursor:pointer">⬆️ Načíst JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
     </div>
-    <div style="margin-top:1.1rem;text-align:right"><button class="btn-s" onclick="closeShareOv()">Zavřít</button></div>
+    <div style="margin-top:1rem;text-align:right"><button class="btn-s" onclick="closeShareOvl()">Zavřít</button></div>
+  </div>
+</div>
+
+<!-- COLLAB OVERLAY -->
+<div class="ovl" id="collabOvl" onclick="closeCollabOvl(event)">
+  <div class="modal">
+    <h3>👥 Spolupráce v reálném čase</h3>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:.5rem">Všichni ve stejné místnosti vidí změny okamžitě. Funguje v rámci Claude.ai (sdílené úložiště).</p>
+    <div class="collab-options">
+      <div class="collab-card" onclick="createRoom()">
+        <h4>✨ Vytvořit novou místnost</h4>
+        <p>Vygeneruj kód a pošli ho spolucestovatelům</p>
+      </div>
+      <div class="collab-card">
+        <h4>🚪 Připojit se ke stávající</h4>
+        <p>Zadej 6-místný kód od spolucestovatelů</p>
+        <div class="room-input-row">
+          <input type="text" id="roomCodeInp" placeholder="XXXXXX" maxlength="6" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+          <button class="btn-p" onclick="joinRoom()">Připojit</button>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:right;margin-top:.5rem"><button class="btn-s" onclick="closeCollabOvl()">Zavřít</button></div>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
 //  STATE
-// ══════════════════════════════════════════════════════════
+// ╚══════════════════════════════════════════════════════╝
 let stops = [];
 let tpAddVal = 'car', tpEditVal = '';
 let apiKey = '';
-let autoTimeSet = false;  // was time in add form set by hint?
-
-const TL = {car:'🚗 Auto',train:'🚆 Vlak',bus:'🚌 Bus',walk:'🚶 Pěšky',bike:'🚲 Kolo',boat:'⛵ Loď','':'—'};
-const MAPY_RT = {car:'car_fast_traffic',walk:'foot_fast',bike:'bicycle_road'};
+let roomCode = null, collabInterval = null, lastCollabTs = 0;
+let dragSrcIdx = null;
 const coordCache = {};
 let map, mapLayers = [];
-let acDebounce = {};
+let acTimers = {};
 
-// ══════════════════════════════════════════════════════════
+const TYPES = ['','🏰','🍽️','🏕️','🏊','🛏️','🎭','🛒','📍'];
+const TYPE_LABELS = {'':'—','🏰':'🏰 Památka','🍽️':'🍽️ Jídlo','🏕️':'🏕️ Příroda','🏊':'🏊 Koupání','🛏️':'🛏️ Nocování','🎭':'🎭 Kultura','🛒':'🛒 Nákupy','📍':'📍 Zastávka'};
+const TL = {car:'🚗 Auto',train:'🚆 Vlak',bus:'🚌 Bus',walk:'🚶 Pěšky',bike:'🚲 Kolo',boat:'⛵ Loď','':'—'};
+const MAPY_RT = {car:'car_fast_traffic',walk:'foot_fast',bike:'bicycle_road'};
+
+// ╔══════════════════════════════════════════════════════╗
 //  INIT
-// ══════════════════════════════════════════════════════════
+// ╚══════════════════════════════════════════════════════╝
 function init() {
-  // Load from URL hash (shared link)
+  // Populate type selects
+  document.getElementById('eType').innerHTML = TYPES.map(t=>`<option value="${t}">${TYPE_LABELS[t]}</option>`).join('');
+
+  // Build form HTML
+  const formHTML = buildFormHTML();
+  document.getElementById('addFormInner').innerHTML = formHTML;
+  document.getElementById('sheetFormInner').innerHTML = formHTML + `<div style="margin-top:10px"><button class="btn-p" style="width:100%;justify-content:center" onclick="addStop();closeSheet()">Přidat zastávku</button></div>`;
+
+  // Setup pickers & autocomplete for form
+  setupPicker('tpAddD', v=>{tpAddVal=v;updateTimeSug()});
+  setupPicker('tpAddS', v=>{tpAddVal=v;updateTimeSug()});
+  setupPicker('tpEdit', v=>{tpEditVal=v});
+
+  // Load state
   const hash = location.hash.slice(1);
   if (hash.startsWith('plan=')) {
-    try { applyState(JSON.parse(decodeURIComponent(escape(atob(hash.slice(5)))))); history.replaceState(null,'',location.pathname); }
-    catch(e) {}
+    try { applyState(JSON.parse(decodeURIComponent(escape(atob(hash.slice(5)))))); history.replaceState(null,'',location.pathname); } catch(e) {}
   } else {
-    try { const raw = localStorage.getItem('vylety_v4'); if (raw) applyState(JSON.parse(raw)); } catch(e) {}
+    try { const r=localStorage.getItem('vylety_v5'); if(r) applyState(JSON.parse(r)); } catch(e) {}
   }
-  try {
-    apiKey = localStorage.getItem('mkey') || '';
-    if (apiKey) document.getElementById('apiKeyInp').value = apiKey;
-    if (localStorage.getItem('apibHidden')) document.getElementById('apib').style.display = 'none';
-    const c = localStorage.getItem('curr'); if (c) document.getElementById('currSel').value = c;
-  } catch(e) {}
 
-  setupPicker('tpAdd', v => { tpAddVal = v; updateTimeHint(); });
-  setupPicker('tpEdit', v => { tpEditVal = v; });
+  try {
+    apiKey = localStorage.getItem('mkey')||'';
+    if (apiKey) document.getElementById('apiKeyInp').value = apiKey;
+    if (localStorage.getItem('apibH')) document.getElementById('apib').style.display='none';
+    const c=localStorage.getItem('curr'); if(c) document.getElementById('currSel').value=c;
+  } catch(e) {}
 
   initMap();
   render();
+  setTimeout(updateMap, 600);
 }
 
+function buildFormHTML() {
+  const typeOpts = TYPES.map(t=>`<option value="${t}">${TYPE_LABELS[t]}</option>`).join('');
+  const tpBtns = ['car','train','bus','walk','bike','boat',''].map(v=>`<button class="tp${v==='car'?' on':''}" data-v="${v}">${TL[v]}</button>`).join('');
+  return `
+  <div class="fg fg4">
+    <div class="field"><label>Čas příjezdu</label><input type="time" id="fTime" value="10:00" oninput="clearAutoTime()"><div class="time-sug" id="timeSug" onclick="applyTimeSug()"></div></div>
+    <div class="field" style="grid-column:2/3"><label>Místo / název</label><div class="ac-wrap"><input type="text" id="fName" placeholder="např. Hrad Karlštejn…" oninput="acInput(this,'acName');updateTimeSug()" autocomplete="off" onkeydown="acKey(event,'acName')"><div class="ac-drop" id="acName"></div></div></div>
+    <div class="field"><label>Délka pobytu</label><input type="text" id="fStay" placeholder="1 h 30 min" oninput="updateTimeSug()"></div>
+    <div class="field"><label>Typ</label><select id="fType">${typeOpts}</select></div>
+  </div>
+  <div class="fg fg2">
+    <div class="field"><label>Poznámka</label><textarea id="fNote" placeholder="Vstupné, otevírací doba…"></textarea></div>
+    <div class="field"><label>Náklady</label><input type="text" id="fCost" placeholder="200"></div>
+  </div>
+  <div class="tr-sect">
+    <h4>🚌 Přesun z předchozí zastávky</h4>
+    <div class="tp-row" id="tpAddD">${tpBtns}</div>
+    <div class="fg fg3">
+      <div class="field"><label>Trvání</label><input type="text" id="fTDur" placeholder="45 min" oninput="updateTimeSug()"></div>
+      <div class="field"><label>Odkud</label><input type="text" id="fTFrom" placeholder="(z předchozí)"></div>
+      <div class="field"><label>Cena přesunu</label><input type="text" id="fTCost" placeholder="120"></div>
+    </div>
+  </div>
+  <div class="form-btns">
+    <button class="btn-p" onclick="addStop()">Přidat zastávku</button>
+    <button class="recalc" onclick="recalcTimes()" title="Přepočítat časy">⏱ Přepočítat časy</button>
+    <button class="btn-s" style="margin-left:auto" onclick="clearAll()">🗑️ Vymazat vše</button>
+  </div>`;
+}
+
+// Sheet (mobile) has duplicate IDs via the ID suffix — use a simpler approach: form IDs are shared, sheet copies DOM
+// Actually use same IDs — sheet is hidden on desktop, add-section hidden on mobile, so no conflict
+// BUT if both exist in DOM they'd conflict. Let's use a single form approach: only one exists in DOM at a time.
+// On mobile, sheet form is used (injected dynamically). On desktop, add-section form.
+
+// ╔══════════════════════════════════════════════════════╗
+//  STATE MANAGEMENT
+// ╚══════════════════════════════════════════════════════╝
 function applyState(p) {
-  stops = p.stops || [];
-  document.getElementById('tripName').value = p.name || '';
-  document.getElementById('tripDate').value = p.date || '';
-  document.getElementById('originName').value = p.origin || '';
-  document.getElementById('originTime').value = p.originTime || '08:00';
+  stops = p.stops||[];
+  document.getElementById('tripName').value = p.name||'';
+  document.getElementById('tripDate').value = p.date||'';
+  document.getElementById('originName').value = p.origin||'';
+  document.getElementById('originTime').value = p.originTime||'08:00';
   if (p.currency) document.getElementById('currSel').value = p.currency;
 }
 
@@ -511,320 +690,263 @@ function getState() {
   };
 }
 
-function saveState() {
-  try { localStorage.setItem('vylety_v4', JSON.stringify(getState())); } catch(e) {}
+function saveState(skipCollab) {
+  try { localStorage.setItem('vylety_v5', JSON.stringify(getState())); } catch(e) {}
+  if (!skipCollab && roomCode) pushCollab();
   updateHStats();
 }
 
-['tripName','tripDate'].forEach(id => document.getElementById(id).addEventListener('input', saveState));
+['tripName','tripDate'].forEach(id=>document.getElementById(id).addEventListener('input',()=>saveState()));
 
-// ══════════════════════════════════════════════════════════
-//  TIME CALCULATION
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
+//  TIME CALCULATIONS
+// ╚══════════════════════════════════════════════════════╝
+let autoTime = false;
+
 function parseMins(s) {
-  if (!s || !s.trim()) return null;
+  if (!s?.trim()) return null;
   s = s.toLowerCase().replace(',','.');
   let m;
-  if ((m = s.match(/(\d+(?:\.\d+)?)\s*h[^0-9]*(\d+)/))) return Math.round(parseFloat(m[1])*60)+parseInt(m[2]);
-  if ((m = s.match(/(\d+):(\d+)/))) return parseInt(m[1])*60+parseInt(m[2]);
-  if ((m = s.match(/(\d+(?:\.\d+)?)\s*h/))) return Math.round(parseFloat(m[1])*60);
-  if ((m = s.match(/(\d+)\s*min/))) return parseInt(m[1]);
-  if ((m = s.match(/^(\d+)$/))) return parseInt(m[1]);
+  if ((m=s.match(/(\d+(?:\.\d+)?)\s*h[^\d]*(\d+)/))) return Math.round(parseFloat(m[1])*60)+parseInt(m[2]);
+  if ((m=s.match(/(\d+):(\d+)/))) return parseInt(m[1])*60+parseInt(m[2]);
+  if ((m=s.match(/(\d+(?:\.\d+)?)\s*h/))) return Math.round(parseFloat(m[1])*60);
+  if ((m=s.match(/(\d+)\s*min/))) return parseInt(m[1]);
+  if ((m=s.match(/^(\d+)$/))) return parseInt(m[1]);
   return null;
 }
 
 function addMins(t, mins) {
-  if (!t || mins === null) return null;
-  const [h,m] = t.split(':').map(Number);
-  const tot = h*60 + m + mins;
-  return String(Math.floor(tot/60)%24).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');
+  if (!t||mins===null) return null;
+  const [h,m]=t.split(':').map(Number), tot=h*60+m+mins;
+  return String(Math.floor(((tot%1440)+1440)%1440/60)).padStart(2,'0')+':'+String(((tot%60)+60)%60).padStart(2,'0');
 }
 
-function computeArrival(prevStop, transferDur) {
+function computeNext(prevStop, transDur) {
   if (!prevStop?.time) return null;
   let t = prevStop.time;
-  const stayM = parseMins(prevStop.stay);
-  const transM = parseMins(transferDur);
-  if (stayM !== null) t = addMins(t, stayM);
-  else return null;
-  if (transM !== null) t = addMins(t, transM);
+  const sM = parseMins(prevStop.stay), tM = parseMins(transDur);
+  if (sM===null) return null;
+  t = addMins(t, sM);
+  if (tM!==null) t = addMins(t, tM);
   return t;
 }
 
-function updateTimeHint() {
-  const hint = document.getElementById('timeHint');
-  if (!stops.length) { hint.style.display='none'; return; }
-  const prev = stops[stops.length-1];
-  const dur = document.getElementById('fTDur').value;
-  const sug = computeArrival(prev, dur);
-  if (sug) {
-    hint.textContent = '→ Navržený čas: '+sug+' (klikni pro použití)';
-    hint.style.display = 'block';
-  } else {
-    hint.style.display = 'none';
-  }
+function updateTimeSug() {
+  const el = document.getElementById('timeSug'); if (!el) return;
+  if (!stops.length) { el.style.display='none'; return; }
+  const sug = computeNext(stops[stops.length-1], document.getElementById('fTDur')?.value);
+  if (sug) { el.textContent='→ Navržený čas: '+sug+' (klikni)'; el.style.display='block'; }
+  else el.style.display='none';
 }
 
-function applyHintTime() {
-  const hint = document.getElementById('timeHint');
-  const m = hint.textContent.match(/(\d{2}:\d{2})/);
-  if (m) { document.getElementById('fTime').value = m[1]; autoTimeSet = true; hint.style.display='none'; }
+function applyTimeSug() {
+  const el=document.getElementById('timeSug');
+  const m=el.textContent.match(/(\d{2}:\d{2})/);
+  if (m) { document.getElementById('fTime').value=m[1]; autoTime=true; el.style.display='none'; }
 }
 
-function clearAutoTime() { autoTimeSet = false; }
+function clearAutoTime() { autoTime=false; }
 
 function recalcTimes() {
-  let t = document.getElementById('originTime').value || '08:00';
-  stops.forEach((s, i) => {
-    const transM = parseMins(s.tr?.dur);
-    if (i === 0) {
-      const prevStayM = parseMins('0');
-      const transT = transM !== null ? addMins(t, transM) : t;
-      s.time = transT || t;
-    } else {
-      const prev = stops[i-1];
-      const computed = computeArrival(prev, s.tr?.dur);
-      if (computed) s.time = computed;
-    }
-    t = s.time;
+  if (!stops.length) return;
+  let t = document.getElementById('originTime').value||'08:00';
+  stops.forEach((s,i) => {
+    const tM=parseMins(s.tr?.dur);
+    if (i===0) s.time=tM!==null?addMins(t,tM):t;
+    else { const c=computeNext(stops[i-1],s.tr?.dur); if(c) s.time=c; }
+    t=s.time;
   });
   saveState(); render();
 }
 
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
 //  PICKER
-// ══════════════════════════════════════════════════════════
+// ╚══════════════════════════════════════════════════════╝
 function setupPicker(id, cb) {
-  document.getElementById(id).addEventListener('click', e => {
-    const b = e.target.closest('.tp'); if (!b) return;
-    document.querySelectorAll('#'+id+' .tp').forEach(x=>x.classList.remove('on'));
+  const el = document.getElementById(id); if (!el) return;
+  el.addEventListener('click', e => {
+    const b=e.target.closest('.tp'); if(!b) return;
+    el.querySelectorAll('.tp').forEach(x=>x.classList.remove('on'));
     b.classList.add('on'); cb(b.dataset.v);
   });
 }
 
-// ══════════════════════════════════════════════════════════
-//  AUTOCOMPLETE
-// ══════════════════════════════════════════════════════════
-function acInput(inp, dropId) {
-  const q = inp.value.trim();
-  clearTimeout(acDebounce[dropId]);
-  if (q.length < 2) { closeAc(dropId); return; }
-  acDebounce[dropId] = setTimeout(() => fetchSuggest(q, inp, dropId), 320);
+// also setup sheet picker with same ID (only one visible at a time)
+function setupPicker2(id, cb) {
+  // same as setupPicker but double-check ID existence
+  setupPicker(id, cb);
 }
 
-async function fetchSuggest(q, inp, dropId) {
+// ╔══════════════════════════════════════════════════════╗
+//  AUTOCOMPLETE
+// ╚══════════════════════════════════════════════════════╝
+function acInput(inp, dropId) {
+  clearTimeout(acTimers[dropId]);
+  const q=inp.value.trim();
+  if (q.length<2) { closeAc(dropId); return; }
+  acTimers[dropId]=setTimeout(()=>fetchSug(q,inp,dropId), 300);
+}
+
+async function fetchSug(q, inp, dropId) {
   if (!apiKey) return;
   try {
-    const r = await fetch(`https://api.mapy.cz/v1/suggest?lang=cs&limit=6&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(q)}&type=regional.municipality,poi,regional.address`);
-    const d = await r.json();
-    showAcDrop(d.items || [], inp, dropId);
+    const r=await fetch(`https://api.mapy.cz/v1/suggest?lang=cs&limit=6&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(q)}&type=regional.municipality,poi,regional.address`);
+    const d=await r.json();
+    showAc(d.items||[], inp, dropId);
   } catch(e) {}
 }
 
-function showAcDrop(items, inp, dropId) {
-  const drop = document.getElementById(dropId);
-  if (!items.length) { drop.classList.remove('show'); return; }
-  drop.innerHTML = items.map((it, i) => {
-    const label = it.name || it.label || '';
-    const sub = it.location || it.region || '';
-    return `<div class="ac-item" data-idx="${i}" onclick="pickAc(${i},'${dropId}',this)">
-      <div class="ac-name">${esc(label)}</div>
-      ${sub ? `<div class="ac-sub">${esc(sub)}</div>` : ''}
-    </div>`;
-  }).join('');
-  drop.dataset.items = JSON.stringify(items.map(i=>({name:i.name||i.label,lat:i.position?.lat,lon:i.position?.lon})));
-  drop.dataset.inp = inp.id;
-  drop.classList.add('show');
-  // Close on outside click
-  setTimeout(() => document.addEventListener('click', function h(e) { if (!drop.contains(e.target)&&e.target!==inp) { drop.classList.remove('show'); document.removeEventListener('click',h); } }), 50);
+function showAc(items, inp, dropId) {
+  const drop=document.getElementById(dropId); if(!drop) return;
+  if (!items.length) { drop.classList.remove('on'); return; }
+  drop.innerHTML=items.map((it,i)=>`<div class="ac-item" onclick="pickAc(${i},'${dropId}')"><div class="ac-name">${esc(it.name||it.label||'')}</div><div class="ac-sub">${esc(it.location||it.region||'')}</div></div>`).join('');
+  drop.dataset.items=JSON.stringify(items.map(i=>({name:i.name||i.label,lat:i.position?.lat,lon:i.position?.lon})));
+  drop.dataset.inp=inp.id;
+  drop.classList.add('on');
+  setTimeout(()=>document.addEventListener('click',function h(e){if(!drop.contains(e.target)&&e.target!==inp){drop.classList.remove('on');document.removeEventListener('click',h);}},50));
 }
 
-function pickAc(idx, dropId, el) {
-  const drop = document.getElementById(dropId);
-  const items = JSON.parse(drop.dataset.items || '[]');
-  const item = items[idx];
-  const inp = document.getElementById(drop.dataset.inp);
-  if (inp && item) {
-    inp.value = item.name || '';
-    if (item.lat && item.lon) coordCache[item.name] = [item.lat, item.lon];
+function pickAc(idx, dropId) {
+  const drop=document.getElementById(dropId);
+  const items=JSON.parse(drop.dataset.items||'[]');
+  const item=items[idx];
+  const inp=document.getElementById(drop.dataset.inp);
+  if (inp&&item) {
+    inp.value=item.name||'';
+    if (item.lat&&item.lon) coordCache[item.name]=[item.lat,item.lon];
     inp.dispatchEvent(new Event('input'));
   }
-  drop.classList.remove('show');
-  if (dropId === 'acName') updateTimeHint();
+  drop.classList.remove('on');
 }
 
 function acKey(e, dropId) {
-  const drop = document.getElementById(dropId);
-  if (!drop.classList.contains('show')) return;
-  const items = drop.querySelectorAll('.ac-item');
-  const hl = drop.querySelector('.ac-item.hl');
-  if (e.key === 'ArrowDown') { e.preventDefault(); (hl ? (hl.classList.remove('hl'), hl.nextElementSibling || items[0]) : items[0])?.classList.add('hl'); }
-  if (e.key === 'ArrowUp') { e.preventDefault(); (hl ? (hl.classList.remove('hl'), hl.previousElementSibling || items[items.length-1]) : items[items.length-1])?.classList.add('hl'); }
-  if (e.key === 'Enter' && hl) { e.preventDefault(); hl.click(); }
-  if (e.key === 'Escape') drop.classList.remove('show');
+  const drop=document.getElementById(dropId);
+  if (!drop.classList.contains('on')) return;
+  const items=drop.querySelectorAll('.ac-item'), hl=drop.querySelector('.ac-item.hl');
+  if (e.key==='ArrowDown'){e.preventDefault();(hl?hl.nextElementSibling||items[0]:items[0])?.classList.add('hl');hl?.classList.remove('hl')}
+  if (e.key==='ArrowUp'){e.preventDefault();(hl?hl.previousElementSibling||items[items.length-1]:items[items.length-1])?.classList.add('hl');hl?.classList.remove('hl')}
+  if (e.key==='Enter'&&hl){e.preventDefault();hl.click()}
+  if (e.key==='Escape') drop.classList.remove('on');
 }
 
-function closeAc(id) { document.getElementById(id).classList.remove('show'); }
+function closeAc(id) { document.getElementById(id)?.classList.remove('on'); }
 
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
 //  GEOCODING
-// ══════════════════════════════════════════════════════════
+// ╚══════════════════════════════════════════════════════╝
 async function geocode(name) {
   if (!name) return null;
   if (coordCache[name]) return coordCache[name];
-  // Mapy.cz geocode
   if (apiKey) {
     try {
-      const r = await fetch(`https://api.mapy.cz/v1/geocode?lang=cs&limit=1&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(name)}`);
-      const d = await r.json();
-      const p = d.items?.[0]?.position;
+      const r=await fetch(`https://api.mapy.cz/v1/geocode?lang=cs&limit=1&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(name)}`);
+      const d=await r.json(); const p=d.items?.[0]?.position;
       if (p) { coordCache[name]=[p.lat,p.lon]; return coordCache[name]; }
     } catch(e) {}
   }
-  // Nominatim fallback
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(name)}&countrycodes=cz,sk,at,de,pl`);
-    const d = await r.json();
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(name)}&countrycodes=cz,sk,at,de,pl`);
+    const d=await r.json();
     if (d[0]) { coordCache[name]=[parseFloat(d[0].lat),parseFloat(d[0].lon)]; return coordCache[name]; }
   } catch(e) {}
   return null;
 }
 
-// ══════════════════════════════════════════════════════════
-//  MAPY.CZ ROUTING DURATION
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
+//  ROUTING + ELEVATION
+// ╚══════════════════════════════════════════════════════╝
 async function fetchRouteDur(from, to, mode, el) {
-  if (!apiKey || !MAPY_RT[mode]) return;
+  if (!apiKey||!MAPY_RT[mode]) return;
   try {
-    const [a,b] = await Promise.all([geocode(from), geocode(to)]);
+    const [a,b]=await Promise.all([geocode(from),geocode(to)]);
     if (!a||!b) return;
-    const r = await fetch(`https://api.mapy.cz/v1/routing/route?apikey=${encodeURIComponent(apiKey)}&lang=cs&routeType=${MAPY_RT[mode]}&start=${a[1]},${a[0]}&end=${b[1]},${b[0]}`);
-    const d = await r.json();
-    const secs = d.routes?.[0]?.duration; if (!secs) return;
+    const r=await fetch(`https://api.mapy.cz/v1/routing/route?apikey=${encodeURIComponent(apiKey)}&lang=cs&routeType=${MAPY_RT[mode]}&start=${a[1]},${a[0]}&end=${b[1]},${b[0]}`);
+    const d=await r.json();
+    const secs=d.routes?.[0]?.duration; if(!secs) return;
     const mins=Math.round(secs/60),h=Math.floor(mins/60),m=mins%60;
-    el.textContent='~'+(h?h+' h '+m+' min':m+' min');
-    el.style.display='inline-flex';
+    el.textContent='~'+(h?h+' h '+m+' min':m+' min'); el.style.display='inline-flex';
   } catch(e) {}
 }
 
-// ══════════════════════════════════════════════════════════
-//  ELEVATION
-// ══════════════════════════════════════════════════════════
-async function fetchElevation(from, to, el) {
+async function fetchElev(from, to, el) {
   if (!apiKey) return;
   try {
-    const [a,b] = await Promise.all([geocode(from), geocode(to)]);
+    const [a,b]=await Promise.all([geocode(from),geocode(to)]);
     if (!a||!b) return;
-    const N=20, pts=[];
-    for (let i=0;i<=N;i++) {
-      const t=i/N;
-      pts.push({lat:a[0]+(b[0]-a[0])*t, lon:a[1]+(b[1]-a[1])*t});
-    }
-    const r = await fetch(`https://api.mapy.cz/v1/elevation?apikey=${encodeURIComponent(apiKey)}`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({points:pts})
-    });
-    const d = await r.json();
-    const elevs = d.elevations || d.results?.map(x=>x.elevation);
+    const N=20,pts=[];
+    for(let i=0;i<=N;i++){const t=i/N;pts.push({lat:a[0]+(b[0]-a[0])*t,lon:a[1]+(b[1]-a[1])*t});}
+    const r=await fetch(`https://api.mapy.cz/v1/elevation?apikey=${encodeURIComponent(apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({points:pts})});
+    const d=await r.json();
+    const elevs=d.elevations||d.results?.map(x=>x.elevation);
     if (!elevs?.length) return;
-    const min=Math.min(...elevs), max=Math.max(...elevs), range=max-min||1;
-    const gain = elevs.reduce((acc,e,i)=>i>0&&e>elevs[i-1]?acc+(e-elevs[i-1]):acc,0);
-    const W=120, H=30;
-    const pts2 = elevs.map((e,i)=>`${(i/(elevs.length-1))*W},${H-((e-min)/range)*H}`).join(' ');
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
-      <polyline points="${pts2}" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linejoin="round"/>
-    </svg><span>↑${Math.round(gain)}m (${Math.round(min)}–${Math.round(max)}m)</span>`;
+    const min=Math.min(...elevs),max=Math.max(...elevs),range=max-min||1;
+    const gain=elevs.reduce((acc,e,i)=>i>0&&e>elevs[i-1]?acc+(e-elevs[i-1]):acc,0);
+    const W=100,H=26;
+    const pts2=elevs.map((e,i)=>`${(i/(elevs.length-1))*W},${H-((e-min)/range)*H}`).join(' ');
+    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="flex-shrink:0"><polyline points="${pts2}" fill="none" stroke="#3a6b52" stroke-width="1.8" stroke-linejoin="round"/></svg><span>↑${Math.round(gain)}m</span>`;
     el.style.display='inline-flex';
   } catch(e) {}
 }
 
 function mapyHref(from, to, mode) {
-  const ms = mode==='car'?'traffic':'outdoor';
-  const rt = MAPY_RT[mode]||(mode==='train'||mode==='bus'?'public_transport':null);
+  const ms=mode==='car'?'traffic':'outdoor';
+  const rt=MAPY_RT[mode]||(mode==='train'||mode==='bus'?'public_transport':null);
   if (!rt) return 'https://mapy.cz/?q='+encodeURIComponent(to);
   return `https://mapy.com/fnc/v1/route?mapset=${ms}&routeType=${rt}&start=${encodeURIComponent(from)}&end=${encodeURIComponent(to)}`;
 }
 
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
 //  MAP
-// ══════════════════════════════════════════════════════════
+// ╚══════════════════════════════════════════════════════╝
 function initMap() {
-  map = L.map('mapEl', {zoomControl:true,attributionControl:false}).setView([49.8, 15.5], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
-  L.control.attribution({prefix:'© <a href="https://openstreetmap.org">OSM</a>'}).addTo(map);
+  map=L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.8,15.5],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  L.control.attribution({prefix:'© <a href="https://osm.org">OSM</a>'}).addTo(map);
 }
 
-function mkMarker(num, color, label) {
-  return L.divIcon({
-    html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:'DM Sans',sans-serif">${num}</div>`,
-    className:'', iconSize:[28,28], iconAnchor:[14,14], tooltipAnchor:[14,0]
-  });
+function mkIcon(label, color) {
+  return L.divIcon({html:`<div style="width:30px;height:30px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:2.5px solid rgba(255,255,255,.9);box-shadow:0 3px 10px rgba(0,0,0,.3);font-family:'DM Sans',sans-serif">${label}</div>`,className:'',iconSize:[30,30],iconAnchor:[15,15],tooltipAnchor:[15,0]});
 }
 
 async function updateMap() {
-  mapLayers.forEach(l => map.removeLayer(l)); mapLayers=[];
-  const allNames = [document.getElementById('originName').value, ...stops.map(s=>s.name)].filter(Boolean);
-  if (!allNames.length) { document.getElementById('mapCaption').textContent='Zastávky se zobrazí po přidání míst.'; return; }
-
-  const coords = await Promise.all(allNames.map(n => geocode(n)));
-  const valid = allNames.map((n,i)=>({name:n,coords:coords[i]})).filter(x=>x.coords);
-
-  if (!valid.length) { document.getElementById('mapCaption').textContent='Nepodařilo se načíst souřadnice zastávek.'; return; }
-
-  const latlngs = valid.map(x=>x.coords);
-
-  // Polyline
-  const poly = L.polyline(latlngs, {color:'#1a3f70', weight:2, dashArray:'5 6', opacity:.6}).addTo(map);
+  mapLayers.forEach(l=>map.removeLayer(l)); mapLayers=[];
+  const origin=document.getElementById('originName').value;
+  const names=[origin,...stops.map(s=>s.name)].filter(Boolean);
+  if (!names.length) return;
+  const coords=await Promise.all(names.map(n=>geocode(n)));
+  const pts=names.map((n,i)=>({n,c:coords[i]})).filter(x=>x.c);
+  if (!pts.length) return;
+  const lls=pts.map(x=>x.c);
+  const poly=L.polyline(lls,{color:'#1b2d45',weight:2,dashArray:'5 7',opacity:.55}).addTo(map);
   mapLayers.push(poly);
-
-  // Markers
-  valid.forEach((x,i) => {
-    const isOrigin = i===0 && document.getElementById('originName').value;
-    const color = i===0?'#18180f':(i===valid.length-1?'#bf4e1a':'#1a3f70');
-    const label = i===0?'🚩':(i);
-    const m = L.marker(x.coords, {icon:mkMarker(isOrigin?'S':i,color,x.name)})
-      .bindTooltip(x.name,{direction:'top',offset:[0,-14]}).addTo(map);
-    mapLayers.push(m);
+  pts.forEach(({n,c},i)=>{
+    const isOrigin=i===0&&origin;
+    const color=i===0?'#1b2d45':(i===pts.length-1?'#d95f35':'#1a3f70');
+    const lbl=isOrigin?'S':i;
+    const mk=L.marker(c,{icon:mkIcon(lbl,color)}).bindTooltip(n,{direction:'top',offset:[0,-15]}).addTo(map);
+    mapLayers.push(mk);
   });
-
-  if (latlngs.length>1) map.fitBounds(L.latLngBounds(latlngs).pad(.15));
-  else map.setView(latlngs[0], 13);
-  document.getElementById('mapCaption').textContent = valid.length + ' míst načteno. © OpenStreetMap';
+  if (lls.length>1) map.fitBounds(L.latLngBounds(lls).pad(.15));
+  else map.setView(lls[0],12);
+  document.getElementById('mapCap').textContent=pts.length+' míst · © OpenStreetMap';
 }
 
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
 //  ADD / EDIT / DELETE
-// ══════════════════════════════════════════════════════════
+// ╚══════════════════════════════════════════════════════╝
+function fv(id){return document.getElementById(id)?.value?.trim()||'';}
+
 function addStop() {
-  const name = document.getElementById('fName').value.trim();
-  if (!name) { document.getElementById('fName').focus(); return; }
-
-  stops.push({
-    time: document.getElementById('fTime').value,
-    autoTime: autoTimeSet,
-    name, stay:document.getElementById('fStay').value.trim(),
-    type:document.getElementById('fType').value,
-    note:document.getElementById('fNote').value.trim(),
-    cost:document.getElementById('fCost').value.trim(),
-    tr:{
-      mode:tpAddVal,
-      dur:document.getElementById('fTDur').value.trim(),
-      from:document.getElementById('fTFrom').value.trim(),
-      cost:document.getElementById('fTCost').value.trim(),
-      note:''
-    }
-  });
-
+  const name=fv('fName'); if(!name){document.getElementById('fName')?.focus();return;}
+  stops.push({time:fv('fTime')||'10:00',autoTime,name,stay:fv('fStay'),type:fv('fType'),note:fv('fNote'),cost:fv('fCost'),tr:{mode:tpAddVal,dur:fv('fTDur'),from:fv('fTFrom'),cost:fv('fTCost')}});
   saveState(); render();
-  // Reset
-  ['fName','fStay','fNote','fCost','fTDur','fTCost'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fType').value='';
-  document.getElementById('fTFrom').value=name;
-  autoTimeSet=false;
-  document.getElementById('timeHint').style.display='none';
-  document.getElementById('fName').focus();
-  updateTimeHint();
-  updateMap();
+  ['fName','fStay','fNote','fCost','fTDur','fTCost'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const typeEl=document.getElementById('fType'); if(typeEl) typeEl.value='';
+  const fromEl=document.getElementById('fTFrom'); if(fromEl) fromEl.value=name;
+  autoTime=false;
+  const sug=document.getElementById('timeSug'); if(sug) sug.style.display='none';
+  document.getElementById('fName')?.focus();
+  updateTimeSug(); updateMap();
 }
 
 function delStop(i) {
@@ -838,7 +960,8 @@ function moveStop(i,d) {
 }
 
 function openEdit(i) {
-  const s=stops[i]; document.getElementById('eIdx').value=i;
+  const s=stops[i];
+  document.getElementById('eIdx').value=i;
   document.getElementById('eTime').value=s.time;
   document.getElementById('eName').value=s.name;
   document.getElementById('eStay').value=s.stay;
@@ -849,126 +972,167 @@ function openEdit(i) {
   document.getElementById('eTFrom').value=s.tr?.from||'';
   document.getElementById('eTCost').value=s.tr?.cost||'';
   tpEditVal=s.tr?.mode||'';
-  document.querySelectorAll('#tpEdit .tp').forEach(b=>b.classList.toggle('on',b.dataset.v===tpEditVal));
-  document.getElementById('editOv').classList.add('on');
+  const tpE=document.getElementById('tpEdit');
+  if (!tpE.innerHTML) tpE.innerHTML=['car','train','bus','walk','bike','boat',''].map(v=>`<button class="tp" data-v="${v}">${TL[v]}</button>`).join('');
+  tpE.querySelectorAll('.tp').forEach(b=>b.classList.toggle('on',b.dataset.v===tpEditVal));
+  document.getElementById('editOvl').classList.add('on');
 }
 
 function saveEdit() {
-  const i=parseInt(document.getElementById('eIdx').value);
-  stops[i]={
-    time:document.getElementById('eTime').value,
-    name:document.getElementById('eName').value.trim(),
-    stay:document.getElementById('eStay').value.trim(),
-    type:document.getElementById('eType').value,
-    note:document.getElementById('eNote').value.trim(),
-    cost:document.getElementById('eCost').value.trim(),
-    tr:{
-      mode:tpEditVal,
-      dur:document.getElementById('eTDur').value.trim(),
-      from:document.getElementById('eTFrom').value.trim(),
-      cost:document.getElementById('eTCost').value.trim()
+  const i=parseInt(fv('eIdx'));
+  stops[i]={time:fv('eTime'),name:fv('eName'),stay:fv('eStay'),type:fv('eType'),note:fv('eNote'),cost:fv('eCost'),tr:{mode:tpEditVal,dur:fv('eTDur'),from:fv('eTFrom'),cost:fv('eTCost')}};
+  saveState(); render(); closeEditOvl(); updateMap();
+}
+
+function closeEditOvl(e) { if(e&&e.target!==document.getElementById('editOvl')) return; document.getElementById('editOvl').classList.remove('on'); }
+
+function clearAll() { if(!confirm('Vymazat celý plán?')) return; stops=[]; saveState(); render(); updateMap(); }
+
+// ╔══════════════════════════════════════════════════════╗
+//  DRAG & DROP
+// ╚══════════════════════════════════════════════════════╝
+function initDrag(el, idx) {
+  el.setAttribute('draggable','true');
+  el.addEventListener('dragstart', e=>{
+    dragSrcIdx=idx; el.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',idx);
+  });
+  el.addEventListener('dragend', ()=>{
+    el.classList.remove('dragging');
+    document.querySelectorAll('.drop-line').forEach(d=>d.classList.remove('show'));
+  });
+}
+
+function setupDropZone(dropLine, targetIdx) {
+  const tl=document.getElementById('timeline');
+  tl.addEventListener('dragover', e=>{
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    document.querySelectorAll('.drop-line').forEach(d=>d.classList.remove('show'));
+    dropLine.classList.add('show');
+  });
+  dropLine.addEventListener('drop', e=>{
+    e.preventDefault();
+    if (dragSrcIdx===null||dragSrcIdx===targetIdx) return;
+    const moved=stops.splice(dragSrcIdx,1)[0];
+    const newIdx=dragSrcIdx<targetIdx?targetIdx-1:targetIdx;
+    stops.splice(newIdx,0,moved);
+    dragSrcIdx=null;
+    saveState(); render();
+  });
+}
+
+// ╔══════════════════════════════════════════════════════╗
+//  SWIPE TO REVEAL (mobile)
+// ╚══════════════════════════════════════════════════════╝
+function initSwipe(card, idx) {
+  let startX=0, curX=0, swiping=false;
+  const MAX=120;
+  card.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;curX=0;swiping=true},{passive:true});
+  card.addEventListener('touchmove',e=>{
+    if(!swiping) return;
+    const dx=e.touches[0].clientX-startX;
+    curX=Math.max(-MAX,Math.min(0,dx));
+    card.querySelector('.sc-inner').style.transform=`translateX(${curX}px)`;
+    card.querySelector('.sc-swipe-bg').style.opacity=Math.abs(curX)/MAX;
+    e.preventDefault();
+  },{passive:false});
+  card.addEventListener('touchend',()=>{
+    swiping=false;
+    if (curX<-MAX/2) {
+      card.querySelector('.sc-inner').style.transform=`translateX(-${MAX}px)`;
+      card.querySelector('.sc-swipe-bg').style.opacity=1;
+      card.querySelector('.sc-swipe-bg').style.pointerEvents='auto';
+    } else {
+      card.querySelector('.sc-inner').style.transform='';
+      card.querySelector('.sc-swipe-bg').style.opacity=0;
     }
-  };
-  saveState(); render(); closeEdit(); updateMap();
+  });
 }
 
-function closeEdit(e) {
-  if (e&&e.target!==document.getElementById('editOv')) return;
-  document.getElementById('editOv').classList.remove('on');
-}
-
-function clearAll() {
-  if (!confirm('Vymazat celý plán?')) return;
-  stops=[]; saveState(); render(); updateMap();
-}
-
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
 //  RENDER
-// ══════════════════════════════════════════════════════════
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// ╚══════════════════════════════════════════════════════╝
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function updateHStats() {
   const el=document.getElementById('hStats');
-  if (!stops.length) { el.innerHTML=''; return; }
-  const f=stops[0].time, l=stops[stops.length-1].time;
   const curr=document.getElementById('currSel').value;
   const total=calcTotal();
-  el.innerHTML=`Zastávek: <strong>${stops.length}</strong><br>`+
-    (f?`${f} – ${l||'?'}<br>`:'') +
-    (total>0?`Celkem: <strong>${total} ${curr}</strong>`:'');
+  if (!stops.length){el.innerHTML='';return;}
+  const f=stops[0].time, l=stops[stops.length-1].time;
+  el.innerHTML=`<strong>${stops.length}</strong> zastávek · ${f}–${l||'?'}`+(total>0?` · <strong>${total} ${curr}</strong>`:'');
 }
 
 function calcTotal() {
-  let t=0;
-  stops.forEach(s=>{
-    const c=parseFloat(s.cost); if(!isNaN(c)) t+=c;
-    const tc=parseFloat(s.tr?.cost); if(!isNaN(tc)) t+=tc;
-  });
-  return Math.round(t*100)/100;
+  return Math.round(stops.reduce((t,s)=>{const c=parseFloat(s.cost),tc=parseFloat(s.tr?.cost);return t+(isNaN(c)?0:c)+(isNaN(tc)?0:tc);},0)*100)/100;
 }
 
 function renderBudget() {
   const curr=document.getElementById('currSel').value;
   const rows=[];
   stops.forEach(s=>{
-    const c=parseFloat(s.tr?.cost); if(!isNaN(c)&&c>0) rows.push({name:'🚌 '+esc(s.tr?.from||'Přesun')+' → '+esc(s.name),amt:c});
-    const sc=parseFloat(s.cost); if(!isNaN(sc)&&sc>0) rows.push({name:(s.type?s.type+' ':'')+esc(s.name),amt:sc});
+    const tc=parseFloat(s.tr?.cost);if(!isNaN(tc)&&tc>0)rows.push({n:'🚌 '+esc(s.tr?.from||'Přesun')+' → '+esc(s.name),a:tc});
+    const sc=parseFloat(s.cost);if(!isNaN(sc)&&sc>0)rows.push({n:(s.type?s.type+' ':'')+esc(s.name),a:sc});
   });
   const list=document.getElementById('budgetList');
-  if (!rows.length) { list.innerHTML='<div class="no-costs">Zatím žádné náklady.</div>'; return; }
+  if (!rows.length){list.innerHTML='<div class="no-c">Zatím žádné náklady.<br>Přidej ceny u zastávek nebo přesunů.</div>';return;}
   const total=calcTotal();
-  list.innerHTML=rows.map(r=>`<div class="budget-row"><span class="budget-name">${r.name}</span><span class="budget-amount">${r.amt} ${curr}</span></div>`).join('')+
-    `<div class="budget-row total"><span class="budget-name">Celkem</span><span class="budget-amount">${total} ${curr}</span></div>`;
+  list.innerHTML=rows.map(r=>`<div class="brow"><span class="bn">${r.n}</span><span class="ba">${r.a} ${curr}</span></div>`).join('')+
+    `<div class="brow total"><span class="bn">Celkem</span><span class="ba">${total} ${curr}</span></div>`;
   updateHStats();
 }
 
 function render() {
-  const tl=document.getElementById('timeline');
-  const empty=document.getElementById('emptyMsg');
-
-  Array.from(tl.children).forEach(c=>{ if(!c.classList.contains('tl-rail')&&c!==empty) c.remove(); });
-
-  if (!stops.length) { empty.style.display='block'; renderBudget(); updateHStats(); return; }
+  const tl=document.getElementById('timeline'),empty=document.getElementById('emptyMsg');
+  Array.from(tl.children).forEach(c=>{if(!c.classList.contains('tl-rail')&&c!==empty)c.remove();});
+  if (!stops.length){empty.style.display='block';renderBudget();updateHStats();return;}
   empty.style.display='none';
 
-  stops.forEach((s,i) => {
-    // Transfer row
+  stops.forEach((s,i)=>{
+    // Drop line
+    const dl=document.createElement('div'); dl.className='drop-line';
+    setupDropZone(dl,i); tl.appendChild(dl);
+
+    // Transfer
     if (i>0) {
       const tr=s.tr||{}, from=tr.from||(stops[i-1]?.name)||'', to=s.name, mode=tr.mode||'';
       const href=from&&to?mapyHref(from,to,mode):'';
-      const uid='r'+i+'_'+Math.random().toString(36).slice(2,6);
-      const euid='e'+uid;
-
+      const rtId='rt'+i+Date.now()%10000, elId='el'+i+Date.now()%10000;
       const row=document.createElement('div'); row.className='tr-row';
-      row.innerHTML=`<div class="tr-gap"></div><div class="tr-content">
-        <span class="tr-badge ${mode}" onclick="openEdit(${i})" title="Upravit přesun">
-          ${TL[mode]||'—'}
-          ${from?` <span style="opacity:.6">z ${esc(from)}</span>`:''}
-          ${tr.dur?` <span class="tr-dur-lbl">${esc(tr.dur)}</span>`:''}
-          ${tr.cost?` <span style="opacity:.5">· ${esc(tr.cost)} ${document.getElementById('currSel').value}</span>`:''}
-        </span>
-        ${href?`<a class="mapy-lnk" href="${esc(href)}" target="_blank">🗺️ Mapy.cz</a>`:''}
-        <span class="rt-res" id="${uid}"></span>
-        <span class="elev-sparkline" id="${euid}"></span>
+      row.innerHTML=`<div class="tr-gap"></div><div class="tr-pills">
+        <span class="badge ${mode}" onclick="openEdit(${i})" title="Upravit přesun">${TL[mode]||'—'}${from?' <span style="opacity:.6">z '+esc(from)+'</span>':''}${tr.dur?' <span style="opacity:.6;font-size:11px">'+esc(tr.dur)+'</span>':''}${tr.cost?' <span style="opacity:.5">'+esc(tr.cost)+' '+document.getElementById('currSel').value+'</span>':''}</span>
+        ${href?`<a class="badge mapy" href="${esc(href)}" target="_blank">🗺️ Mapy.cz</a>`:''}
+        <span class="badge rt" id="${rtId}"></span>
+        <span class="badge elev" id="${elId}"></span>
       </div>`;
       tl.appendChild(row);
-
-      if (from&&to) {
-        if (MAPY_RT[mode]) fetchRouteDur(from,to,mode,document.getElementById(uid));
-        if (apiKey&&(mode==='walk'||mode==='bike'||mode==='car')) fetchElevation(from,to,document.getElementById(euid));
+      if(from&&to){
+        if(MAPY_RT[mode]) fetchRouteDur(from,to,mode,document.getElementById(rtId));
+        if(apiKey&&(mode==='walk'||mode==='bike'||mode==='car')) fetchElev(from,to,document.getElementById(elId));
       }
     }
 
-    // Stop card
+    // Card
     const isLast=i===stops.length-1;
-    const card=document.createElement('div'); card.className='sc';
-    card.innerHTML=`<div class="sc-dot${isLast?' fin':''}">${i+1}</div>
-      <div class="sc-box">
+    const wrap=document.createElement('div'); wrap.className='sc';
+    const numEl=document.createElement('div'); numEl.className='sc-num'+(isLast?' fin':'');
+    numEl.textContent=i+1;
+    initDrag(wrap, i);
+
+    const cardEl=document.createElement('div'); cardEl.className='sc-card';
+    cardEl.innerHTML=`
+      <div class="sc-swipe-bg" style="opacity:0">
+        <div class="swipe-act edit-sw" onclick="openEdit(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Upravit</div>
+        <div class="swipe-act del-sw" onclick="delStop(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>Smazat</div>
+      </div>
+      <div class="sc-inner">
         <div class="sc-head">
-          <span class="sc-time${s.autoTime?' auto':''}">${s.time||'—'}</span>
+          <span class="sc-time${s.autoTime?' auto':''}">${esc(s.time||'—')}</span>
           <span class="sc-name">${s.type?s.type+' ':''}${esc(s.name)}</span>
           ${s.stay?`<span class="sc-stay">${esc(s.stay)}</span>`:''}
-          ${s.cost?`<span class="sc-cost-lbl">${esc(s.cost)} ${document.getElementById('currSel').value}</span>`:''}
+          ${s.cost?`<span class="sc-cost">${esc(s.cost)} ${document.getElementById('currSel').value}</span>`:''}
           <div class="sc-actions">
             ${i>0?`<button class="ib" onclick="moveStop(${i},-1)">↑</button>`:''}
             ${i<stops.length-1?`<button class="ib" onclick="moveStop(${i},1)">↓</button>`:''}
@@ -978,77 +1142,137 @@ function render() {
         </div>
         ${s.note?`<div class="sc-note">${esc(s.note)}</div>`:''}
       </div>`;
-    tl.appendChild(card);
+    wrap.appendChild(numEl); wrap.appendChild(cardEl);
+    initSwipe(cardEl, i);
+    tl.appendChild(wrap);
   });
+
+  // Final drop line
+  const dlFinal=document.createElement('div'); dlFinal.className='drop-line';
+  setupDropZone(dlFinal, stops.length); tl.appendChild(dlFinal);
 
   renderBudget();
 }
 
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
 //  TABS (mobile)
-// ══════════════════════════════════════════════════════════
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('planPanel').classList.toggle('show', tab==='plan');
-  document.getElementById('mapPanel').classList.toggle('show', tab==='map');
-  document.getElementById('budgetPanel').classList.toggle('show', tab==='budget');
-  if (tab==='map') setTimeout(()=>map?.invalidateSize(),100);
+// ╚══════════════════════════════════════════════════════╝
+function switchTab(tab) {
+  ['plan','map','budget'].forEach(t=>{
+    document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('show',t===tab);
+    document.getElementById('bnav-'+t)?.classList.toggle('on',t===tab);
+  });
+  if (tab==='map') setTimeout(()=>map?.invalidateSize(),120);
 }
 
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
+//  BOTTOM SHEET (mobile)
+// ╚══════════════════════════════════════════════════════╝
+function openSheet() { document.getElementById('sheet').classList.add('open'); document.getElementById('sheetBd').classList.add('on'); document.getElementById('fName')?.focus(); }
+function closeSheet() { document.getElementById('sheet').classList.remove('open'); document.getElementById('sheetBd').classList.remove('on'); }
+
+// ╔══════════════════════════════════════════════════════╗
+//  REAL-TIME COLLAB (via shared storage)
+// ╚══════════════════════════════════════════════════════╝
+function genCode() { return Math.random().toString(36).slice(2,8).toUpperCase(); }
+
+function createRoom() {
+  roomCode = genCode();
+  startCollab();
+  closeCollabOvl();
+  pushCollab();
+}
+
+function joinRoom() {
+  const code = document.getElementById('roomCodeInp').value.trim().toUpperCase();
+  if (code.length<4) { alert('Zadej kód místnosti.'); return; }
+  roomCode=code;
+  startCollab();
+  closeCollabOvl();
+  pullCollab(true);
+}
+
+function startCollab() {
+  try { localStorage.setItem('lastRoom', roomCode); } catch(e) {}
+  document.getElementById('roomCodeDisplay').textContent=roomCode;
+  document.getElementById('collabBar').classList.add('show');
+  document.getElementById('collabBtn').classList.add('collab-on');
+  document.getElementById('collabHint').textContent='Sdílej kód spolucestovatelům';
+  if (collabInterval) clearInterval(collabInterval);
+  collabInterval=setInterval(()=>pullCollab(false), 3500);
+}
+
+function leaveRoom() {
+  roomCode=null; clearInterval(collabInterval); collabInterval=null;
+  document.getElementById('collabBar').classList.remove('show');
+  document.getElementById('collabBtn').classList.remove('collab-on');
+}
+
+async function pushCollab() {
+  if (!roomCode) return;
+  const ts=Date.now();
+  try {
+    await window.storage.set('room:'+roomCode, JSON.stringify({...getState(),_ts:ts}), true);
+    lastCollabTs=ts;
+  } catch(e) {}
+}
+
+async function pullCollab(force) {
+  if (!roomCode) return;
+  try {
+    const res=await window.storage.get('room:'+roomCode, true);
+    if (!res) return;
+    const p=JSON.parse(res.value);
+    if (p._ts && p._ts > lastCollabTs) {
+      lastCollabTs=p._ts;
+      applyState(p); render(); updateMap();
+      document.getElementById('collabHint').textContent='Aktualizováno '+new Date(p._ts).toLocaleTimeString('cs');
+    }
+  } catch(e) {}
+}
+
+function copyRoomCode() {
+  navigator.clipboard.writeText(roomCode).then(()=>{
+    const el=document.getElementById('roomCodeDisplay');
+    el.textContent='Zkopírováno!';
+    setTimeout(()=>el.textContent=roomCode, 1500);
+  }).catch(()=>{});
+}
+
+// ╔══════════════════════════════════════════════════════╗
 //  API KEY
-// ══════════════════════════════════════════════════════════
-function onApiKey() {
-  apiKey=document.getElementById('apiKeyInp').value.trim();
-  try { localStorage.setItem('mkey',apiKey); } catch(e) {}
-}
-function hideApib() {
-  document.getElementById('apib').style.display='none';
-  try { localStorage.setItem('apibHidden','1'); } catch(e) {}
-}
+// ╚══════════════════════════════════════════════════════╝
+function onApiKey() { apiKey=document.getElementById('apiKeyInp').value.trim(); try{localStorage.setItem('mkey',apiKey);}catch(e){} }
+function hideApib() { document.getElementById('apib').style.display='none'; try{localStorage.setItem('apibH','1');}catch(e){} }
 
-// ══════════════════════════════════════════════════════════
-//  SHARE / EXPORT / IMPORT
-// ══════════════════════════════════════════════════════════
-function openShare() {
-  const enc=btoa(unescape(encodeURIComponent(JSON.stringify(getState()))));
-  document.getElementById('shareUrl').value=location.origin+location.pathname+'#plan='+enc;
-  document.getElementById('shareOv').classList.add('on');
-}
-function closeShareOv(e) {
-  if (e&&e.target!==document.getElementById('shareOv')) return;
-  document.getElementById('shareOv').classList.remove('on');
-}
-function copyUrl() {
-  const v=document.getElementById('shareUrl').value;
-  navigator.clipboard.writeText(v).then(()=>{
-    const b=document.getElementById('copyBtn'); b.textContent='✓ Zkopírováno'; b.style.background='var(--green)';
+// ╔══════════════════════════════════════════════════════╗
+//  SHARE
+// ╚══════════════════════════════════════════════════════╝
+function openShare() { const enc=btoa(unescape(encodeURIComponent(JSON.stringify(getState())))); document.getElementById('shareUrl').value=location.origin+location.pathname+'#plan='+enc; document.getElementById('shareOvl').classList.add('on'); }
+function closeShareOvl(e) { if(e&&e.target!==document.getElementById('shareOvl')) return; document.getElementById('shareOvl').classList.remove('on'); }
+function copyShareUrl() {
+  navigator.clipboard.writeText(document.getElementById('shareUrl').value).then(()=>{
+    const b=document.getElementById('copyBtn'); b.textContent='✓ Zkopírováno'; b.style.background='var(--sage)';
     document.getElementById('shareHint').textContent='Odkaz je ve schránce!';
-    setTimeout(()=>{b.textContent='Kopírovat';b.style.background='';},2500);
+    setTimeout(()=>{b.textContent='Kopírovat';b.style.background='';},2200);
   }).catch(()=>{document.getElementById('shareUrl').select();document.execCommand('copy');});
 }
-function exportJSON() {
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'}));
-  a.download='vylety-plan.json'; a.click();
-}
-function importJSON(e) {
-  const f=e.target.files[0]; if (!f) return;
-  const r=new FileReader();
-  r.onload=ev=>{
-    try { applyState(JSON.parse(ev.target.result)); saveState(); render(); updateMap(); closeShareOv(); }
-    catch(err) { alert('Soubor nelze načíst.'); }
-  };
-  r.readAsText(f);
-}
+function exportJSON() { const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'}));a.download='vylety-plan.json';a.click(); }
+function importJSON(e) { const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{applyState(JSON.parse(ev.target.result));saveState();render();updateMap();closeShareOvl();}catch(err){alert('Soubor nelze načíst.');}};r.readAsText(f); }
 
-// ══════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════╗
+//  COLLAB MODAL
+// ╚══════════════════════════════════════════════════════╝
+function openCollabModal() { document.getElementById('collabOvl').classList.add('on'); }
+function closeCollabOvl(e) { if(e&&e.target!==document.getElementById('collabOvl')) return; document.getElementById('collabOvl').classList.remove('on'); }
+
+// ╔══════════════════════════════════════════════════════╗
 //  BOOT
-// ══════════════════════════════════════════════════════════
+// ╚══════════════════════════════════════════════════════╝
 init();
-// Defer map update until geocoding can run
-setTimeout(updateMap, 500);
+
+// Re-join last room on reload
+try { const lr=localStorage.getItem('lastRoom'); if(lr&&!roomCode){/*don't auto-rejoin, user must choose*/} } catch(e) {}
 </script>
 </body>
 </html>
