@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Plán výletu</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#18180f;--muted:#6b6b60;--faint:#eceade;--paper:#f6f4ed;
+  --white:#fff;--accent:#bf4e1a;
+  --green:#2a6040;--green-bg:#e6f2ec;
+  --blue:#1a3f70;--blue-bg:#e3edf7;
+  --amber:#8a5010;--amber-bg:#faf0df;
+  --line:#ddd9cf;--shadow:0 2px 16px rgba(0,0,0,.09);
+  --r:10px;
+}
+html{font-size:15px}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+/* ── HEADER ─────────────────────────────────────── */
+header{background:var(--ink);color:#fff;padding:1.4rem 2rem;display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.h-left{flex:1;min-width:0}
+.trip-name{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:700;background:transparent;border:none;border-bottom:1.5px solid rgba(255,255,255,.2);color:#fff;outline:none;width:100%;max-width:420px;padding:0 0 3px;letter-spacing:-.01em}
+.trip-name::placeholder{color:rgba(255,255,255,.28)}
+.trip-name:focus{border-bottom-color:rgba(255,255,255,.6)}
+.h-meta{display:flex;align-items:center;gap:10px;margin-top:5px;font-size:13px;color:rgba(255,255,255,.45)}
+.h-meta input[type=date]{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.h-stats{font-size:12px;color:rgba(255,255,255,.45);text-align:right;line-height:1.8}
+.h-stats strong{color:#fff}
+.h-btns{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.hbtn{padding:6px 13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;color:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;white-space:nowrap}
+.hbtn:hover{background:rgba(255,255,255,.2)}
+
+/* ── API BANNER ───────────────────────────────── */
+.apib{background:var(--amber-bg);border-bottom:1px solid #dfc070;padding:9px 2rem;font-size:13px;color:var(--amber);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.apib input{padding:4px 9px;border:1px solid #d4a040;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:#fff;outline:none;width:220px}
+.apib a{color:var(--amber);font-weight:500}
+.apib .xb{margin-left:auto;cursor:pointer;opacity:.4;font-size:17px;line-height:1}
+.apib .xb:hover{opacity:1}
+
+/* ── TABS (mobile) ───────────────────────────── */
+.tab-bar{display:none;position:sticky;top:0;z-index:60;background:var(--paper);border-bottom:1px solid var(--line)}
+.tab-bar button{flex:1;padding:11px 5px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:.1s}
+.tab-bar button.on{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
+
+/* ── APP LAYOUT ──────────────────────────────── */
+.app{display:grid;grid-template-columns:1fr 360px;max-width:1160px;margin:0 auto;padding:0}
+.left-panel{padding:2rem 2rem 4rem;min-width:0;border-right:1px solid var(--line)}
+.right-panel{padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem}
+.right-sticky{position:sticky;top:0;max-height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem}
+
+/* ── ORIGIN BOX ──────────────────────────────── */
+.origin-box{background:var(--ink);color:#fff;border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.o-dot{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.o-fields{flex:1;display:grid;grid-template-columns:1fr 90px;gap:10px;align-items:center}
+.o-fields input{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.25);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;padding:2px 0;width:100%}
+.o-fields input::placeholder{color:rgba(255,255,255,.3)}
+.o-fields input:focus{border-bottom-color:rgba(255,255,255,.7)}
+
+/* ── TIMELINE ────────────────────────────────── */
+.timeline{position:relative;margin-top:6px}
+.tl-rail{position:absolute;left:16px;top:20px;bottom:20px;width:2px;background:var(--line);z-index:0;border-radius:2px}
+
+.empty-msg{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty-msg .ico{font-size:2.5rem;margin-bottom:.6rem}
+
+/* Transfer row */
+.tr-row{display:flex;align-items:center;gap:12px;padding:2px 0;position:relative;z-index:1}
+.tr-gap{width:34px;height:34px;flex-shrink:0}
+.tr-content{flex:1;display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:2px 0}
+.tr-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 11px;border-radius:20px;border:1px solid var(--line);background:var(--paper);cursor:pointer;color:var(--muted);transition:.1s;line-height:1.4}
+.tr-badge:hover{border-color:#aaa}
+.tr-badge.car{background:var(--amber-bg);border-color:#d4a060;color:var(--amber)}
+.tr-badge.train,.tr-badge.bus{background:var(--blue-bg);border-color:#8ab0d4;color:var(--blue)}
+.tr-badge.walk{background:var(--faint);border-color:#ccc;color:var(--muted)}
+.tr-badge.bike{background:#edf7e6;border-color:#96c870;color:#325010}
+.tr-badge.boat{background:#e6f0f8;border-color:#80acd0;color:#1a3c60}
+.tr-dur-lbl{font-size:11px;opacity:.65}
+.mapy-lnk{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--blue);text-decoration:none;padding:4px 10px;border:1px solid #8ab0d4;background:var(--blue-bg);border-radius:20px}
+.mapy-lnk:hover{background:#c4d8f0}
+.rt-res{font-size:12px;color:var(--green);background:var(--green-bg);border:1px solid #80b890;border-radius:20px;padding:4px 9px;display:none}
+.elev-sparkline{display:none;align-items:flex-end;gap:4px;cursor:pointer;padding:3px 8px;border:1px solid var(--line);border-radius:20px;background:var(--white)}
+.elev-sparkline svg{display:block}
+.elev-sparkline span{font-size:11px;color:var(--muted)}
+
+/* Stop card */
+.sc{display:flex;align-items:flex-start;gap:12px;padding:4px 0;position:relative;z-index:1}
+.sc-dot{width:34px;height:34px;border-radius:50%;background:var(--white);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'Playfair Display',serif;flex-shrink:0;margin-top:2px;transition:.15s}
+.sc-dot.fin{background:var(--accent);border-color:var(--accent);color:#fff}
+.sc-box{flex:1;background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:.85rem 1rem;box-shadow:var(--shadow);transition:.15s}
+.sc-box:hover{border-color:#bbb;box-shadow:0 4px 20px rgba(0,0,0,.12)}
+.sc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sc-time{font-size:13px;color:var(--muted);min-width:38px;font-variant-numeric:tabular-nums}
+.sc-time.auto{color:var(--blue);font-style:italic}
+.sc-name{font-size:15px;font-weight:500;flex:1;min-width:0}
+.sc-stay{font-size:11px;color:var(--muted);background:var(--faint);padding:2px 8px;border-radius:20px;white-space:nowrap}
+.sc-cost-lbl{font-size:11px;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:20px}
+.sc-note{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
+.sc-actions{display:flex;gap:3px;opacity:0;transition:.15s;margin-left:auto}
+.sc-box:hover .sc-actions{opacity:1}
+.ib{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
+.ib:hover{background:var(--faint);color:var(--ink)}
+.ib.del:hover{background:#fce8e6;color:#a02020;border-color:#f0b0a8}
+
+/* ── ADD FORM ────────────────────────────────── */
+.add-section{margin-top:1.5rem;background:var(--white);border:1.5px dashed var(--line);border-radius:var(--r);padding:1.4rem}
+.sect-h{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:1rem}
+.fg{display:grid;gap:9px;margin-bottom:9px}
+.fg4{grid-template-columns:90px 1fr 115px 120px}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+.fg2{grid-template-columns:1fr 1fr}
+.fl{display:flex;gap:9px;margin-bottom:9px}
+.field label{display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:.12s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ink)}
+.field textarea{resize:vertical;min-height:50px}
+.time-hint{font-size:11px;color:var(--blue);margin-top:3px;display:none;cursor:pointer}
+.time-hint:hover{text-decoration:underline}
+.tr-sect{background:var(--faint);border-radius:8px;padding:.85rem;margin-bottom:9px}
+.tr-sect h4{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.tp-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.tp{padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);transition:.1s}
+.tp.on,.tp:hover{border-color:var(--ink);color:var(--ink);background:var(--faint)}
+.tp.on{font-weight:500}
+.form-btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.btn-p{display:inline-flex;align-items:center;gap:5px;padding:9px 20px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer}
+.btn-p:hover{background:#2c2c20}
+.btn-s{display:inline-flex;align-items:center;gap:5px;padding:9px 14px;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
+.btn-s:hover{color:var(--ink);border-color:#999}
+.recalc-btn{font-size:12px;padding:5px 12px;background:var(--blue-bg);color:var(--blue);border:1px solid #8ab0d4;border-radius:20px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-left:auto}
+.recalc-btn:hover{background:#c4d8f0}
+
+/* ── AUTOCOMPLETE ────────────────────────────── */
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:300;overflow:hidden;display:none}
+.ac-drop.show{display:block}
+.ac-item{padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--faint)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.hl{background:var(--faint)}
+.ac-item .ac-name{font-weight:500}
+.ac-item .ac-sub{font-size:11px;color:var(--muted)}
+
+/* ── RIGHT PANEL ─────────────────────────────── */
+.map-box{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--faint)}
+#mapEl{height:340px;width:100%}
+.map-caption{font-size:11px;color:var(--muted);padding:6px 10px;border-top:1px solid var(--line)}
+
+.budget-box{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;box-shadow:var(--shadow)}
+.budget-box h3{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.85rem}
+.budget-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0;border-bottom:1px solid var(--faint);gap:8px}
+.budget-row:last-child{border-bottom:none}
+.budget-row.total{font-weight:500;font-size:14px;border-top:1px solid var(--line);margin-top:4px;padding-top:8px}
+.budget-name{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.budget-amount{white-space:nowrap;font-variant-numeric:tabular-nums}
+.no-costs{font-size:13px;color:var(--muted);text-align:center;padding:1rem 0}
+.currency-row{display:flex;align-items:center;gap:8px;margin-bottom:.85rem}
+.currency-row label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.currency-row select{padding:4px 8px;border:1px solid var(--line);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none}
+
+/* ── OVERLAYS ─────────────────────────────────── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:400;align-items:center;justify-content:center;padding:1rem}
+.overlay.on{display:flex}
+.modal{background:var(--white);border-radius:14px;padding:1.75rem;width:520px;max-width:100%;max-height:92vh;overflow-y:auto}
+.modal h3{font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1.2rem}
+.share-row{display:flex;gap:7px;margin:1rem 0}
+.share-row input{flex:1;padding:8px 11px;border:1px solid var(--line);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);outline:none;min-width:0}
+.copy-btn{padding:8px 14px;background:var(--ink);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;white-space:nowrap}
+
+/* ── MOBILE ──────────────────────────────────── */
+@media(max-width:768px){
+  header{padding:1.1rem 1.1rem}
+  .trip-name{font-size:1.4rem}
+  .h-stats{display:none}
+  .apib{padding:8px 1.1rem}
+  .tab-bar{display:flex}
+  .app{display:block}
+  .left-panel,.right-panel{padding:1rem 1rem 2rem;border-right:none}
+  .right-panel{padding-top:.5rem}
+  .fg4{grid-template-columns:1fr 1fr}
+  .fg4 .f-time{order:-1}
+  .fg4 .f-stay{order:1}
+  .modal{padding:1.25rem}
+  #mapEl{height:280px}
+  .right-sticky{max-height:none;position:static}
+  .plan-panel,.map-panel,.budget-panel{display:none}
+  .plan-panel.show,.map-panel.show,.budget-panel.show{display:block}
+  .sc-actions{opacity:1}
+  .add-section{border-radius:var(--r)}
+  .budget-box{margin-top:.5rem}
+}
+@media(min-width:769px){
+  .plan-panel,.map-panel,.budget-panel{display:block!important}
+}
+@media print{
+  header{background:#111!important;-webkit-print-color-adjust:exact}
+  .add-section,.sc-actions,.apib,.h-btns,.mapy-lnk,.rt-res,.tab-bar,.right-panel{display:none!important}
+  body{background:#fff}
+  .app{display:block}
+  .left-panel{border:none;padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-left">
+    <input class="trip-name" id="tripName" placeholder="Název výletu…">
+    <div class="h-meta">
+      <span>Datum:</span>
+      <input type="date" id="tripDate">
+    </div>
+  </div>
+  <div class="h-right">
+    <div class="h-btns">
+      <button class="hbtn" onclick="openShare()">🔗 Sdílet</button>
+      <button class="hbtn" onclick="print()">🖨️ Tisk</button>
+    </div>
+    <div class="h-stats" id="hStats"></div>
+  </div>
+</header>
+
+<div class="apib" id="apib">
+  <span>🗺️ <strong>Mapy.cz API klíč</strong> — pro autocomplete, výpočet tras a výšk. profil:</span>
+  <input type="text" id="apiKeyInp" placeholder="API klíč z developer.mapy.com" oninput="onApiKey()">
+  <a href="https://developer.mapy.com/account/" target="_blank">Získat →</a>
+  <span class="xb" onclick="hideApib()">×</span>
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="on" onclick="switchTab('plan',this)">📋 Plán</button>
+  <button onclick="switchTab('map',this)">🗺️ Mapa</button>
+  <button onclick="switchTab('budget',this)">💰 Náklady</button>
+</div>
+
+<div class="app">
+  <!-- LEFT: timeline + form -->
+  <div class="left-panel plan-panel show" id="planPanel">
+
+    <div class="origin-box">
+      <div class="o-dot">🚩</div>
+      <div class="o-fields">
+        <div class="ac-wrap">
+          <input id="originName" placeholder="Výchozí místo…" oninput="acInput(this,'acOrigin');saveState()" autocomplete="off">
+          <div class="ac-drop" id="acOrigin"></div>
+        </div>
+        <input id="originTime" type="time" value="08:00" oninput="saveState()">
+      </div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <div class="tl-rail"></div>
+      <div class="empty-msg" id="emptyMsg">
+        <div class="ico">🗺️</div>
+        <p>Přidej první zastávku pomocí formuláře níže.</p>
+      </div>
+    </div>
+
+    <div class="add-section">
+      <div class="sect-h">➕ Přidat zastávku</div>
+
+      <div class="fg fg4">
+        <div class="field f-time">
+          <label>Čas příjezdu</label>
+          <input type="time" id="fTime" value="10:00" oninput="clearAutoTime()">
+          <div class="time-hint" id="timeHint" onclick="applyHintTime()"></div>
+        </div>
+        <div class="field" style="grid-column:2/3">
+          <label>Místo / název</label>
+          <div class="ac-wrap">
+            <input type="text" id="fName" placeholder="např. Hrad Karlštejn…" oninput="acInput(this,'acName')" autocomplete="off" onkeydown="acKey(event,'acName')">
+            <div class="ac-drop" id="acName"></div>
+          </div>
+        </div>
+        <div class="field f-stay">
+          <label>Délka pobytu</label>
+          <input type="text" id="fStay" placeholder="1 h 30 min" oninput="updateTimeHint()">
+        </div>
+        <div class="field">
+          <label>Typ</label>
+          <select id="fType">
+            <option value="">—</option>
+            <option value="🏰">🏰 Památka</option>
+            <option value="🍽️">🍽️ Jídlo</option>
+            <option value="🏕️">🏕️ Příroda</option>
+            <option value="🏊">🏊 Koupání</option>
+            <option value="🛏️">🛏️ Nocování</option>
+            <option value="🎭">🎭 Kultura</option>
+            <option value="🛒">🛒 Nákupy</option>
+            <option value="📍">📍 Zastávka</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fg fg2">
+        <div class="field">
+          <label>Poznámka</label>
+          <textarea id="fNote" placeholder="Vstupné, otevírací doba…"></textarea>
+        </div>
+        <div class="field">
+          <label>Náklady (vstupné, ubytování…)</label>
+          <input type="text" id="fCost" placeholder="200">
+        </div>
+      </div>
+
+      <div class="tr-sect">
+        <h4>🚌 Přesun z předchozí zastávky</h4>
+        <div class="tp-row" id="tpAdd">
+          <button class="tp on" data-v="car">🚗 Auto</button>
+          <button class="tp" data-v="train">🚆 Vlak</button>
+          <button class="tp" data-v="bus">🚌 Bus</button>
+          <button class="tp" data-v="walk">🚶 Pěšky</button>
+          <button class="tp" data-v="bike">🚲 Kolo</button>
+          <button class="tp" data-v="boat">⛵ Loď</button>
+          <button class="tp" data-v="">— Žádný</button>
+        </div>
+        <div class="fg fg3">
+          <div class="field">
+            <label>Trvání</label>
+            <input type="text" id="fTDur" placeholder="45 min" oninput="updateTimeHint()">
+          </div>
+          <div class="field">
+            <label>Odkud</label>
+            <input type="text" id="fTFrom" placeholder="(z předchozí)">
+          </div>
+          <div class="field">
+            <label>Cena přesunu</label>
+            <input type="text" id="fTCost" placeholder="120">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-btns">
+        <button class="btn-p" onclick="addStop()">Přidat zastávku</button>
+        <button class="recalc-btn" onclick="recalcTimes()" title="Přepočítat časy od začátku">⏱ Přepočítat časy</button>
+        <button class="btn-s" style="margin-left:auto" onclick="clearAll()">🗑️ Vymazat vše</button>
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- RIGHT: map + budget -->
+  <div class="right-panel">
+    <div class="right-sticky">
+
+      <div class="map-panel" id="mapPanel">
+        <div class="map-box">
+          <div id="mapEl"></div>
+          <div class="map-caption" id="mapCaption">Zastávky se zobrazí po přidání míst.</div>
+        </div>
+      </div>
+
+      <div class="budget-panel" id="budgetPanel">
+        <div class="budget-box">
+          <div class="currency-row">
+            <label>Náklady —</label>
+            <select id="currSel" onchange="saveState();renderBudget()">
+              <option value="Kč">Kč</option>
+              <option value="€">€</option>
+              <option value="$">$</option>
+              <option value="PLN">PLN</option>
+            </select>
+          </div>
+          <div id="budgetList"><div class="no-costs">Zatím žádné náklady.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div><!-- /app -->
+
+<!-- EDIT OVERLAY -->
+<div class="overlay" id="editOv" onclick="closeEdit(event)">
+  <div class="modal">
+    <h3>Upravit zastávku</h3>
+    <input type="hidden" id="eIdx">
+    <div class="fg fg4" style="margin-bottom:9px">
+      <div class="field"><label>Čas</label><input type="time" id="eTime"></div>
+      <div class="field" style="grid-column:2/3">
+        <label>Místo</label>
+        <div class="ac-wrap">
+          <input type="text" id="eName" oninput="acInput(this,'acEdit')" autocomplete="off">
+          <div class="ac-drop" id="acEdit"></div>
+        </div>
+      </div>
+      <div class="field"><label>Pobyt</label><input type="text" id="eStay"></div>
+      <div class="field"><label>Typ</label>
+        <select id="eType">
+          <option value="">—</option>
+          <option value="🏰">🏰 Památka</option>
+          <option value="🍽️">🍽️ Jídlo</option>
+          <option value="🏕️">🏕️ Příroda</option>
+          <option value="🏊">🏊 Koupání</option>
+          <option value="🛏️">🛏️ Nocování</option>
+          <option value="🎭">🎭 Kultura</option>
+          <option value="🛒">🛒 Nákupy</option>
+          <option value="📍">📍 Zastávka</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg fg2" style="margin-bottom:9px">
+      <div class="field"><label>Poznámka</label><textarea id="eNote"></textarea></div>
+      <div class="field"><label>Náklady</label><input type="text" id="eCost" placeholder="200"></div>
+    </div>
+    <div class="tr-sect">
+      <h4>🚌 Přesun</h4>
+      <div class="tp-row" id="tpEdit">
+        <button class="tp" data-v="car">🚗 Auto</button>
+        <button class="tp" data-v="train">🚆 Vlak</button>
+        <button class="tp" data-v="bus">🚌 Bus</button>
+        <button class="tp" data-v="walk">🚶 Pěšky</button>
+        <button class="tp" data-v="bike">🚲 Kolo</button>
+        <button class="tp" data-v="boat">⛵ Loď</button>
+        <button class="tp on" data-v="">— Žádný</button>
+      </div>
+      <div class="fg fg3">
+        <div class="field"><label>Trvání</label><input type="text" id="eTDur"></div>
+        <div class="field"><label>Odkud</label><input type="text" id="eTFrom"></div>
+        <div class="field"><label>Cena přesunu</label><input type="text" id="eTCost"></div>
+      </div>
+    </div>
+    <div class="form-btns">
+      <button class="btn-p" onclick="saveEdit()">Uložit</button>
+      <button class="btn-s" onclick="closeEdit()">Zrušit</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE OVERLAY -->
+<div class="overlay" id="shareOv" onclick="closeShareOv(event)">
+  <div class="modal">
+    <h3>🔗 Sdílet plán výletu</h3>
+    <p style="color:var(--muted);font-size:14px">Plán je zakódovaný přímo v odkazu — žádný server není potřeba.</p>
+    <div class="share-row">
+      <input type="text" id="shareUrl" readonly>
+      <button class="copy-btn" id="copyBtn" onclick="copyUrl()">Kopírovat</button>
+    </div>
+    <p id="shareHint" style="font-size:12px;color:var(--muted)">Pošli přes WhatsApp, email nebo Messenger.</p>
+    <hr style="margin:1.1rem 0;border:none;border-top:1px solid var(--line)">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Nebo jako JSON soubor:</p>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn-s" onclick="exportJSON()">⬇️ Stáhnout</button>
+      <label class="btn-s" style="cursor:pointer">⬆️ Načíst<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
+    </div>
+    <div style="margin-top:1.1rem;text-align:right"><button class="btn-s" onclick="closeShareOv()">Zavřít</button></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+let stops = [];
+let tpAddVal = 'car', tpEditVal = '';
+let apiKey = '';
+let autoTimeSet = false;  // was time in add form set by hint?
+
+const TL = {car:'🚗 Auto',train:'🚆 Vlak',bus:'🚌 Bus',walk:'🚶 Pěšky',bike:'🚲 Kolo',boat:'⛵ Loď','':'—'};
+const MAPY_RT = {car:'car_fast_traffic',walk:'foot_fast',bike:'bicycle_road'};
+const coordCache = {};
+let map, mapLayers = [];
+let acDebounce = {};
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+function init() {
+  // Load from URL hash (shared link)
+  const hash = location.hash.slice(1);
+  if (hash.startsWith('plan=')) {
+    try { applyState(JSON.parse(decodeURIComponent(escape(atob(hash.slice(5)))))); history.replaceState(null,'',location.pathname); }
+    catch(e) {}
+  } else {
+    try { const raw = localStorage.getItem('vylety_v4'); if (raw) applyState(JSON.parse(raw)); } catch(e) {}
+  }
+  try {
+    apiKey = localStorage.getItem('mkey') || '';
+    if (apiKey) document.getElementById('apiKeyInp').value = apiKey;
+    if (localStorage.getItem('apibHidden')) document.getElementById('apib').style.display = 'none';
+    const c = localStorage.getItem('curr'); if (c) document.getElementById('currSel').value = c;
+  } catch(e) {}
+
+  setupPicker('tpAdd', v => { tpAddVal = v; updateTimeHint(); });
+  setupPicker('tpEdit', v => { tpEditVal = v; });
+
+  initMap();
+  render();
+}
+
+function applyState(p) {
+  stops = p.stops || [];
+  document.getElementById('tripName').value = p.name || '';
+  document.getElementById('tripDate').value = p.date || '';
+  document.getElementById('originName').value = p.origin || '';
+  document.getElementById('originTime').value = p.originTime || '08:00';
+  if (p.currency) document.getElementById('currSel').value = p.currency;
+}
+
+function getState() {
+  return {
+    name: document.getElementById('tripName').value,
+    date: document.getElementById('tripDate').value,
+    origin: document.getElementById('originName').value,
+    originTime: document.getElementById('originTime').value,
+    currency: document.getElementById('currSel').value,
+    stops
+  };
+}
+
+function saveState() {
+  try { localStorage.setItem('vylety_v4', JSON.stringify(getState())); } catch(e) {}
+  updateHStats();
+}
+
+['tripName','tripDate'].forEach(id => document.getElementById(id).addEventListener('input', saveState));
+
+// ══════════════════════════════════════════════════════════
+//  TIME CALCULATION
+// ══════════════════════════════════════════════════════════
+function parseMins(s) {
+  if (!s || !s.trim()) return null;
+  s = s.toLowerCase().replace(',','.');
+  let m;
+  if ((m = s.match(/(\d+(?:\.\d+)?)\s*h[^0-9]*(\d+)/))) return Math.round(parseFloat(m[1])*60)+parseInt(m[2]);
+  if ((m = s.match(/(\d+):(\d+)/))) return parseInt(m[1])*60+parseInt(m[2]);
+  if ((m = s.match(/(\d+(?:\.\d+)?)\s*h/))) return Math.round(parseFloat(m[1])*60);
+  if ((m = s.match(/(\d+)\s*min/))) return parseInt(m[1]);
+  if ((m = s.match(/^(\d+)$/))) return parseInt(m[1]);
+  return null;
+}
+
+function addMins(t, mins) {
+  if (!t || mins === null) return null;
+  const [h,m] = t.split(':').map(Number);
+  const tot = h*60 + m + mins;
+  return String(Math.floor(tot/60)%24).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');
+}
+
+function computeArrival(prevStop, transferDur) {
+  if (!prevStop?.time) return null;
+  let t = prevStop.time;
+  const stayM = parseMins(prevStop.stay);
+  const transM = parseMins(transferDur);
+  if (stayM !== null) t = addMins(t, stayM);
+  else return null;
+  if (transM !== null) t = addMins(t, transM);
+  return t;
+}
+
+function updateTimeHint() {
+  const hint = document.getElementById('timeHint');
+  if (!stops.length) { hint.style.display='none'; return; }
+  const prev = stops[stops.length-1];
+  const dur = document.getElementById('fTDur').value;
+  const sug = computeArrival(prev, dur);
+  if (sug) {
+    hint.textContent = '→ Navržený čas: '+sug+' (klikni pro použití)';
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+function applyHintTime() {
+  const hint = document.getElementById('timeHint');
+  const m = hint.textContent.match(/(\d{2}:\d{2})/);
+  if (m) { document.getElementById('fTime').value = m[1]; autoTimeSet = true; hint.style.display='none'; }
+}
+
+function clearAutoTime() { autoTimeSet = false; }
+
+function recalcTimes() {
+  let t = document.getElementById('originTime').value || '08:00';
+  stops.forEach((s, i) => {
+    const transM = parseMins(s.tr?.dur);
+    if (i === 0) {
+      const prevStayM = parseMins('0');
+      const transT = transM !== null ? addMins(t, transM) : t;
+      s.time = transT || t;
+    } else {
+      const prev = stops[i-1];
+      const computed = computeArrival(prev, s.tr?.dur);
+      if (computed) s.time = computed;
+    }
+    t = s.time;
+  });
+  saveState(); render();
+}
+
+// ══════════════════════════════════════════════════════════
+//  PICKER
+// ══════════════════════════════════════════════════════════
+function setupPicker(id, cb) {
+  document.getElementById(id).addEventListener('click', e => {
+    const b = e.target.closest('.tp'); if (!b) return;
+    document.querySelectorAll('#'+id+' .tp').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); cb(b.dataset.v);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  AUTOCOMPLETE
+// ══════════════════════════════════════════════════════════
+function acInput(inp, dropId) {
+  const q = inp.value.trim();
+  clearTimeout(acDebounce[dropId]);
+  if (q.length < 2) { closeAc(dropId); return; }
+  acDebounce[dropId] = setTimeout(() => fetchSuggest(q, inp, dropId), 320);
+}
+
+async function fetchSuggest(q, inp, dropId) {
+  if (!apiKey) return;
+  try {
+    const r = await fetch(`https://api.mapy.cz/v1/suggest?lang=cs&limit=6&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(q)}&type=regional.municipality,poi,regional.address`);
+    const d = await r.json();
+    showAcDrop(d.items || [], inp, dropId);
+  } catch(e) {}
+}
+
+function showAcDrop(items, inp, dropId) {
+  const drop = document.getElementById(dropId);
+  if (!items.length) { drop.classList.remove('show'); return; }
+  drop.innerHTML = items.map((it, i) => {
+    const label = it.name || it.label || '';
+    const sub = it.location || it.region || '';
+    return `<div class="ac-item" data-idx="${i}" onclick="pickAc(${i},'${dropId}',this)">
+      <div class="ac-name">${esc(label)}</div>
+      ${sub ? `<div class="ac-sub">${esc(sub)}</div>` : ''}
+    </div>`;
+  }).join('');
+  drop.dataset.items = JSON.stringify(items.map(i=>({name:i.name||i.label,lat:i.position?.lat,lon:i.position?.lon})));
+  drop.dataset.inp = inp.id;
+  drop.classList.add('show');
+  // Close on outside click
+  setTimeout(() => document.addEventListener('click', function h(e) { if (!drop.contains(e.target)&&e.target!==inp) { drop.classList.remove('show'); document.removeEventListener('click',h); } }), 50);
+}
+
+function pickAc(idx, dropId, el) {
+  const drop = document.getElementById(dropId);
+  const items = JSON.parse(drop.dataset.items || '[]');
+  const item = items[idx];
+  const inp = document.getElementById(drop.dataset.inp);
+  if (inp && item) {
+    inp.value = item.name || '';
+    if (item.lat && item.lon) coordCache[item.name] = [item.lat, item.lon];
+    inp.dispatchEvent(new Event('input'));
+  }
+  drop.classList.remove('show');
+  if (dropId === 'acName') updateTimeHint();
+}
+
+function acKey(e, dropId) {
+  const drop = document.getElementById(dropId);
+  if (!drop.classList.contains('show')) return;
+  const items = drop.querySelectorAll('.ac-item');
+  const hl = drop.querySelector('.ac-item.hl');
+  if (e.key === 'ArrowDown') { e.preventDefault(); (hl ? (hl.classList.remove('hl'), hl.nextElementSibling || items[0]) : items[0])?.classList.add('hl'); }
+  if (e.key === 'ArrowUp') { e.preventDefault(); (hl ? (hl.classList.remove('hl'), hl.previousElementSibling || items[items.length-1]) : items[items.length-1])?.classList.add('hl'); }
+  if (e.key === 'Enter' && hl) { e.preventDefault(); hl.click(); }
+  if (e.key === 'Escape') drop.classList.remove('show');
+}
+
+function closeAc(id) { document.getElementById(id).classList.remove('show'); }
+
+// ══════════════════════════════════════════════════════════
+//  GEOCODING
+// ══════════════════════════════════════════════════════════
+async function geocode(name) {
+  if (!name) return null;
+  if (coordCache[name]) return coordCache[name];
+  // Mapy.cz geocode
+  if (apiKey) {
+    try {
+      const r = await fetch(`https://api.mapy.cz/v1/geocode?lang=cs&limit=1&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(name)}`);
+      const d = await r.json();
+      const p = d.items?.[0]?.position;
+      if (p) { coordCache[name]=[p.lat,p.lon]; return coordCache[name]; }
+    } catch(e) {}
+  }
+  // Nominatim fallback
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(name)}&countrycodes=cz,sk,at,de,pl`);
+    const d = await r.json();
+    if (d[0]) { coordCache[name]=[parseFloat(d[0].lat),parseFloat(d[0].lon)]; return coordCache[name]; }
+  } catch(e) {}
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════
+//  MAPY.CZ ROUTING DURATION
+// ══════════════════════════════════════════════════════════
+async function fetchRouteDur(from, to, mode, el) {
+  if (!apiKey || !MAPY_RT[mode]) return;
+  try {
+    const [a,b] = await Promise.all([geocode(from), geocode(to)]);
+    if (!a||!b) return;
+    const r = await fetch(`https://api.mapy.cz/v1/routing/route?apikey=${encodeURIComponent(apiKey)}&lang=cs&routeType=${MAPY_RT[mode]}&start=${a[1]},${a[0]}&end=${b[1]},${b[0]}`);
+    const d = await r.json();
+    const secs = d.routes?.[0]?.duration; if (!secs) return;
+    const mins=Math.round(secs/60),h=Math.floor(mins/60),m=mins%60;
+    el.textContent='~'+(h?h+' h '+m+' min':m+' min');
+    el.style.display='inline-flex';
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════
+//  ELEVATION
+// ══════════════════════════════════════════════════════════
+async function fetchElevation(from, to, el) {
+  if (!apiKey) return;
+  try {
+    const [a,b] = await Promise.all([geocode(from), geocode(to)]);
+    if (!a||!b) return;
+    const N=20, pts=[];
+    for (let i=0;i<=N;i++) {
+      const t=i/N;
+      pts.push({lat:a[0]+(b[0]-a[0])*t, lon:a[1]+(b[1]-a[1])*t});
+    }
+    const r = await fetch(`https://api.mapy.cz/v1/elevation?apikey=${encodeURIComponent(apiKey)}`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({points:pts})
+    });
+    const d = await r.json();
+    const elevs = d.elevations || d.results?.map(x=>x.elevation);
+    if (!elevs?.length) return;
+    const min=Math.min(...elevs), max=Math.max(...elevs), range=max-min||1;
+    const gain = elevs.reduce((acc,e,i)=>i>0&&e>elevs[i-1]?acc+(e-elevs[i-1]):acc,0);
+    const W=120, H=30;
+    const pts2 = elevs.map((e,i)=>`${(i/(elevs.length-1))*W},${H-((e-min)/range)*H}`).join(' ');
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+      <polyline points="${pts2}" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linejoin="round"/>
+    </svg><span>↑${Math.round(gain)}m (${Math.round(min)}–${Math.round(max)}m)</span>`;
+    el.style.display='inline-flex';
+  } catch(e) {}
+}
+
+function mapyHref(from, to, mode) {
+  const ms = mode==='car'?'traffic':'outdoor';
+  const rt = MAPY_RT[mode]||(mode==='train'||mode==='bus'?'public_transport':null);
+  if (!rt) return 'https://mapy.cz/?q='+encodeURIComponent(to);
+  return `https://mapy.com/fnc/v1/route?mapset=${ms}&routeType=${rt}&start=${encodeURIComponent(from)}&end=${encodeURIComponent(to)}`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  MAP
+// ══════════════════════════════════════════════════════════
+function initMap() {
+  map = L.map('mapEl', {zoomControl:true,attributionControl:false}).setView([49.8, 15.5], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
+  L.control.attribution({prefix:'© <a href="https://openstreetmap.org">OSM</a>'}).addTo(map);
+}
+
+function mkMarker(num, color, label) {
+  return L.divIcon({
+    html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:'DM Sans',sans-serif">${num}</div>`,
+    className:'', iconSize:[28,28], iconAnchor:[14,14], tooltipAnchor:[14,0]
+  });
+}
+
+async function updateMap() {
+  mapLayers.forEach(l => map.removeLayer(l)); mapLayers=[];
+  const allNames = [document.getElementById('originName').value, ...stops.map(s=>s.name)].filter(Boolean);
+  if (!allNames.length) { document.getElementById('mapCaption').textContent='Zastávky se zobrazí po přidání míst.'; return; }
+
+  const coords = await Promise.all(allNames.map(n => geocode(n)));
+  const valid = allNames.map((n,i)=>({name:n,coords:coords[i]})).filter(x=>x.coords);
+
+  if (!valid.length) { document.getElementById('mapCaption').textContent='Nepodařilo se načíst souřadnice zastávek.'; return; }
+
+  const latlngs = valid.map(x=>x.coords);
+
+  // Polyline
+  const poly = L.polyline(latlngs, {color:'#1a3f70', weight:2, dashArray:'5 6', opacity:.6}).addTo(map);
+  mapLayers.push(poly);
+
+  // Markers
+  valid.forEach((x,i) => {
+    const isOrigin = i===0 && document.getElementById('originName').value;
+    const color = i===0?'#18180f':(i===valid.length-1?'#bf4e1a':'#1a3f70');
+    const label = i===0?'🚩':(i);
+    const m = L.marker(x.coords, {icon:mkMarker(isOrigin?'S':i,color,x.name)})
+      .bindTooltip(x.name,{direction:'top',offset:[0,-14]}).addTo(map);
+    mapLayers.push(m);
+  });
+
+  if (latlngs.length>1) map.fitBounds(L.latLngBounds(latlngs).pad(.15));
+  else map.setView(latlngs[0], 13);
+  document.getElementById('mapCaption').textContent = valid.length + ' míst načteno. © OpenStreetMap';
+}
+
+// ══════════════════════════════════════════════════════════
+//  ADD / EDIT / DELETE
+// ══════════════════════════════════════════════════════════
+function addStop() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { document.getElementById('fName').focus(); return; }
+
+  stops.push({
+    time: document.getElementById('fTime').value,
+    autoTime: autoTimeSet,
+    name, stay:document.getElementById('fStay').value.trim(),
+    type:document.getElementById('fType').value,
+    note:document.getElementById('fNote').value.trim(),
+    cost:document.getElementById('fCost').value.trim(),
+    tr:{
+      mode:tpAddVal,
+      dur:document.getElementById('fTDur').value.trim(),
+      from:document.getElementById('fTFrom').value.trim(),
+      cost:document.getElementById('fTCost').value.trim(),
+      note:''
+    }
+  });
+
+  saveState(); render();
+  // Reset
+  ['fName','fStay','fNote','fCost','fTDur','fTCost'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fType').value='';
+  document.getElementById('fTFrom').value=name;
+  autoTimeSet=false;
+  document.getElementById('timeHint').style.display='none';
+  document.getElementById('fName').focus();
+  updateTimeHint();
+  updateMap();
+}
+
+function delStop(i) {
+  if (!confirm('Smazat "'+stops[i].name+'"?')) return;
+  stops.splice(i,1); saveState(); render(); updateMap();
+}
+
+function moveStop(i,d) {
+  const j=i+d; if(j<0||j>=stops.length) return;
+  [stops[i],stops[j]]=[stops[j],stops[i]]; saveState(); render();
+}
+
+function openEdit(i) {
+  const s=stops[i]; document.getElementById('eIdx').value=i;
+  document.getElementById('eTime').value=s.time;
+  document.getElementById('eName').value=s.name;
+  document.getElementById('eStay').value=s.stay;
+  document.getElementById('eType').value=s.type;
+  document.getElementById('eNote').value=s.note;
+  document.getElementById('eCost').value=s.cost||'';
+  document.getElementById('eTDur').value=s.tr?.dur||'';
+  document.getElementById('eTFrom').value=s.tr?.from||'';
+  document.getElementById('eTCost').value=s.tr?.cost||'';
+  tpEditVal=s.tr?.mode||'';
+  document.querySelectorAll('#tpEdit .tp').forEach(b=>b.classList.toggle('on',b.dataset.v===tpEditVal));
+  document.getElementById('editOv').classList.add('on');
+}
+
+function saveEdit() {
+  const i=parseInt(document.getElementById('eIdx').value);
+  stops[i]={
+    time:document.getElementById('eTime').value,
+    name:document.getElementById('eName').value.trim(),
+    stay:document.getElementById('eStay').value.trim(),
+    type:document.getElementById('eType').value,
+    note:document.getElementById('eNote').value.trim(),
+    cost:document.getElementById('eCost').value.trim(),
+    tr:{
+      mode:tpEditVal,
+      dur:document.getElementById('eTDur').value.trim(),
+      from:document.getElementById('eTFrom').value.trim(),
+      cost:document.getElementById('eTCost').value.trim()
+    }
+  };
+  saveState(); render(); closeEdit(); updateMap();
+}
+
+function closeEdit(e) {
+  if (e&&e.target!==document.getElementById('editOv')) return;
+  document.getElementById('editOv').classList.remove('on');
+}
+
+function clearAll() {
+  if (!confirm('Vymazat celý plán?')) return;
+  stops=[]; saveState(); render(); updateMap();
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function updateHStats() {
+  const el=document.getElementById('hStats');
+  if (!stops.length) { el.innerHTML=''; return; }
+  const f=stops[0].time, l=stops[stops.length-1].time;
+  const curr=document.getElementById('currSel').value;
+  const total=calcTotal();
+  el.innerHTML=`Zastávek: <strong>${stops.length}</strong><br>`+
+    (f?`${f} – ${l||'?'}<br>`:'') +
+    (total>0?`Celkem: <strong>${total} ${curr}</strong>`:'');
+}
+
+function calcTotal() {
+  let t=0;
+  stops.forEach(s=>{
+    const c=parseFloat(s.cost); if(!isNaN(c)) t+=c;
+    const tc=parseFloat(s.tr?.cost); if(!isNaN(tc)) t+=tc;
+  });
+  return Math.round(t*100)/100;
+}
+
+function renderBudget() {
+  const curr=document.getElementById('currSel').value;
+  const rows=[];
+  stops.forEach(s=>{
+    const c=parseFloat(s.tr?.cost); if(!isNaN(c)&&c>0) rows.push({name:'🚌 '+esc(s.tr?.from||'Přesun')+' → '+esc(s.name),amt:c});
+    const sc=parseFloat(s.cost); if(!isNaN(sc)&&sc>0) rows.push({name:(s.type?s.type+' ':'')+esc(s.name),amt:sc});
+  });
+  const list=document.getElementById('budgetList');
+  if (!rows.length) { list.innerHTML='<div class="no-costs">Zatím žádné náklady.</div>'; return; }
+  const total=calcTotal();
+  list.innerHTML=rows.map(r=>`<div class="budget-row"><span class="budget-name">${r.name}</span><span class="budget-amount">${r.amt} ${curr}</span></div>`).join('')+
+    `<div class="budget-row total"><span class="budget-name">Celkem</span><span class="budget-amount">${total} ${curr}</span></div>`;
+  updateHStats();
+}
+
+function render() {
+  const tl=document.getElementById('timeline');
+  const empty=document.getElementById('emptyMsg');
+
+  Array.from(tl.children).forEach(c=>{ if(!c.classList.contains('tl-rail')&&c!==empty) c.remove(); });
+
+  if (!stops.length) { empty.style.display='block'; renderBudget(); updateHStats(); return; }
+  empty.style.display='none';
+
+  stops.forEach((s,i) => {
+    // Transfer row
+    if (i>0) {
+      const tr=s.tr||{}, from=tr.from||(stops[i-1]?.name)||'', to=s.name, mode=tr.mode||'';
+      const href=from&&to?mapyHref(from,to,mode):'';
+      const uid='r'+i+'_'+Math.random().toString(36).slice(2,6);
+      const euid='e'+uid;
+
+      const row=document.createElement('div'); row.className='tr-row';
+      row.innerHTML=`<div class="tr-gap"></div><div class="tr-content">
+        <span class="tr-badge ${mode}" onclick="openEdit(${i})" title="Upravit přesun">
+          ${TL[mode]||'—'}
+          ${from?` <span style="opacity:.6">z ${esc(from)}</span>`:''}
+          ${tr.dur?` <span class="tr-dur-lbl">${esc(tr.dur)}</span>`:''}
+          ${tr.cost?` <span style="opacity:.5">· ${esc(tr.cost)} ${document.getElementById('currSel').value}</span>`:''}
+        </span>
+        ${href?`<a class="mapy-lnk" href="${esc(href)}" target="_blank">🗺️ Mapy.cz</a>`:''}
+        <span class="rt-res" id="${uid}"></span>
+        <span class="elev-sparkline" id="${euid}"></span>
+      </div>`;
+      tl.appendChild(row);
+
+      if (from&&to) {
+        if (MAPY_RT[mode]) fetchRouteDur(from,to,mode,document.getElementById(uid));
+        if (apiKey&&(mode==='walk'||mode==='bike'||mode==='car')) fetchElevation(from,to,document.getElementById(euid));
+      }
+    }
+
+    // Stop card
+    const isLast=i===stops.length-1;
+    const card=document.createElement('div'); card.className='sc';
+    card.innerHTML=`<div class="sc-dot${isLast?' fin':''}">${i+1}</div>
+      <div class="sc-box">
+        <div class="sc-head">
+          <span class="sc-time${s.autoTime?' auto':''}">${s.time||'—'}</span>
+          <span class="sc-name">${s.type?s.type+' ':''}${esc(s.name)}</span>
+          ${s.stay?`<span class="sc-stay">${esc(s.stay)}</span>`:''}
+          ${s.cost?`<span class="sc-cost-lbl">${esc(s.cost)} ${document.getElementById('currSel').value}</span>`:''}
+          <div class="sc-actions">
+            ${i>0?`<button class="ib" onclick="moveStop(${i},-1)">↑</button>`:''}
+            ${i<stops.length-1?`<button class="ib" onclick="moveStop(${i},1)">↓</button>`:''}
+            <button class="ib" onclick="openEdit(${i})">✏️</button>
+            <button class="ib del" onclick="delStop(${i})">✕</button>
+          </div>
+        </div>
+        ${s.note?`<div class="sc-note">${esc(s.note)}</div>`:''}
+      </div>`;
+    tl.appendChild(card);
+  });
+
+  renderBudget();
+}
+
+// ══════════════════════════════════════════════════════════
+//  TABS (mobile)
+// ══════════════════════════════════════════════════════════
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('planPanel').classList.toggle('show', tab==='plan');
+  document.getElementById('mapPanel').classList.toggle('show', tab==='map');
+  document.getElementById('budgetPanel').classList.toggle('show', tab==='budget');
+  if (tab==='map') setTimeout(()=>map?.invalidateSize(),100);
+}
+
+// ══════════════════════════════════════════════════════════
+//  API KEY
+// ══════════════════════════════════════════════════════════
+function onApiKey() {
+  apiKey=document.getElementById('apiKeyInp').value.trim();
+  try { localStorage.setItem('mkey',apiKey); } catch(e) {}
+}
+function hideApib() {
+  document.getElementById('apib').style.display='none';
+  try { localStorage.setItem('apibHidden','1'); } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════
+//  SHARE / EXPORT / IMPORT
+// ══════════════════════════════════════════════════════════
+function openShare() {
+  const enc=btoa(unescape(encodeURIComponent(JSON.stringify(getState()))));
+  document.getElementById('shareUrl').value=location.origin+location.pathname+'#plan='+enc;
+  document.getElementById('shareOv').classList.add('on');
+}
+function closeShareOv(e) {
+  if (e&&e.target!==document.getElementById('shareOv')) return;
+  document.getElementById('shareOv').classList.remove('on');
+}
+function copyUrl() {
+  const v=document.getElementById('shareUrl').value;
+  navigator.clipboard.writeText(v).then(()=>{
+    const b=document.getElementById('copyBtn'); b.textContent='✓ Zkopírováno'; b.style.background='var(--green)';
+    document.getElementById('shareHint').textContent='Odkaz je ve schránce!';
+    setTimeout(()=>{b.textContent='Kopírovat';b.style.background='';},2500);
+  }).catch(()=>{document.getElementById('shareUrl').select();document.execCommand('copy');});
+}
+function exportJSON() {
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'}));
+  a.download='vylety-plan.json'; a.click();
+}
+function importJSON(e) {
+  const f=e.target.files[0]; if (!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try { applyState(JSON.parse(ev.target.result)); saveState(); render(); updateMap(); closeShareOv(); }
+    catch(err) { alert('Soubor nelze načíst.'); }
+  };
+  r.readAsText(f);
+}
+
+// ══════════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════════
+init();
+// Defer map update until geocoding can run
+setTimeout(updateMap, 500);
+</script>
+</body>
+</html>
