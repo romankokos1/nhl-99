@@ -18,6 +18,7 @@
 html{font-size:15px;-webkit-font-smoothing:antialiased}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);min-height:100vh;overflow-x:hidden}
 
+/* HEADER */
 .hdr{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:1.4rem 1.5rem 1.2rem;position:relative;overflow:hidden}
 .hdr::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
 .hdr-in{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
@@ -30,24 +31,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .h-btns{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
 .hbtn{padding:7px 13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:30px;color:rgba(255,255,255,.82);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap}
 .hbtn:hover{background:rgba(255,255,255,.2)}
-.hbtn.on{background:rgba(58,107,82,.5);border-color:rgba(100,200,140,.4);color:#8df0b4}
 
+/* COLLAB BAR */
 .cbar{background:var(--sage);color:#fff;padding:9px 1.5rem;font-size:13px;display:none;align-items:center;gap:10px;flex-wrap:wrap}
 .cbar.show{display:flex}
 .rcode{font-family:'Lora',serif;font-size:1.1rem;font-weight:600;letter-spacing:.15em;background:rgba(255,255,255,.15);padding:3px 12px;border-radius:6px;cursor:pointer;user-select:all}
-.rcode:hover{background:rgba(255,255,255,.25)}
 .cdot{width:8px;height:8px;border-radius:50%;background:#6ede9a;flex-shrink:0;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 .chint{font-size:12px;color:rgba(255,255,255,.6)}
-.clv{margin-left:auto;cursor:pointer;opacity:.45;font-size:18px;line-height:1}
+.clv{margin-left:auto;cursor:pointer;opacity:.45;font-size:18px}
 .clv:hover{opacity:1}
 
-.apib{background:#fef9ed;border-bottom:1px solid #e8d88a;padding:9px 1.5rem;font-size:12px;color:#7a5f10;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.apib input{padding:4px 9px;border:1px solid #d4b040;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--navy);background:#fff;outline:none;width:210px}
-.apib a{color:var(--gold);font-weight:500}
-.apib .xb{margin-left:auto;cursor:pointer;opacity:.4;font-size:17px;line-height:1}
-.apib .xb:hover{opacity:1}
+/* GPX IMPORT BAR */
+.import-bar{
+  background:var(--white);border-bottom:1px solid var(--line);
+  padding:9px 1.5rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap
+}
+.import-bar p{font-size:13px;color:var(--muted)}
+.import-bar strong{color:var(--navy)}
+.drop-zone{
+  border:2px dashed var(--line);border-radius:8px;padding:8px 16px;
+  font-size:13px;color:var(--muted);cursor:pointer;transition:.15s;
+  display:flex;align-items:center;gap:6px
+}
+.drop-zone:hover,.drop-zone.over{border-color:var(--coral);color:var(--coral);background:rgba(217,95,53,.04)}
+.drop-zone input{display:none}
 
+/* BOTTOM NAV */
 .bnav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(250,248,244,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:90;padding:5px 0 max(5px,env(safe-area-inset-bottom))}
 .bnav-in{display:flex}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer;color:var(--muted);transition:.1s}
@@ -57,11 +67,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .fab{position:fixed;bottom:calc(64px + env(safe-area-inset-bottom));right:1.2rem;width:54px;height:54px;border-radius:50%;background:var(--coral);color:#fff;border:none;cursor:pointer;font-size:26px;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(217,95,53,.5);z-index:80;transition:.2s}
 .fab:active{transform:scale(.93)}
 
+/* LAYOUT */
 .app{display:grid;grid-template-columns:1fr 370px;max-width:1180px;margin:0 auto}
 .lp{padding:2rem 2rem 4rem;min-width:0;border-right:1px solid var(--line)}
 .rp{background:var(--paper)}
 .rs{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1.2rem}
 
+/* ORIGIN */
 .origin{background:var(--navy);color:#fff;border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .o-pin{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .o-row{flex:1;display:grid;grid-template-columns:1fr 86px;gap:10px;align-items:center}
@@ -69,12 +81,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .oi::placeholder{color:rgba(255,255,255,.3)}
 .oi:focus{border-bottom-color:rgba(255,255,255,.65)}
 
+/* TIMELINE */
 .tl{position:relative;padding-top:4px}
 .tl-rail{position:absolute;left:17px;top:24px;bottom:24px;width:2px;background:var(--line);border-radius:2px}
 .empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
 .empty .ico{font-size:2.8rem;margin-bottom:.6rem;opacity:.55}
 .empty p{font-size:14px;line-height:1.6}
 
+/* TRANSFER ROW */
 .tr-row{display:flex;align-items:center;gap:12px;padding:1px 0;position:relative;z-index:1}
 .tr-gap{width:36px;flex-shrink:0}
 .tr-pills{flex:1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:3px 0}
@@ -89,7 +103,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .badge.mapy:hover{background:var(--navy2)}
 .badge.rt{background:var(--sage);color:#fff;border-color:transparent;display:none}
 .badge.elv{background:#f0ede8;border-color:var(--line);color:var(--muted);display:none;gap:5px}
+/* DB search button */
+.badge.db-find{background:#e8f0fa;border-color:#90b0e0;color:#1a3870;font-weight:500}
+.badge.db-find:hover{background:#1a3f70;color:#fff;border-color:transparent}
 
+/* STOP CARD */
 .sc{display:flex;align-items:flex-start;gap:12px;padding:4px 0;position:relative;z-index:1}
 .sc-num{width:36px;height:36px;border-radius:50%;background:var(--white);border:2px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'Lora',serif;flex-shrink:0;margin-top:2px;cursor:grab}
 .sc-num:active{cursor:grabbing}
@@ -113,24 +131,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .sw-bg{position:absolute;right:0;top:0;bottom:0;width:120px;display:flex;z-index:1;border-radius:0 var(--r) var(--r) 0;overflow:hidden;pointer-events:none;opacity:0}
 .sw-act{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;gap:3px;color:#fff;cursor:pointer;pointer-events:auto}
 .sw-act.ed{background:#1a3f70}.sw-act.dl{background:#b02020}
-.drop-line{height:3px;background:var(--coral);border-radius:2px;margin:2px 0 2px 48px;display:none}
-.drop-line.on{display:block}
+.drop-line-tl{height:3px;background:var(--coral);border-radius:2px;margin:2px 0 2px 48px;display:none}
+.drop-line-tl.on{display:block}
 
-/* ── ADD FORM — one instance in DOM, becomes bottom sheet on mobile ── */
+/* ADD FORM */
 .add-wrap{margin-top:1.5rem}
 .add-box{background:var(--white);border:1.5px dashed var(--line);border-radius:var(--r);padding:1.35rem;transition:none}
-/* Sheet mode (toggled by JS on mobile) */
-.add-box.sheet{
-  position:fixed!important;bottom:0!important;left:0!important;right:0!important;
-  border-radius:20px 20px 0 0!important;border:none!important;
-  border-top:1px solid var(--line)!important;
-  box-shadow:0 -8px 40px rgba(27,45,69,.2)!important;
-  padding:0 0 max(1rem,env(safe-area-inset-bottom))!important;
-  max-height:90vh!important;overflow-y:auto!important;
-  z-index:200!important;
-  transform:translateY(100%);
-  transition:transform .32s cubic-bezier(.33,1,.68,1)!important
-}
+.add-box.sheet{position:fixed!important;bottom:0!important;left:0!important;right:0!important;border-radius:20px 20px 0 0!important;border:none!important;border-top:1px solid var(--line)!important;box-shadow:0 -8px 40px rgba(27,45,69,.2)!important;padding:0 0 max(1rem,env(safe-area-inset-bottom))!important;max-height:90vh!important;overflow-y:auto!important;z-index:200!important;transform:translateY(100%);transition:transform .32s cubic-bezier(.33,1,.68,1)!important}
 .add-box.sheet.open{transform:translateY(0)!important}
 .sheet-handle{width:40px;height:4px;background:var(--line);border-radius:2px;margin:12px auto 0;display:none}
 .add-box.sheet .sheet-handle{display:block}
@@ -140,7 +147,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .add-box.sheet .sheet-title{display:block}
 .sect-h{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.9rem}
 .add-box.sheet .sect-h{display:none}
-
 .fg{display:grid;gap:9px;margin-bottom:9px}
 .fg4{grid-template-columns:86px 1fr 112px 118px}
 .fg3{grid-template-columns:1fr 1fr 1fr}
@@ -168,6 +174,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .sheet-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:199;backdrop-filter:blur(2px)}
 .sheet-backdrop.on{display:block}
 
+/* AUTOCOMPLETE */
 .ac-wrap{position:relative}
 .ac-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sh2);z-index:400;overflow:hidden;display:none}
 .ac-drop.on{display:block}
@@ -177,6 +184,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .ac-nm{font-size:13px;font-weight:500;color:var(--navy)}
 .ac-sb{font-size:11px;color:var(--muted)}
 
+/* RIGHT PANEL */
 .map-box{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);box-shadow:var(--sh)}
 #mapEl{height:340px}
 .map-cap{font-size:11px;color:var(--muted);padding:6px 12px;border-top:1px solid var(--line);background:var(--white)}
@@ -190,6 +198,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .ba{white-space:nowrap;font-variant-numeric:tabular-nums}
 .no-c{font-size:13px;color:var(--muted);text-align:center;padding:1rem 0}
 
+/* OVERLAYS */
 .ovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:500;align-items:center;justify-content:center;padding:1rem}
 .ovl.on{display:flex}
 .modal{background:var(--white);border-radius:20px;padding:1.75rem;width:530px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--sh2)}
@@ -197,21 +206,50 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 .shr-row{display:flex;gap:7px;margin:1rem 0}
 .shr-row input{flex:1;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);outline:none;min-width:0}
 .cpbtn{padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;white-space:nowrap}
-.cpbtn:hover{background:var(--navy2)}
+
+/* DB CONNECTION MODAL */
+.conn-modal{width:620px}
+.conn-search-row{display:grid;grid-template-columns:1fr 1fr 130px 110px;gap:8px;margin-bottom:12px;align-items:end}
+.conn-search-row .field label{font-size:10px}
+.conn-btn{padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;align-self:end;white-space:nowrap;transition:.12s}
+.conn-btn:hover{background:var(--navy2)}
+.conn-btn:disabled{opacity:.5;cursor:not-allowed}
+.conn-results{margin-top:4px}
+.conn-loading{text-align:center;padding:1.5rem;color:var(--muted);font-size:14px}
+.conn-item{border:1.5px solid var(--line);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:8px;cursor:pointer;transition:.15s}
+.conn-item:hover{border-color:var(--navy);box-shadow:var(--sh)}
+.conn-item.selected{border-color:var(--sage);background:#f0f7f2}
+.conn-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.conn-time{font-size:1.1rem;font-weight:600;font-family:'Lora',serif;color:var(--navy)}
+.conn-dur{font-size:12px;color:var(--muted);background:var(--cream);padding:2px 8px;border-radius:20px}
+.conn-legs{display:flex;flex-wrap:wrap;gap:5px}
+.conn-leg{font-size:12px;padding:3px 9px;border-radius:20px;background:#e8f0fa;border:1px solid #90b0e0;color:#1a3870}
+.conn-leg.walk{background:#f0ede8;border-color:#ccc8c0;color:var(--muted)}
+.conn-platform{font-size:11px;color:var(--muted);margin-top:4px}
+.conn-error{color:#b02020;font-size:13px;padding:.75rem;background:#fce8e6;border-radius:8px;margin-top:8px}
+.conn-apply{margin-top:12px;display:none}
+.conn-apply.show{display:flex;gap:8px;align-items:center}
+
+/* DB station suggestions */
+.st-drop{position:absolute;top:calc(100%+4px);left:0;right:0;background:var(--white);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sh2);z-index:600;overflow:hidden;display:none;max-height:200px;overflow-y:auto}
+.st-drop.on{display:block}
+.st-it{padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--cream);font-size:13px}
+.st-it:last-child{border-bottom:none}
+.st-it:hover{background:var(--cream)}
+
+/* COLLAB modal */
 .coll-card{border:1.5px solid var(--line);border-radius:var(--r);padding:1.1rem 1.25rem;cursor:pointer;transition:.15s;margin-bottom:10px}
 .coll-card:hover{border-color:var(--navy);box-shadow:var(--sh)}
 .coll-card h4{font-size:15px;font-weight:500;margin-bottom:3px}
 .coll-card p{font-size:13px;color:var(--muted)}
 .ri-row{display:flex;gap:8px;margin-top:1rem}
-.ri-row input{flex:1;padding:9px 12px;border:1.5px solid var(--line);border-radius:8px;font-family:'Lora',serif;font-size:1.05rem;letter-spacing:.12em;color:var(--navy);text-transform:uppercase;outline:none;transition:.12s}
+.ri-row input{flex:1;padding:9px 12px;border:1.5px solid var(--line);border-radius:8px;font-family:'Lora',serif;font-size:1.05rem;letter-spacing:.12em;color:var(--navy);text-transform:uppercase;outline:none}
 .ri-row input:focus{border-color:var(--navy)}
 
 .pp-plan,.pp-map,.pp-bud{display:block}
 
 @media(max-width:800px){
-  .bnav{display:flex}
-  .fab{display:flex}
-  .apib{padding:8px 1rem;font-size:11px}
+  .bnav{display:flex}.fab{display:flex}
   .app{display:block}
   .lp{padding:1rem 1rem calc(76px + env(safe-area-inset-bottom));border-right:none}
   .rp{display:block}
@@ -221,6 +259,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
   .fg4{grid-template-columns:1fr 1fr}
   .sc-acts{opacity:1}
   #mapEl{height:280px}
+  .conn-search-row{grid-template-columns:1fr 1fr}
+  .import-bar{padding:8px 1rem}
 }
 @media(min-width:801px){
   .pp-plan,.pp-map,.pp-bud{display:block!important}
@@ -228,7 +268,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 }
 @media print{
   .hdr{background:var(--navy)!important;-webkit-print-color-adjust:exact}
-  .add-wrap,.sc-acts,.apib,.h-btns,.badge.mapy,.badge.rt,.badge.elv,.cbar,.bnav,.fab,.sheet-backdrop{display:none!important}
+  .add-wrap,.sc-acts,.import-bar,.h-btns,.badge.mapy,.badge.rt,.badge.elv,.badge.db-find,.cbar,.bnav,.fab,.sheet-backdrop{display:none!important}
   .app{display:block}.lp{padding:1rem}.rp{display:none}body{background:#fff}
 }
 </style>
@@ -253,18 +293,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 </div>
 
 <div class="cbar" id="cbar">
-  <span class="cdot"></span>
-  <span>Místnost:</span>
+  <span class="cdot"></span><span>Místnost:</span>
   <span class="rcode" id="rcodeEl" onclick="copyRoomCode()"></span>
   <span class="chint" id="chint">Sdílej kód spolucestovatelům</span>
   <span class="clv" onclick="leaveRoom()">×</span>
 </div>
 
-<div class="apib" id="apib">
-  🗺️ <strong>Mapy.cz API klíč</strong> — autocomplete + výpočet tras:
-  <input type="text" id="apiKeyInp" placeholder="API klíč z developer.mapy.com" oninput="onApiKey()">
-  <a href="https://developer.mapy.com/account/" target="_blank">Získat →</a>
-  <span class="xb" onclick="hideApib()">×</span>
+<!-- GPX/KML IMPORT BAR -->
+<div class="import-bar">
+  <p>📥 <strong>Import trasy</strong> z Mapy.cz, Komoot nebo jakékoli GPX/KML appky:</p>
+  <label class="drop-zone" id="dropZone">
+    <span>🗂️ Přetáhni nebo klikni pro výběr GPX / KML souboru</span>
+    <input type="file" id="gpxFile" accept=".gpx,.kml,.xml" onchange="handleFileSelect(event)">
+  </label>
 </div>
 
 <nav class="bnav"><div class="bnav-in">
@@ -274,7 +315,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 </div></nav>
 
 <button class="fab" onclick="openSheet()">+</button>
-
 <div class="sheet-backdrop" id="shBd" onclick="closeSheet()"></div>
 
 <div class="app">
@@ -295,18 +335,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
       <div class="tl-rail"></div>
       <div class="empty" id="emptyMsg">
         <div class="ico">🗺️</div>
-        <p>Zatím žádné zastávky.<br>Přidej první zastávku formulářem níže.</p>
+        <p>Zatím žádné zastávky.<br>Přidej zastávky ručně nebo importuj GPX/KML.</p>
       </div>
     </div>
 
-    <!-- SINGLE FORM INSTANCE — moves to sheet on mobile -->
+    <!-- SINGLE FORM INSTANCE -->
     <div class="add-wrap" id="addWrap">
       <div class="add-box" id="addBox">
         <div class="sheet-handle"></div>
         <div class="sheet-title">Přidat zastávku</div>
         <div class="sheet-inner">
           <div class="sect-h">➕ Přidat zastávku</div>
-
           <div class="fg fg4">
             <div class="field">
               <label>Čas příjezdu</label>
@@ -335,12 +374,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
               </select>
             </div>
           </div>
-
           <div class="fg fg2">
             <div class="field"><label>Poznámka</label><textarea id="fNote" placeholder="Vstupné, otevírací doba…"></textarea></div>
             <div class="field"><label>Náklady</label><input type="text" id="fCost" placeholder="200"></div>
           </div>
-
           <div class="tr-sect">
             <h4>🚌 Přesun z předchozí zastávky</h4>
             <div class="tp-row" id="tpAdd">
@@ -358,7 +395,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
               <div class="field"><label>Cena přesunu</label><input type="text" id="fTCost" placeholder="120"></div>
             </div>
           </div>
-
           <div class="form-btns">
             <button class="btn-p" onclick="addStop()">Přidat zastávku</button>
             <button class="recalc" onclick="recalcTimes()">⏱ Přepočítat časy</button>
@@ -367,8 +403,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
         </div>
       </div>
     </div>
-
-  </div><!-- /lp -->
+  </div>
 
   <div class="rp"><div class="rs">
     <div class="pp-map" id="ppMap">
@@ -428,6 +463,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
   </div>
 </div>
 
+<!-- DB CONNECTION SEARCH MODAL -->
+<div class="ovl" id="connOvl" onclick="closeConnOvl(event)">
+  <div class="modal conn-modal">
+    <h3>🚆 Hledat spoj</h3>
+    <div class="conn-search-row">
+      <div class="field" style="position:relative">
+        <label>Odkud</label>
+        <input type="text" id="cFrom" placeholder="Praha hl.n." oninput="stInput(this,'stFrom')" autocomplete="off">
+        <div class="st-drop" id="stFrom"></div>
+      </div>
+      <div class="field" style="position:relative">
+        <label>Kam</label>
+        <input type="text" id="cTo" placeholder="Beroun" oninput="stInput(this,'stTo')" autocomplete="off">
+        <div class="st-drop" id="stTo"></div>
+      </div>
+      <div class="field">
+        <label>Datum</label>
+        <input type="date" id="cDate">
+      </div>
+      <div class="field">
+        <label>Nejdříve v</label>
+        <input type="time" id="cTime" value="08:00">
+      </div>
+    </div>
+    <button class="conn-btn" id="connSearchBtn" onclick="searchConnections()">Vyhledat spoje</button>
+    <div class="conn-results" id="connResults"></div>
+    <div class="conn-apply" id="connApply">
+      <button class="btn-p" onclick="applyConnection()">✓ Použít tento spoj</button>
+      <button class="btn-s" onclick="closeConnOvl()">Zrušit</button>
+    </div>
+  </div>
+</div>
+
 <!-- SHARE OVERLAY -->
 <div class="ovl" id="shareOvl" onclick="closeShareOvl(event)">
   <div class="modal">
@@ -462,12 +530,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // STATE
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 let stops = [];
 let tpAddVal = 'car', tpEditVal = '';
-let apiKey = '';
+let apiKey = '';  // Mapy.cz key (optional, for geocoding)
 let autoT = false;
 let roomCode = null, collabInt = null, lastTs = 0;
 let dragSrc = null;
@@ -475,33 +543,37 @@ const ccache = {};
 let map, mlayers = [];
 let acTimers = {};
 
+// DB connection search state
+let connStopIdx = null;      // which stop's transfer we're searching for
+let selectedJourney = null;  // currently selected journey
+const dbStationCache = {};   // name → {id, name}
+
+const DB_API = 'https://v6.db.transport.rest';
 const TLB = {car:'🚗 Auto',train:'🚆 Vlak',bus:'🚌 Bus',walk:'🚶 Pěšky',bike:'🚲 Kolo',boat:'⛵ Loď','':'—'};
 const MRT  = {car:'car_fast_traffic',walk:'foot_fast',bike:'bicycle_road'};
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function init() {
   setupPicker('tpAdd',  v => { tpAddVal  = v; updateTimeSug(); });
   setupPicker('tpEdit', v => { tpEditVal = v; });
+  setupDropZone();
 
-  // Load from URL hash or localStorage
   try {
     const hash = location.hash.slice(1);
     if (hash.startsWith('plan=')) {
       applyState(JSON.parse(decodeURIComponent(escape(atob(hash.slice(5))))));
       history.replaceState(null, '', location.pathname);
     } else {
-      const raw = localStorage.getItem('vylety_v6');
+      const raw = localStorage.getItem('vylety_v7');
       if (raw) applyState(JSON.parse(raw));
     }
   } catch(e) {}
 
   try {
-    apiKey = localStorage.getItem('mkey') || '';
-    if (apiKey) document.getElementById('apiKeyInp').value = apiKey;
-    if (localStorage.getItem('apibH')) document.getElementById('apib').style.display = 'none';
-    const c = localStorage.getItem('curr'); if (c) document.getElementById('currSel').value = c;
+    const c = localStorage.getItem('curr');
+    if (c) document.getElementById('currSel').value = c;
   } catch(e) {}
 
   initMap();
@@ -520,17 +592,17 @@ function applyState(p) {
 
 function getState() {
   return {
-    name:       document.getElementById('tripName').value,
-    date:       document.getElementById('tripDate').value,
-    origin:     document.getElementById('originName').value,
+    name: document.getElementById('tripName').value,
+    date: document.getElementById('tripDate').value,
+    origin: document.getElementById('originName').value,
     originTime: document.getElementById('originTime').value,
-    currency:   document.getElementById('currSel').value,
+    currency: document.getElementById('currSel').value,
     stops
   };
 }
 
 function saveState(noCollab) {
-  try { localStorage.setItem('vylety_v6', JSON.stringify(getState())); } catch(e) {}
+  try { localStorage.setItem('vylety_v7', JSON.stringify(getState())); } catch(e) {}
   if (!noCollab && roomCode) pushCollab();
   updateHStats();
 }
@@ -538,28 +610,154 @@ function saveState(noCollab) {
 document.getElementById('tripName').addEventListener('input', () => saveState());
 document.getElementById('tripDate').addEventListener('input', () => saveState());
 
-// ═══════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════
-function fv(id) {
-  const el = document.getElementById(id);
-  return el ? el.value.trim() : '';
+function fv(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ═══════════════════════════════════════════════════════
+// GPX / KML IMPORT
+// ═══════════════════════════════════════════════════════
+function setupDropZone() {
+  const dz = document.getElementById('dropZone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('over');
+    const file = e.dataTransfer.files[0];
+    if (file) parseGeoFile(file);
+  });
 }
 
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) parseGeoFile(file);
+  e.target.value = '';
 }
 
-// ═══════════════════════════════════════════════
+function parseGeoFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const text = ev.target.result;
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, 'text/xml');
+
+      let points = [];
+      const fname = file.name.toLowerCase();
+
+      if (fname.endsWith('.kml')) {
+        points = parseKML(xml);
+      } else {
+        points = parseGPX(xml);
+      }
+
+      if (!points.length) {
+        alert('V souboru nebyla nalezena žádná místa (waypoints). Zkus exportovat trasu s pojmenovanými body.');
+        return;
+      }
+
+      importPoints(points, fname);
+    } catch(err) {
+      alert('Soubor nelze načíst: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function parseGPX(xml) {
+  const points = [];
+  // Waypoints (named stops) — preferred
+  const wpts = xml.querySelectorAll('wpt');
+  wpts.forEach(w => {
+    const name = w.querySelector('name')?.textContent?.trim() || '';
+    const lat  = parseFloat(w.getAttribute('lat'));
+    const lon  = parseFloat(w.getAttribute('lon'));
+    const desc = w.querySelector('desc')?.textContent?.trim() || '';
+    if (!isNaN(lat) && !isNaN(lon)) points.push({ name, lat, lon, desc });
+  });
+
+  // If no waypoints, try route points (rte/rtept)
+  if (!points.length) {
+    xml.querySelectorAll('rtept').forEach(p => {
+      const name = p.querySelector('name')?.textContent?.trim() || '';
+      const lat  = parseFloat(p.getAttribute('lat'));
+      const lon  = parseFloat(p.getAttribute('lon'));
+      if (!isNaN(lat) && !isNaN(lon) && name) points.push({ name, lat, lon, desc: '' });
+    });
+  }
+
+  // Track points fallback — take first and last + significant turns
+  if (!points.length) {
+    const trkpts = [...xml.querySelectorAll('trkpt')];
+    if (trkpts.length >= 2) {
+      const first = trkpts[0], last = trkpts[trkpts.length-1];
+      const pickPt = (p, label) => ({
+        name: p.querySelector('name')?.textContent?.trim() || label,
+        lat: parseFloat(p.getAttribute('lat')),
+        lon: parseFloat(p.getAttribute('lon')),
+        desc: ''
+      });
+      points.push(pickPt(first, 'Start trasy'));
+      points.push(pickPt(last, 'Konec trasy'));
+    }
+  }
+
+  return points;
+}
+
+function parseKML(xml) {
+  const points = [];
+  xml.querySelectorAll('Placemark').forEach(pm => {
+    const name = pm.querySelector('name')?.textContent?.trim() || '';
+    const desc = pm.querySelector('description')?.textContent?.trim() || '';
+    const coordEl = pm.querySelector('Point coordinates, coordinates');
+    if (coordEl) {
+      const [lon, lat] = coordEl.textContent.trim().split(',').map(parseFloat);
+      if (!isNaN(lat) && !isNaN(lon)) points.push({ name, lat, lon, desc });
+    }
+  });
+  return points;
+}
+
+function importPoints(points, filename) {
+  const count = points.length;
+  const msg = `Nalezeno ${count} míst v souboru "${filename}".\n\n` +
+    points.slice(0, 8).map((p, i) => `${i+1}. ${p.name || '(bez názvu)'}`).join('\n') +
+    (count > 8 ? `\n... a ${count-8} dalších` : '') +
+    '\n\nPřidat jako zastávky výletu?';
+
+  if (!confirm(msg)) return;
+
+  // Cache coordinates
+  points.forEach(p => {
+    if (p.name && p.lat && p.lon) ccache[p.name] = [p.lat, p.lon];
+  });
+
+  const startIdx = stops.length;
+  points.forEach((p, i) => {
+    stops.push({
+      time: '',
+      name: p.name || `Zastávka ${startIdx + i + 1}`,
+      stay: '',
+      type: '📍',
+      note: p.desc || '',
+      cost: '',
+      tr: { mode: i === 0 ? '' : 'walk', dur: '', from: i > 0 ? (points[i-1].name||'') : '', cost: '' }
+    });
+  });
+
+  saveState(); render(); updateMap();
+}
+
+// ═══════════════════════════════════════════════════════
 // TIME CALCULATIONS
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function parseMins(s) {
   if (!s || !s.trim()) return null;
   s = s.toLowerCase().replace(',', '.');
   let m;
-  if ((m = s.match(/(\d+(?:\.\d+)?)\s*h[^\d]*(\d+)/))) return Math.round(parseFloat(m[1]) * 60) + parseInt(m[2]);
-  if ((m = s.match(/(\d+):(\d+)/)))                     return parseInt(m[1]) * 60 + parseInt(m[2]);
-  if ((m = s.match(/(\d+(?:\.\d+)?)\s*h/)))             return Math.round(parseFloat(m[1]) * 60);
+  if ((m = s.match(/(\d+(?:\.\d+)?)\s*h[^\d]*(\d+)/))) return Math.round(parseFloat(m[1])*60)+parseInt(m[2]);
+  if ((m = s.match(/(\d+):(\d+)/)))                     return parseInt(m[1])*60+parseInt(m[2]);
+  if ((m = s.match(/(\d+(?:\.\d+)?)\s*h/)))             return Math.round(parseFloat(m[1])*60);
   if ((m = s.match(/(\d+)\s*min/)))                     return parseInt(m[1]);
   if ((m = s.match(/^(\d+)$/)))                         return parseInt(m[1]);
   return null;
@@ -567,43 +765,30 @@ function parseMins(s) {
 
 function addMins(t, mins) {
   if (!t || mins === null) return null;
-  const [h, m] = t.split(':').map(Number);
-  const tot = h * 60 + m + mins;
-  return String(Math.floor(((tot % 1440) + 1440) % 1440 / 60)).padStart(2, '0') + ':' +
-         String(((tot % 60) + 60) % 60).padStart(2, '0');
+  const [h, m] = t.split(':').map(Number), tot = h*60+m+mins;
+  return String(Math.floor(((tot%1440)+1440)%1440/60)).padStart(2,'0')+':'+String(((tot%60)+60)%60).padStart(2,'0');
 }
 
 function computeNext(prev, transDur) {
   if (!prev || !prev.time) return null;
-  const sM = parseMins(prev.stay);
-  if (sM === null) return null;
+  const sM = parseMins(prev.stay); if (sM === null) return null;
   let t = addMins(prev.time, sM);
-  const tM = parseMins(transDur);
-  if (tM !== null) t = addMins(t, tM);
+  const tM = parseMins(transDur); if (tM !== null) t = addMins(t, tM);
   return t;
 }
 
 function updateTimeSug() {
-  const el = document.getElementById('timeSug');
-  if (!el) return;
+  const el = document.getElementById('timeSug'); if (!el) return;
   if (!stops.length) { el.style.display = 'none'; return; }
-  const sug = computeNext(stops[stops.length - 1], fv('fTDur'));
-  if (sug) {
-    el.textContent = '→ Navržený čas: ' + sug + ' (klikni pro použití)';
-    el.style.display = 'block';
-  } else {
-    el.style.display = 'none';
-  }
+  const sug = computeNext(stops[stops.length-1], fv('fTDur'));
+  if (sug) { el.textContent = '→ Navržený čas: '+sug+' (klikni)'; el.style.display = 'block'; }
+  else el.style.display = 'none';
 }
 
 function applyTimeSug() {
   const el = document.getElementById('timeSug');
   const m = el.textContent.match(/(\d{2}:\d{2})/);
-  if (m) {
-    document.getElementById('fTime').value = m[1];
-    autoT = true;
-    el.style.display = 'none';
-  }
+  if (m) { document.getElementById('fTime').value = m[1]; autoT = true; el.style.display = 'none'; }
 }
 
 function clearAutoT() { autoT = false; }
@@ -613,35 +798,27 @@ function recalcTimes() {
   let t = fv('originTime') || '08:00';
   stops.forEach((s, i) => {
     const tM = parseMins(s.tr?.dur);
-    if (i === 0) {
-      s.time = tM !== null ? addMins(t, tM) : t;
-    } else {
-      const c = computeNext(stops[i - 1], s.tr?.dur);
-      if (c) s.time = c;
-    }
+    s.time = i === 0 ? (tM !== null ? addMins(t, tM) : t) : (computeNext(stops[i-1], s.tr?.dur) || stops[i-1]?.time || t);
     t = s.time;
   });
   saveState(); render();
 }
 
-// ═══════════════════════════════════════════════
-// TRANSPORT PICKER
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// PICKER
+// ═══════════════════════════════════════════════════════
 function setupPicker(id, cb) {
-  const el = document.getElementById(id);
-  if (!el) return;
+  const el = document.getElementById(id); if (!el) return;
   el.addEventListener('click', e => {
-    const b = e.target.closest('.tp');
-    if (!b) return;
+    const b = e.target.closest('.tp'); if (!b) return;
     el.querySelectorAll('.tp').forEach(x => x.classList.remove('on'));
-    b.classList.add('on');
-    cb(b.dataset.v);
+    b.classList.add('on'); cb(b.dataset.v);
   });
 }
 
-// ═══════════════════════════════════════════════
-// AUTOCOMPLETE
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// MAPY.CZ AUTOCOMPLETE (if apiKey set)
+// ═══════════════════════════════════════════════════════
 function acInput(inp, dropId) {
   clearTimeout(acTimers[dropId]);
   const q = inp.value.trim();
@@ -652,87 +829,266 @@ function acInput(inp, dropId) {
 async function fetchSug(q, inp, dropId) {
   if (!apiKey) return;
   try {
-    const r = await fetch(
-      `https://api.mapy.cz/v1/suggest?lang=cs&limit=6&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(q)}&type=regional.municipality,poi,regional.address`
-    );
+    const r = await fetch(`https://api.mapy.cz/v1/suggest?lang=cs&limit=6&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(q)}&type=regional.municipality,poi,regional.address`);
     const d = await r.json();
-    showAc(d.items || [], inp, dropId);
+    showAc(d.items||[], inp, dropId);
   } catch(e) {}
 }
 
 function showAc(items, inp, dropId) {
-  const drop = document.getElementById(dropId);
-  if (!drop || !items.length) { closeAc(dropId); return; }
-  drop.innerHTML = items.map((it, i) =>
-    `<div class="ac-it" data-i="${i}">
-      <div class="ac-nm">${esc(it.name || it.label || '')}</div>
-      <div class="ac-sb">${esc(it.location || it.region || '')}</div>
-    </div>`
-  ).join('');
-  drop.dataset.items = JSON.stringify(items.map(it => ({
-    name: it.name || it.label,
-    lat: it.position?.lat,
-    lon: it.position?.lon
-  })));
+  const drop = document.getElementById(dropId); if (!drop||!items.length) { closeAc(dropId); return; }
+  drop.innerHTML = items.map((it,i) => `<div class="ac-it" data-i="${i}"><div class="ac-nm">${esc(it.name||it.label||'')}</div><div class="ac-sb">${esc(it.location||it.region||'')}</div></div>`).join('');
+  drop.dataset.items = JSON.stringify(items.map(it => ({name:it.name||it.label,lat:it.position?.lat,lon:it.position?.lon})));
   drop.dataset.inp = inp.id;
   drop.classList.add('on');
   drop.querySelectorAll('.ac-it').forEach(el => {
     el.addEventListener('mousedown', e => { e.preventDefault(); pickAc(parseInt(el.dataset.i), dropId); });
     el.addEventListener('touchend',  e => { e.preventDefault(); pickAc(parseInt(el.dataset.i), dropId); });
   });
-  setTimeout(() => {
-    const h = e => {
-      if (!drop.contains(e.target) && e.target !== inp) { closeAc(dropId); document.removeEventListener('click', h); }
-    };
-    document.addEventListener('click', h);
-  }, 50);
+  setTimeout(() => { const h = e => { if (!drop.contains(e.target)&&e.target!==inp) { closeAc(dropId); document.removeEventListener('click',h); } }; document.addEventListener('click',h); }, 50);
 }
 
 function pickAc(idx, dropId) {
   const drop = document.getElementById(dropId);
-  const items = JSON.parse(drop.dataset.items || '[]');
-  const item = items[idx];
+  const items = JSON.parse(drop.dataset.items||'[]'), item = items[idx];
   const inp = document.getElementById(drop.dataset.inp);
   if (inp && item) {
-    inp.value = item.name || '';
-    if (item.lat && item.lon) ccache[item.name] = [item.lat, item.lon];
+    inp.value = item.name||'';
+    if (item.lat&&item.lon) ccache[item.name] = [item.lat, item.lon];
     inp.dispatchEvent(new Event('input'));
   }
   closeAc(dropId);
 }
 
 function acKey(e, dropId) {
-  const drop = document.getElementById(dropId);
-  if (!drop.classList.contains('on')) return;
-  const items = drop.querySelectorAll('.ac-it');
-  const hl    = drop.querySelector('.ac-it.hl');
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    const next = hl ? (hl.nextElementSibling || items[0]) : items[0];
-    hl?.classList.remove('hl'); next?.classList.add('hl');
-  }
-  if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    const prev = hl ? (hl.previousElementSibling || items[items.length-1]) : items[items.length-1];
-    hl?.classList.remove('hl'); prev?.classList.add('hl');
-  }
-  if (e.key === 'Enter' && hl) { e.preventDefault(); pickAc(parseInt(hl.dataset.i), dropId); }
-  if (e.key === 'Escape') closeAc(dropId);
+  const drop = document.getElementById(dropId); if (!drop.classList.contains('on')) return;
+  const items = drop.querySelectorAll('.ac-it'), hl = drop.querySelector('.ac-it.hl');
+  if (e.key==='ArrowDown') { e.preventDefault(); const n=hl?hl.nextElementSibling||items[0]:items[0]; hl?.classList.remove('hl'); n?.classList.add('hl'); }
+  if (e.key==='ArrowUp')   { e.preventDefault(); const n=hl?hl.previousElementSibling||items[items.length-1]:items[items.length-1]; hl?.classList.remove('hl'); n?.classList.add('hl'); }
+  if (e.key==='Enter'&&hl) { e.preventDefault(); pickAc(parseInt(hl.dataset.i),dropId); }
+  if (e.key==='Escape') closeAc(dropId);
 }
 
 function closeAc(id) { document.getElementById(id)?.classList.remove('on'); }
 
-// ═══════════════════════════════════════════════
-// GEOCODING + ROUTING + ELEVATION
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// DB TRANSPORT REST API
+// ═══════════════════════════════════════════════════════
+let stTimers = {};
+
+function stInput(inp, dropId) {
+  clearTimeout(stTimers[dropId]);
+  const q = inp.value.trim();
+  if (q.length < 2) { closeStDrop(dropId); return; }
+  stTimers[dropId] = setTimeout(() => fetchStations(q, inp, dropId), 350);
+}
+
+async function fetchStations(q, inp, dropId) {
+  try {
+    const r = await fetch(`${DB_API}/locations?query=${encodeURIComponent(q)}&results=7&stops=true&addresses=false&poi=false`);
+    if (!r.ok) return;
+    const d = await r.json();
+    const stations = d.filter(x => x.type === 'stop' || x.type === 'station');
+    showStDrop(stations, inp, dropId);
+  } catch(e) {}
+}
+
+function showStDrop(items, inp, dropId) {
+  const drop = document.getElementById(dropId); if (!drop) return;
+  if (!items.length) { closeStDrop(dropId); return; }
+  drop.innerHTML = items.map((st,i) => `<div class="st-it" data-i="${i}">${esc(st.name)}</div>`).join('');
+  drop.dataset.items = JSON.stringify(items.map(st => ({id:st.id, name:st.name})));
+  drop.dataset.inp = inp.id;
+  drop.classList.add('on');
+  drop.querySelectorAll('.st-it').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); pickStation(parseInt(el.dataset.i), dropId); });
+    el.addEventListener('touchend',  e => { e.preventDefault(); pickStation(parseInt(el.dataset.i), dropId); });
+  });
+  setTimeout(() => { const h = e => { if (!drop.contains(e.target)&&e.target!==inp) { closeStDrop(dropId); document.removeEventListener('click',h); } }; document.addEventListener('click',h); }, 50);
+}
+
+function pickStation(idx, dropId) {
+  const drop = document.getElementById(dropId);
+  const items = JSON.parse(drop.dataset.items||'[]'), item = items[idx];
+  const inp = document.getElementById(drop.dataset.inp);
+  if (inp && item) {
+    inp.value = item.name;
+    dbStationCache[item.name] = item;
+  }
+  closeStDrop(dropId);
+}
+
+function closeStDrop(id) { document.getElementById(id)?.classList.remove('on'); }
+
+// Open connection search for a specific stop transfer
+function openConnSearch(stopIdx) {
+  connStopIdx = stopIdx;
+  selectedJourney = null;
+
+  const s = stops[stopIdx];
+  const prev = stops[stopIdx - 1];
+  const tripDate = fv('tripDate') || new Date().toISOString().slice(0,10);
+
+  document.getElementById('cFrom').value = s.tr?.from || prev?.name || '';
+  document.getElementById('cTo').value   = s.name || '';
+  document.getElementById('cDate').value = tripDate;
+
+  // suggest time: after previous stop's stay
+  let sugTime = '08:00';
+  if (prev?.time) {
+    const sM = parseMins(prev.stay);
+    sugTime = sM !== null ? addMins(prev.time, sM) : prev.time;
+  }
+  document.getElementById('cTime').value = sugTime;
+
+  document.getElementById('connResults').innerHTML = '';
+  document.getElementById('connApply').classList.remove('show');
+  document.getElementById('connOvl').classList.add('on');
+}
+
+async function searchConnections() {
+  const fromName = fv('cFrom'), toName = fv('cTo');
+  const date = fv('cDate'), time = fv('cTime');
+  if (!fromName || !toName) { alert('Zadej odkud a kam.'); return; }
+
+  const btn = document.getElementById('connSearchBtn');
+  btn.disabled = true; btn.textContent = 'Hledám…';
+  document.getElementById('connResults').innerHTML = '<div class="conn-loading">🔍 Hledám nejlepší spoje…</div>';
+  document.getElementById('connApply').classList.remove('show');
+  selectedJourney = null;
+
+  try {
+    // Get station IDs
+    const [fromSt, toSt] = await Promise.all([
+      resolveStation(fromName),
+      resolveStation(toName)
+    ]);
+
+    if (!fromSt) throw new Error(`Stanice "${fromName}" nenalezena. Zkus přesnější název (např. "Praha hl.n.").`);
+    if (!toSt)   throw new Error(`Stanice "${toName}" nenalezena. Zkus přesnější název.`);
+
+    const departure = `${date}T${time}:00`;
+    const url = `${DB_API}/journeys?from=${fromSt.id}&to=${toSt.id}&departure=${encodeURIComponent(departure)}&results=6&national=true&regionalExp=true&regional=true&suburban=true&bus=false&ferry=false&subway=false&tram=false&taxi=false&language=de`;
+
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('API vrátilo chybu: ' + r.status);
+    const d = await r.json();
+    const journeys = d.journeys || [];
+    if (!journeys.length) throw new Error('Žádné spoje nenalezeny pro tuto trasu a čas.');
+
+    renderConnResults(journeys);
+  } catch(err) {
+    document.getElementById('connResults').innerHTML = `<div class="conn-error">⚠️ ${esc(err.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Vyhledat spoje';
+  }
+}
+
+async function resolveStation(name) {
+  if (dbStationCache[name]) return dbStationCache[name];
+  const r = await fetch(`${DB_API}/locations?query=${encodeURIComponent(name)}&results=5&stops=true&addresses=false&poi=false`);
+  if (!r.ok) return null;
+  const d = await r.json();
+  const st = d.find(x => x.type === 'stop' || x.type === 'station');
+  if (st) { dbStationCache[name] = {id: st.id, name: st.name}; return dbStationCache[name]; }
+  return null;
+}
+
+function renderConnResults(journeys) {
+  const html = journeys.map((j, idx) => {
+    const legs = j.legs || [];
+    const dep = legs[0]?.departure || legs[0]?.plannedDeparture;
+    const arr = legs[legs.length-1]?.arrival || legs[legs.length-1]?.plannedArrival;
+    if (!dep) return '';
+
+    const depTime = new Date(dep), arrTime = new Date(arr);
+    const durMins = Math.round((arrTime - depTime) / 60000);
+    const h = Math.floor(durMins/60), m = durMins%60;
+    const durStr = h ? `${h} h ${m} min` : `${m} min`;
+    const depStr = depTime.toLocaleTimeString('cs', {hour:'2-digit', minute:'2-digit'});
+    const arrStr = arrTime.toLocaleTimeString('cs', {hour:'2-digit', minute:'2-digit'});
+
+    const legBadges = legs.map(leg => {
+      const line = leg.line?.name || '';
+      const mode = leg.walking ? 'walk' : (leg.line?.product || 'train');
+      const cls = leg.walking ? 'walk' : '';
+      return `<span class="conn-leg ${cls}">${leg.walking ? '🚶 Přestup' : esc(line)}</span>`;
+    }).join('');
+
+    const platform = legs[0]?.departurePlatform ? `Nástupište ${legs[0].departurePlatform}` : '';
+    const delay = legs[0]?.departureDelay ? `<span style="color:#b02020"> +${Math.round(legs[0].departureDelay/60)} min</span>` : '';
+
+    return `<div class="conn-item" data-idx="${idx}" onclick="selectJourney(${idx}, this)">
+      <div class="conn-head">
+        <span class="conn-time">${depStr} → ${arrStr}${delay}</span>
+        <span class="conn-dur">${durStr}</span>
+      </div>
+      <div class="conn-legs">${legBadges}</div>
+      ${platform ? `<div class="conn-platform">🚉 ${esc(platform)}</div>` : ''}
+    </div>`;
+  }).filter(Boolean).join('');
+
+  document.getElementById('connResults').innerHTML = html || '<div class="conn-loading">Žádné výsledky.</div>';
+
+  // Store journeys for later use
+  document.getElementById('connResults').dataset.journeys = JSON.stringify(
+    journeys.map(j => {
+      const legs = j.legs || [];
+      const dep = legs[0]?.departure || legs[0]?.plannedDeparture;
+      const arr = legs[legs.length-1]?.arrival || legs[legs.length-1]?.plannedArrival;
+      const depTime = new Date(dep), arrTime = new Date(arr);
+      const durMins = Math.round((arrTime - depTime) / 60000);
+      const line = legs.filter(l=>!l.walking).map(l=>l.line?.name||'').filter(Boolean).join(' + ');
+      return {
+        depTime: depTime.toLocaleTimeString('cs', {hour:'2-digit', minute:'2-digit'}),
+        arrTime: arrTime.toLocaleTimeString('cs', {hour:'2-digit', minute:'2-digit'}),
+        durMins,
+        line,
+        platform: legs[0]?.departurePlatform || ''
+      };
+    })
+  );
+}
+
+function selectJourney(idx, el) {
+  document.querySelectorAll('.conn-item').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  const journeys = JSON.parse(document.getElementById('connResults').dataset.journeys || '[]');
+  selectedJourney = journeys[idx];
+  document.getElementById('connApply').classList.add('show');
+}
+
+function applyConnection() {
+  if (!selectedJourney || connStopIdx === null) return;
+  const s = stops[connStopIdx];
+  const durMins = selectedJourney.durMins;
+  const h = Math.floor(durMins/60), m = durMins%60;
+  const durStr = h ? `${h} h ${m} min` : `${m} min`;
+
+  s.time = selectedJourney.arrTime;
+  s.tr.mode = 'train';
+  s.tr.dur = durStr;
+  s.tr.note = selectedJourney.line + (selectedJourney.platform ? ` · nástupište ${selectedJourney.platform}` : '');
+
+  saveState(); render();
+  closeConnOvl();
+}
+
+function closeConnOvl(e) {
+  if (e && e.target !== document.getElementById('connOvl')) return;
+  document.getElementById('connOvl').classList.remove('on');
+}
+
+// ═══════════════════════════════════════════════════════
+// GEOCODING (Nominatim fallback, Mapy.cz if key)
+// ═══════════════════════════════════════════════════════
 async function geocode(name) {
   if (!name) return null;
   if (ccache[name]) return ccache[name];
   if (apiKey) {
     try {
       const r = await fetch(`https://api.mapy.cz/v1/geocode?lang=cs&limit=1&apikey=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(name)}`);
-      const d = await r.json();
-      const p = d.items?.[0]?.position;
+      const d = await r.json(); const p = d.items?.[0]?.position;
       if (p) { ccache[name] = [p.lat, p.lon]; return ccache[name]; }
     } catch(e) {}
   }
@@ -747,64 +1103,33 @@ async function geocode(name) {
 async function fetchRouteDur(from, to, mode, el) {
   if (!apiKey || !MRT[mode]) return;
   try {
-    const [a, b] = await Promise.all([geocode(from), geocode(to)]);
-    if (!a || !b) return;
+    const [a,b] = await Promise.all([geocode(from), geocode(to)]);
+    if (!a||!b) return;
     const r = await fetch(`https://api.mapy.cz/v1/routing/route?apikey=${encodeURIComponent(apiKey)}&lang=cs&routeType=${MRT[mode]}&start=${a[1]},${a[0]}&end=${b[1]},${b[0]}`);
-    const d = await r.json();
-    const secs = d.routes?.[0]?.duration;
-    if (!secs) return;
-    const mins = Math.round(secs / 60), h = Math.floor(mins / 60), m = mins % 60;
-    el.textContent = '~' + (h ? h + ' h ' + m + ' min' : m + ' min');
-    el.style.display = 'inline-flex';
-  } catch(e) {}
-}
-
-async function fetchElev(from, to, el) {
-  if (!apiKey) return;
-  try {
-    const [a, b] = await Promise.all([geocode(from), geocode(to)]);
-    if (!a || !b) return;
-    const N = 20, pts = [];
-    for (let i = 0; i <= N; i++) {
-      const t = i / N;
-      pts.push({ lat: a[0] + (b[0] - a[0]) * t, lon: a[1] + (b[1] - a[1]) * t });
-    }
-    const r = await fetch(`https://api.mapy.cz/v1/elevation?apikey=${encodeURIComponent(apiKey)}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ points: pts })
-    });
-    const d = await r.json();
-    const elevs = d.elevations || d.results?.map(x => x.elevation);
-    if (!elevs?.length) return;
-    const mn = Math.min(...elevs), mx = Math.max(...elevs), rng = mx - mn || 1;
-    const gain = elevs.reduce((acc, e, i) => i > 0 && e > elevs[i-1] ? acc + (e - elevs[i-1]) : acc, 0);
-    const W = 90, H = 24;
-    const p2 = elevs.map((e, i) => `${(i / (elevs.length-1)) * W},${H - ((e - mn) / rng) * H}`).join(' ');
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="flex-shrink:0"><polyline points="${p2}" fill="none" stroke="#3a6b52" stroke-width="1.8" stroke-linejoin="round"/></svg><span>↑${Math.round(gain)}m</span>`;
-    el.style.display = 'inline-flex';
+    const d = await r.json(); const secs = d.routes?.[0]?.duration; if (!secs) return;
+    const mins = Math.round(secs/60), h = Math.floor(mins/60), m = mins%60;
+    el.textContent = '~'+(h?h+' h '+m+' min':m+' min'); el.style.display = 'inline-flex';
   } catch(e) {}
 }
 
 function mapyUrl(from, to, mode) {
-  const ms = mode === 'car' ? 'traffic' : 'outdoor';
-  const rt = MRT[mode] || (mode === 'train' || mode === 'bus' ? 'public_transport' : null);
-  if (!rt) return 'https://mapy.cz/?q=' + encodeURIComponent(to);
+  const ms = mode==='car'?'traffic':'outdoor';
+  const rt = MRT[mode]||(mode==='train'||mode==='bus'?'public_transport':null);
+  if (!rt) return 'https://mapy.cz/?q='+encodeURIComponent(to);
   return `https://mapy.com/fnc/v1/route?mapset=${ms}&routeType=${rt}&start=${encodeURIComponent(from)}&end=${encodeURIComponent(to)}`;
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // MAP
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function initMap() {
-  map = L.map('mapEl', { zoomControl: true, attributionControl: false }).setView([49.8, 15.5], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-  L.control.attribution({ prefix: '© <a href="https://osm.org">OSM</a>' }).addTo(map);
+  map = L.map('mapEl', {zoomControl:true,attributionControl:false}).setView([49.8,15.5], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(map);
+  L.control.attribution({prefix:'© <a href="https://osm.org">OSM</a>'}).addTo(map);
 }
 
 function mkIcon(lbl, color) {
-  return L.divIcon({
-    html: `<div style="width:30px;height:30px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:2.5px solid rgba(255,255,255,.9);box-shadow:0 3px 10px rgba(0,0,0,.3);font-family:'DM Sans',sans-serif">${lbl}</div>`,
-    className: '', iconSize: [30, 30], iconAnchor: [15, 15], tooltipAnchor: [15, 0]
-  });
+  return L.divIcon({html:`<div style="width:30px;height:30px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:2.5px solid rgba(255,255,255,.9);box-shadow:0 3px 10px rgba(0,0,0,.3);font-family:'DM Sans',sans-serif">${lbl}</div>`,className:'',iconSize:[30,30],iconAnchor:[15,15],tooltipAnchor:[15,0]});
 }
 
 async function updateMap() {
@@ -813,429 +1138,219 @@ async function updateMap() {
   const names = [origin, ...stops.map(s => s.name)].filter(Boolean);
   if (!names.length) return;
   const coords = await Promise.all(names.map(n => geocode(n)));
-  const pts = names.map((n, i) => ({ n, c: coords[i] })).filter(x => x.c);
+  const pts = names.map((n,i) => ({n, c:coords[i]})).filter(x => x.c);
   if (!pts.length) return;
   const lls = pts.map(x => x.c);
-  const poly = L.polyline(lls, { color: '#1b2d45', weight: 2, dashArray: '5 7', opacity: .55 }).addTo(map);
+  const poly = L.polyline(lls, {color:'#1b2d45', weight:2, dashArray:'5 7', opacity:.55}).addTo(map);
   mlayers.push(poly);
-  pts.forEach(({ n, c }, i) => {
-    const color = i === 0 ? '#1b2d45' : (i === pts.length - 1 ? '#d95f35' : '#1a3f70');
-    const mk = L.marker(c, { icon: mkIcon(i === 0 ? 'S' : i, color) })
-      .bindTooltip(n, { direction: 'top', offset: [0, -15] }).addTo(map);
+  pts.forEach(({n,c},i) => {
+    const color = i===0 ? '#1b2d45' : (i===pts.length-1 ? '#d95f35' : '#1a3f70');
+    const mk = L.marker(c, {icon:mkIcon(i===0?'S':i, color)}).bindTooltip(n,{direction:'top',offset:[0,-15]}).addTo(map);
     mlayers.push(mk);
   });
-  if (lls.length > 1) map.fitBounds(L.latLngBounds(lls).pad(.15));
-  else map.setView(lls[0], 12);
-  document.getElementById('mapCap').textContent = pts.length + ' míst · © OpenStreetMap';
+  if (lls.length>1) map.fitBounds(L.latLngBounds(lls).pad(.15)); else map.setView(lls[0], 12);
+  document.getElementById('mapCap').textContent = pts.length+' míst · © OpenStreetMap';
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // ADD / EDIT / DELETE
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function addStop() {
-  const name = fv('fName');
-  if (!name) {
-    document.getElementById('fName').focus();
-    return;
-  }
-
-  stops.push({
-    time:     fv('fTime') || '10:00',
-    autoTime: autoT,
-    name,
-    stay:     fv('fStay'),
-    type:     fv('fType'),
-    note:     fv('fNote'),
-    cost:     fv('fCost'),
-    tr: {
-      mode: tpAddVal,
-      dur:  fv('fTDur'),
-      from: fv('fTFrom'),
-      cost: fv('fTCost')
-    }
-  });
-
-  saveState();
-  render();
-
-  // reset
-  ['fName', 'fStay', 'fNote', 'fCost', 'fTDur', 'fTCost'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  const ft = document.getElementById('fType'); if (ft) ft.value = '';
-  const ff = document.getElementById('fTFrom'); if (ff) ff.value = name;
-  autoT = false;
-  const ts = document.getElementById('timeSug'); if (ts) ts.style.display = 'none';
-  document.getElementById('fName').focus();
-  updateTimeSug();
-  updateMap();
-  closeSheet();
-}
-
-function delStop(i) {
-  if (!confirm('Smazat "' + stops[i].name + '"?')) return;
-  stops.splice(i, 1); saveState(); render(); updateMap();
-}
-
-function moveStop(i, d) {
-  const j = i + d;
-  if (j < 0 || j >= stops.length) return;
-  [stops[i], stops[j]] = [stops[j], stops[i]];
+  const name = fv('fName'); if (!name) { document.getElementById('fName').focus(); return; }
+  stops.push({ time:fv('fTime')||'10:00', autoTime:autoT, name, stay:fv('fStay'), type:fv('fType'), note:fv('fNote'), cost:fv('fCost'), tr:{mode:tpAddVal,dur:fv('fTDur'),from:fv('fTFrom'),cost:fv('fTCost')} });
   saveState(); render();
+  ['fName','fStay','fNote','fCost','fTDur','fTCost'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const ft=document.getElementById('fType'); if(ft) ft.value='';
+  const ff=document.getElementById('fTFrom'); if(ff) ff.value=name;
+  autoT=false;
+  const ts=document.getElementById('timeSug'); if(ts) ts.style.display='none';
+  document.getElementById('fName').focus();
+  updateTimeSug(); updateMap(); closeSheet();
 }
+
+function delStop(i) { if(!confirm('Smazat "'+stops[i].name+'"?')) return; stops.splice(i,1); saveState(); render(); updateMap(); }
+function moveStop(i,d) { const j=i+d; if(j<0||j>=stops.length) return; [stops[i],stops[j]]=[stops[j],stops[i]]; saveState(); render(); }
 
 function openEdit(i) {
-  const s = stops[i];
-  document.getElementById('eIdx').value  = i;
-  document.getElementById('eTime').value = s.time;
-  document.getElementById('eName').value = s.name;
-  document.getElementById('eStay').value = s.stay;
-  document.getElementById('eType').value = s.type;
-  document.getElementById('eNote').value = s.note;
-  document.getElementById('eCost').value = s.cost || '';
-  document.getElementById('eTDur').value  = s.tr?.dur  || '';
-  document.getElementById('eTFrom').value = s.tr?.from || '';
-  document.getElementById('eTCost').value = s.tr?.cost || '';
-  tpEditVal = s.tr?.mode || '';
-  document.querySelectorAll('#tpEdit .tp').forEach(b => b.classList.toggle('on', b.dataset.v === tpEditVal));
+  const s=stops[i];
+  document.getElementById('eIdx').value=i; document.getElementById('eTime').value=s.time;
+  document.getElementById('eName').value=s.name; document.getElementById('eStay').value=s.stay;
+  document.getElementById('eType').value=s.type; document.getElementById('eNote').value=s.note;
+  document.getElementById('eCost').value=s.cost||''; document.getElementById('eTDur').value=s.tr?.dur||'';
+  document.getElementById('eTFrom').value=s.tr?.from||''; document.getElementById('eTCost').value=s.tr?.cost||'';
+  tpEditVal=s.tr?.mode||'';
+  document.querySelectorAll('#tpEdit .tp').forEach(b=>b.classList.toggle('on',b.dataset.v===tpEditVal));
   document.getElementById('editOvl').classList.add('on');
 }
 
 function saveEdit() {
-  const i = parseInt(fv('eIdx'));
-  stops[i] = {
-    time: fv('eTime'), name: fv('eName'), stay: fv('eStay'),
-    type: fv('eType'), note: fv('eNote'), cost: fv('eCost'),
-    tr: { mode: tpEditVal, dur: fv('eTDur'), from: fv('eTFrom'), cost: fv('eTCost') }
-  };
+  const i=parseInt(fv('eIdx'));
+  stops[i]={time:fv('eTime'),name:fv('eName'),stay:fv('eStay'),type:fv('eType'),note:fv('eNote'),cost:fv('eCost'),tr:{mode:tpEditVal,dur:fv('eTDur'),from:fv('eTFrom'),cost:fv('eTCost')}};
   saveState(); render(); closeEditOvl(); updateMap();
 }
 
-function closeEditOvl(e) {
-  if (e && e.target !== document.getElementById('editOvl')) return;
-  document.getElementById('editOvl').classList.remove('on');
-}
+function closeEditOvl(e) { if(e&&e.target!==document.getElementById('editOvl')) return; document.getElementById('editOvl').classList.remove('on'); }
+function clearAll() { if(!confirm('Vymazat celý plán?')) return; stops=[]; saveState(); render(); updateMap(); }
 
-function clearAll() {
-  if (!confirm('Vymazat celý plán?')) return;
-  stops = []; saveState(); render(); updateMap();
-}
-
-// ═══════════════════════════════════════════════
-// DRAG & DROP (desktop)
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════════════════════
 function initDrag(numEl, cardEl, idx) {
-  numEl.setAttribute('draggable', 'true');
-  numEl.addEventListener('dragstart', e => {
-    dragSrc = idx;
-    cardEl.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-  });
-  numEl.addEventListener('dragend', () => {
-    cardEl.classList.remove('dragging');
-    document.querySelectorAll('.drop-line').forEach(d => d.classList.remove('on'));
-  });
+  numEl.setAttribute('draggable','true');
+  numEl.addEventListener('dragstart', e => { dragSrc=idx; cardEl.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+  numEl.addEventListener('dragend', () => { cardEl.classList.remove('dragging'); document.querySelectorAll('.drop-line-tl').forEach(d=>d.classList.remove('on')); });
 }
 
 function initDropLine(dl, targetIdx) {
-  dl.addEventListener('dragover',  e => { e.preventDefault(); document.querySelectorAll('.drop-line').forEach(d => d.classList.remove('on')); dl.classList.add('on'); });
+  dl.addEventListener('dragover', e => { e.preventDefault(); document.querySelectorAll('.drop-line-tl').forEach(d=>d.classList.remove('on')); dl.classList.add('on'); });
   dl.addEventListener('dragleave', () => dl.classList.remove('on'));
   dl.addEventListener('drop', e => {
     e.preventDefault(); dl.classList.remove('on');
-    if (dragSrc === null || dragSrc === targetIdx) { dragSrc = null; return; }
-    const moved = stops.splice(dragSrc, 1)[0];
-    const ni = dragSrc < targetIdx ? targetIdx - 1 : targetIdx;
-    stops.splice(ni, 0, moved);
-    dragSrc = null; saveState(); render();
+    if (dragSrc===null||dragSrc===targetIdx) { dragSrc=null; return; }
+    const moved=stops.splice(dragSrc,1)[0]; const ni=dragSrc<targetIdx?targetIdx-1:targetIdx;
+    stops.splice(ni,0,moved); dragSrc=null; saveState(); render();
   });
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // SWIPE (mobile)
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function initSwipe(inner, bg) {
-  let sx = 0, cx = 0, going = false;
-  const MAX = 120;
-  const card = inner.parentElement;
-  card.addEventListener('touchstart', e => { sx = e.touches[0].clientX; cx = 0; going = true; }, { passive: true });
-  card.addEventListener('touchmove',  e => {
-    if (!going) return;
-    cx = Math.max(-MAX, Math.min(0, e.touches[0].clientX - sx));
-    inner.style.transform = `translateX(${cx}px)`;
-    bg.style.opacity = String(Math.abs(cx) / MAX);
-  }, { passive: false });
-  card.addEventListener('touchend', () => {
-    going = false;
-    if (cx < -MAX / 2) {
-      inner.style.transform = `translateX(-${MAX}px)`;
-      bg.style.opacity = '1'; bg.style.pointerEvents = 'auto';
-    } else {
-      inner.style.transform = '';
-      bg.style.opacity = '0'; bg.style.pointerEvents = 'none';
-    }
-  });
+  let sx=0,cx=0,going=false; const MAX=120; const card=inner.parentElement;
+  card.addEventListener('touchstart', e=>{sx=e.touches[0].clientX;cx=0;going=true;},{passive:true});
+  card.addEventListener('touchmove',  e=>{ if(!going)return; cx=Math.max(-MAX,Math.min(0,e.touches[0].clientX-sx)); inner.style.transform=`translateX(${cx}px)`; bg.style.opacity=String(Math.abs(cx)/MAX); },{passive:false});
+  card.addEventListener('touchend',   ()=>{ going=false; if(cx<-MAX/2){inner.style.transform=`translateX(-${MAX}px)`;bg.style.opacity='1';bg.style.pointerEvents='auto';}else{inner.style.transform='';bg.style.opacity='0';bg.style.pointerEvents='none';} });
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // RENDER
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function updateHStats() {
-  const el   = document.getElementById('hStats');
-  const curr = document.getElementById('currSel').value;
-  const tot  = calcTotal();
-  if (!stops.length) { el.innerHTML = ''; return; }
-  const f = stops[0].time, l = stops[stops.length - 1].time;
-  el.innerHTML = `<strong>${stops.length}</strong> zastávek · ${f}–${l || '?'}` +
-    (tot > 0 ? ` · <strong>${tot} ${curr}</strong>` : '');
+  const el=document.getElementById('hStats'), curr=document.getElementById('currSel').value, tot=calcTotal();
+  if (!stops.length) { el.innerHTML=''; return; }
+  const f=stops[0].time, l=stops[stops.length-1].time;
+  el.innerHTML=`<strong>${stops.length}</strong> zastávek`+(f?` · ${f}–${l||'?'}`:'')+( tot>0?` · <strong>${tot} ${curr}</strong>`:'');
 }
 
 function calcTotal() {
-  return Math.round(stops.reduce((t, s) => {
-    const c = parseFloat(s.cost), tc = parseFloat(s.tr?.cost);
-    return t + (isNaN(c) ? 0 : c) + (isNaN(tc) ? 0 : tc);
-  }, 0) * 100) / 100;
+  return Math.round(stops.reduce((t,s)=>{ const c=parseFloat(s.cost),tc=parseFloat(s.tr?.cost); return t+(isNaN(c)?0:c)+(isNaN(tc)?0:tc); },0)*100)/100;
 }
 
 function renderBudget() {
-  const curr = document.getElementById('currSel').value;
-  const rows = [];
-  stops.forEach(s => {
-    const tc = parseFloat(s.tr?.cost); if (!isNaN(tc) && tc > 0) rows.push({ n: '🚌 ' + esc(s.tr?.from || 'Přesun') + ' → ' + esc(s.name), a: tc });
-    const sc = parseFloat(s.cost);     if (!isNaN(sc) && sc > 0) rows.push({ n: (s.type ? s.type + ' ' : '') + esc(s.name), a: sc });
-  });
-  const list = document.getElementById('budgetList');
-  if (!rows.length) {
-    list.innerHTML = '<div class="no-c">Zatím žádné náklady.<br>Přidej ceny u zastávek nebo přesunů.</div>';
-    return;
-  }
-  const tot = calcTotal();
-  list.innerHTML = rows.map(r => `<div class="brow"><span class="bn">${r.n}</span><span class="ba">${r.a} ${curr}</span></div>`).join('') +
-    `<div class="brow tot"><span class="bn">Celkem</span><span class="ba">${tot} ${curr}</span></div>`;
+  const curr=document.getElementById('currSel').value, rows=[];
+  stops.forEach(s=>{ const tc=parseFloat(s.tr?.cost);if(!isNaN(tc)&&tc>0)rows.push({n:'🚌 '+esc(s.tr?.from||'Přesun')+' → '+esc(s.name),a:tc}); const sc=parseFloat(s.cost);if(!isNaN(sc)&&sc>0)rows.push({n:(s.type?s.type+' ':'')+esc(s.name),a:sc}); });
+  const list=document.getElementById('budgetList');
+  if (!rows.length){list.innerHTML='<div class="no-c">Zatím žádné náklady.</div>';return;}
+  const tot=calcTotal();
+  list.innerHTML=rows.map(r=>`<div class="brow"><span class="bn">${r.n}</span><span class="ba">${r.a} ${curr}</span></div>`).join('')+`<div class="brow tot"><span class="bn">Celkem</span><span class="ba">${tot} ${curr}</span></div>`;
   updateHStats();
 }
 
 function render() {
-  const tl    = document.getElementById('tl');
-  const empty = document.getElementById('emptyMsg');
+  const tl=document.getElementById('tl'), empty=document.getElementById('emptyMsg');
+  Array.from(tl.children).forEach(c=>{ if(!c.classList.contains('tl-rail')&&c!==empty) c.remove(); });
+  if (!stops.length){empty.style.display='block';renderBudget();updateHStats();return;}
+  empty.style.display='none';
+  const curr=document.getElementById('currSel').value;
 
-  // Remove all children except rail and emptyMsg
-  Array.from(tl.children).forEach(c => {
-    if (!c.classList.contains('tl-rail') && c !== empty) c.remove();
-  });
+  stops.forEach((s,i) => {
+    // drop line
+    const dl=document.createElement('div'); dl.className='drop-line-tl'; initDropLine(dl,i); tl.appendChild(dl);
 
-  if (!stops.length) {
-    empty.style.display = 'block';
-    renderBudget(); updateHStats();
-    return;
-  }
-  empty.style.display = 'none';
-  const curr = document.getElementById('currSel').value;
-
-  stops.forEach((s, i) => {
-    // Drop line
-    const dl = document.createElement('div'); dl.className = 'drop-line';
-    initDropLine(dl, i); tl.appendChild(dl);
-
-    // Transfer row
-    if (i > 0) {
-      const tr   = s.tr || {};
-      const from = tr.from || (stops[i - 1]?.name) || '';
-      const to   = s.name;
-      const mode = tr.mode || '';
-      const href = (from && to) ? mapyUrl(from, to, mode) : '';
-      const rid  = 'rt' + i + '_' + (Math.random() * 1e5 | 0);
-      const eid  = 'el' + i + '_' + (Math.random() * 1e5 | 0);
-
-      const row = document.createElement('div'); row.className = 'tr-row';
-      row.innerHTML = `<div class="tr-gap"></div><div class="tr-pills">
+    // transfer row
+    if (i>0) {
+      const tr=s.tr||{}, from=tr.from||(stops[i-1]?.name)||'', to=s.name, mode=tr.mode||'';
+      const href=from&&to?mapyUrl(from,to,mode):'';
+      const rid='rt'+i+'_'+(Math.random()*1e5|0);
+      const canSearchDB = (mode==='train'||mode==='bus'||mode==='');
+      const row=document.createElement('div'); row.className='tr-row';
+      row.innerHTML=`<div class="tr-gap"></div><div class="tr-pills">
         <span class="badge ${mode}" onclick="openEdit(${i})" title="Upravit přesun">
-          ${TLB[mode] || '—'}
-          ${from ? ` <span style="opacity:.6">z ${esc(from)}</span>` : ''}
-          ${tr.dur ? ` <span style="opacity:.65;font-size:11px">${esc(tr.dur)}</span>` : ''}
-          ${tr.cost ? ` <span style="opacity:.5">${esc(tr.cost)} ${curr}</span>` : ''}
+          ${TLB[mode]||'—'}
+          ${from?` <span style="opacity:.6">z ${esc(from)}</span>`:''}
+          ${tr.dur?` <span style="opacity:.65;font-size:11px">${esc(tr.dur)}</span>`:''}
+          ${tr.note?` <span style="opacity:.5">· ${esc(tr.note)}</span>`:''}
+          ${tr.cost?` <span style="opacity:.5">${esc(tr.cost)} ${curr}</span>`:''}
         </span>
-        ${href ? `<a class="badge mapy" href="${esc(href)}" target="_blank">🗺️ Mapy.cz</a>` : ''}
+        ${href?`<a class="badge mapy" href="${esc(href)}" target="_blank">🗺️ Mapy.cz</a>`:''}
+        <span class="badge db-find" onclick="openConnSearch(${i})" title="Hledat vlakové spojení přes DB API">🚆 Hledat spoj</span>
         <span class="badge rt" id="${rid}"></span>
-        <span class="badge elv" id="${eid}"></span>
       </div>`;
       tl.appendChild(row);
-
-      if (from && to) {
-        if (MRT[mode]) fetchRouteDur(from, to, mode, document.getElementById(rid));
-        if (apiKey && (mode === 'walk' || mode === 'bike' || mode === 'car')) fetchElev(from, to, document.getElementById(eid));
-      }
+      if (from&&to&&MRT[mode]) fetchRouteDur(from,to,mode,document.getElementById(rid));
     }
 
-    // Stop card
-    const isLast = i === stops.length - 1;
-    const wrap = document.createElement('div'); wrap.className = 'sc';
-
-    const numEl = document.createElement('div');
-    numEl.className = 'sc-num' + (isLast ? ' fin' : '');
-    numEl.textContent = i + 1;
-
-    const cardEl = document.createElement('div'); cardEl.className = 'sc-card';
-    cardEl.innerHTML = `
-      <div class="sw-bg">
-        <div class="sw-act ed" onclick="openEdit(${i})">✏️<span>Upravit</span></div>
-        <div class="sw-act dl" onclick="delStop(${i})">🗑️<span>Smazat</span></div>
-      </div>
+    // stop card
+    const isLast=i===stops.length-1;
+    const wrap=document.createElement('div'); wrap.className='sc';
+    const numEl=document.createElement('div'); numEl.className='sc-num'+(isLast?' fin':''); numEl.textContent=i+1;
+    const cardEl=document.createElement('div'); cardEl.className='sc-card';
+    cardEl.innerHTML=`
+      <div class="sw-bg"><div class="sw-act ed" onclick="openEdit(${i})">✏️<span>Upravit</span></div><div class="sw-act dl" onclick="delStop(${i})">🗑️<span>Smazat</span></div></div>
       <div class="sc-inner">
         <div class="sc-head">
-          <span class="sc-time${s.autoTime ? ' auto' : ''}">${esc(s.time || '—')}</span>
-          <span class="sc-name">${s.type ? s.type + ' ' : ''}${esc(s.name)}</span>
-          ${s.stay ? `<span class="sc-stay">${esc(s.stay)}</span>` : ''}
-          ${s.cost ? `<span class="sc-cost">${esc(s.cost)} ${curr}</span>` : ''}
+          <span class="sc-time${s.autoTime?' auto':''}">${esc(s.time||'—')}</span>
+          <span class="sc-name">${s.type?s.type+' ':''}${esc(s.name)}</span>
+          ${s.stay?`<span class="sc-stay">${esc(s.stay)}</span>`:''}
+          ${s.cost?`<span class="sc-cost">${esc(s.cost)} ${curr}</span>`:''}
           <div class="sc-acts">
-            ${i > 0 ? `<button class="ib" onclick="moveStop(${i},-1)">↑</button>` : ''}
-            ${i < stops.length - 1 ? `<button class="ib" onclick="moveStop(${i},1)">↓</button>` : ''}
+            ${i>0?`<button class="ib" onclick="moveStop(${i},-1)">↑</button>`:''}
+            ${i<stops.length-1?`<button class="ib" onclick="moveStop(${i},1)">↓</button>`:''}
             <button class="ib" onclick="openEdit(${i})">✏️</button>
             <button class="ib del" onclick="delStop(${i})">✕</button>
           </div>
         </div>
-        ${s.note ? `<div class="sc-note">${esc(s.note)}</div>` : ''}
+        ${s.note?`<div class="sc-note">${esc(s.note)}</div>`:''}
       </div>`;
-
-    wrap.appendChild(numEl);
-    wrap.appendChild(cardEl);
-    initDrag(numEl, cardEl, i);
-    initSwipe(cardEl.querySelector('.sc-inner'), cardEl.querySelector('.sw-bg'));
+    wrap.appendChild(numEl); wrap.appendChild(cardEl);
+    initDrag(numEl, cardEl, i); initSwipe(cardEl.querySelector('.sc-inner'), cardEl.querySelector('.sw-bg'));
     tl.appendChild(wrap);
   });
 
-  // Final drop line
-  const dlf = document.createElement('div'); dlf.className = 'drop-line';
-  initDropLine(dlf, stops.length); tl.appendChild(dlf);
-
+  const dlf=document.createElement('div'); dlf.className='drop-line-tl'; initDropLine(dlf,stops.length); tl.appendChild(dlf);
   renderBudget();
 }
 
-// ═══════════════════════════════════════════════
-// MOBILE BOTTOM SHEET
-// ═══════════════════════════════════════════════
-function openSheet() {
-  document.getElementById('addBox').classList.add('sheet', 'open');
-  document.getElementById('shBd').classList.add('on');
-  setTimeout(() => document.getElementById('fName').focus(), 340);
-}
+// ═══════════════════════════════════════════════════════
+// MOBILE SHEET
+// ═══════════════════════════════════════════════════════
+function openSheet() { document.getElementById('addBox').classList.add('sheet','open'); document.getElementById('shBd').classList.add('on'); setTimeout(()=>document.getElementById('fName').focus(),340); }
+function closeSheet() { const box=document.getElementById('addBox'); box.classList.remove('open'); document.getElementById('shBd').classList.remove('on'); setTimeout(()=>box.classList.remove('sheet'),340); }
 
-function closeSheet() {
-  const box = document.getElementById('addBox');
-  box.classList.remove('open');
-  document.getElementById('shBd').classList.remove('on');
-  setTimeout(() => box.classList.remove('sheet'), 340);
-}
-
-// ═══════════════════════════════════════════════
-// TABS (mobile)
-// ═══════════════════════════════════════════════
 function switchTab(tab, btn) {
-  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('ppPlan').classList.toggle('show', tab === 'plan');
-  document.getElementById('ppMap').classList.toggle('show',  tab === 'map');
-  document.getElementById('ppBud').classList.toggle('show',  tab === 'bud');
-  if (tab === 'map') setTimeout(() => map?.invalidateSize(), 100);
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
+  document.getElementById('ppPlan').classList.toggle('show',tab==='plan');
+  document.getElementById('ppMap').classList.toggle('show',tab==='map');
+  document.getElementById('ppBud').classList.toggle('show',tab==='bud');
+  if (tab==='map') setTimeout(()=>map?.invalidateSize(),100);
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // COLLAB
-// ═══════════════════════════════════════════════
-function genCode() { return Math.random().toString(36).slice(2, 8).toUpperCase(); }
+// ═══════════════════════════════════════════════════════
+function genCode(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+function createRoom(){roomCode=genCode();startCollab();closeCollabOvl();pushCollab()}
+function joinRoom(){const c=document.getElementById('roomInp').value.trim().toUpperCase();if(c.length<4){alert('Zadej kód.');return;}roomCode=c;startCollab();closeCollabOvl();pullCollab()}
+function startCollab(){document.getElementById('rcodeEl').textContent=roomCode;document.getElementById('cbar').classList.add('show');document.getElementById('collabBtn').classList.add('on');if(collabInt)clearInterval(collabInt);collabInt=setInterval(pullCollab,4000)}
+function leaveRoom(){roomCode=null;clearInterval(collabInt);collabInt=null;document.getElementById('cbar').classList.remove('show');document.getElementById('collabBtn').classList.remove('on')}
+async function pushCollab(){if(!roomCode)return;const ts=Date.now();try{await window.storage.set('room:'+roomCode,JSON.stringify({...getState(),_ts:ts}),true);lastTs=ts;}catch(e){}}
+async function pullCollab(){if(!roomCode)return;try{const res=await window.storage.get('room:'+roomCode,true);if(!res)return;const p=JSON.parse(res.value);if(p._ts&&p._ts>lastTs){lastTs=p._ts;applyState(p);render();updateMap();document.getElementById('chint').textContent='Aktualizováno '+new Date(p._ts).toLocaleTimeString('cs');}}catch(e){}}
+function copyRoomCode(){navigator.clipboard.writeText(roomCode).then(()=>{const el=document.getElementById('rcodeEl');const o=el.textContent;el.textContent='Zkopírováno!';setTimeout(()=>el.textContent=o,1500)}).catch(()=>{})}
 
-function createRoom() { roomCode = genCode(); startCollab(); closeCollabOvl(); pushCollab(); }
+// ═══════════════════════════════════════════════════════
+// SHARE / EXPORT
+// ═══════════════════════════════════════════════════════
+function openShareOvl(){const enc=btoa(unescape(encodeURIComponent(JSON.stringify(getState()))));document.getElementById('shareUrl').value=location.origin+location.pathname+'#plan='+enc;document.getElementById('shareOvl').classList.add('on')}
+function closeShareOvl(e){if(e&&e.target!==document.getElementById('shareOvl'))return;document.getElementById('shareOvl').classList.remove('on')}
+function copyShareUrl(){navigator.clipboard.writeText(fv('shareUrl')).then(()=>{const b=document.getElementById('cpBtn');b.textContent='✓ Zkopírováno';b.style.background='var(--sage)';setTimeout(()=>{b.textContent='Kopírovat';b.style.background=''},2200)}).catch(()=>{document.getElementById('shareUrl').select();document.execCommand('copy')})}
+function exportJSON(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'}));a.download='vylety-plan.json';a.click()}
+function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{applyState(JSON.parse(ev.target.result));saveState();render();updateMap();closeShareOvl()}catch(err){alert('Soubor nelze načíst.')}};r.readAsText(f)}
+function openCollabOvl(){document.getElementById('collabOvl').classList.add('on')}
+function closeCollabOvl(e){if(e&&e.target!==document.getElementById('collabOvl'))return;document.getElementById('collabOvl').classList.remove('on')}
 
-function joinRoom() {
-  const code = document.getElementById('roomInp').value.trim().toUpperCase();
-  if (code.length < 4) { alert('Zadej kód místnosti.'); return; }
-  roomCode = code; startCollab(); closeCollabOvl(); pullCollab(true);
-}
-
-function startCollab() {
-  document.getElementById('rcodeEl').textContent = roomCode;
-  document.getElementById('cbar').classList.add('show');
-  document.getElementById('collabBtn').classList.add('on');
-  if (collabInt) clearInterval(collabInt);
-  collabInt = setInterval(() => pullCollab(false), 4000);
-}
-
-function leaveRoom() {
-  roomCode = null; clearInterval(collabInt); collabInt = null;
-  document.getElementById('cbar').classList.remove('show');
-  document.getElementById('collabBtn').classList.remove('on');
-}
-
-async function pushCollab() {
-  if (!roomCode) return;
-  const ts = Date.now();
-  try { await window.storage.set('room:' + roomCode, JSON.stringify({ ...getState(), _ts: ts }), true); lastTs = ts; } catch(e) {}
-}
-
-async function pullCollab() {
-  if (!roomCode) return;
-  try {
-    const res = await window.storage.get('room:' + roomCode, true);
-    if (!res) return;
-    const p = JSON.parse(res.value);
-    if (p._ts && p._ts > lastTs) {
-      lastTs = p._ts; applyState(p); render(); updateMap();
-      document.getElementById('chint').textContent = 'Aktualizováno ' + new Date(p._ts).toLocaleTimeString('cs');
-    }
-  } catch(e) {}
-}
-
-function copyRoomCode() {
-  navigator.clipboard.writeText(roomCode).then(() => {
-    const el = document.getElementById('rcodeEl');
-    const orig = el.textContent;
-    el.textContent = 'Zkopírováno!';
-    setTimeout(() => el.textContent = orig, 1500);
-  }).catch(() => {});
-}
-
-// ═══════════════════════════════════════════════
-// API KEY / SHARE / EXPORT
-// ═══════════════════════════════════════════════
-function onApiKey() { apiKey = fv('apiKeyInp'); try { localStorage.setItem('mkey', apiKey); } catch(e) {} }
-function hideApib() { document.getElementById('apib').style.display = 'none'; try { localStorage.setItem('apibH', '1'); } catch(e) {} }
-
-function openShareOvl() {
-  const enc = btoa(unescape(encodeURIComponent(JSON.stringify(getState()))));
-  document.getElementById('shareUrl').value = location.origin + location.pathname + '#plan=' + enc;
-  document.getElementById('shareOvl').classList.add('on');
-}
-function closeShareOvl(e) { if (e && e.target !== document.getElementById('shareOvl')) return; document.getElementById('shareOvl').classList.remove('on'); }
-
-function copyShareUrl() {
-  navigator.clipboard.writeText(fv('shareUrl')).then(() => {
-    const b = document.getElementById('cpBtn');
-    b.textContent = '✓ Zkopírováno'; b.style.background = 'var(--sage)';
-    setTimeout(() => { b.textContent = 'Kopírovat'; b.style.background = ''; }, 2200);
-  }).catch(() => { document.getElementById('shareUrl').select(); document.execCommand('copy'); });
-}
-
-function exportJSON() {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(getState(), null, 2)], { type: 'application/json' }));
-  a.download = 'vylety-plan.json'; a.click();
-}
-
-function importJSON(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = ev => {
-    try { applyState(JSON.parse(ev.target.result)); saveState(); render(); updateMap(); closeShareOvl(); }
-    catch(err) { alert('Soubor nelze načíst.'); }
-  };
-  r.readAsText(f);
-}
-
-function openCollabOvl() { document.getElementById('collabOvl').classList.add('on'); }
-function closeCollabOvl(e) { if (e && e.target !== document.getElementById('collabOvl')) return; document.getElementById('collabOvl').classList.remove('on'); }
-
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // BOOT
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 init();
 </script>
 </body>
