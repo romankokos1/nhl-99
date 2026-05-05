@@ -552,6 +552,12 @@ const DB_API = 'https://v6.db.transport.rest';
 const TLB = {car:'🚗 Auto',train:'🚆 Vlak',bus:'🚌 Bus',walk:'🚶 Pěšky',bike:'🚲 Kolo',boat:'⛵ Loď','':'—'};
 const MRT  = {car:'car_fast_traffic',walk:'foot_fast',bike:'bicycle_road'};
 
+// ── NAISMITH / GPX STATS ──────────────────────────────
+function haversineKm(lat1,lon1,lat2,lon2){const R=6371,r=x=>x*Math.PI/180,dL=r(lat2-lat1),dO=r(lon2-lon1),a=Math.sin(dL/2)**2+Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(dO/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function calcTrackStats(trkpts){let d=0,g=0,l=0;for(let i=1;i<trkpts.length;i++){const p=trkpts[i-1],c=trkpts[i];d+=haversineKm(parseFloat(p.getAttribute('lat')),parseFloat(p.getAttribute('lon')),parseFloat(c.getAttribute('lat')),parseFloat(c.getAttribute('lon')));const e1=parseFloat(p.querySelector('ele')?.textContent||'NaN'),e2=parseFloat(c.querySelector('ele')?.textContent||'NaN');if(!isNaN(e1)&&!isNaN(e2)){const df=e2-e1;if(df>0)g+=df;else l+=Math.abs(df);}}return{distKm:d,elevGain:g,elevLoss:l};}
+function naismiths(distKm,gainM,pace=4.5){return distKm/pace+gainM/600;}
+function hToStr(h){const hh=Math.floor(h),mm=Math.round((h-hh)*60);return hh?`${hh} h ${mm} min`:`${mm} min`;}
+
 // ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
@@ -638,24 +644,52 @@ function parseGeoFile(file) {
   reader.onload = ev => {
     try {
       const text = ev.target.result;
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(text, 'text/xml');
-
-      let points = [];
+      const xml = new DOMParser().parseFromString(text, 'text/xml');
       const fname = file.name.toLowerCase();
 
+      let points = [], stats = null;
       if (fname.endsWith('.kml')) {
         points = parseKML(xml);
       } else {
-        points = parseGPX(xml);
+        const r = parseGPX(xml);
+        points = r.points; stats = r.stats;
       }
 
       if (!points.length) {
-        alert('V souboru nebyla nalezena žádná místa (waypoints). Zkus exportovat trasu s pojmenovanými body.');
+        alert('V souboru nebyla nalezena žádná místa.');
         return;
       }
 
-      importPoints(points, fname);
+      // Store stats for later Naismith offer
+      window._lastGpxStats = (stats && stats.distKm > 0) ? {
+        ...stats,
+        estH: naismiths(stats.distKm, stats.elevGain),
+        estStr: hToStr(naismiths(stats.distKm, stats.elevGain))
+      } : null;
+
+      const statsMsg = window._lastGpxStats
+        ? `\n\n📏 ${window._lastGpxStats.distKm.toFixed(1)} km · ` +
+          `⛰️ +${Math.round(window._lastGpxStats.elevGain)} m · ` +
+          `🚶 ${window._lastGpxStats.estStr} (Naismith)`
+        : '';
+
+      const count = points.length;
+      const preview = points.slice(0,8).map((p,i) => `${i+1}. ${p.name||'(bez názvu)'}`).join('\n')
+        + (count > 8 ? `\n... a ${count-8} dalších` : '');
+
+      const answer = confirm(
+        `Nalezeno ${count} míst v "${file.name}".${statsMsg}\n\n${preview}\n\nPřidat všechny body jako zastávky?`
+      );
+
+      if (answer) {
+        importPoints(points);
+      } else if (count > 2) {
+        // Offer just first + last
+        if (confirm(`Přidat jen výchozí bod a cíl?\n\n1. ${points[0].name||'Start'}\n2. ${points[count-1].name||'Cíl'}`)) {
+          importPoints([points[0], points[count-1]]);
+        }
+      }
+
     } catch(err) {
       alert('Soubor nelze načíst: ' + err.message);
     }
@@ -665,9 +699,9 @@ function parseGeoFile(file) {
 
 function parseGPX(xml) {
   const points = [];
-  // Waypoints (named stops) — preferred
-  const wpts = xml.querySelectorAll('wpt');
-  wpts.forEach(w => {
+
+  // 1) Named waypoints — preferred for timeline stops
+  xml.querySelectorAll('wpt').forEach(w => {
     const name = w.querySelector('name')?.textContent?.trim() || '';
     const lat  = parseFloat(w.getAttribute('lat'));
     const lon  = parseFloat(w.getAttribute('lon'));
@@ -675,7 +709,7 @@ function parseGPX(xml) {
     if (!isNaN(lat) && !isNaN(lon)) points.push({ name, lat, lon, desc });
   });
 
-  // If no waypoints, try route points (rte/rtept)
+  // 2) Route points
   if (!points.length) {
     xml.querySelectorAll('rtept').forEach(p => {
       const name = p.querySelector('name')?.textContent?.trim() || '';
@@ -685,23 +719,39 @@ function parseGPX(xml) {
     });
   }
 
-  // Track points fallback — take first and last + significant turns
-  if (!points.length) {
-    const trkpts = [...xml.querySelectorAll('trkpt')];
-    if (trkpts.length >= 2) {
-      const first = trkpts[0], last = trkpts[trkpts.length-1];
-      const pickPt = (p, label) => ({
-        name: p.querySelector('name')?.textContent?.trim() || label,
-        lat: parseFloat(p.getAttribute('lat')),
-        lon: parseFloat(p.getAttribute('lon')),
-        desc: ''
+  // 3) Track points — always calculate stats, sample for stops if nothing else
+  const trkpts = [...xml.querySelectorAll('trkpt')];
+  let stats = null;
+  if (trkpts.length >= 2) {
+    stats = calcTrackStats(trkpts);
+    if (!points.length) {
+      // Named trkpts first
+      trkpts.forEach(p => {
+        const name = p.querySelector('name')?.textContent?.trim();
+        const lat  = parseFloat(p.getAttribute('lat'));
+        const lon  = parseFloat(p.getAttribute('lon'));
+        if (name && !isNaN(lat) && !isNaN(lon)) points.push({ name, lat, lon, desc: '' });
       });
-      points.push(pickPt(first, 'Start trasy'));
-      points.push(pickPt(last, 'Konec trasy'));
+      // Sample evenly if still empty
+      if (!points.length) {
+        const step = Math.max(1, Math.floor(trkpts.length / 20));
+        const idxs = [];
+        for (let i = 0; i < trkpts.length; i += step) idxs.push(i);
+        if (idxs[idxs.length-1] !== trkpts.length-1) idxs.push(trkpts.length-1);
+        idxs.forEach((idx, n) => {
+          const p = trkpts[idx];
+          const lat = parseFloat(p.getAttribute('lat'));
+          const lon = parseFloat(p.getAttribute('lon'));
+          if (!isNaN(lat) && !isNaN(lon)) {
+            const label = n===0 ? 'Start trasy' : (n===idxs.length-1 ? 'Cíl trasy' : `Bod trasy ${n}`);
+            points.push({ name: label, lat, lon, desc: '' });
+          }
+        });
+      }
     }
   }
 
-  return points;
+  return { points, stats };
 }
 
 function parseKML(xml) {
@@ -718,34 +768,35 @@ function parseKML(xml) {
   return points;
 }
 
-function importPoints(points, filename) {
-  const count = points.length;
-  const msg = `Nalezeno ${count} míst v souboru "${filename}".\n\n` +
-    points.slice(0, 8).map((p, i) => `${i+1}. ${p.name || '(bez názvu)'}`).join('\n') +
-    (count > 8 ? `\n... a ${count-8} dalších` : '') +
-    '\n\nPřidat jako zastávky výletu?';
-
-  if (!confirm(msg)) return;
-
-  // Cache coordinates
-  points.forEach(p => {
-    if (p.name && p.lat && p.lon) ccache[p.name] = [p.lat, p.lon];
-  });
+function importPoints(points) {
+  points.forEach(p => { if (p.name && p.lat && p.lon) ccache[p.name] = [p.lat, p.lon]; });
 
   const startIdx = stops.length;
   points.forEach((p, i) => {
     stops.push({
-      time: '',
-      name: p.name || `Zastávka ${startIdx + i + 1}`,
-      stay: '',
-      type: '📍',
-      note: p.desc || '',
-      cost: '',
+      time: '', name: p.name || `Zastávka ${startIdx + i + 1}`,
+      stay: '', type: '📍', note: p.desc || '', cost: '',
       tr: { mode: i === 0 ? '' : 'walk', dur: '', from: i > 0 ? (points[i-1].name||'') : '', cost: '' }
     });
   });
 
   saveState(); render(); updateMap();
+
+  // Naismith time distribution offer
+  const stats = window._lastGpxStats;
+  if (stats && stats.distKm > 0 && points.length >= 2) {
+    const segs = points.length - 1;
+    const perStr = hToStr(stats.estH / segs);
+    if (confirm(
+      `🚶 Rozdělit odhadovaný čas chůze mezi zastávky?\n\n` +
+      `Celkem: ${stats.estStr}  (${stats.distKm.toFixed(1)} km, +${Math.round(stats.elevGain)} m)\n` +
+      `Průměrně na úsek: ${perStr}\n\n` +
+      `OK = rovnoměrně rozdělit · Zrušit = doplnit ručně`
+    )) {
+      stops.slice(startIdx).forEach((s, i) => { if (i > 0) s.tr.dur = perStr; });
+      saveState(); render();
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -885,11 +936,10 @@ function stInput(inp, dropId) {
 
 async function fetchStations(q, inp, dropId) {
   try {
-    const r = await fetch(`${DB_API}/locations?query=${encodeURIComponent(q)}&results=7&stops=true&addresses=false&poi=false`);
+    const r = await fetch(`${DB_API}/locations?query=${encodeURIComponent(q)}&results=7`);
     if (!r.ok) return;
     const d = await r.json();
-    const stations = d.filter(x => x.type === 'stop' || x.type === 'station');
-    showStDrop(stations, inp, dropId);
+    showStDrop(d.filter(x => x.id && x.name), inp, dropId);
   } catch(e) {}
 }
 
@@ -948,7 +998,8 @@ function openConnSearch(stopIdx) {
 
 async function searchConnections() {
   const fromName = fv('cFrom'), toName = fv('cTo');
-  const date = fv('cDate'), time = fv('cTime');
+  const date = fv('cDate') || new Date().toISOString().slice(0,10);
+  const time = fv('cTime') || '08:00';
   if (!fromName || !toName) { alert('Zadej odkud a kam.'); return; }
 
   const btn = document.getElementById('connSearchBtn');
@@ -958,17 +1009,14 @@ async function searchConnections() {
   selectedJourney = null;
 
   try {
-    // Get station IDs
     const [fromSt, toSt] = await Promise.all([
-      resolveStation(fromName),
-      resolveStation(toName)
+      resolveStationDebug(fromName),
+      resolveStationDebug(toName)
     ]);
 
-    if (!fromSt) throw new Error(`Stanice "${fromName}" nenalezena. Zkus přesnější název (např. "Praha hl.n.").`);
-    if (!toSt)   throw new Error(`Stanice "${toName}" nenalezena. Zkus přesnější název.`);
-
-    const departure = `${date}T${time}:00`;
-    const url = `${DB_API}/journeys?from=${fromSt.id}&to=${toSt.id}&departure=${encodeURIComponent(departure)}&results=6&national=true&regionalExp=true&regional=true&suburban=true&bus=false&ferry=false&subway=false&tram=false&taxi=false&language=de`;
+    // ISO datetime — include timezone offset
+    const departure = `${date}T${time}:00+02:00`;
+    const url = `${DB_API}/journeys?from=${encodeURIComponent(fromSt.id)}&to=${encodeURIComponent(toSt.id)}&departure=${encodeURIComponent(departure)}&results=6&national=true&regionalExp=true&regional=true&suburban=true&bus=false&ferry=false&subway=false&tram=false&taxi=false`;
 
     const r = await fetch(url);
     if (!r.ok) throw new Error('API vrátilo chybu: ' + r.status);
@@ -985,13 +1033,44 @@ async function searchConnections() {
 }
 
 async function resolveStation(name) {
+  if (!name) return null;
   if (dbStationCache[name]) return dbStationCache[name];
-  const r = await fetch(`${DB_API}/locations?query=${encodeURIComponent(name)}&results=5&stops=true&addresses=false&poi=false`);
-  if (!r.ok) return null;
-  const d = await r.json();
-  const st = d.find(x => x.type === 'stop' || x.type === 'station');
-  if (st) { dbStationCache[name] = {id: st.id, name: st.name}; return dbStationCache[name]; }
-  return null;
+  try {
+    // No type filters — let the API return whatever it finds
+    const r = await fetch(`${DB_API}/locations?query=${encodeURIComponent(name)}&results=5`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    if (!d.length) return null;
+    // Prefer exact name match, then any item with an id
+    const match = d.find(x => x.name?.toLowerCase() === name.toLowerCase())
+      || d.find(x => x.id)
+      || d[0];
+    if (!match?.id) return null;
+    const result = { id: match.id, name: match.name || name };
+    dbStationCache[name] = result;
+    if (match.name) dbStationCache[match.name] = result;
+    return result;
+  } catch(e) { return null; }
+}
+
+// Show what was actually found (helps debug Czech station names)
+async function resolveStationDebug(name) {
+  const st = await resolveStation(name);
+  if (!st) {
+    // Try to fetch raw results to show user what DB found
+    try {
+      const r = await fetch(`${DB_API}/locations?query=${encodeURIComponent(name)}&results=3`);
+      const d = await r.json();
+      const suggestions = d.slice(0,3).map(x => x.name).filter(Boolean).join(', ');
+      throw new Error(
+        `Stanice "${name}" nenalezena.` +
+        (suggestions ? `\nDB našla: ${suggestions}\nZkus použít přesný název ze seznamu.` : '\nZkus název stanice v němčině nebo přesný český název (např. "Praha hl.n.").')
+      );
+    } catch(e2) {
+      throw e2.message.includes('nenalezena') ? e2 : new Error(`Stanice "${name}" nenalezena. Zkus "Praha hl.n." nebo vyber ze seznamu při psaní.`);
+    }
+  }
+  return st;
 }
 
 function renderConnResults(journeys) {
@@ -1093,7 +1172,7 @@ async function geocode(name) {
     } catch(e) {}
   }
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(name)}&countrycodes=cz,sk,at,de,pl`);
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(name)}`, {headers:{'Accept-Language':'cs,en'}});
     const d = await r.json();
     if (d[0]) { ccache[name] = [parseFloat(d[0].lat), parseFloat(d[0].lon)]; return ccache[name]; }
   } catch(e) {}
@@ -1136,10 +1215,16 @@ async function updateMap() {
   mlayers.forEach(l => map.removeLayer(l)); mlayers = [];
   const origin = document.getElementById('originName').value;
   const names = [origin, ...stops.map(s => s.name)].filter(Boolean);
-  if (!names.length) return;
-  const coords = await Promise.all(names.map(n => geocode(n)));
-  const pts = names.map((n,i) => ({n, c:coords[i]})).filter(x => x.c);
-  if (!pts.length) return;
+  if (!names.length) { document.getElementById('mapCap').textContent = 'Zastávky se zobrazí po přidání míst.'; return; }
+  document.getElementById('mapCap').textContent = '⏳ Načítám polohy…';
+  // Sequential requests — Nominatim rate limit is 1/s
+  const pts = [];
+  for (const n of names) {
+    const c = await geocode(n);
+    if (c) pts.push({n, c});
+    await new Promise(r => setTimeout(r, 350));
+  }
+  if (!pts.length) { document.getElementById('mapCap').textContent = '⚠️ Polohy nenalezeny. Zkus přesnější názvy míst.'; return; }
   const lls = pts.map(x => x.c);
   const poly = L.polyline(lls, {color:'#1b2d45', weight:2, dashArray:'5 7', opacity:.55}).addTo(map);
   mlayers.push(poly);
@@ -1149,7 +1234,7 @@ async function updateMap() {
     mlayers.push(mk);
   });
   if (lls.length>1) map.fitBounds(L.latLngBounds(lls).pad(.15)); else map.setView(lls[0], 12);
-  document.getElementById('mapCap').textContent = pts.length+' míst · © OpenStreetMap';
+  document.getElementById('mapCap').textContent = pts.length+'/'+names.length+' míst načteno · © OpenStreetMap';
 }
 
 // ═══════════════════════════════════════════════════════
