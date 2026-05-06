@@ -191,10 +191,28 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .fp-hint{font-size:11px;color:#8a9ab5;margin-top:7px;text-align:center}
 
 @media(max-width:750px){
-  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .lp{max-height:44vh}
+  .app{grid-template-columns:1fr;grid-template-rows:50vh 1fr}
+  .lp{max-height:none;min-height:0;order:2}
+  .rp{order:1;min-height:50vh}
+  .hdr-inner{padding:.5rem .8rem;gap:.5rem}
+  .hdr-club-logo{height:30px}
+  h1{font-size:1rem}
+  h1 span{display:none}
+  .hdr-stats{display:none}
+  .hbtn{padding:5px 8px;font-size:10px}
+  .list-head{flex-wrap:wrap;padding:.5rem .7rem;gap:5px}
+  .list-head h2{font-size:.85rem}
+  .btn-import{display:none}
+  .sort-bar{padding:4px 8px;gap:4px}
+  .search-bar{top:88px}
   .imp-modal{width:100%}
   .fg3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  h1{font-size:.85rem}
+  .hbtn{font-size:9px;padding:4px 6px}
+  .app{grid-template-rows:45vh 1fr}
+  .rp{min-height:45vh}
 }
 
 /* City group sections */
@@ -265,6 +283,24 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pc:hover { background: #f0f4fb; }
 
 .hdr-club-logo { height: 42px; width: auto; flex-shrink: 0; }
+
+/* Sort bar */
+.sort-bar {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-bottom: 1px solid #d4dae8;
+  background: #f9fafc; position: sticky; top: 49px; z-index: 10;
+}
+.sort-label { font-size: 11px; color: #8a9ab5; flex-shrink:0; font-family:'Barlow',sans-serif; }
+.sort-btn {
+  font-size: 11px; padding: 3px 9px; border-radius: 3px; cursor: pointer;
+  border: 1px solid #d0d8e8; background: #fff; color: #556;
+  font-family: 'Barlow', sans-serif; font-weight: 500; transition: .12s;
+}
+.sort-btn:hover { border-color: #1c4896; color: #1c4896; }
+.sort-btn.active { background: #1c4896; color: #f5c300; border-color: #1c4896; font-weight: 700; }
+
+/* Adjust search bar sticky top to sit below sort bar */
+.search-bar { top: 88px !important; }
 </style>
 </head>
 <body>
@@ -290,6 +326,12 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
       <h2 id="listTitle">Hráči</h2>
       <button class="btn-import" onclick="openImport()">⬆️ Hromadný import</button>
       <button class="btn-add" onclick="openEdit()">+ Přidat</button>
+    </div>
+    <div class="sort-bar">
+      <span class="sort-label">Řadit:</span>
+      <button class="sort-btn active" id="sortName" onclick="setSort('name')">A–Z</button>
+      <button class="sort-btn" id="sortSeasons" onclick="setSort('seasons')">Sezóny ↓</button>
+      <button class="sort-btn" id="sortBorn" onclick="setSort('born')">Rok nar.</button>
     </div>
     <div class="search-bar">
       <span class="search-icon">🔍</span>
@@ -1525,7 +1567,19 @@ function render() {
   Array.from(list.children).forEach(c=>{if(c!==empty)c.remove();});
   empty.style.display=players.length?'none':'block';
 
-  players.forEach((p,i)=>{
+  // Sort
+  const sorted = players.map((p,i)=>({p,i})).sort((a,b)=>{
+    if (sortMode === 'seasons') return parseSeasonsCount(b.p.seasons) - parseSeasonsCount(a.p.seasons);
+    if (sortMode === 'born') {
+      const ya = a.p.born ? parseInt(a.p.born.slice(-4)) : 9999;
+      const yb = b.p.born ? parseInt(b.p.born.slice(-4)) : 9999;
+      return ya - yb;
+    }
+    // name (default)
+    return (a.p.surname||'').localeCompare(b.p.surname||'','cs');
+  });
+
+  sorted.forEach(({p,i})=>{
     const nm=fullName(p)||p.city;
     const thumb=p.photo
       ?`<img src="${escA(p.photo)}" onerror="this.style.display='none'">`
@@ -1569,6 +1623,19 @@ function clearAll() {
 }
 // ── SEARCH / FILTER ───────────────────────────────
 let searchQuery = '';
+let sortMode = 'name';
+
+function setSort(mode) {
+  sortMode = mode;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(mode === 'name' ? 'sortName' : mode === 'seasons' ? 'sortSeasons' : 'sortBorn').classList.add('active');
+  render();
+}
+
+function parseSeasonsCount(s) {
+  const n = parseInt(s);
+  return isNaN(n) ? 0 : n;
+}
 
 function filterList() {
   const q = document.getElementById('playerSearch').value.trim().toLowerCase();
