@@ -432,7 +432,7 @@ let players = [];
 let map, mlayers = [];
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
-const STORAGE_KEY = 'hockey_v4';
+const STORAGE_KEY = 'hockey_v5';
 
 // Import state
 let impRows = [], impColMap = [], impHasHeader = false;
@@ -632,6 +632,7 @@ const SAMPLES = [
   {surname:'Horák',firstname:'Ladislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'06.08.1927',died:'04.11.2013',seasons:'3',photo:''},
   {surname:'Horák',firstname:'Michal',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'25.02.1977',died:'',seasons:'2',photo:''},
   {surname:'Horák',firstname:'Roman',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.09.1969',died:'',seasons:'9',photo:''},
+  {surname:'Horák',firstname:'Roman',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.05.1991',died:'',seasons:'2',photo:''},
   {surname:'Horčička',firstname:'Otta',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'01.02.1946',died:'',seasons:'1',photo:''},
   {surname:'Horešovský',firstname:'Josef',city:'Žilina',lat:49.2234,lon:18.7393,display:'',born:'18.07.1946',died:'',seasons:'2',photo:''},
   {surname:'Horna',firstname:'Tomáš',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'20.11.1980',died:'',seasons:'1',photo:''},
@@ -639,6 +640,7 @@ const SAMPLES = [
   {surname:'Houdek',firstname:'Josef',city:'Cehnice',lat:49.14,lon:14.0,display:'',born:'19.12.1930',died:'12.04.2006',seasons:'7',photo:''},
   {surname:'Houfek',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.10.1943',died:'03.05.2020',seasons:'5',photo:''},
   {surname:'Houfek',firstname:'Rudolf',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'14.03.1910',died:'08.06.1999',seasons:'10',photo:''},
+  {surname:'Houfek',firstname:'Rudolf',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'15.05.1937',died:'',seasons:'9',photo:''},
   {surname:'Hovora',firstname:'Ferdinand',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'10.04.1946',died:'',seasons:'7',photo:''},
   {surname:'Hovorka',firstname:'Mikuláš',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'01.06.2001',died:'',seasons:'2',photo:''},
   {surname:'Hrachovina',firstname:'Dominik',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'29.08.1994',died:'',seasons:'3',photo:''},
@@ -670,6 +672,7 @@ const SAMPLES = [
   {surname:'Jančařík',firstname:'Petr',city:'Pardubice',lat:50.0343,lon:15.7812,display:'',born:'23.08.1972',died:'',seasons:'1',photo:''},
   {surname:'Jandus',firstname:'Martin',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'02.12.1997',died:'',seasons:'2',photo:''},
   {surname:'Janeček',firstname:'Vladislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.10.1964',died:'',seasons:'9',photo:''},
+  {surname:'Janeček',firstname:'Vladislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'08.12.1937',died:'18.10.2019',seasons:'1',photo:''},
   {surname:'Jank',firstname:'Bohumil',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'06.07.1992',died:'',seasons:'3',photo:''},
   {surname:'Jareš',firstname:'Richard',city:'Hradec Králové',lat:50.2092,lon:15.8328,display:'',born:'23.02.1981',died:'',seasons:'1',photo:''},
   {surname:'Jasečko',firstname:'Stanislav',city:'Spišská Nová Ves',lat:48.9434,lon:20.568,display:'',born:'05.12.1972',died:'',seasons:'4',photo:''},
@@ -878,6 +881,7 @@ const SAMPLES = [
   {surname:'Prokeš',firstname:'Radek',city:'Český Krumlov',lat:48.8127,lon:14.3175,display:'',born:'22.01.1995',died:'',seasons:'6',photo:''},
   {surname:'Prokop',firstname:'Tomáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'30.01.1994',died:'19.09.2021',seasons:'2',photo:''},
   {surname:'Prospal',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.07.1953',died:'',seasons:'2',photo:''},
+  {surname:'Prospal',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.02.1975',died:'',seasons:'2',photo:''},
   {surname:'Přibyl',firstname:'Adam',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'10.12.1992',died:'',seasons:'4',photo:''},
   {surname:'Přikryl',firstname:'Filip',city:'Rokycany',lat:49.7436,lon:13.5952,display:'',born:'02.04.2001',died:'',seasons:'3',photo:''},
   {surname:'Přikryl',firstname:'Roman',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'11.02.1995',died:'',seasons:'3',photo:''},
@@ -892,6 +896,7 @@ const SAMPLES = [
   {surname:'Rezek',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.06.1990',died:'',seasons:'1',photo:''},
   {surname:'Rob',firstname:'František',city:'Plav',lat:48.95,lon:14.55,display:'',born:'18.02.1939',died:'24.12.2017',seasons:'6',photo:''},
   {surname:'Rob',firstname:'Luboš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.08.1970',died:'',seasons:'17',photo:''},
+  {surname:'Rob',firstname:'Luboš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.04.1995',died:'',seasons:'6',photo:''},
   {surname:'Rob',firstname:'Stanislav',city:'Plav',lat:48.95,lon:14.55,display:'',born:'04.04.1943',died:'23.02.2005',seasons:'5',photo:''},
   {surname:'Rod',firstname:'Tomáš',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'26.04.1988',died:'',seasons:'1',photo:''},
   {surname:'Rousek',firstname:'Tomáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'09.09.1993',died:'',seasons:'2',photo:''},
@@ -927,6 +932,7 @@ const SAMPLES = [
   {surname:'Špatný',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.01.1915',died:'21.06.1961',seasons:'8',photo:''},
   {surname:'Šperger',firstname:'Zdeněk',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.09.1971',died:'',seasons:'5',photo:''},
   {surname:'Šrámek',firstname:'Jan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.04.1940',died:'',seasons:'7',photo:''},
+  {surname:'Šrámek',firstname:'Jan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.03.1973',died:'',seasons:'2',photo:''},
   {surname:'Šrámek',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'15.03.1953',died:'',seasons:'6',photo:''},
   {surname:'Štencel',firstname:'Jan',city:'Opava',lat:49.938,lon:17.9028,display:'',born:'26.02.1995',died:'',seasons:'5',photo:''},
   {surname:'Štrba',firstname:'Martin',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.03.1976',died:'',seasons:'11',photo:''},
