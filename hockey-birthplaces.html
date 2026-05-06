@@ -195,6 +195,45 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   .imp-modal{width:100%}
   .fg3{grid-template-columns:1fr 1fr}
 }
+
+/* City group sections */
+.city-section { margin-bottom: 2px; }
+.city-hdr {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; cursor: pointer;
+  background: rgba(28,72,150,.12);
+  border-left: 3px solid #1c4896;
+  border-radius: 4px;
+  user-select: none;
+  transition: background .15s;
+}
+.city-hdr:hover { background: rgba(28,72,150,.22); }
+.city-hdr.collapsed { border-left-color: #aaa; background: rgba(0,0,0,.04); }
+.city-hdr-name { flex: 1; font-weight: 600; font-size: .88rem; color: #1c3a7a; }
+.city-hdr.collapsed .city-hdr-name { color: #555; }
+.city-hdr-count {
+  background: #1c4896; color: #f5c300;
+  font-size: .75rem; font-weight: 700;
+  padding: 1px 7px; border-radius: 10px; min-width: 22px; text-align: center;
+}
+.city-hdr.collapsed .city-hdr-count { background: #999; color: #fff; }
+.city-hdr-arrow { font-size: .7rem; color: #888; width: 12px; }
+.city-body { margin-left: 4px; }
+
+/* Multi-player popup compact list */
+.pop-hdr { padding:8px 12px; background:var(--blue); font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.05em;
+  color:var(--yellow); display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.pop-badge { background:var(--yellow); color:var(--blue3); font-size:11px; font-weight:800;
+  padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.pop-list { max-height:320px; overflow-y:auto; }
+.pop-row { display:flex; align-items:baseline; justify-content:space-between; gap:6px;
+  padding:4px 12px; border-bottom:1px solid #edf0f5; font-size:12px; }
+.pop-row:last-child { border-bottom:none; }
+.pop-row:nth-child(odd) { background:#f8fafd; }
+.pop-rname { font-weight:600; color:var(--blue3); flex:1; }
+.pop-rmeta { display:flex; gap:5px; color:#8a9ab5; font-size:11px; white-space:nowrap; }
+.pop-rmeta span { background:#eef1f8; padding:1px 5px; border-radius:3px; }
 </style>
 </head>
 <body>
@@ -1128,25 +1167,40 @@ function updateMap() {
     const n=g.ps.length, multi=n>1;
     const color=multi?'#f5c300':'#1c4896';
     const textColor=multi?'#0f2f6a':'#f5c300';
-    const sz=multi?(n>=5?40:34):28;
+    const sz=multi?(n>=50?36:n>=10?30:n>=2?25:22):20;
 
-    const rows=g.ps.map(p=>{
+    let popContent;
+    if (!multi) {
+      // Single player — full card
+      const p=g.ps[0];
       const nm=fullName(p)||p.city;
       const thumb=p.photo
         ?`<img class="pop-thumb" src="${escA(p.photo)}" onerror="this.style.display='none'">`
         :`<div class="pop-thumb-ph">🏒</div>`;
       const meta=[p.born?'🎂 '+p.born:'',p.seasons?p.seasons+' sez.':''].filter(Boolean).join(' · ');
-      return `<div class="pop-player">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div>`;
-    }).join('');
+      popContent=`<div class="pop-hdr">📍 ${esc(g.display)}</div><div class="pop-player">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div>`;
+    } else {
+      // Multi-player city — compact sortable list
+      const sorted=[...g.ps].sort((a,b)=>(a.surname||'').localeCompare(b.surname||'','cs'));
+      const rows=sorted.map(p=>{
+        const yr=p.born?p.born.slice(-4):'';
+        const s=p.seasons||'';
+        return `<div class="pop-row"><span class="pop-rname">${esc(fullName(p))}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
+      }).join('');
+      popContent=`<div class="pop-hdr"><span>📍 ${esc(g.display)}</span><span class="pop-badge">${n} hráčů</span></div><div class="pop-list">${rows}</div>`;
+    }
 
     const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●',color,sz,textColor)})
-      .bindPopup(`<div class="pop-hdr">📍 ${esc(g.display)}</div>${rows}`,{maxWidth:300})
+      .bindPopup(popContent,{maxWidth:320,maxHeight:400})
       .addTo(map);
     mlayers.push(mk);
   });
 
-  if (lls.length>1) map.fitBounds(L.latLngBounds(lls).pad(.2));
-  else map.setView(lls[0],11);
+  // Zoom only to Czech+Slovak area markers, not intercontinental ones
+  const czLls = lls.filter(([lt])=>lt>47 && lt<52);
+  if (czLls.length>1) map.fitBounds(L.latLngBounds(czLls).pad(.08));
+  else if (lls.length===1) map.setView(lls[0],9);
+  else map.setView([49.8,15.5],7);
   updateStats();
 }
 
@@ -1426,35 +1480,70 @@ function render() {
   Array.from(list.children).forEach(c=>{if(c!==empty)c.remove();});
   empty.style.display=players.length?'none':'block';
 
+  // Group by city
+  const cityGroups = {};
   players.forEach((p,i)=>{
-    const nm=fullName(p)||p.city;
-    const thumb=p.photo
-      ?`<img src="${escA(p.photo)}" onerror="this.style.display='none'">`
-      :(p.surname||p.firstname)?initials(p):'🏒';
-    const meta=[
-      p.born?'🎂 '+p.born:'',
-      p.died?'✝ '+p.died:'',
-      p.seasons?p.seasons+' sez.':''
-    ].filter(Boolean);
-    const resolved=!!p.lat;
-    const el=document.createElement('div'); el.className='pc';
-    el.innerHTML=`
-      <div class="pc-avatar">${thumb}</div>
-      <div class="pc-info">
-        <div class="pc-name">${esc(nm)}</div>
-        <div class="pc-meta">
-          <span class="pc-city">
-            <span class="pc-dot ${resolved?'':'pending'}"></span>
-            ${esc(p.display||p.city||'—')}${!resolved&&p.city?' <em style="opacity:.6">·&nbsp;hledám…</em>':''}
-          </span>
-          ${meta.map(m=>`<span>${esc(m)}</span>`).join('')}
+    const key = p.city||'—';
+    if(!cityGroups[key]) cityGroups[key]=[];
+    cityGroups[key].push({p,i});
+  });
+  const sortedCities = Object.keys(cityGroups).sort((a,b)=>{
+    if(a==='České Budějovice') return -1;
+    if(b==='České Budějovice') return 1;
+    return cityGroups[b].length - cityGroups[a].length || a.localeCompare(b,'cs');
+  });
+
+  sortedCities.forEach(city=>{
+    const entries = cityGroups[city];
+    const count = entries.length;
+    const collapsed = count > 8;
+
+    const section = document.createElement('div');
+    section.className = 'city-section';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'city-hdr' + (collapsed?' collapsed':'');
+    hdr.innerHTML = `<span class="city-hdr-name">📍 ${esc(city)}</span><span class="city-hdr-count">${count}</span><span class="city-hdr-arrow">${collapsed?'▶':'▼'}</span>`;
+    hdr.onclick = ()=>{
+      const body = section.querySelector('.city-body');
+      const isCol = hdr.classList.toggle('collapsed');
+      body.style.display = isCol?'none':'';
+      hdr.querySelector('.city-hdr-arrow').textContent = isCol?'▶':'▼';
+    };
+
+    const body = document.createElement('div');
+    body.className = 'city-body';
+    body.style.display = collapsed?'none':'';
+
+    entries.forEach(({p,i})=>{
+      const nm=fullName(p)||p.city;
+      const thumb=p.photo
+        ?`<img src="${escA(p.photo)}" onerror="this.style.display='none'">`
+        :(p.surname||p.firstname)?initials(p):'🏒';
+      const meta=[
+        p.born?'🎂 '+p.born:'',
+        p.died?'✝ '+p.died:'',
+        p.seasons?p.seasons+' sez.':''
+      ].filter(Boolean);
+      const el=document.createElement('div'); el.className='pc';
+      el.innerHTML=`
+        <div class="pc-avatar">${thumb}</div>
+        <div class="pc-info">
+          <div class="pc-name">${esc(nm)}</div>
+          <div class="pc-meta">
+            ${meta.map(m=>`<span>${esc(m)}</span>`).join('')}
+          </div>
         </div>
-      </div>
-      <div class="pc-acts">
-        <button class="ib" onclick="openEdit(${i})">✏️</button>
-        <button class="ib del" onclick="del(${i})">✕</button>
-      </div>`;
-    list.appendChild(el);
+        <div class="pc-acts">
+          <button class="ib" onclick="openEdit(${i})">✏️</button>
+          <button class="ib del" onclick="del(${i})">✕</button>
+        </div>`;
+      body.appendChild(el);
+    });
+
+    section.appendChild(hdr);
+    section.appendChild(body);
+    list.appendChild(section);
   });
   updateStats();
 }
