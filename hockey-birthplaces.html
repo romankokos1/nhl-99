@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Rodná města hokejistů 🏒</title>
+<title>Místa narození hráčů Motor České Budějovice</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -39,10 +39,11 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .hdr-stats strong{color:var(--yellow)}
 .hbtn{padding:6px 14px;background:transparent;border:1px solid var(--line2);border-radius:2px;color:rgba(255,255,255,.8);font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:.15s;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
 .hbtn:hover{border-color:var(--yellow);color:var(--yellow)}
-/* Tři pruhy — žlutá + červená */
-.hdr-stripes{height:7px;display:flex;flex-direction:column}
+/* Pruhy — žlutá + červená + žlutá */
+.hdr-stripes{height:8px;display:flex;flex-direction:column}
 .hdr-stripes .s1{flex:2;background:var(--yellow)}
 .hdr-stripes .s2{flex:3;background:var(--red)}
+.hdr-stripes .s3{flex:2;background:var(--yellow)}
 
 /* ── LAYOUT ─────────────────────────────────── */
 .app{display:grid;grid-template-columns:420px 1fr;flex:1;min-height:0}
@@ -262,6 +263,8 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pc-highlight { background: #fffbe6; }
 .pc { cursor: pointer; transition: background .12s; }
 .pc:hover { background: #f0f4fb; }
+
+.hdr-club-logo { height: 42px; width: auto; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -269,8 +272,8 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 <div class="hdr">
   <div class="hdr-inner">
     <div class="hdr-logo">
-      <div class="badge">🏒</div>
-      <h1>Rodná města <span>hokejistů</span></h1>
+      <img src="https://hcmotor.cz/img/logo-var-1.svg" class="hdr-club-logo" alt="HC Motor České Budějovice">
+      <h1>Místa narození <span>hráčů Motor České Budějovice</span></h1>
     </div>
     <div class="hdr-right">
       <div class="hdr-stats" id="hdrStats"></div>
@@ -278,7 +281,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
       <button class="hbtn" onclick="clearAll()">↺ Reset</button>
     </div>
   </div>
-  <div class="hdr-stripes"><div class="s1"></div><div class="s2"></div></div>
+  <div class="hdr-stripes"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
 </div>
 
 <div class="app">
@@ -432,7 +435,7 @@ let players = [];
 let map, mlayers = [];
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
-const STORAGE_KEY = 'hockey_v5';
+const STORAGE_KEY = 'hockey_v6';
 
 // Import state
 let impRows = [], impColMap = [], impHasHeader = false;
@@ -874,7 +877,7 @@ const SAMPLES = [
   {surname:'Podlešák',firstname:'Martin',city:'Mělník',lat:50.3501,lon:14.4737,display:'',born:'26.09.1982',died:'',seasons:'3',photo:''},
   {surname:'Polodna',firstname:'Stanislav',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'03.04.1989',died:'',seasons:'3',photo:''},
   {surname:'Posmyk',firstname:'Marek',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'15.09.1978',died:'',seasons:'4',photo:''},
-  {surname:'Pouzar',firstname:'Jaroslav',city:'Čakovec',lat:46.3842,lon:16.4344,display:'',born:'23.01.1952',died:'',seasons:'13',photo:''},
+  {surname:'Pouzar',firstname:'Jaroslav',city:'Čakovec',lat:48.9333,lon:14.5167,display:'',born:'23.01.1952',died:'',seasons:'13',photo:''},
   {surname:'Pouzar',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'01.09.2002',died:'',seasons:'1',photo:''},
   {surname:'Poživil',firstname:'Lukáš',city:'Most',lat:50.504,lon:13.6366,display:'',born:'12.09.1982',died:'',seasons:'2',photo:''},
   {surname:'Pražák',firstname:'Karel',city:'Záboří',lat:49.2,lon:14.2,display:'',born:'11.01.1945',died:'',seasons:'14',photo:''},
@@ -1077,7 +1080,13 @@ const SAMPLES = [
 // ══════════════════════════════════════════════════
 function initMap() {
   map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.05,14.45],9);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  const baseLayers = {
+    '🗺 OpenStreetMap':      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}),
+    '⬜ Positron (světlý)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}),
+    '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}),
+  };
+  baseLayers['🌍 Voyager (barevný)'].addTo(map);
+  L.control.layers(baseLayers, {}, {position:'topright', collapsed:false}).addTo(map);
   L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
 }
 
