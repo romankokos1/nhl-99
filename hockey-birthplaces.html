@@ -360,6 +360,1472 @@ let players = [];
 let map, mlayers = [];
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
+const STORAGE_KEY = 'hockey_v4';
+
+// Import state
+let impRows = [], impColMap = [], impHasHeader = false;
+
+const FIELD_OPTS = [
+  {key:'',          label:'— ignorovat —'},
+  {key:'surname',   label:'Příjmení'},
+  {key:'firstname', label:'Jméno'},
+  {key:'city',      label:'Rodné město'},
+  {key:'born',      label:'Narozen'},
+  {key:'died',      label:'Zemřel'},
+  {key:'seasons',   label:'Sezóny'},
+];
+const DETECT_RX = {
+  surname:   /^(p[řr][íi][íi]jmen[íi]|surname|last.?name)$/i,
+  firstname: /^(jm[eé]no|first.?name|given.?name)$/i,
+  city:      /^(m[eě]sto|rodné\.? m[eě]sto|birthplace|city|hometown)$/i,
+  born:      /^(narozen[ao]?|born|datum nar\.?|birth.?date)$/i,
+  died:      /^(zem[řr]el[ao]?|died|[úu]mrt[íi]|death)$/i,
+  seasons:   /^(sez[oó]n[ya]?|seasons?|ro[čc]n[íi]ky?)$/i,
+};
+
+// ── SAMPLES — skuteční hráči HC Motor České Budějovice ──────────────────────
+const SAMPLES = [
+  {surname:'Abdul',firstname:'Jindřich',city:'Vsetín',lat:49.3388,lon:17.9964,display:'',born:'01.02.1996',died:'',seasons:'1',photo:''},
+  {surname:'Adamský',firstname:'Martin',city:'Studénka',lat:49.722,lon:18.073,display:'',born:'13.07.1981',died:'',seasons:'1',photo:''},
+  {surname:'Aibl',firstname:'Otomar',city:'Basilej',lat:47.5596,lon:7.5886,display:'',born:'13.11.1905',died:'08.04.1965',seasons:'4',photo:''},
+  {surname:'Aibl',firstname:'Vítězslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'15.01.1909',died:'19.10.1986',seasons:'22',photo:''},
+  {surname:'Albrecht',firstname:'František',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'14.10.1905',died:'19.11.1969',seasons:'4',photo:''},
+  {surname:'Albrecht',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'11.03.1910',died:'03.07.1974',seasons:'1',photo:''},
+  {surname:'Alderson',firstname:'Brandon',city:'Oakville',lat:43.4675,lon:-79.6877,display:'',born:'22.01.1992',died:'',seasons:'1',photo:''},
+  {surname:'Allen',firstname:'Conor',city:'Chicago',lat:41.8781,lon:-87.6298,display:'',born:'31.01.1990',died:'',seasons:'2',photo:''},
+  {surname:'Altrichter',firstname:'Martin',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'16.11.1972',died:'',seasons:'1',photo:''},
+  {surname:'Anderle',firstname:'Josef',city:'Malý Beranov',lat:49.45,lon:15.69,display:'',born:'30.05.1952',died:'',seasons:'9',photo:''},
+  {surname:'Antipin',firstname:'Vladimir Jurjevič',city:'Těmirtau',lat:50.078,lon:72.9617,display:'',born:'18.04.1970',died:'',seasons:'1',photo:''},
+  {surname:'Augusta',firstname:'Pavel',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'16.03.1969',died:'',seasons:'2',photo:''},
+  {surname:'Babka',firstname:'Daniel',city:'Žilina',lat:49.2234,lon:18.7393,display:'',born:'30.03.1972',died:'',seasons:'3',photo:''},
+  {surname:'Babka',firstname:'Jakub',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.09.1992',died:'',seasons:'4',photo:''},
+  {surname:'Bacul',firstname:'Robin',city:'Ostrava',lat:49.8209,lon:18.2625,display:'',born:'06.08.1979',died:'',seasons:'1',photo:''},
+  {surname:'Bahula',firstname:'Zbyněk',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'07.04.1966',died:'',seasons:'4',photo:''},
+  {surname:'Bakus',firstname:'Pavel',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'04.07.1953',died:'',seasons:'2',photo:''},
+  {surname:'Barinka',firstname:'Michal',city:'Vyškov',lat:49.2777,lon:16.9993,display:'',born:'12.06.1984',died:'',seasons:'2',photo:''},
+  {surname:'Bárta',firstname:'Jan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.05.1997',died:'',seasons:'1',photo:''},
+  {surname:'Bárta',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'04.01.1993',died:'',seasons:'2',photo:''},
+  {surname:'Bárta',firstname:'Michal',city:'Hradec Králové',lat:50.2092,lon:15.8328,display:'',born:'27.10.1987',died:'',seasons:'1',photo:''},
+  {surname:'Bartoň',firstname:'Milan',city:'Kuřim',lat:49.299,lon:16.5334,display:'',born:'04.10.1948',died:'',seasons:'2',photo:''},
+  {surname:'Bartoš',firstname:'Peter',city:'Martin',lat:49.0661,lon:18.922,display:'',born:'05.09.1973',died:'',seasons:'6',photo:''},
+  {surname:'Barus',firstname:'Miroslav',city:'Vsetín',lat:49.3388,lon:17.9964,display:'',born:'12.10.1970',died:'',seasons:'3',photo:''},
+  {surname:'Bauer',firstname:'Stanislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'30.01.1942',died:'',seasons:'8',photo:''},
+  {surname:'Bednář',firstname:'Lukáš',city:'Havířov',lat:49.7799,lon:18.4301,display:'',born:'26.09.1996',died:'',seasons:'1',photo:''},
+  {surname:'Bednařík',firstname:'Stanislav',city:'Benešov',lat:49.7816,lon:14.6869,display:'',born:'31.01.1969',died:'',seasons:'3',photo:''},
+  {surname:'Bělohlav',firstname:'Radek',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'11.04.1970',died:'',seasons:'12',photo:''},
+  {surname:'Benák',firstname:'Václav',city:'Sokolov',lat:50.1812,lon:12.6396,display:'',born:'30.08.1978',died:'',seasons:'2',photo:''},
+  {surname:'Beneš',firstname:'Karel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'13.12.1966',died:'',seasons:'1',photo:''},
+  {surname:'Beníšek',firstname:'Martin',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'18.04.1962',died:'',seasons:'11',photo:''},
+  {surname:'Beran',firstname:'Jaroslav',city:'Rudolfov',lat:48.9922,lon:14.4906,display:'',born:'11.04.1944',died:'',seasons:'3',photo:''},
+  {surname:'Beránek',firstname:'Martin',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'14.04.2001',died:'',seasons:'7',photo:''},
+  {surname:'Berek',firstname:'Miroslav',city:'Ostrava',lat:49.8209,lon:18.2625,display:'',born:'10.04.1938',died:'31.12.2019',seasons:'1',photo:''},
+  {surname:'Bicek',firstname:'Zdeněk',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.09.1961',died:'',seasons:'1',photo:''},
+  {surname:'Bílek',firstname:'Karel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'27.01.1925',died:'02.09.1996',seasons:'12',photo:''},
+  {surname:'Bílek',firstname:'Vítězslav',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'31.07.1983',died:'',seasons:'1',photo:''},
+  {surname:'Bindulis',firstname:'Kristofers',city:'Riga',lat:56.946,lon:24.1059,display:'',born:'18.09.1995',died:'',seasons:'2',photo:''},
+  {surname:'Bláha',firstname:'Jan',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'03.03.1965',died:'',seasons:'6',photo:''},
+  {surname:'Bláha',firstname:'Miroslav',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'04.12.1963',died:'',seasons:'9',photo:''},
+  {surname:'Bláha',firstname:'Ondřej',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.08.1992',died:'',seasons:'5',photo:''},
+  {surname:'Bláha',firstname:'Pavel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'07.01.1969',died:'',seasons:'3',photo:''},
+  {surname:'Boháč',firstname:'Daniel',city:'Opava',lat:49.938,lon:17.9028,display:'',born:'13.02.1980',died:'',seasons:'2',photo:''},
+  {surname:'Boháč',firstname:'Dominik',city:'Klatovy',lat:49.3953,lon:13.2951,display:'',born:'18.02.1990',died:'',seasons:'1',photo:''},
+  {surname:'Boháček',firstname:'Jan',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'25.02.1969',died:'',seasons:'1',photo:''},
+  {surname:'Bohunický',firstname:'Lukáš',city:'Bratislava',lat:48.1486,lon:17.1077,display:'',born:'30.10.1987',died:'',seasons:'3',photo:''},
+  {surname:'Bolf',firstname:'Lukáš',city:'Vrchlabí',lat:50.6278,lon:15.6123,display:'',born:'20.02.1985',died:'',seasons:'2',photo:''},
+  {surname:'Bonuš',firstname:'Hynek',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'02.06.1923',died:'14.07.1995',seasons:'4',photo:''},
+  {surname:'Božek',firstname:'Roman',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'09.11.1963',died:'',seasons:'12',photo:''},
+  {surname:'Brabec',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'01.02.1971',died:'',seasons:'7',photo:''},
+  {surname:'Brabenec',firstname:'Kamil',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'17.05.1976',died:'',seasons:'10',photo:''},
+  {surname:'Bradley',firstname:'Cody Brian',city:'Tampa',lat:27.9506,lon:-82.4572,display:'',born:'26.05.1994',died:'',seasons:'1',photo:''},
+  {surname:'Brízgala',firstname:'Adam',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'19.06.1998',died:'',seasons:'1',photo:''},
+  {surname:'Brož',firstname:'Jiří',city:'Český Krumlov',lat:48.8127,lon:14.3175,display:'',born:'04.03.1979',died:'',seasons:'5',photo:''},
+  {surname:'Bruk',firstname:'David',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'30.10.1968',died:'',seasons:'2',photo:''},
+  {surname:'Březina',firstname:'Martin',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'15.07.1999',died:'',seasons:'1',photo:''},
+  {surname:'Bříza',firstname:'Petr',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'09.12.1964',died:'',seasons:'4',photo:''},
+  {surname:'Bučko',firstname:'Martin',city:'Martin',lat:49.0661,lon:18.922,display:'',born:'13.05.2000',died:'',seasons:'1',photo:''},
+  {surname:'Bukač',firstname:'Daniel',city:'Most',lat:50.504,lon:13.6366,display:'',born:'29.04.1999',died:'',seasons:'1',photo:''},
+  {surname:'Bünter',firstname:'Jaromír',city:'Ledvice',lat:50.5688,lon:13.739,display:'',born:'03.04.1930',died:'15.10.2015',seasons:'2',photo:''},
+  {surname:'Burda',firstname:'Pravoslav',city:'Plasy',lat:49.9335,lon:13.392,display:'',born:'24.01.1948',died:'',seasons:'1',photo:''},
+  {surname:'Burian',firstname:'Vilém',city:'Třebíč',lat:49.215,lon:15.8793,display:'',born:'16.08.1988',died:'',seasons:'2',photo:''},
+  {surname:'Buřič',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.07.1934',died:'12.11.2009',seasons:'11',photo:''},
+  {surname:'Buřič',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'20.11.1941',died:'01.08.2013',seasons:'1',photo:''},
+  {surname:'Cagaš',firstname:'Pavel',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'04.09.1940',died:'',seasons:'1',photo:''},
+  {surname:'Caldr',firstname:'Karel',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'24.05.1955',died:'',seasons:'3',photo:''},
+  {surname:'Caldr',firstname:'Vladimír',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'26.11.1958',died:'',seasons:'13',photo:''},
+  {surname:'Cibulka',firstname:'Tomáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'02.04.2004',died:'',seasons:'1',photo:''},
+  {surname:'Crowder',firstname:'Timothy Robert',city:'Victoria',lat:48.4284,lon:-123.3656,display:'',born:'16.10.1986',died:'',seasons:'1',photo:''},
+  {surname:'Cvach',firstname:'Bohumil',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'15.08.1914',died:'30.07.1978',seasons:'6',photo:''},
+  {surname:'Cvach',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'01.06.1943',died:'15.08.2016',seasons:'3',photo:''},
+  {surname:'Čada',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.03.1943',died:'',seasons:'2',photo:''},
+  {surname:'Čachotský',firstname:'Tomáš',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'13.01.1982',died:'',seasons:'1',photo:''},
+  {surname:'Čáp',firstname:'Zdeněk',city:'Kolín',lat:50.027,lon:15.2044,display:'',born:'12.06.1992',died:'',seasons:'2',photo:''},
+  {surname:'Čapek',firstname:'Ivo',city:'Nový Jičín',lat:49.594,lon:18.01,display:'',born:'09.05.1966',died:'',seasons:'2',photo:''},
+  {surname:'Čech',firstname:'František',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'30.03.1950',died:'',seasons:'12',photo:''},
+  {surname:'Čech',firstname:'Jakub',city:'Olomouc',lat:49.5938,lon:17.2509,display:'',born:'13.08.1985',died:'',seasons:'1',photo:''},
+  {surname:'Čech',firstname:'Roman',city:'Havlíčkův Brod',lat:49.6065,lon:15.5791,display:'',born:'19.09.1971',died:'',seasons:'3',photo:''},
+  {surname:'Čejka',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'31.03.1946',died:'',seasons:'2',photo:''},
+  {surname:'Čermák',firstname:'Miloslav',city:'Havlíčkův Brod',lat:49.6065,lon:15.5791,display:'',born:'15.11.1986',died:'',seasons:'3',photo:''},
+  {surname:'Černý',firstname:'Kamil',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'20.11.1985',died:'',seasons:'1',photo:''},
+  {surname:'Červený',firstname:'Rudolf',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'06.08.1989',died:'',seasons:'5',photo:''},
+  {surname:'Červený',firstname:'Zlatomir',city:'Záhřeb',lat:45.815,lon:15.9819,display:'',born:'16.08.1920',died:'27.10.1992',seasons:'6',photo:''},
+  {surname:'Čierny',firstname:'Ladislav',city:'Zvolen',lat:48.5753,lon:19.1256,display:'',born:'03.01.1974',died:'',seasons:'2',photo:''},
+  {surname:'Čiliak',firstname:'Marek',city:'Zvolen',lat:48.5753,lon:19.1256,display:'',born:'02.04.1990',died:'',seasons:'1',photo:''},
+  {surname:'Dančišin',firstname:'Milan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'04.05.1998',died:'',seasons:'1',photo:''},
+  {surname:'Daněk',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'30.05.1962',died:'',seasons:'2',photo:''},
+  {surname:'Davídek',firstname:'Vlastimil',city:'Prostějov',lat:49.4722,lon:17.1075,display:'',born:'18.11.1951',died:'',seasons:'1',photo:''},
+  {surname:'Dědič',firstname:'František',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'20.11.1904',died:'31.03.1981',seasons:'2',photo:''},
+  {surname:'Dědič',firstname:'Karel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'29.01.1909',died:'10.04.1993',seasons:'6',photo:''},
+  {surname:'Dej',firstname:'Rastislav',city:'Povážská Bystrica',lat:49.1208,lon:18.45,display:'',born:'12.09.1988',died:'',seasons:'1',photo:''},
+  {surname:'Dietz',firstname:'Stanislav',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'10.09.1990',died:'',seasons:'2',photo:''},
+  {surname:'Doktor',firstname:'Jakub',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'18.06.1997',died:'',seasons:'4',photo:''},
+  {surname:'Doktor',firstname:'Vojtěch',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'28.03.2000',died:'',seasons:'1',photo:''},
+  {surname:'Dolejšek',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.03.1963',died:'',seasons:'3',photo:''},
+  {surname:'Doležal',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'27.02.1900',died:'03.06.1986',seasons:'3',photo:''},
+  {surname:'Doležal',firstname:'Zdeněk',city:'Nymburk',lat:50.1855,lon:15.0435,display:'',born:'07.05.1993',died:'',seasons:'5',photo:''},
+  {surname:'Doležel',firstname:'Ivo',city:'Kroměříž',lat:49.2972,lon:17.3967,display:'',born:'24.04.1955',died:'',seasons:'3',photo:''},
+  {surname:'Domin',firstname:'Vladimír',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.03.1969',died:'',seasons:'1',photo:''},
+  {surname:'Dostálek',firstname:'Vlastimil',city:'Přerov',lat:49.4547,lon:17.4505,display:'',born:'23.08.1994',died:'',seasons:'2',photo:''},
+  {surname:'Doudera',firstname:'Lukáš',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'03.01.1998',died:'',seasons:'1',photo:''},
+  {surname:'Doudera',firstname:'Milan',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'01.01.1993',died:'',seasons:'2',photo:''},
+  {surname:'Dragoun',firstname:'Michal',city:'Dobříš',lat:49.7802,lon:14.1661,display:'',born:'12.04.1983',died:'',seasons:'1',photo:''},
+  {surname:'Drančák',firstname:'Samuel',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'04.02.2006',died:'',seasons:'1',photo:''},
+  {surname:'Duda',firstname:'Radek',city:'Sokolov',lat:50.1812,lon:12.6396,display:'',born:'28.01.1979',died:'',seasons:'1',photo:''},
+  {surname:'Dunn-Cholette',firstname:'Vincent',city:'Hull',lat:45.4281,lon:-75.7162,display:'',born:'14.09.1995',died:'',seasons:'1',photo:''},
+  {surname:'Dušek',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.10.1947',died:'21.05.2007',seasons:'4',photo:''},
+  {surname:'Dvořák',firstname:'Marek',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'11.07.2001',died:'',seasons:'2',photo:''},
+  {surname:'Dvořák',firstname:'Miroslav',city:'Hluboká nad Vltavou',lat:49.0537,lon:14.4365,display:'',born:'11.10.1951',died:'12.06.2008',seasons:'12',photo:''},
+  {surname:'Dvořák',firstname:'Miroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.04.1975',died:'',seasons:'1',photo:''},
+  {surname:'Dvořák',firstname:'Radek',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'09.03.1977',died:'',seasons:'3',photo:''},
+  {surname:'Dzierkals',firstname:'Mārtiņš',city:'Riga',lat:56.946,lon:24.1059,display:'',born:'04.04.1997',died:'',seasons:'1',photo:''},
+  {surname:'Ďurák',firstname:'Miroslav',city:'Topoľčany',lat:48.5595,lon:18.1723,display:'',born:'09.06.1981',died:'',seasons:'1',photo:''},
+  {surname:'Eberle',firstname:'Jan',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'20.05.1989',died:'',seasons:'1',photo:''},
+  {surname:'Edelmann',firstname:'Miloš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'30.05.1949',died:'',seasons:'11',photo:''},
+  {surname:'Endál',firstname:'Lukáš',city:'Havlíčkův Brod',lat:49.6065,lon:15.5791,display:'',born:'08.12.1986',died:'',seasons:'2',photo:''},
+  {surname:'Esposito',firstname:'Angelo',city:'Montréal',lat:45.5017,lon:-73.5673,display:'',born:'20.02.1989',died:'',seasons:'1',photo:''},
+  {surname:'Fadrný',firstname:'Jan',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'14.06.1980',died:'',seasons:'2',photo:''},
+  {surname:'Fedur',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'03.06.1953',died:'',seasons:'1',photo:''},
+  {surname:'Ferebauer',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.02.1989',died:'',seasons:'4',photo:''},
+  {surname:'Ference',firstname:'Andrew James Stewart',city:'Edmonton',lat:53.5461,lon:-113.4938,display:'',born:'17.03.1979',died:'',seasons:'2',photo:''},
+  {surname:'Fiala',firstname:'Zdeněk',city:'Milevsko',lat:49.4523,lon:14.3583,display:'',born:'13.03.1927',died:'11.01.1999',seasons:'7',photo:''},
+  {surname:'Filipi',firstname:'Milan',city:'Hlinsko',lat:49.7612,lon:15.908,display:'',born:'09.12.1972',died:'',seasons:'4',photo:''},
+  {surname:'Fillman',firstname:'Mitchell',city:'Oakville',lat:43.4675,lon:-79.6877,display:'',born:'05.06.1990',died:'',seasons:'3',photo:''},
+  {surname:'Fleischmann',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.01.1941',died:'',seasons:'2',photo:''},
+  {surname:'Forman',firstname:'Miroslav',city:'Mělník',lat:50.3501,lon:14.4737,display:'',born:'12.08.1990',died:'',seasons:'1',photo:''},
+  {surname:'Formánek',firstname:'Jaroslav',city:'Telce',lat:50.42,lon:13.75,display:'',born:'30.11.1932',died:'22.11.2022',seasons:'1',photo:''},
+  {surname:'Fousek',firstname:'Roman',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.09.1973',died:'',seasons:'1',photo:''},
+  {surname:'Frolo',firstname:'Tomáš',city:'Povážská Bystrica',lat:49.1208,lon:18.45,display:'',born:'26.01.1982',died:'',seasons:'2',photo:''},
+  {surname:'Fronk',firstname:'Jiří',city:'Louny',lat:50.3561,lon:13.7997,display:'',born:'07.02.1994',died:'',seasons:'1',photo:''},
+  {surname:'Frühauf',firstname:'Peter',city:'Prešov',lat:49.0015,lon:21.2394,display:'',born:'15.08.1982',died:'',seasons:'1',photo:''},
+  {surname:'Gába',firstname:'Ondřej',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'29.05.1994',died:'',seasons:'5',photo:''},
+  {surname:'Galamboš',firstname:'Peter',city:'Martin',lat:49.0661,lon:18.922,display:'',born:'14.06.1989',died:'',seasons:'1',photo:''},
+  {surname:'Gazda',firstname:'Daniel',city:'Zlín',lat:49.225,lon:17.658,display:'',born:'13.08.1997',died:'',seasons:'1',photo:''},
+  {surname:'Gilbert',firstname:'David',city:'Châteauguay',lat:45.3802,lon:-73.7497,display:'',born:'09.02.1991',died:'',seasons:'3',photo:''},
+  {surname:'Gřegořek',firstname:'Petr',city:'Český Těšín',lat:49.7468,lon:18.6221,display:'',born:'25.05.1978',died:'',seasons:'7',photo:''},
+  {surname:'Gula',firstname:'Ladislav',city:'Ústí nad Labem',lat:50.6607,lon:14.0323,display:'',born:'02.07.1959',died:'',seasons:'11',photo:''},
+  {surname:'Gulaš',firstname:'Milan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'30.12.1985',died:'',seasons:'12',photo:''},
+  {surname:'Gulaši',firstname:'Michal',city:'Ostrava',lat:49.8209,lon:18.2625,display:'',born:'18.07.1986',died:'',seasons:'1',photo:''},
+  {surname:'Guman',firstname:'Tomáš',city:'Roudnice nad Labem',lat:50.426,lon:14.2633,display:'',born:'02.06.1997',died:'',seasons:'2',photo:''},
+  {surname:'Gýna',firstname:'Vladimír',city:'Most',lat:50.504,lon:13.6366,display:'',born:'27.09.1975',died:'',seasons:'3',photo:''},
+  {surname:'Györi',firstname:'Arpád',city:'Kráľovský Chlumec',lat:48.42,lon:21.97,display:'',born:'26.09.1970',died:'',seasons:'6',photo:''},
+  {surname:'Haber',firstname:'Zdeněk',city:'Třemošná',lat:49.8311,lon:13.3988,display:'',born:'24.02.1935',died:'',seasons:'2',photo:''},
+  {surname:'Hail',firstname:'Matouš',city:'Karlovy Vary',lat:50.2318,lon:12.8716,display:'',born:'03.06.2003',died:'',seasons:'1',photo:''},
+  {surname:'Hájek',firstname:'Miroslav',city:'Příbram',lat:49.6944,lon:14.0086,display:'',born:'05.02.1979',died:'',seasons:'1',photo:''},
+  {surname:'Hajšman',firstname:'Vlastimil',city:'Ledenice',lat:48.92,lon:14.66,display:'',born:'26.02.1928',died:'03.03.1978',seasons:'11',photo:''},
+  {surname:'Hála',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'30.06.1972',died:'',seasons:'4',photo:''},
+  {surname:'Halmoši',firstname:'Dominik',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'03.11.1987',died:'',seasons:'1',photo:''},
+  {surname:'Hanzal',firstname:'Jiří',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'21.02.1985',died:'',seasons:'3',photo:''},
+  {surname:'Hanzal',firstname:'Martin',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'20.02.1987',died:'',seasons:'3',photo:''},
+  {surname:'Hanzl',firstname:'Martin',city:'Ústí nad Labem',lat:50.6607,lon:14.0323,display:'',born:'25.12.1993',died:'',seasons:'3',photo:''},
+  {surname:'Harant',firstname:'Tomáš',city:'Žilina',lat:49.2234,lon:18.7393,display:'',born:'28.04.1980',died:'',seasons:'2',photo:''},
+  {surname:'Harris',firstname:'Brant Shay',city:'Estevan',lat:49.1394,lon:-102.9867,display:'',born:'08.10.1989',died:'',seasons:'2',photo:''},
+  {surname:'Hašek',firstname:'Jiří',city:'Ostrava',lat:49.8209,lon:18.2625,display:'',born:'15.11.1977',died:'',seasons:'1',photo:''},
+  {surname:'Havel',firstname:'Lukáš',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'10.11.1981',died:'',seasons:'1',photo:''},
+  {surname:'Havelka',firstname:'Petr',city:'Most',lat:50.504,lon:13.6366,display:'',born:'04.03.1979',died:'',seasons:'1',photo:''},
+  {surname:'Hejda',firstname:'Miroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.07.1949',died:'09.06.2025',seasons:'2',photo:''},
+  {surname:'Hejna',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'12.12.1955',died:'',seasons:'8',photo:''},
+  {surname:'Helmich',firstname:'Jiří',city:'Nemanice',lat:48.98,lon:14.42,display:'',born:'08.04.1946',died:'29.01.2017',seasons:'6',photo:''},
+  {surname:'Heřman',firstname:'Martin',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'23.06.1987',died:'',seasons:'5',photo:''},
+  {surname:'Heřman',firstname:'Radim',city:'Brandýs nad Labem',lat:50.1892,lon:14.6628,display:'',born:'13.04.1991',died:'',seasons:'1',photo:''},
+  {surname:'Hlach',firstname:'Stanislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.03.1947',died:'01.06.2020',seasons:'4',photo:''},
+  {surname:'Hlásek',firstname:'Zdeněk',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'15.07.1931',died:'11.10.2020',seasons:'1',photo:''},
+  {surname:'Hlávka',firstname:'Dan',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'07.11.1980',died:'',seasons:'1',photo:''},
+  {surname:'Hnilička',firstname:'Roman',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'23.08.1966',died:'',seasons:'3',photo:''},
+  {surname:'Hnojna',firstname:'Pavel',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'03.02.1966',died:'',seasons:'5',photo:''},
+  {surname:'Hodek',firstname:'Petr',city:'Mladá Boleslav',lat:50.4155,lon:14.9066,display:'',born:'10.02.1966',died:'23.09.2001',seasons:'7',photo:''},
+  {surname:'Hoch',firstname:'Štěpán',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'11.10.2006',died:'',seasons:'2',photo:''},
+  {surname:'Holec',firstname:'Miroslav',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'08.11.1987',died:'',seasons:'4',photo:''},
+  {surname:'Homolka',firstname:'Jan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.08.1920',died:'18.11.2006',seasons:'6',photo:''},
+  {surname:'Homolka',firstname:'Milouš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'30.04.1923',died:'16.05.2008',seasons:'1',photo:''},
+  {surname:'Hönig',firstname:'Miroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'19.11.1932',died:'27.12.2022',seasons:'10',photo:''},
+  {surname:'Horák',firstname:'Ladislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'06.08.1927',died:'04.11.2013',seasons:'3',photo:''},
+  {surname:'Horák',firstname:'Michal',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'25.02.1977',died:'',seasons:'2',photo:''},
+  {surname:'Horák',firstname:'Roman',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.09.1969',died:'',seasons:'9',photo:''},
+  {surname:'Horčička',firstname:'Otta',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'01.02.1946',died:'',seasons:'1',photo:''},
+  {surname:'Horešovský',firstname:'Josef',city:'Žilina',lat:49.2234,lon:18.7393,display:'',born:'18.07.1946',died:'',seasons:'2',photo:''},
+  {surname:'Horna',firstname:'Tomáš',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'20.11.1980',died:'',seasons:'1',photo:''},
+  {surname:'Hošek',firstname:'Miroslav',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'18.06.1966',died:'',seasons:'4',photo:''},
+  {surname:'Houdek',firstname:'Josef',city:'Cehnice',lat:49.14,lon:14.0,display:'',born:'19.12.1930',died:'12.04.2006',seasons:'7',photo:''},
+  {surname:'Houfek',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.10.1943',died:'03.05.2020',seasons:'5',photo:''},
+  {surname:'Houfek',firstname:'Rudolf',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'14.03.1910',died:'08.06.1999',seasons:'10',photo:''},
+  {surname:'Hovora',firstname:'Ferdinand',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'10.04.1946',died:'',seasons:'7',photo:''},
+  {surname:'Hovorka',firstname:'Mikuláš',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'01.06.2001',died:'',seasons:'2',photo:''},
+  {surname:'Hrachovina',firstname:'Dominik',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'29.08.1994',died:'',seasons:'3',photo:''},
+  {surname:'Hrubec',firstname:'Matouš',city:'Prachatice',lat:49.0122,lon:14.0,display:'',born:'22.02.2001',died:'',seasons:'1',photo:''},
+  {surname:'Hrubec',firstname:'Šimon',city:'Vimperk',lat:49.0584,lon:13.7778,display:'',born:'30.06.1991',died:'',seasons:'3',photo:''},
+  {surname:'Hřebejk',firstname:'Štěpán',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'28.05.1982',died:'',seasons:'11',photo:''},
+  {surname:'Hubáček',firstname:'Petr',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'15.11.1956',died:'',seasons:'2',photo:''},
+  {surname:'Hübl',firstname:'Viktor',city:'Chomutov',lat:50.4608,lon:13.4178,display:'',born:'13.08.1978',died:'',seasons:'3',photo:''},
+  {surname:'Hučko',firstname:'Patrik',city:'Uherské Hradiště',lat:49.0693,lon:17.4611,display:'',born:'06.01.1973',died:'',seasons:'1',photo:''},
+  {surname:'Hudáček',firstname:'Vladimír',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'28.10.1971',died:'',seasons:'3',photo:''},
+  {surname:'Hudec',firstname:'Michal',city:'Bratislava',lat:48.1486,lon:17.1077,display:'',born:'23.10.1979',died:'',seasons:'5',photo:''},
+  {surname:'Hudec',firstname:'Stanislav',city:'Nitra',lat:48.3069,lon:18.0869,display:'',born:'03.06.1982',died:'',seasons:'1',photo:''},
+  {surname:'Hůlka',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'29.04.1957',died:'',seasons:'1',photo:''},
+  {surname:'Humeník',firstname:'Matyáš',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'08.12.2006',died:'',seasons:'1',photo:''},
+  {surname:'Huml',firstname:'Ivan',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'06.09.1981',died:'',seasons:'2',photo:''},
+  {surname:'Hyka',firstname:'Tomáš',city:'Mladá Boleslav',lat:50.4155,lon:14.9066,display:'',born:'02.10.1967',died:'',seasons:'5',photo:''},
+  {surname:'Chábera',firstname:'Jan',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'25.01.1984',died:'',seasons:'5',photo:''},
+  {surname:'Chaloupka',firstname:'Lukáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'31.03.1982',died:'',seasons:'1',photo:''},
+  {surname:'Charypar',firstname:'Roman',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.05.1920',died:'02.02.2007',seasons:'17',photo:''},
+  {surname:'Chlubna',firstname:'Tomáš',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'06.07.2002',died:'',seasons:'4',photo:''},
+  {surname:'Chmelíř',firstname:'Lukáš',city:'Ostrava',lat:49.8209,lon:18.2625,display:'',born:'15.04.1983',died:'',seasons:'2',photo:''},
+  {surname:'Chovan',firstname:'Michal',city:'Zvolen',lat:48.5753,lon:19.1256,display:'',born:'23.11.1987',died:'',seasons:'2',photo:''},
+  {surname:'Christov',firstname:'Vít',city:'Třinec',lat:49.6756,lon:18.6739,display:'',born:'30.08.1996',died:'',seasons:'2',photo:''},
+  {surname:'Chytráček',firstname:'Václav',city:'Havlíčkův Brod',lat:49.6065,lon:15.5791,display:'',born:'15.08.1953',died:'',seasons:'1',photo:''},
+  {surname:'Indrák',firstname:'Miroslav',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'12.08.1995',died:'',seasons:'1',photo:''},
+  {surname:'Jágr',firstname:'Jaroslav',city:'Jičín',lat:50.4348,lon:15.3513,display:'',born:'05.07.1948',died:'',seasons:'5',photo:''},
+  {surname:'Jágr',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'09.02.1984',died:'',seasons:'1',photo:''},
+  {surname:'Jakeš',firstname:'Tomáš',city:'Vsetín',lat:49.3388,lon:17.9964,display:'',born:'20.03.1976',died:'',seasons:'1',photo:''},
+  {surname:'Jančařík',firstname:'Petr',city:'Pardubice',lat:50.0343,lon:15.7812,display:'',born:'23.08.1972',died:'',seasons:'1',photo:''},
+  {surname:'Jandus',firstname:'Martin',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'02.12.1997',died:'',seasons:'2',photo:''},
+  {surname:'Janeček',firstname:'Vladislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.10.1964',died:'',seasons:'9',photo:''},
+  {surname:'Jank',firstname:'Bohumil',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'06.07.1992',died:'',seasons:'3',photo:''},
+  {surname:'Jareš',firstname:'Richard',city:'Hradec Králové',lat:50.2092,lon:15.8328,display:'',born:'23.02.1981',died:'',seasons:'1',photo:''},
+  {surname:'Jasečko',firstname:'Stanislav',city:'Spišská Nová Ves',lat:48.9434,lon:20.568,display:'',born:'05.12.1972',died:'',seasons:'4',photo:''},
+  {surname:'Jelínek',firstname:'Tomáš',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'29.04.1962',died:'',seasons:'2',photo:''},
+  {surname:'Ježek',firstname:'Aleš',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'25.06.1990',died:'',seasons:'2',photo:''},
+  {surname:'Ježek',firstname:'Josef',city:'Teplice',lat:50.6407,lon:13.8243,display:'',born:'23.03.1954',died:'',seasons:'2',photo:''},
+  {surname:'Jindra',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'12.06.1980',died:'',seasons:'9',photo:''},
+  {surname:'Jirků',firstname:'Zdeněk',city:'Chomutov',lat:50.4608,lon:13.4178,display:'',born:'12.06.1933',died:'28.01.1987',seasons:'7',photo:''},
+  {surname:'Jonák',firstname:'Vít',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'17.07.1991',died:'',seasons:'2',photo:''},
+  {surname:'Joun',firstname:'František',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'01.10.1954',died:'',seasons:'11',photo:''},
+  {surname:'Kačírek',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.04.1944',died:'',seasons:'2',photo:''},
+  {surname:'Kachyňa',firstname:'Ondřej',city:'Hodonín',lat:48.853,lon:17.1268,display:'',born:'30.04.1998',died:'',seasons:'7',photo:''},
+  {surname:'Kalista',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.08.1925',died:'02.11.1988',seasons:'5',photo:''},
+  {surname:'Kalla',firstname:'Jaroslav',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'07.12.1979',died:'',seasons:'1',photo:''},
+  {surname:'Kameš',firstname:'Jaroslav',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'29.08.1946',died:'',seasons:'1',photo:''},
+  {surname:'Káník',firstname:'Jakub',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'22.11.1999',died:'',seasons:'1',photo:''},
+  {surname:'Kaňkovský',firstname:'Petr',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'20.01.1969',died:'',seasons:'1',photo:''},
+  {surname:'Kantor',firstname:'Pavel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.08.1991',died:'',seasons:'3',photo:''},
+  {surname:'Karabáček',firstname:'Václav',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'02.05.1996',died:'',seasons:'5',photo:''},
+  {surname:'Kasík',firstname:'Jaroslav',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'28.03.1983',died:'',seasons:'1',photo:''},
+  {surname:'Kašlík',firstname:'Matej',city:'Púchov',lat:49.1242,lon:18.3275,display:'',born:'05.08.2002',died:'',seasons:'1',photo:''},
+  {surname:'Kašpařík',firstname:'Pavel',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'11.01.1979',died:'',seasons:'3',photo:''},
+  {surname:'Kaucký',firstname:'Zdeněk',city:'Jince',lat:49.7743,lon:13.9814,display:'',born:'14.05.1929',died:'11.03.2025',seasons:'8',photo:''},
+  {surname:'Klabouch',firstname:'Jan',city:'Hůrky',lat:48.97,lon:14.28,display:'',born:'26.04.1948',died:'',seasons:'14',photo:''},
+  {surname:'Klestil',firstname:'Tomáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'10.05.1989',died:'',seasons:'2',photo:''},
+  {surname:'Klimeš',firstname:'Michal',city:'Prachatice',lat:49.0122,lon:14.0,display:'',born:'31.07.1979',died:'',seasons:'3',photo:''},
+  {surname:'Klinecký',firstname:'Daniel',city:'Hradec Králové',lat:50.2092,lon:15.8328,display:'',born:'23.03.1997',died:'',seasons:'1',photo:''},
+  {surname:'Klouček',firstname:'Milan',city:'Hradec Králové',lat:50.2092,lon:15.8328,display:'',born:'30.04.1998',died:'',seasons:'2',photo:''},
+  {surname:'Kloz',firstname:'Jan',city:'Ústí nad Labem',lat:50.6607,lon:14.0323,display:'',born:'07.03.1987',died:'',seasons:'1',photo:''},
+  {surname:'Knotek',firstname:'Milan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.02.1936',died:'10.05.2016',seasons:'8',photo:''},
+  {surname:'Knotek',firstname:'Radek',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'10.07.1961',died:'',seasons:'4',photo:''},
+  {surname:'Knotek',firstname:'Tomáš',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'13.01.1990',died:'',seasons:'1',photo:''},
+  {surname:'Koberna',firstname:'Vladimír',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.03.1952',died:'31.05.2016',seasons:'1',photo:''},
+  {surname:'Kočer',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'27.02.1953',died:'',seasons:'13',photo:''},
+  {surname:'Kočí',firstname:'Václav',city:'Liberec',lat:50.7663,lon:15.0543,display:'',born:'15.07.1979',died:'',seasons:'1',photo:''},
+  {surname:'Kohn',firstname:'Ladislav',city:'Uherské Hradiště',lat:49.0693,lon:17.4611,display:'',born:'04.03.1975',died:'',seasons:'1',photo:''},
+  {surname:'Koláček',firstname:'Josef',city:'Chomutov',lat:50.4608,lon:13.4178,display:'',born:'06.09.2002',died:'',seasons:'4',photo:''},
+  {surname:'Kolar',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'13.02.1950',died:'20.10.2006',seasons:'9',photo:''},
+  {surname:'Kolarz',firstname:'Michael',city:'Havířov',lat:49.7799,lon:18.4301,display:'',born:'12.01.1987',died:'',seasons:'3',photo:''},
+  {surname:'Kolář',firstname:'Richard',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'12.03.1966',died:'',seasons:'7',photo:''},
+  {surname:'Kolda',firstname:'Ladislav',city:'Sedlec',lat:49.02,lon:14.45,display:'',born:'26.11.1959',died:'',seasons:'11',photo:''},
+  {surname:'Kolda',firstname:'Ladislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.10.1983',died:'',seasons:'2',photo:''},
+  {surname:'Kolmann',firstname:'Petr',city:'Liberec',lat:50.7663,lon:15.0543,display:'',born:'20.09.1988',died:'',seasons:'1',photo:''},
+  {surname:'Kolouch',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.04.1932',died:'20.10.2019',seasons:'2',photo:''},
+  {surname:'Kondelík',firstname:'Jáchym',city:'Hannover',lat:52.3759,lon:9.732,display:'',born:'21.12.1999',died:'',seasons:'2',photo:''},
+  {surname:'Kondelík',firstname:'Roman',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'07.05.1972',died:'',seasons:'3',photo:''},
+  {surname:'Konzal',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'23.10.1965',died:'',seasons:'5',photo:''},
+  {surname:'Kopačka',firstname:'Michal',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.09.1963',died:'',seasons:'2',photo:''},
+  {surname:'Kopecký',firstname:'Milan',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'11.05.1981',died:'',seasons:'1',photo:''},
+  {surname:'Korbela',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'20.05.1957',died:'',seasons:'11',photo:''},
+  {surname:'Kořínek',firstname:'Petr',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'02.11.1966',died:'',seasons:'2',photo:''},
+  {surname:'Kössl',firstname:'Miloslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.02.1941',died:'29.03.2013',seasons:'2',photo:''},
+  {surname:'Kostourek',firstname:'Milan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'09.01.1983',died:'',seasons:'3',photo:''},
+  {surname:'Kotalík',firstname:'Aleš',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'23.12.1978',died:'',seasons:'7',photo:''},
+  {surname:'Kotaška',firstname:'Ivo',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.01.1980',died:'',seasons:'9',photo:''},
+  {surname:'Kotous',firstname:'Narcis',city:'Sedlo u Římova',lat:48.88,lon:14.55,display:'',born:'29.10.1906',died:'06.02.2002',seasons:'13',photo:''},
+  {surname:'Kotrla',firstname:'Jindřich',city:'Most',lat:50.504,lon:13.6366,display:'',born:'07.03.1975',died:'',seasons:'5',photo:''},
+  {surname:'Kouba',firstname:'Bedřich',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.01.1917',died:'18.10.1941',seasons:'1',photo:''},
+  {surname:'Koudelka',firstname:'Martin',city:'Pardubice',lat:50.0343,lon:15.7812,display:'',born:'11.02.1976',died:'',seasons:'1',photo:''},
+  {surname:'Kovář',firstname:'Jakub',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'19.07.1988',died:'',seasons:'5',photo:''},
+  {surname:'Kovařčík',firstname:'Ondřej',city:'Nový Jičín',lat:49.594,lon:18.01,display:'',born:'10.06.1995',died:'',seasons:'1',photo:''},
+  {surname:'Krajíček',firstname:'Lukáš',city:'Ledeč nad Sázavou',lat:49.694,lon:15.276,display:'',born:'11.09.1978',died:'',seasons:'1',photo:''},
+  {surname:'Král',firstname:'Milan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.05.1961',died:'',seasons:'4',photo:''},
+  {surname:'Král',firstname:'Norbert',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.07.1956',died:'',seasons:'13',photo:''},
+  {surname:'Král',firstname:'Václav',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'13.02.1975',died:'',seasons:'5',photo:''},
+  {surname:'Krátoška',firstname:'Aleš',city:'Pacov',lat:49.4693,lon:15.0052,display:'',born:'06.10.1974',died:'',seasons:'1',photo:''},
+  {surname:'Kristek',firstname:'Jaroslav',city:'Zlín',lat:49.225,lon:17.658,display:'',born:'16.03.1980',died:'',seasons:'1',photo:''},
+  {surname:'Kroupa',firstname:'Karel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'20.11.1925',died:'15.12.1995',seasons:'11',photo:''},
+  {surname:'Kříž',firstname:'Lukáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.08.1993',died:'',seasons:'5',photo:''},
+  {surname:'Kříž',firstname:'Marcel',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'31.03.2004',died:'',seasons:'2',photo:''},
+  {surname:'Kříž',firstname:'Zdeněk',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'09.11.1951',died:'09.04.2017',seasons:'1',photo:''},
+  {surname:'Kubíček',firstname:'Michael',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'12.01.1967',died:'',seasons:'9',photo:''},
+  {surname:'Kubíček',firstname:'Šimon',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'19.12.2001',died:'',seasons:'2',photo:''},
+  {surname:'Kubík',firstname:'Adam',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'21.10.1998',died:'',seasons:'2',photo:''},
+  {surname:'Kučera',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.12.1981',died:'',seasons:'5',photo:''},
+  {surname:'Kučný',firstname:'Jiří',city:'Vsetín',lat:49.3388,lon:17.9964,display:'',born:'17.11.1983',died:'',seasons:'1',photo:''},
+  {surname:'Kůdela',firstname:'Hynek',city:'Uherské Hradiště',lat:49.0693,lon:17.4611,display:'',born:'15.08.1990',died:'',seasons:'3',photo:''},
+  {surname:'Kuchejda',firstname:'David',city:'Opava',lat:49.938,lon:17.9028,display:'',born:'12.06.1987',died:'',seasons:'10',photo:''},
+  {surname:'Kuneš',firstname:'Miroslav',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'25.03.1946',died:'',seasons:'2',photo:''},
+  {surname:'Kůrka',firstname:'Tomáš',city:'Most',lat:50.504,lon:13.6366,display:'',born:'14.12.1981',died:'',seasons:'3',photo:''},
+  {surname:'Kutlák',firstname:'Zdeněk',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'13.02.1980',died:'',seasons:'6',photo:''},
+  {surname:'Kváča',firstname:'Petr',city:'Brandýs nad Labem',lat:50.1892,lon:14.6628,display:'',born:'12.09.1997',died:'',seasons:'4',photo:''},
+  {surname:'Květoň',firstname:'Josef',city:'Vranovice',lat:48.985,lon:16.617,display:'',born:'14.11.1946',died:'11.04.2022',seasons:'15',photo:''},
+  {surname:'Květoň',firstname:'Lukáš',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'03.05.1982',died:'',seasons:'14',photo:''},
+  {surname:'Kysela',firstname:'Robert',city:'Most',lat:50.504,lon:13.6366,display:'',born:'05.06.1968',died:'',seasons:'1',photo:''},
+  {surname:'Lakosil',firstname:'Vlastimil',city:'Uherské Hradiště',lat:49.0693,lon:17.4611,display:'',born:'04.07.1979',died:'',seasons:'1',photo:''},
+  {surname:'Lála',firstname:'Jiří',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'21.08.1959',died:'',seasons:'12',photo:''},
+  {surname:'Lála',firstname:'Jiří',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'27.01.1983',died:'',seasons:'3',photo:''},
+  {surname:'Langhammer',firstname:'Jakub',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'17.08.1984',died:'',seasons:'3',photo:''},
+  {surname:'Laukkanen',firstname:'Janne',city:'Lahti',lat:60.9827,lon:25.6612,display:'',born:'19.03.1970',died:'',seasons:'1',photo:''},
+  {surname:'Lejsek',firstname:'Bohumil',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'13.10.1914',died:'18.01.1990',seasons:'1',photo:''},
+  {surname:'Lenc',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.07.1920',died:'10.12.2019',seasons:'13',photo:''},
+  {surname:'Lidral',firstname:'Jan',city:'Hluboká nad Vltavou',lat:49.0537,lon:14.4365,display:'',born:'19.03.1929',died:'24.01.1982',seasons:'3',photo:''},
+  {surname:'Liška',firstname:'Jaroslav',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'07.09.1960',died:'',seasons:'7',photo:''},
+  {surname:'Lomský',firstname:'Robert',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.10.1969',died:'',seasons:'1',photo:''},
+  {surname:'Lovčí',firstname:'Stanislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'28.10.1945',died:'',seasons:'4',photo:''},
+  {surname:'Lukeš',firstname:'Radek',city:'Český Krumlov',lat:48.8127,lon:14.3175,display:'',born:'05.01.1979',died:'',seasons:'2',photo:''},
+  {surname:'Luňák',firstname:'Lukáš',city:'Olomouc',lat:49.5938,lon:17.2509,display:'',born:'03.05.1989',died:'',seasons:'1',photo:''},
+  {surname:'Luža',firstname:'Patrik',city:'Bratislava',lat:48.1486,lon:17.1077,display:'',born:'13.04.1972',died:'',seasons:'1',photo:''},
+  {surname:'Lytvynov',firstname:'Ivan',city:'Mariupol',lat:47.0951,lon:37.5398,display:'',born:'07.12.2000',died:'',seasons:'3',photo:''},
+  {surname:'Macelis',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'07.01.1923',died:'16.04.1998',seasons:'9',photo:''},
+  {surname:'Macháček',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'10.10.1985',died:'',seasons:'7',photo:''},
+  {surname:'Mainer',firstname:'Petr',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'11.05.1970',died:'',seasons:'3',photo:''},
+  {surname:'Makovský',firstname:'Jakub',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'13.04.1991',died:'',seasons:'1',photo:''},
+  {surname:'Malát',firstname:'Sebastián',city:'Klatovy',lat:49.3953,lon:13.2951,display:'',born:'14.02.2002',died:'',seasons:'1',photo:''},
+  {surname:'Maleček',firstname:'Štěpán',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'24.09.2004',died:'',seasons:'1',photo:''},
+  {surname:'Marcel',firstname:'Patrik',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'27.11.1994',died:'',seasons:'2',photo:''},
+  {surname:'Marek',firstname:'Jakub',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.06.1991',died:'',seasons:'3',photo:''},
+  {surname:'Marek',firstname:'Ladislav',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'29.03.1994',died:'',seasons:'3',photo:''},
+  {surname:'Martínek',firstname:'Radek',city:'Havlíčkův Brod',lat:49.6065,lon:15.5791,display:'',born:'31.08.1976',died:'',seasons:'7',photo:''},
+  {surname:'Martynek',firstname:'Rostislav',city:'Třinec',lat:49.6756,lon:18.6739,display:'',born:'10.10.1982',died:'',seasons:'2',photo:''},
+  {surname:'Mařík',firstname:'Michal',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'18.05.1975',died:'',seasons:'4',photo:''},
+  {surname:'Mařík',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.01.1947',died:'',seasons:'14',photo:''},
+  {surname:'Masák',firstname:'Martin',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.05.1976',died:'',seasons:'3',photo:''},
+  {surname:'Masopust',firstname:'Karel',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'04.10.1942',died:'25.05.2019',seasons:'4',photo:''},
+  {surname:'Masopust',firstname:'Matouš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.09.2002',died:'',seasons:'1',photo:''},
+  {surname:'Matějka',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'10.10.1952',died:'',seasons:'2',photo:''},
+  {surname:'Matušík',firstname:'Jakub',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'20.06.1987',died:'',seasons:'2',photo:''},
+  {surname:'Maxa',firstname:'Jan',city:'Rožnov',lat:48.95,lon:14.3,display:'',born:'10.06.1939',died:'',seasons:'8',photo:''},
+  {surname:'Mazanec',firstname:'Martin',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.08.1989',died:'',seasons:'1',photo:''},
+  {surname:'Mazanec',firstname:'Milan',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'09.08.1966',died:'',seasons:'5',photo:''},
+  {surname:'Mec',firstname:'Jaroslav',city:'Ostrava',lat:49.8209,lon:18.2625,display:'',born:'10.03.1950',died:'',seasons:'2',photo:''},
+  {surname:'Melichar',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'20.01.1979',died:'',seasons:'3',photo:''},
+  {surname:'Melichárek',firstname:'Tibor',city:'Topoľčany',lat:48.5595,lon:18.1723,display:'',born:'21.01.1976',died:'',seasons:'2',photo:''},
+  {surname:'Melka',firstname:'Antonín',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'14.03.1990',died:'',seasons:'1',photo:''},
+  {surname:'Mertl',firstname:'Tomáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'11.03.1986',died:'',seasons:'10',photo:''},
+  {surname:'Micka',firstname:'Tomáš',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'07.06.1983',died:'',seasons:'1',photo:''},
+  {surname:'Michal',firstname:'Michal',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'07.08.1997',died:'',seasons:'2',photo:''},
+  {surname:'Michálek',firstname:'Milan',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'07.12.1984',died:'',seasons:'4',photo:''},
+  {surname:'Michnáč',firstname:'Albert',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'18.10.1998',died:'',seasons:'3',photo:''},
+  {surname:'Míka',firstname:'Petr',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'12.02.1979',died:'',seasons:'1',photo:''},
+  {surname:'Mikeska',firstname:'Michal',city:'Třebíč',lat:49.215,lon:15.8793,display:'',born:'28.04.1976',died:'',seasons:'3',photo:''},
+  {surname:'Mikulík',firstname:'Milan',city:'Ostrava',lat:49.8209,lon:18.2625,display:'',born:'10.11.1980',died:'',seasons:'1',photo:''},
+  {surname:'Mikuš',firstname:'Peter',city:'Trenčín',lat:48.8943,lon:18.0439,display:'',born:'10.01.1985',died:'',seasons:'1',photo:''},
+  {surname:'Mikyska',firstname:'Josef',city:'Frýdlant',lat:50.9224,lon:15.0804,display:'',born:'12.07.1994',died:'',seasons:'2',photo:''},
+  {surname:'Míšek',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'23.03.1959',died:'',seasons:'3',photo:''},
+  {surname:'Mizera',firstname:'František',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'23.08.1919',died:'21.01.1994',seasons:'24',photo:''},
+  {surname:'Mizera',firstname:'Vladimír',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.03.1945',died:'',seasons:'2',photo:''},
+  {surname:'Mizera',firstname:'Vladislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'29.12.1923',died:'22.01.2002',seasons:'7',photo:''},
+  {surname:'Modrý',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'27.02.1971',died:'',seasons:'5',photo:''},
+  {surname:'Mojžíš',firstname:'Pavel',city:'Zlín',lat:49.225,lon:17.658,display:'',born:'31.10.1977',died:'',seasons:'1',photo:''},
+  {surname:'Moravec',firstname:'Jiří',city:'Nymburk',lat:50.1855,lon:15.0435,display:'',born:'13.02.1980',died:'',seasons:'1',photo:''},
+  {surname:'Mothejl',firstname:'František',city:'Zliv',lat:48.98,lon:14.37,display:'',born:'21.03.1917',died:'01.10.1995',seasons:'2',photo:''},
+  {surname:'Mrázek',firstname:'František',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.05.1979',died:'',seasons:'3',photo:''},
+  {surname:'Mrkvička',firstname:'Vojtěch',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'15.06.1984',died:'',seasons:'1',photo:''},
+  {surname:'Mucha',firstname:'Ján',city:'Malacky',lat:48.4339,lon:17.0186,display:'',born:'11.01.1984',died:'',seasons:'10',photo:''},
+  {surname:'Navrátil',firstname:'Milan',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'11.02.1974',died:'',seasons:'1',photo:''},
+  {surname:'Neckář',firstname:'Stanislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.12.1975',died:'',seasons:'3',photo:''},
+  {surname:'Neckář',firstname:'Zbyněk',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'22.09.1978',died:'',seasons:'2',photo:''},
+  {surname:'Nedoma',firstname:'Milan',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'29.03.1972',died:'',seasons:'8',photo:''},
+  {surname:'Nedorost',firstname:'David',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.03.1981',died:'',seasons:'4',photo:''},
+  {surname:'Nedorost',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.03.1982',died:'',seasons:'4',photo:''},
+  {surname:'Nedvěd',firstname:'Jan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'28.11.1931',died:'',seasons:'4',photo:''},
+  {surname:'Nejezchleb',firstname:'Richard',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'02.05.1994',died:'',seasons:'1',photo:''},
+  {surname:'Němec',firstname:'Milan',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'30.09.1959',died:'',seasons:'1',photo:''},
+  {surname:'Němeček',firstname:'Jan',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'14.02.1976',died:'',seasons:'2',photo:''},
+  {surname:'Němeček',firstname:'Roman',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'10.01.1980',died:'',seasons:'1',photo:''},
+  {surname:'Neumaier',firstname:'František',city:'Mladé',lat:49.1,lon:14.4,display:'',born:'20.08.1941',died:'',seasons:'12',photo:''},
+  {surname:'Neumann',firstname:'Bohumil',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.06.1906',died:'17.12.1999',seasons:'3',photo:''},
+  {surname:'Nevosad',firstname:'Roman',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'10.07.1967',died:'',seasons:'1',photo:''},
+  {surname:'Nouza',firstname:'Tomáš',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'25.09.1982',died:'',seasons:'3',photo:''},
+  {surname:'Novák',firstname:'Filip',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'07.05.1982',died:'',seasons:'3',photo:''},
+  {surname:'Novák',firstname:'Jan',city:'Havlíčkův Brod',lat:49.6065,lon:15.5791,display:'',born:'09.02.1979',died:'',seasons:'3',photo:''},
+  {surname:'Novák',firstname:'Josef',city:'Opatovice',lat:49.08,lon:14.39,display:'',born:'26.01.1953',died:'',seasons:'11',photo:''},
+  {surname:'Novák',firstname:'Martin',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'02.11.1988',died:'',seasons:'4',photo:''},
+  {surname:'Novák',firstname:'Pavel',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'16.04.2002',died:'',seasons:'3',photo:''},
+  {surname:'Novotný',firstname:'Jiří',city:'Pelhřimov',lat:49.4312,lon:15.2237,display:'',born:'12.08.1983',died:'',seasons:'4',photo:''},
+  {surname:'Oberleitner',firstname:'Karel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'10.04.1929',died:'11.05.2023',seasons:'7',photo:''},
+  {surname:'Ondrejec',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.09.1964',died:'',seasons:'4',photo:''},
+  {surname:'Ondřej',firstname:'Zdeněk',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'02.08.1980',died:'',seasons:'3',photo:''},
+  {surname:'Ordoš',firstname:'Jan',city:'Ústí nad Labem',lat:50.6607,lon:14.0323,display:'',born:'18.09.1996',died:'',seasons:'2',photo:''},
+  {surname:'Paderta',firstname:'Miloň',city:'Nemanice',lat:48.98,lon:14.42,display:'',born:'23.07.1931',died:'09.11.2010',seasons:'9',photo:''},
+  {surname:'Pajić',firstname:'Rok',city:'Jesenice',lat:46.4368,lon:14.0725,display:'',born:'26.09.1985',died:'',seasons:'5',photo:''},
+  {surname:'Paleček',firstname:'Roman',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.05.1969',died:'',seasons:'3',photo:''},
+  {surname:'Papoušek',firstname:'Luděk',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.02.1948',died:'',seasons:'3',photo:''},
+  {surname:'Pártl',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.04.1946',died:'',seasons:'11',photo:''},
+  {surname:'Parýzek',firstname:'Martin',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'23.03.1989',died:'',seasons:'2',photo:''},
+  {surname:'Parýzek',firstname:'Rudolf',city:'Zdice',lat:49.8942,lon:13.9444,display:'',born:'31.01.1936',died:'15.02.2014',seasons:'2',photo:''},
+  {surname:'Parýzek',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'12.03.1938',died:'',seasons:'1',photo:''},
+  {surname:'Pařízek',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.02.1960',died:'',seasons:'1',photo:''},
+  {surname:'Pařízek',firstname:'Radim',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.11.1956',died:'',seasons:'3',photo:''},
+  {surname:'Pašek',firstname:'Václav',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'30.01.1995',died:'',seasons:'2',photo:''},
+  {surname:'Patera',firstname:'Jiří',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'24.02.1999',died:'',seasons:'2',photo:''},
+  {surname:'Paukner',firstname:'Petr',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'09.01.1968',died:'',seasons:'6',photo:''},
+  {surname:'Pavlíček',firstname:'David',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'20.09.1991',died:'',seasons:'1',photo:''},
+  {surname:'Pavlin',firstname:'Žiga',city:'Kranj',lat:46.2392,lon:14.3556,display:'',born:'30.04.1985',died:'',seasons:'4',photo:''},
+  {surname:'Pečínka',firstname:'Martin',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.12.1973',died:'',seasons:'1',photo:''},
+  {surname:'Pech',firstname:'Lukáš',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'19.09.1983',died:'',seasons:'4',photo:''},
+  {surname:'Pechek',firstname:'Jan',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'15.09.1996',died:'',seasons:'1',photo:''},
+  {surname:'Pícha',firstname:'Čeněk',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.05.1921',died:'15.04.1984',seasons:'23',photo:''},
+  {surname:'Pícha',firstname:'Stanislav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'03.05.1917',died:'10.08.1992',seasons:'15',photo:''},
+  {surname:'Piloušek',firstname:'František',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.03.1912',died:'14.02.1981',seasons:'2',photo:''},
+  {surname:'Piloušek',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.12.1914',died:'25.02.1996',seasons:'3',photo:''},
+  {surname:'Piskáček',firstname:'Jan',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'11.09.1989',died:'',seasons:'1',photo:''},
+  {surname:'Plánička',firstname:'Vladimír',city:'Bystřice pod Hostýnem',lat:49.4005,lon:17.6751,display:'',born:'06.01.1946',died:'',seasons:'13',photo:''},
+  {surname:'Plášil',firstname:'Karel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'25.04.1994',died:'',seasons:'5',photo:''},
+  {surname:'Podlaha',firstname:'Jan',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'24.02.1959',died:'',seasons:'4',photo:''},
+  {surname:'Podlaha',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.02.1944',died:'',seasons:'7',photo:''},
+  {surname:'Podlešák',firstname:'Martin',city:'Mělník',lat:50.3501,lon:14.4737,display:'',born:'26.09.1982',died:'',seasons:'3',photo:''},
+  {surname:'Polodna',firstname:'Stanislav',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'03.04.1989',died:'',seasons:'3',photo:''},
+  {surname:'Posmyk',firstname:'Marek',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'15.09.1978',died:'',seasons:'4',photo:''},
+  {surname:'Pouzar',firstname:'Jaroslav',city:'Čakovec',lat:46.3842,lon:16.4344,display:'',born:'23.01.1952',died:'',seasons:'13',photo:''},
+  {surname:'Pouzar',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'01.09.2002',died:'',seasons:'1',photo:''},
+  {surname:'Poživil',firstname:'Lukáš',city:'Most',lat:50.504,lon:13.6366,display:'',born:'12.09.1982',died:'',seasons:'2',photo:''},
+  {surname:'Pražák',firstname:'Karel',city:'Záboří',lat:49.2,lon:14.2,display:'',born:'11.01.1945',died:'',seasons:'14',photo:''},
+  {surname:'Prokeš',firstname:'Radek',city:'Český Krumlov',lat:48.8127,lon:14.3175,display:'',born:'22.01.1995',died:'',seasons:'6',photo:''},
+  {surname:'Prokop',firstname:'Tomáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'30.01.1994',died:'19.09.2021',seasons:'2',photo:''},
+  {surname:'Prospal',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.07.1953',died:'',seasons:'2',photo:''},
+  {surname:'Přibyl',firstname:'Adam',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'10.12.1992',died:'',seasons:'4',photo:''},
+  {surname:'Přikryl',firstname:'Filip',city:'Rokycany',lat:49.7436,lon:13.5952,display:'',born:'02.04.2001',died:'',seasons:'3',photo:''},
+  {surname:'Přikryl',firstname:'Roman',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'11.02.1995',died:'',seasons:'3',photo:''},
+  {surname:'Ptáček',firstname:'František',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'04.04.1975',died:'',seasons:'5',photo:''},
+  {surname:'Punčochář',firstname:'Petr',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'08.06.1983',died:'',seasons:'1',photo:''},
+  {surname:'Pýcha',firstname:'Pavel',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'20.08.1967',died:'',seasons:'11',photo:''},
+  {surname:'Pýcha',firstname:'Pavel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'02.02.1996',died:'',seasons:'8',photo:''},
+  {surname:'Rákosník',firstname:'Roman',city:'Kolín',lat:50.027,lon:15.2044,display:'',born:'09.05.1959',died:'',seasons:'3',photo:''},
+  {surname:'Raška',firstname:'Adam',city:'Kopřivnice',lat:49.5979,lon:18.1441,display:'',born:'26.11.1994',died:'',seasons:'3',photo:''},
+  {surname:'Reiner',firstname:'František',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.04.1951',died:'05.09.2024',seasons:'2',photo:''},
+  {surname:'Remta',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'16.12.2002',died:'',seasons:'1',photo:''},
+  {surname:'Rezek',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.06.1990',died:'',seasons:'1',photo:''},
+  {surname:'Rob',firstname:'František',city:'Plav',lat:48.95,lon:14.55,display:'',born:'18.02.1939',died:'24.12.2017',seasons:'6',photo:''},
+  {surname:'Rob',firstname:'Luboš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.08.1970',died:'',seasons:'17',photo:''},
+  {surname:'Rob',firstname:'Stanislav',city:'Plav',lat:48.95,lon:14.55,display:'',born:'04.04.1943',died:'23.02.2005',seasons:'5',photo:''},
+  {surname:'Rod',firstname:'Tomáš',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'26.04.1988',died:'',seasons:'1',photo:''},
+  {surname:'Rousek',firstname:'Tomáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'09.09.1993',died:'',seasons:'2',photo:''},
+  {surname:'Ruprecht',firstname:'Václav',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'23.09.1947',died:'',seasons:'1',photo:''},
+  {surname:'Ryneš',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'13.01.1901',died:'02.02.1972',seasons:'11',photo:''},
+  {surname:'Řehoř',firstname:'Jan',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'30.04.1983',died:'',seasons:'4',photo:''},
+  {surname:'Sailer',firstname:'Petr',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'18.09.1975',died:'',seasons:'17',photo:''},
+  {surname:'Semrád',firstname:'Martin',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'08.04.1991',died:'',seasons:'3',photo:''},
+  {surname:'Sičák',firstname:'Vladimír',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'01.12.1980',died:'',seasons:'4',photo:''},
+  {surname:'Simon',firstname:'Dominik',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'08.08.1994',died:'',seasons:'1',photo:''},
+  {surname:'Slach',firstname:'Antonín',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.05.1964',died:'',seasons:'3',photo:''},
+  {surname:'Slávik',firstname:'Robert',city:'Ostrov nad Ohří',lat:50.3083,lon:12.9391,display:'',born:'29.05.1974',died:'',seasons:'7',photo:''},
+  {surname:'Smetana',firstname:'David',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.03.1973',died:'',seasons:'2',photo:''},
+  {surname:'Soudek',firstname:'Karel',city:'Divišov',lat:49.7542,lon:14.8611,display:'',born:'26.10.1963',died:'',seasons:'10',photo:''},
+  {surname:'Soudek',firstname:'Robin',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'31.07.1991',died:'',seasons:'1',photo:''},
+  {surname:'Straka',firstname:'Josef',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'11.02.1978',died:'',seasons:'3',photo:''},
+  {surname:'Strmeň',firstname:'Jan',city:'Havířov',lat:49.7799,lon:18.4301,display:'',born:'26.12.1991',died:'',seasons:'7',photo:''},
+  {surname:'Suchánek',firstname:'Jakub',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'16.11.1984',died:'',seasons:'5',photo:''},
+  {surname:'Suchánek',firstname:'Rudolf',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'27.01.1962',died:'',seasons:'19',photo:''},
+  {surname:'Suk',firstname:'Jaroslav',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'02.01.1968',died:'',seasons:'2',photo:''},
+  {surname:'Svach',firstname:'Václav',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'05.07.2002',died:'',seasons:'3',photo:''},
+  {surname:'Svoboda',firstname:'Daniel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'19.02.2000',died:'',seasons:'1',photo:''},
+  {surname:'Svoboda',firstname:'Oldřich',city:'Hradec Králové',lat:50.2092,lon:15.8328,display:'',born:'28.01.1967',died:'',seasons:'4',photo:''},
+  {surname:'Šachl',firstname:'Petr',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'02.12.1977',died:'',seasons:'5',photo:''},
+  {surname:'Šedý',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'09.02.1971',died:'',seasons:'6',photo:''},
+  {surname:'Šembera',firstname:'Julius',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'20.12.1939',died:'12.06.2009',seasons:'10',photo:''},
+  {surname:'Šenkeřík',firstname:'Petr',city:'Zlín',lat:49.225,lon:17.658,display:'',born:'13.03.1991',died:'',seasons:'2',photo:''},
+  {surname:'Ševčík',firstname:'František',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'28.06.1972',died:'',seasons:'4',photo:''},
+  {surname:'Šimánek',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'06.10.1978',died:'',seasons:'18',photo:''},
+  {surname:'Šimánek',firstname:'Zdeněk',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'13.04.1954',died:'29.07.2023',seasons:'2',photo:''},
+  {surname:'Škoda',firstname:'Vladimír',city:'Dačice',lat:49.082,lon:15.4325,display:'',born:'09.10.1983',died:'',seasons:'5',photo:''},
+  {surname:'Španinger',firstname:'Antonín',city:'Přísečná',lat:48.86,lon:14.4,display:'',born:'26.05.1926',died:'04.01.2010',seasons:'13',photo:''},
+  {surname:'Špatný',firstname:'Václav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.01.1915',died:'21.06.1961',seasons:'8',photo:''},
+  {surname:'Šperger',firstname:'Zdeněk',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.09.1971',died:'',seasons:'5',photo:''},
+  {surname:'Šrámek',firstname:'Jan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.04.1940',died:'',seasons:'7',photo:''},
+  {surname:'Šrámek',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'15.03.1953',died:'',seasons:'6',photo:''},
+  {surname:'Štencel',firstname:'Jan',city:'Opava',lat:49.938,lon:17.9028,display:'',born:'26.02.1995',died:'',seasons:'5',photo:''},
+  {surname:'Štrba',firstname:'Martin',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.03.1976',died:'',seasons:'11',photo:''},
+  {surname:'Švihálek',firstname:'Michal',city:'Jindřichův Hradec',lat:49.1437,lon:15.0035,display:'',born:'29.04.1993',died:'',seasons:'4',photo:''},
+  {surname:'Tlačil',firstname:'Jan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.05.1959',died:'',seasons:'8',photo:''},
+  {surname:'Točík',firstname:'Dominik',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'22.07.1996',died:'',seasons:'2',photo:''},
+  {surname:'Toman',firstname:'Matěj',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'15.01.2001',died:'',seasons:'6',photo:''},
+  {surname:'Toman',firstname:'Milan',city:'Litoměřice',lat:50.5376,lon:14.1295,display:'',born:'30.11.1979',died:'',seasons:'4',photo:''},
+  {surname:'Tomeček',firstname:'Jan',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'05.12.1964',died:'',seasons:'2',photo:''},
+  {surname:'Toufar',firstname:'Jiří',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'15.03.1909',died:'21.01.1965',seasons:'4',photo:''},
+  {surname:'Trost',firstname:'Karel',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.01.1909',died:'20.06.1965',seasons:'2',photo:''},
+  {surname:'Turek',firstname:'Eddie',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'07.06.1992',died:'',seasons:'2',photo:''},
+  {surname:'Turek',firstname:'Filip',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.05.1972',died:'',seasons:'13',photo:''},
+  {surname:'Turek',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'21.07.1934',died:'03.11.2020',seasons:'8',photo:''},
+  {surname:'Turek',firstname:'Roman',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'21.05.1970',died:'',seasons:'11',photo:''},
+  {surname:'Ťoupal',firstname:'Bohumír',city:'Staré Sedlo',lat:49.35,lon:14.6,display:'',born:'11.05.1945',died:'',seasons:'8',photo:''},
+  {surname:'Ťoupal',firstname:'Kamil',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'28.04.1973',died:'',seasons:'7',photo:''},
+  {surname:'Ťoupal',firstname:'Radek',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'16.08.1966',died:'',seasons:'15',photo:''},
+  {surname:'Vacek',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'12.08.1921',died:'29.07.1994',seasons:'11',photo:''},
+  {surname:'Vacovský',firstname:'František',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'13.05.1926',died:'23.09.2016',seasons:'13',photo:''},
+  {surname:'Vaculík',firstname:'Ondřej',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.04.2000',died:'',seasons:'1',photo:''},
+  {surname:'Vaculík',firstname:'Petr',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'04.11.1962',died:'',seasons:'2',photo:''},
+  {surname:'Vak',firstname:'Tomáš',city:'Havlíčkův Brod',lat:49.6065,lon:15.5791,display:'',born:'11.05.1978',died:'',seasons:'6',photo:''},
+  {surname:'Valský',firstname:'Jakub',city:'Slaný',lat:50.2302,lon:14.0866,display:'',born:'07.09.1988',died:'',seasons:'4',photo:''},
+  {surname:'Vampola',firstname:'Petr',city:'Žďár nad Sázavou',lat:49.5638,lon:15.9394,display:'',born:'21.01.1982',died:'',seasons:'2',photo:''},
+  {surname:'Vaněček',firstname:'Filip',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'28.09.1976',died:'',seasons:'3',photo:''},
+  {surname:'Vaněk',firstname:'Václav',city:'Píchov',lat:49.15,lon:15.2,display:'',born:'11.09.1941',died:'',seasons:'7',photo:''},
+  {surname:'Vaniš',firstname:'Marek',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'17.09.1991',died:'',seasons:'2',photo:''},
+  {surname:'Vápeník',firstname:'František',city:'Čtyři Dvory',lat:48.98,lon:14.46,display:'',born:'28.02.1946',died:'12.10.2016',seasons:'8',photo:''},
+  {surname:'Vávra',firstname:'Leopold',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'14.11.1916',died:'05.07.1990',seasons:'16',photo:''},
+  {surname:'Vavroch',firstname:'Robert',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.12.1973',died:'',seasons:'1',photo:''},
+  {surname:'Venkrbec',firstname:'Matouš Maxmilián',city:'Olomouc',lat:49.5938,lon:17.2509,display:'',born:'11.05.1989',died:'',seasons:'3',photo:''},
+  {surname:'Veselý',firstname:'Ondřej',city:'Zlín',lat:49.225,lon:17.658,display:'',born:'06.12.1977',died:'',seasons:'5',photo:''},
+  {surname:'Vlček',firstname:'Filip',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'07.05.1993',died:'',seasons:'2',photo:''},
+  {surname:'Vodička',firstname:'Jan',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'13.04.1932',died:'28.09.2014',seasons:'13',photo:''},
+  {surname:'Vomela',firstname:'Lukáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'25.09.1985',died:'',seasons:'4',photo:''},
+  {surname:'Vondráček',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.06.1953',died:'17.10.2023',seasons:'7',photo:''},
+  {surname:'Vondrka',firstname:'Michal',city:'Tušť',lat:49.02,lon:15.05,display:'',born:'31.05.1953',died:'',seasons:'7',photo:''},
+  {surname:'Vondrka',firstname:'Michal',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'17.08.1982',died:'',seasons:'6',photo:''},
+  {surname:'Vopátek',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'27.04.1955',died:'',seasons:'3',photo:''},
+  {surname:'Vopelka',firstname:'Lukáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'02.03.1996',died:'',seasons:'2',photo:''},
+  {surname:'Vošta',firstname:'Ondřej',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'04.06.1968',died:'',seasons:'9',photo:''},
+  {surname:'Voženílek',firstname:'Daniel',city:'Pardubice',lat:50.0343,lon:15.7812,display:'',born:'10.02.1996',died:'',seasons:'2',photo:''},
+  {surname:'Vráblík',firstname:'Roman',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'25.01.1990',died:'',seasons:'12',photo:''},
+  {surname:'Vydarený',firstname:'René',city:'Bratislava',lat:48.1486,lon:17.1077,display:'',born:'06.05.1981',died:'',seasons:'11',photo:''},
+  {surname:'Zábranský',firstname:'Libor',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'25.11.1973',died:'',seasons:'2',photo:''},
+  {surname:'Zasadil',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'22.01.1908',died:'07.01.1948',seasons:'13',photo:''},
+  {surname:'Zeman',firstname:'Jindřich',city:'Stonařov',lat:49.32,lon:15.7,display:'',born:'29.09.1947',died:'25.12.2019',seasons:'2',photo:''},
+  {surname:'Zeman',firstname:'Vladimír',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'14.02.1947',died:'27.10.2015',seasons:'3',photo:''},
+  {surname:'Zíb',firstname:'Lukáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'24.02.1977',died:'',seasons:'9',photo:''},
+  {surname:'Zohorna',firstname:'Tomáš',city:'Havlíčkův Brod',lat:49.6065,lon:15.5791,display:'',born:'03.01.1988',died:'',seasons:'1',photo:''},
+  {surname:'Žálčík',firstname:'Lukáš',city:'Šumperk',lat:49.9657,lon:16.9704,display:'',born:'15.10.1990',died:'',seasons:'2',photo:''},
+  {surname:'Žižka',firstname:'Luděk',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'11.01.1964',died:'',seasons:'1',photo:''},
+  {surname:'Žlunka',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'03.01.1947',died:'29.12.2016',seasons:'1',photo:''},
+  {surname:'Žovinec',firstname:'Dušan',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'05.10.1992',died:'',seasons:'3',photo:''},
+  {surname:'Hára',firstname:'Antonín',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'14.04.1915',died:'',seasons:'3',photo:''},
+  {surname:'Kobliška',firstname:'Václav',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'09.05.1956',died:'01.08.2021',seasons:'1',photo:''},
+  {surname:'Konzal',firstname:'Rudolf',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'23.12.1906',died:'',seasons:'3',photo:''},
+  {surname:'Kurfürst',firstname:'Marcel',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'12.11.1961',died:'',seasons:'1',photo:''},
+  {surname:'Lidický',firstname:'Jindřich',city:'Motyčín',lat:50.1378,lon:14.0427,display:'',born:'09.12.1937',died:'15.08.1991',seasons:'1',photo:''},
+  {surname:'Matoušek',firstname:'Bohumír',city:'Kutná Hora',lat:49.9479,lon:15.2684,display:'',born:'13.11.1925',died:'27.07.1987',seasons:'2',photo:''},
+  {surname:'Miller',firstname:'Dennis',city:'Buffalo',lat:42.8864,lon:-78.8784,display:'',born:'25.07.1967',died:'',seasons:'1',photo:''},
+  {surname:'Mordavský',firstname:'Jozef',city:'Poprad',lat:49.0594,lon:20.2972,display:'',born:'01.07.1932',died:'16.02.2019',seasons:'1',photo:''},
+  {surname:'Mucina',firstname:'Jindřich',city:'Vendryně',lat:49.69,lon:18.62,display:'',born:'31.10.1939',died:'',seasons:'1',photo:''},
+  {surname:'Musil',firstname:'Mojmír',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'14.08.1974',died:'',seasons:'1',photo:''},
+  {surname:'Němec',firstname:'Vintíř',city:'Berlín',lat:52.52,lon:13.405,display:'',born:'30.06.1922',died:'14.11.2005',seasons:'9',photo:''},
+  {surname:'Olesen',firstname:'Nick Alexander',city:'Fredrikshavn',lat:57.44,lon:10.536,display:'',born:'14.11.1995',died:'',seasons:'1',photo:''},
+  {surname:'Ondráček',firstname:'Jiří',city:'Gottwaldov',lat:49.225,lon:17.658,display:'',born:'03.06.1988',died:'',seasons:'1',photo:''},
+  {surname:'Panáček',firstname:'Petr',city:'Boskovice',lat:49.4862,lon:16.6617,display:'',born:'21.07.1996',died:'',seasons:'1',photo:''},
+  {surname:'Pejcha',firstname:'Ladislav',city:'Bučice',lat:49.8914,lon:15.5567,display:'',born:'13.09.1930',died:'18.10.1990',seasons:'5',photo:''},
+  {surname:'Percy',firstname:'Stuart Thomas Donovan',city:'Oakville',lat:43.4675,lon:-79.6877,display:'',born:'18.05.1993',died:'',seasons:'2',photo:''},
+  {surname:'Pešek',firstname:'Miroslav',city:'Ukrajina',lat:49.0,lon:32.0,display:'',born:'10.02.1922',died:'05.04.1981',seasons:'4',photo:''},
+  {surname:'Pitule',firstname:'Tomáš',city:'Rokycany',lat:49.7436,lon:13.5952,display:'',born:'10.11.1989',died:'',seasons:'1',photo:''},
+  {surname:'Platil',firstname:'Jan',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'09.02.1983',died:'',seasons:'1',photo:''},
+  {surname:'Pleticha',firstname:'Jiří',city:'Polička',lat:49.7145,lon:16.266,display:'',born:'27.01.1930',died:'23.01.2009',seasons:'2',photo:''},
+  {surname:'Podlaha',firstname:'Josef',city:'Olomouc',lat:49.5938,lon:17.2509,display:'',born:'17.09.1971',died:'',seasons:'1',photo:''},
+  {surname:'Procházka',firstname:'Josef',city:'Kutná Hora',lat:49.9479,lon:15.2684,display:'',born:'16.03.1944',died:'09.05.2018',seasons:'3',photo:''},
+  {surname:'Procházka',firstname:'Stanislav',city:'Pardubice',lat:50.0343,lon:15.7812,display:'',born:'11.06.1973',died:'',seasons:'1',photo:''},
+  {surname:'Rabetz',firstname:'Rudolf',city:'Rožnov',lat:48.95,lon:14.3,display:'',born:'06.03.1937',died:'',seasons:'4',photo:''},
+  {surname:'Rachůnek',firstname:'Ivan',city:'Gottwaldov',lat:49.225,lon:17.658,display:'',born:'06.07.1981',died:'',seasons:'1',photo:''},
+  {surname:'Reilly',firstname:'William John Next',city:'Toronto',lat:43.6532,lon:-79.3832,display:'',born:'23.07.1997',died:'',seasons:'1',photo:''},
+  {surname:'Roth',firstname:'Vladimír',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'25.06.1990',died:'',seasons:'1',photo:''},
+  {surname:'Růžička',firstname:'Dan',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'31.12.1991',died:'',seasons:'2',photo:''},
+  {surname:'Sáblík',firstname:'Lukáš',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'05.08.1976',died:'',seasons:'1',photo:''},
+  {surname:'Samec',firstname:'Josef',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'21.09.1950',died:'',seasons:'1',photo:''},
+  {surname:'Schrabal',firstname:'Jaroslav',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.04.1920',died:'20.06.2003',seasons:'1',photo:''},
+  {surname:'Skuhravý',firstname:'Václav',city:'Slaný',lat:50.2302,lon:14.0866,display:'',born:'16.01.1979',died:'',seasons:'1',photo:''},
+  {surname:'Slavík',firstname:'Jan',city:'Vlašim',lat:49.7062,lon:14.8969,display:'',born:'17.05.1975',died:'',seasons:'1',photo:''},
+  {surname:'Sloboda',firstname:'Marek',city:'Bratislava',lat:48.1486,lon:17.1077,display:'',born:'01.11.1997',died:'',seasons:'2',photo:''},
+  {surname:'Slováček',firstname:'Ondřej',city:'Vsetín',lat:49.3388,lon:17.9964,display:'',born:'14.09.1994',died:'',seasons:'2',photo:''},
+  {surname:'Snopek',firstname:'Jan',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'22.06.1976',died:'',seasons:'2',photo:''},
+  {surname:'Sochůrek',firstname:'Josef',city:'Sokolov',lat:50.1812,lon:12.6396,display:'',born:'20.02.1910',died:'',seasons:'1',photo:''},
+  {surname:'Stantien',firstname:'Roman',city:'Kyjov',lat:49.011,lon:17.1228,display:'',born:'16.10.1964',died:'',seasons:'1',photo:''},
+  {surname:'Strnad',firstname:'Jakub',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'16.02.1992',died:'',seasons:'1',photo:''},
+  {surname:'Suja',firstname:'Jakub',city:'Prešov',lat:49.0015,lon:21.2394,display:'',born:'01.11.1988',died:'',seasons:'1',photo:''},
+  {surname:'Svačina',firstname:'Vojtěch',city:'Pelhřimov',lat:49.4312,lon:15.2237,display:'',born:'29.05.1983',died:'',seasons:'1',photo:''},
+  {surname:'Šára',firstname:'Libor',city:'Olomouc',lat:49.5938,lon:17.2509,display:'',born:'18.03.1967',died:'',seasons:'2',photo:''},
+  {surname:'Šedivý',firstname:'Jakub',city:'Písek',lat:49.3086,lon:14.148,display:'',born:'10.05.2003',died:'',seasons:'1',photo:''},
+  {surname:'Šimeček',firstname:'Jindřich',city:'Milevsko',lat:49.4523,lon:14.3583,display:'',born:'13.07.1912',died:'',seasons:'1',photo:''},
+  {surname:'Škopek',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'18.01.1994',died:'',seasons:'1',photo:''},
+  {surname:'Šoustal',firstname:'Tomáš',city:'Šternberk',lat:49.7317,lon:17.2986,display:'',born:'15.02.1997',died:'',seasons:'1',photo:''},
+  {surname:'Špiler',firstname:'Roman',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'27.02.1976',died:'',seasons:'1',photo:''},
+  {surname:'Štraub',firstname:'Josef',city:'Příbram',lat:49.6944,lon:14.0086,display:'',born:'05.03.1966',died:'',seasons:'2',photo:''},
+  {surname:'Šulc',firstname:'Jakub',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'16.12.1985',died:'',seasons:'1',photo:''},
+  {surname:'Šulčík',firstname:'Petr',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'26.04.1984',died:'',seasons:'1',photo:''},
+  {surname:'Šulek',firstname:'Ondřej',city:'Vlašim',lat:49.7062,lon:14.8969,display:'',born:'21.11.1997',died:'',seasons:'2',photo:''},
+  {surname:'Šůna',firstname:'Karel',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'29.01.1934',died:'',seasons:'1',photo:''},
+  {surname:'Švec',firstname:'Emil',city:'Benešov',lat:49.7816,lon:14.6869,display:'',born:'12.07.1994',died:'',seasons:'2',photo:''},
+  {surname:'Tähtinen',firstname:'Markku',city:'Pori',lat:61.4851,lon:21.7974,display:'',born:'10.04.1978',died:'',seasons:'1',photo:''},
+  {surname:'Tintěra',firstname:'Roman',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'16.02.1998',died:'',seasons:'1',photo:''},
+  {surname:'Tomeček',firstname:'Vojtěch',city:'Milevsko',lat:49.4523,lon:14.3583,display:'',born:'12.08.1994',died:'',seasons:'1',photo:''},
+  {surname:'Toth',firstname:'Radek',city:'Slaný',lat:50.2302,lon:14.0866,display:'',born:'05.01.1968',died:'',seasons:'1',photo:''},
+  {surname:'Trhlín',firstname:'Josef',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'06.03.1943',died:'',seasons:'2',photo:''},
+  {surname:'Trummer',firstname:'Jan',city:'Český Krumlov',lat:48.8127,lon:14.3175,display:'',born:'06.12.1993',died:'',seasons:'1',photo:''},
+  {surname:'Třetina',firstname:'Miroslav',city:'Humpolec',lat:49.5407,lon:15.3576,display:'',born:'27.01.1980',died:'',seasons:'1',photo:''},
+  {surname:'Tůma',firstname:'Martin',city:'Most',lat:50.504,lon:13.6366,display:'',born:'14.09.1985',died:'',seasons:'2',photo:''},
+  {surname:'Tupý',firstname:'Tomáš',city:'Strakonice',lat:49.2608,lon:13.9029,display:'',born:'12.01.1983',died:'',seasons:'1',photo:''},
+  {surname:'Urbanec',firstname:'Jaroslav',city:'Kladno',lat:50.1473,lon:14.1032,display:'',born:'25.06.1940',died:'',seasons:'1',photo:''},
+  {surname:'Vágner',firstname:'Martin',city:'Jaroměř',lat:50.3564,lon:15.9207,display:'',born:'16.03.1984',died:'',seasons:'1',photo:''},
+  {surname:'Vališ',firstname:'Karol',city:'Budapešť',lat:47.4979,lon:19.0402,display:'',born:'17.08.1911',died:'30.12.1982',seasons:'1',photo:''},
+  {surname:'Valta',firstname:'Jiří',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'24.03.1931',died:'09.04.1996',seasons:'2',photo:''},
+  {surname:'Varvařovský',firstname:'Ivo',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'20.06.1940',died:'',seasons:'1',photo:''},
+  {surname:'Veselý',firstname:'Jan',city:'Jaroměř',lat:50.3564,lon:15.9207,display:'',born:'22.06.1994',died:'',seasons:'1',photo:''},
+  {surname:'Veselý',firstname:'Jiří',city:'Litoměřice',lat:50.5376,lon:14.1295,display:'',born:'27.06.1960',died:'',seasons:'2',photo:''},
+  {surname:'Ville',firstname:'Gabin Michel Auguste',city:'Chamonix',lat:45.9237,lon:6.8694,display:'',born:'25.09.1997',died:'',seasons:'1',photo:''},
+  {surname:'Vochozka',firstname:'Tomáš',city:'České Budějovice',lat:48.9745,lon:14.4745,display:'',born:'05.11.1999',died:'',seasons:'1',photo:''},
+  {surname:'Volek',firstname:'Dominik',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'12.01.1994',died:'',seasons:'1',photo:''},
+  {surname:'Výborný',firstname:'Martin',city:'Mladá Boleslav',lat:50.4155,lon:14.9066,display:'',born:'25.04.1976',died:'',seasons:'1',photo:''},
+  {surname:'Vyhlídal',firstname:'Michael',city:'Jihlava',lat:49.3961,lon:15.591,display:'',born:'10.12.1970',died:'',seasons:'1',photo:''},
+  {surname:'Vykoukal',firstname:'Jiří',city:'Olomouc',lat:49.5938,lon:17.2509,display:'',born:'11.03.1971',died:'',seasons:'1',photo:''},
+  {surname:'Wabnegger',firstname:'Jiří',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'05.04.1939',died:'13.03.2002',seasons:'1',photo:''},
+  {surname:'Walker',firstname:'Benjamin',city:'Edina',lat:44.8797,lon:-93.3499,display:'',born:'21.06.1993',died:'',seasons:'1',photo:''},
+  {surname:'Zahraj',firstname:'Ondřej',city:'Louny',lat:50.3561,lon:13.7997,display:'',born:'25.10.1943',died:'',seasons:'1',photo:''},
+  {surname:'Zubíček',firstname:'Pavel',city:'Brno',lat:49.1951,lon:16.6068,display:'',born:'21.10.1974',died:'',seasons:'1',photo:''},
+  {surname:'Žákovský',firstname:'Jan',city:'Tábor',lat:49.4152,lon:14.6598,display:'',born:'03.01.1983',died:'',seasons:'1',photo:''},
+  {surname:'Železník',firstname:'Oldřich',city:'Praha',lat:50.0755,lon:14.4378,display:'',born:'03.10.1932',died:'26.04.1988',seasons:'3',photo:''},
+  {surname:'Živný',firstname:'Martin',city:'Plzeň',lat:49.7384,lon:13.3736,display:'',born:'15.05.1968',died:'',seasons:'1',photo:''},
+];
+
+// ══════════════════════════════════════════════════
+// MAP
+// ══════════════════════════════════════════════════
+function initMap() {
+  map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.8,15.5],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
+}
+
+function mkIcon(label, color, sz, textColor) {
+  sz=sz||28; const fs=sz>=34?13:11; const tc=textColor||'#fff';
+  return L.divIcon({
+    html:`<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${color};color:${tc};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${fs}px;border:2.5px solid rgba(255,255,255,.9);box-shadow:0 3px 14px rgba(15,47,106,.4);font-family:'Barlow Condensed',sans-serif">${label}</div>`,
+    className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]
+  });
+}
+
+// ══════════════════════════════════════════════════
+// FILTER STATE
+// ══════════════════════════════════════════════════
+let filterMode = 'off';   // 'off' | 'born' | 'seasons'
+let filterMin  = 0;
+let filterMax  = 0;
+let rangeMin   = 0;
+let rangeMax   = 0;
+
+function parseBornYear(s) {
+  if (!s) return null;
+  const m = String(s).match(/\d{4}/);
+  return m ? parseInt(m[0]) : null;
+}
+function parseSeasonsNum(s) {
+  if (!s) return null;
+  const n = parseInt(String(s).replace(/\D.*$/,''));
+  return isNaN(n) ? null : n;
+}
+
+function getFilteredPlayers() {
+  if (filterMode === 'off') return players;
+  return players.filter(p => {
+    const val = filterMode === 'born'
+      ? parseBornYear(p.born)
+      : parseSeasonsNum(p.seasons);
+    if (val === null) return false;
+    return val >= filterMin && val <= filterMax;
+  });
+}
+
+function setFilter(mode) {
+  filterMode = mode;
+  // toggle active button
+  ['off','born','seasons'].forEach(m => {
+    document.getElementById('fm'+m.charAt(0).toUpperCase()+m.slice(1))?.classList.toggle('active', m===mode);
+  });
+  const body = document.getElementById('fpBody');
+  if (mode === 'off') {
+    body.style.display = 'none';
+    updateMap(); return;
+  }
+  // Compute range from data
+  const vals = players.map(p => mode==='born' ? parseBornYear(p.born) : parseSeasonsNum(p.seasons)).filter(v=>v!==null);
+  if (!vals.length) { body.style.display='none'; updateMap(); return; }
+  rangeMin = Math.min(...vals);
+  rangeMax = Math.max(...vals);
+  filterMin = rangeMin;
+  filterMax = rangeMax;
+  const sMin = document.getElementById('sliderMin');
+  const sMax = document.getElementById('sliderMax');
+  sMin.min = sMax.min = rangeMin;
+  sMin.max = sMax.max = rangeMax;
+  sMin.value = rangeMin;
+  sMax.value = rangeMax;
+  document.getElementById('fpLabel').textContent = mode==='born' ? 'Rok narození' : 'Počet sezón';
+  body.style.display = 'block';
+  updateSliderUI();
+  updateMap();
+}
+
+function onSlider() {
+  const sMin = document.getElementById('sliderMin');
+  const sMax = document.getElementById('sliderMax');
+  let lo = parseInt(sMin.value), hi = parseInt(sMax.value);
+  if (lo > hi) { if (document.activeElement===sMin) sMin.value=lo=hi; else sMax.value=hi=lo; }
+  filterMin = lo; filterMax = hi;
+  updateSliderUI();
+  updateMap();
+}
+
+function updateSliderUI() {
+  const sMin = document.getElementById('sliderMin');
+  const sMax = document.getElementById('sliderMax');
+  const fill = document.getElementById('fpFill');
+  const lo = parseInt(sMin.value), hi = parseInt(sMax.value);
+  const span = rangeMax - rangeMin || 1;
+  const pctL = (lo - rangeMin) / span * 100;
+  const pctR = (hi - rangeMin) / span * 100;
+  fill.style.left  = pctL + '%';
+  fill.style.width = (pctR - pctL) + '%';
+  const label = filterMode==='born'
+    ? (lo===hi ? String(lo) : lo+' – '+hi)
+    : (lo===hi ? lo+' sez.' : lo+' – '+hi+' sez.');
+  document.getElementById('fpVal').textContent = label;
+  const visible = getFilteredPlayers().filter(p=>p.lat).length;
+  const total   = players.filter(p=>p.lat).length;
+  document.getElementById('fpHint').textContent =
+    lo===rangeMin && hi===rangeMax
+      ? 'Zobrazeni všichni hráči'
+      : `Zobrazeno ${visible} z ${total} hráčů`;
+}
+
+function updateMap() {
+  mlayers.forEach(l=>map.removeLayer(l)); mlayers=[];
+  const fp = document.getElementById('filterPanel');
+
+  const allResolved = players.filter(p=>p.lat&&p.lon);
+  fp.style.display = allResolved.length ? 'block' : 'none';
+  if (!allResolved.length) return;
+
+  const visible = getFilteredPlayers().filter(p=>p.lat&&p.lon);
+  if (!visible.length) { updateStats(); return; }
+
+  const groups={};
+  visible.forEach(p=>{
+    const key=Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    if (!groups[key]) groups[key]={lat:p.lat,lon:p.lon,display:p.display||p.city,ps:[]};
+    groups[key].ps.push(p);
+  });
+
+  const lls=[];
+  Object.values(groups).forEach(g=>{
+    lls.push([g.lat,g.lon]);
+    const n=g.ps.length, multi=n>1;
+    const color=multi?'#f5c300':'#1c4896';
+    const textColor=multi?'#0f2f6a':'#f5c300';
+    const sz=multi?(n>=5?40:34):28;
+
+    const rows=g.ps.map(p=>{
+      const nm=fullName(p)||p.city;
+      const thumb=p.photo
+        ?`<img class="pop-thumb" src="${escA(p.photo)}" onerror="this.style.display='none'">`
+        :`<div class="pop-thumb-ph">🏒</div>`;
+      const meta=[p.born?'🎂 '+p.born:'',p.seasons?p.seasons+' sez.':''].filter(Boolean).join(' · ');
+      return `<div class="pop-player">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div>`;
+    }).join('');
+
+    const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●',color,sz,textColor)})
+      .bindPopup(`<div class="pop-hdr">📍 ${esc(g.display)}</div>${rows}`,{maxWidth:300})
+      .addTo(map);
+    mlayers.push(mk);
+  });
+
+  if (lls.length>1) map.fitBounds(L.latLngBounds(lls).pad(.2));
+  else map.setView(lls[0],11);
+  updateStats();
+}
+
+// ══════════════════════════════════════════════════
+// NOMINATIM
+// ══════════════════════════════════════════════════
+async function searchNominatim(q) {
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=7&addressdetails=1&q=${encodeURIComponent(q)}`,{headers:{'Accept-Language':'cs,sk,en'}});
+  return r.json();
+}
+
+function cityInput() {
+  clearTimeout(cityTimer);
+  const q=document.getElementById('fCity').value.trim();
+  if (q.length<2){closeAc();return;}
+  if (pendingLat!==null){pendingLat=pendingLon=pendingDisplay=null;document.getElementById('cityBadge').classList.remove('show');}
+  document.getElementById('acCity').innerHTML='<div class="ac-msg">🔍 Hledám…</div>';
+  document.getElementById('acCity').classList.add('on');
+  cityTimer=setTimeout(async()=>{
+    try{showCityOptions(await searchNominatim(q));}catch(e){closeAc();}
+  },380);
+}
+
+function showCityOptions(results) {
+  const drop=document.getElementById('acCity');
+  if (!results.length){drop.innerHTML='<div class="ac-msg">Žádné výsledky.</div>';return;}
+  drop.innerHTML=results.map(r=>{
+    const a=r.address;
+    const city=a.city||a.town||a.village||a.municipality||r.display_name.split(',')[0];
+    const region=[a.county||a.state_district,a.state,a.country].filter(Boolean).slice(0,2).join(', ');
+    const disp=[city,a.state,a.country].filter(Boolean).slice(0,2).join(', ');
+    return `<div class="ac-it" data-lat="${r.lat}" data-lon="${r.lon}" data-city="${esc(city)}" data-disp="${esc(disp)}">
+      <div class="ac-nm">${esc(city)}</div><div class="ac-sb">${esc(region)}</div></div>`;
+  }).join('');
+  drop.classList.add('on');
+  drop.querySelectorAll('.ac-it').forEach(el=>{
+    el.addEventListener('mousedown',e=>{e.preventDefault();pickCity(el);});
+    el.addEventListener('touchend', e=>{e.preventDefault();pickCity(el);});
+  });
+}
+
+function pickCity(el) {
+  pendingLat=parseFloat(el.dataset.lat);
+  pendingLon=parseFloat(el.dataset.lon);
+  pendingDisplay=el.dataset.disp;
+  document.getElementById('fCity').value=el.dataset.city;
+  document.getElementById('cityBadgeText').textContent=pendingDisplay;
+  document.getElementById('cityBadge').classList.add('show');
+  closeAc();
+}
+
+function clearCity() {
+  pendingLat=pendingLon=pendingDisplay=null;
+  document.getElementById('fCity').value='';
+  document.getElementById('cityBadge').classList.remove('show');
+  document.getElementById('fCity').focus();
+}
+
+function cityKey(e) {
+  const drop=document.getElementById('acCity');
+  if (!drop.classList.contains('on')) return;
+  const items=drop.querySelectorAll('.ac-it'),hl=drop.querySelector('.ac-it.hl');
+  if (e.key==='ArrowDown'){e.preventDefault();const n=hl?hl.nextElementSibling||items[0]:items[0];hl?.classList.remove('hl');n?.classList.add('hl');}
+  if (e.key==='ArrowUp') {e.preventDefault();const n=hl?hl.previousElementSibling||items[items.length-1]:items[items.length-1];hl?.classList.remove('hl');n?.classList.add('hl');}
+  if (e.key==='Enter'&&hl){e.preventDefault();pickCity(hl);}
+  if (e.key==='Escape') closeAc();
+}
+function closeAc(){document.getElementById('acCity').classList.remove('on');}
+
+// ══════════════════════════════════════════════════
+// PHOTO
+// ══════════════════════════════════════════════════
+function previewUrl() {
+  const url=document.getElementById('fPhotoUrl').value.trim();
+  pendingPhoto=url||null;
+  setPhotoPreview(url||null);
+}
+function loadFile(e) {
+  const f=e.target.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=ev=>{pendingPhoto=ev.target.result;document.getElementById('fPhotoUrl').value='';setPhotoPreview(ev.target.result);};
+  rd.readAsDataURL(f);
+}
+function setPhotoPreview(src) {
+  const el=document.getElementById('photoPreview');
+  el.innerHTML=src?`<img src="${escA(src)}" onerror="this.parentElement.innerHTML='🏒'">`:'🏒';
+}
+
+// ══════════════════════════════════════════════════
+// EDIT MODAL
+// ══════════════════════════════════════════════════
+function openEdit(idx) {
+  pendingLat=pendingLon=pendingDisplay=pendingPhoto=null;
+  document.getElementById('cityBadge').classList.remove('show');
+  document.getElementById('editIdx').value=(idx!==undefined)?idx:-1;
+  document.getElementById('btnDelete').style.display=(idx!==undefined)?'':'none';
+
+  if (idx!==undefined) {
+    const p=players[idx];
+    document.getElementById('editTitle').textContent='Upravit hráče';
+    document.getElementById('fSurname').value=p.surname||'';
+    document.getElementById('fFirstname').value=p.firstname||'';
+    document.getElementById('fCity').value=p.city||'';
+    document.getElementById('fBorn').value=p.born||'';
+    document.getElementById('fDied').value=p.died||'';
+    document.getElementById('fSeasons').value=p.seasons||'';
+    document.getElementById('fPhotoUrl').value=(p.photo&&!p.photo.startsWith('data:'))?p.photo:'';
+    if (p.lat){pendingLat=p.lat;pendingLon=p.lon;pendingDisplay=p.display||p.city;document.getElementById('cityBadgeText').textContent=pendingDisplay;document.getElementById('cityBadge').classList.add('show');}
+    pendingPhoto=p.photo||null;
+    setPhotoPreview(p.photo||null);
+  } else {
+    document.getElementById('editTitle').textContent='Přidat hráče';
+    ['fSurname','fFirstname','fCity','fBorn','fDied','fSeasons','fPhotoUrl'].forEach(id=>document.getElementById(id).value='');
+    setPhotoPreview(null);
+  }
+
+  document.getElementById('editOvl').classList.add('on');
+  setTimeout(()=>document.getElementById('fSurname').focus(),120);
+}
+
+function closeEditOvl(e) {
+  if (e&&e.target!==document.getElementById('editOvl')) return;
+  document.getElementById('editOvl').classList.remove('on'); closeAc();
+}
+
+function deleteFromEdit() {
+  const idx=parseInt(document.getElementById('editIdx').value); if(idx<0)return;
+  if (!confirm(`Smazat hráče "${fullName(players[idx])||players[idx].city}"?`)) return;
+  players.splice(idx,1); save(); render(); updateMap();
+  document.getElementById('editOvl').classList.remove('on');
+}
+
+function savePlayer() {
+  const surname=v('fSurname'), firstname=v('fFirstname'), city=v('fCity');
+  if (!surname&&!firstname){document.getElementById('fSurname').focus();return;}
+  if (!city){document.getElementById('fCity').focus();return;}
+  const idx=parseInt(document.getElementById('editIdx').value);
+  const player={surname,firstname,city,lat:pendingLat,lon:pendingLon,display:pendingDisplay||city,
+    born:v('fBorn'),died:v('fDied'),seasons:v('fSeasons'),photo:pendingPhoto||''};
+  if (idx>=0) players[idx]=player; else players.push(player);
+  save(); render(); updateMap();
+  document.getElementById('editOvl').classList.remove('on'); closeAc();
+  if (!player.lat) geocodeFallback(idx>=0?idx:players.length-1);
+}
+
+async function geocodeFallback(idx) {
+  const p=players[idx]; if(!p||p.lat) return;
+  try {
+    const res=await searchNominatim(p.city);
+    if (res[0]){
+      const a=res[0].address, city=a.city||a.town||a.village||p.city;
+      players[idx].lat=parseFloat(res[0].lat);
+      players[idx].lon=parseFloat(res[0].lon);
+      players[idx].display=[city,a.state,a.country].filter(Boolean).slice(0,2).join(', ');
+      save(); render(); updateMap();
+    }
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════
+// IMPORT
+// ══════════════════════════════════════════════════
+function openImport() {
+  document.getElementById('impPaste').value='';
+  document.getElementById('impStep1').classList.add('on');
+  document.getElementById('impStep2').classList.remove('on');
+  document.getElementById('importOvl').classList.add('on');
+}
+function closeImportOvl(e) {
+  if (e&&e.target!==document.getElementById('importOvl')) return;
+  document.getElementById('importOvl').classList.remove('on');
+}
+
+function impParse() {
+  const raw=document.getElementById('impPaste').value.trim();
+  if (!raw){alert('Vlož nejprve data.');return;}
+  const sep=raw.includes('\t')?'\t':(raw.includes(';')?';':',');
+  const lines=raw.split(/\r?\n/).filter(l=>l.trim());
+  const rows=lines.map(l=>l.split(sep).map(c=>c.trim()));
+
+  // Detect header: first row has recognizable field names AND no date-like content
+  const firstHasKeyword=rows[0].some(c=>Object.values(DETECT_RX).some(rx=>rx.test(c)));
+  const firstHasDate   =rows[0].some(c=>/\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}/.test(c)||/^\d{4}$/.test(c));
+  impHasHeader=firstHasKeyword&&!firstHasDate;
+
+  const headerRow=impHasHeader?rows[0]:null;
+  impRows=impHasHeader?rows.slice(1):rows;
+  const nCols=Math.max(...rows.map(r=>r.length));
+  impColMap=Array(nCols).fill('');
+
+  if (headerRow) {
+    headerRow.forEach((h,i)=>{
+      for (const [key,rx] of Object.entries(DETECT_RX)){if(rx.test(h.trim())){impColMap[i]=key;break;}}
+    });
+  } else {
+    ['surname','firstname','city','born','died','seasons'].forEach((k,i)=>{if(i<nCols)impColMap[i]=k;});
+  }
+
+  buildColTable(headerRow,nCols);
+  document.getElementById('impStep1').classList.remove('on');
+  document.getElementById('impStep2').classList.add('on');
+  impUpdateSummary();
+}
+
+function buildColTable(headerRow, nCols) {
+  const preview=impRows.slice(0,4);
+  const table=document.getElementById('colMapTable');
+  const thCells=Array.from({length:nCols},(_,i)=>{
+    const opts=FIELD_OPTS.map(f=>`<option value="${f.key}"${impColMap[i]===f.key?' selected':''}>${f.label}</option>`).join('');
+    const hint=esc(headerRow?headerRow[i]:'Sloupec '+(i+1));
+    return `<th><span class="col-hint">${hint}</span><select onchange="impColMap[${i}]=this.value;impUpdateSummary()">${opts}</select></th>`;
+  }).join('');
+  const bodyRows=preview.map(row=>`<tr>${Array.from({length:nCols},(_,i)=>`<td>${esc(row[i]||'')}</td>`).join('')}</tr>`).join('');
+  table.innerHTML=`<tr>${thCells}</tr>${bodyRows}`;
+}
+
+function impUpdateSummary() {
+  const hasCity=impColMap.includes('city');
+  const n=impRows.filter(r=>r.some(c=>c.trim())).length;
+  document.getElementById('impSummary').innerHTML=
+    `Připraveno: <strong>${n} hráčů</strong>${!hasCity?' · ⚠️ Sloupec <em>Rodné město</em> není přiřazen — hráči nebudou zobrazeni na mapě':''}`;
+}
+
+function impBack() {
+  document.getElementById('impStep2').classList.remove('on');
+  document.getElementById('impStep1').classList.add('on');
+}
+
+async function impConfirm() {
+  const btn=document.getElementById('impConfirmBtn');
+  btn.textContent='Importuji…'; btn.disabled=true;
+  const gc=k=>{const i=impColMap.indexOf(k);return i>=0?(impRows[0]&&impRows[0][i]!==undefined)?true:false:false;};
+  const gv=(row,k)=>{const i=impColMap.indexOf(k);return i>=0?(row[i]||'').trim():'';};
+
+  const newPlayers=impRows
+    .filter(row=>row.some(c=>c.trim()))
+    .map(row=>({
+      surname:  gv(row,'surname'),  firstname:gv(row,'firstname'),
+      city:     gv(row,'city'),     born:     gv(row,'born'),
+      died:     gv(row,'died'),     seasons:  gv(row,'seasons'),
+      lat:null, lon:null, display:'', photo:''
+    }))
+    .filter(p=>p.city||(p.surname||p.firstname));
+
+  players.push(...newPlayers);
+  save(); render();
+  document.getElementById('importOvl').classList.remove('on');
+  btn.textContent='Importovat'; btn.disabled=false;
+
+  // Geocode unique cities only once, then share coords across all players from same city
+  const start=players.length-newPlayers.length;
+  const cityCache={};
+  const toGeocode=[...new Set(newPlayers.filter(p=>p.city&&!p.lat).map(p=>p.city))];
+  for (const city of toGeocode) {
+    try {
+      const res=await searchNominatim(city);
+      if (res[0]) {
+        const a=res[0].address, cn=a.city||a.town||a.village||city;
+        cityCache[city]={lat:parseFloat(res[0].lat),lon:parseFloat(res[0].lon),display:[cn,a.state,a.country].filter(Boolean).slice(0,2).join(', ')};
+      }
+    } catch(e){}
+    await new Promise(r=>setTimeout(r,1100)); // Nominatim: max 1 req/s
+  }
+  // Apply cached coords to all matching players
+  for (let i=start;i<players.length;i++) {
+    const c=cityCache[players[i].city];
+    if (c&&!players[i].lat){players[i].lat=c.lat;players[i].lon=c.lon;players[i].display=c.display;}
+  }
+  save(); render(); updateMap();
+}
+
+// ══════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════
+function render() {
+  const list=document.getElementById('playerList'),empty=document.getElementById('emptyMsg');
+  Array.from(list.children).forEach(c=>{if(c!==empty)c.remove();});
+  empty.style.display=players.length?'none':'block';
+
+  players.forEach((p,i)=>{
+    const nm=fullName(p)||p.city;
+    const thumb=p.photo
+      ?`<img src="${escA(p.photo)}" onerror="this.style.display='none'">`
+      :(p.surname||p.firstname)?initials(p):'🏒';
+    const meta=[
+      p.born?'🎂 '+p.born:'',
+      p.died?'✝ '+p.died:'',
+      p.seasons?p.seasons+' sez.':''
+    ].filter(Boolean);
+    const resolved=!!p.lat;
+    const el=document.createElement('div'); el.className='pc';
+    el.innerHTML=`
+      <div class="pc-avatar">${thumb}</div>
+      <div class="pc-info">
+        <div class="pc-name">${esc(nm)}</div>
+        <div class="pc-meta">
+          <span class="pc-city">
+            <span class="pc-dot ${resolved?'':'pending'}"></span>
+            ${esc(p.display||p.city||'—')}${!resolved&&p.city?' <em style="opacity:.6">·&nbsp;hledám…</em>':''}
+          </span>
+          ${meta.map(m=>`<span>${esc(m)}</span>`).join('')}
+        </div>
+      </div>
+      <div class="pc-acts">
+        <button class="ib" onclick="openEdit(${i})">✏️</button>
+        <button class="ib del" onclick="del(${i})">✕</button>
+      </div>`;
+    list.appendChild(el);
+  });
+  updateStats();
+}
+
+function del(idx) {
+  if (!confirm(`Smazat "${fullName(players[idx])||players[idx].city}"?`)) return;
+  players.splice(idx,1); save(); render(); updateMap();
+}
+function clearAll() {
+  if (!confirm('Vymazat vše a obnovit ukázková data?')) return;
+  players=SAMPLES.map(s=>({...s})); save(); render(); updateMap();
+}
+function updateStats() {
+  const el=document.getElementById('hdrStats');
+  if (!players.length){el.innerHTML='';return;}
+  const cities=new Set(players.filter(p=>p.lat).map(p=>Math.round(p.lat*200)+','+Math.round(p.lon*200))).size;
+  el.innerHTML=`<strong>${players.length}</strong> hráčů · <strong>${cities}</strong> ${cities===1?'město':cities<=4?'města':'měst'}`;
+  document.getElementById('listTitle').textContent=`Hráči (${players.length})`;
+}
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(players));}catch(e){}}
+function load(){
+  try{const r=localStorage.getItem(STORAGE_KEY);if(r){players=JSON.parse(r);return;}}catch(e){}
+  players=SAMPLES.map(s=>({...s}));save();
+}
+function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escA(s){return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fullName(p){return [p.surname,p.firstname].filter(Boolean).join(' ');}
+function initials(p){return [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';}
+
+document.addEventListener('click',e=>{
+  const d=document.getElementById('acCity'),i=document.getElementById('fCity');
+  if (d&&!d.contains(e.target)&&e.target!==i) closeAc();
+});
+
+// ══════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════
+load(); initMap(); render(); setTimeout(updateMap,300);
+</script>
+</body>
+</html>.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-stats{font-size:13px;color:rgba(255,255,255,.6);white-space:nowrap;margin-right:4px}
+.hdr-stats strong{color:var(--yellow)}
+.hbtn{padding:6px 14px;background:transparent;border:1px solid var(--line2);border-radius:2px;color:rgba(255,255,255,.8);font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:.15s;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.hbtn:hover{border-color:var(--yellow);color:var(--yellow)}
+/* Tři pruhy — žlutá + červená */
+.hdr-stripes{height:7px;display:flex;flex-direction:column}
+.hdr-stripes .s1{flex:2;background:var(--yellow)}
+.hdr-stripes .s2{flex:3;background:var(--red)}
+
+/* ── LAYOUT ─────────────────────────────────── */
+.app{display:grid;grid-template-columns:420px 1fr;flex:1;min-height:0}
+.lp{overflow-y:auto;background:#fff;border-right:1px solid #d4dae8;display:flex;flex-direction:column}
+.rp{position:relative}
+#mapEl{height:100%;width:100%}
+
+/* ── LIST HEAD ───────────────────────────────── */
+.list-head{padding:.75rem 1.1rem;display:flex;align-items:center;gap:7px;border-bottom:1px solid #d4dae8;background:#fff;position:sticky;top:0;z-index:10}
+.list-head h2{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue3);flex:1}
+.btn-import{display:inline-flex;align-items:center;gap:4px;padding:6px 11px;background:transparent;color:#7a8fa8;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.15s}
+.btn-import:hover{color:var(--blue);border-color:var(--blue)}
+.btn-add{display:inline-flex;align-items:center;gap:4px;padding:6px 13px;background:var(--blue);color:#fff;border:none;border-radius:2px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:.15s}
+.btn-add:hover{background:var(--blue2)}
+
+.players{padding:.55rem .8rem;display:flex;flex-direction:column;gap:4px;flex:1}
+.empty-msg{text-align:center;padding:2.5rem 1rem;color:#8a9ab5;font-size:14px;line-height:1.9}
+.empty-msg .ico{font-size:2.4rem;margin-bottom:.5rem;opacity:.4;display:block}
+.empty-msg strong{color:var(--blue)}
+
+/* ── PLAYER CARD ─────────────────────────────── */
+.pc{background:#f5f7fb;border:1px solid #dde3ee;border-left:3px solid transparent;border-radius:2px;padding:.55rem .85rem;display:flex;align-items:center;gap:10px;transition:.15s;cursor:default}
+.pc:hover{background:#eef1f9;border-left-color:var(--yellow)}
+.pc-avatar{width:38px;height:38px;border-radius:2px;background:var(--blue);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;flex-shrink:0;overflow:hidden;border:1px solid #c4cedc}
+.pc-avatar img{width:100%;height:100%;object-fit:cover}
+.pc-info{flex:1;min-width:0}
+.pc-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--blue3)}
+.pc-meta{font-size:11px;color:#7a8fa8;margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pc-city{display:flex;align-items:center;gap:4px}
+.pc-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.pc-dot.pending{background:var(--yellow)}
+.pc-acts{display:flex;gap:3px;flex-shrink:0;opacity:0;transition:.15s}
+.pc:hover .pc-acts{opacity:1}
+.ib{width:26px;height:26px;border-radius:2px;border:1px solid #c4cedc;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#8a9ab5;transition:.1s}
+.ib:hover{background:#dde3ee;color:var(--blue3)}
+.ib.del:hover{background:#fce8e6;color:#b02020;border-color:#f0a8a0}
+
+/* ── OVERLAY ─────────────────────────────────── */
+.ovl{display:none;position:fixed;inset:0;background:rgba(15,47,106,.5);z-index:500;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+.ovl.on{display:flex}
+.modal{background:#fff;border:1px solid #c4cedc;border-top:4px solid var(--blue);border-radius:3px;padding:1.75rem;width:520px;max-width:100%;box-shadow:var(--sh2);margin:auto}
+.modal h3{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue3);margin-bottom:1.25rem;border-bottom:2px solid var(--yellow);padding-bottom:.6rem}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#8a9ab5;margin-top:-4px;line-height:1}
+.modal-close:hover{color:var(--red)}
+
+/* ── FIELDS ──────────────────────────────────── */
+.field{margin-bottom:11px}
+.field label{display:block;font-size:10px;font-weight:700;color:#8a9ab5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.field input{width:100%;padding:8px 11px;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:14px;color:var(--blue3);background:#fff;outline:none;transition:.12s}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(28,72,150,.1)}
+.field input::placeholder{color:#b0bdd0}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ── PHOTO FIELD ─────────────────────────────── */
+.photo-row{display:flex;gap:12px;align-items:flex-start}
+.photo-prev{width:54px;height:54px;border-radius:2px;background:#f0f2f5;border:1px solid #c4cedc;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
+.photo-prev img{width:100%;height:100%;object-fit:cover}
+.photo-inputs{flex:1;display:flex;flex-direction:column;gap:6px}
+.file-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#f0f2f5;border:1px solid #c4cedc;border-radius:2px;font-size:12px;color:#7a8fa8;cursor:pointer;transition:.1s;width:fit-content;font-family:'Barlow',sans-serif}
+.file-btn:hover{border-color:var(--blue);color:var(--blue)}
+.file-btn input{display:none}
+
+/* ── AUTOCOMPLETE ────────────────────────────── */
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #c4cedc;border-radius:3px;box-shadow:var(--sh2);z-index:600;overflow:hidden;display:none;max-height:230px;overflow-y:auto}
+.ac-drop.on{display:block}
+.ac-it{padding:8px 12px;cursor:pointer;border-bottom:1px solid #edf0f5}
+.ac-it:last-child{border-bottom:none}
+.ac-it:hover,.ac-it.hl{background:#eef1f9}
+.ac-nm{font-size:13px;font-weight:600;color:var(--blue3)}
+.ac-sb{font-size:11px;color:#8a9ab5;margin-top:1px}
+.ac-msg{padding:10px 12px;font-size:13px;color:#8a9ab5}
+.city-badge{display:none;align-items:center;gap:6px;margin-top:5px;padding:4px 10px;border-radius:2px;background:rgba(28,72,150,.08);border:1px solid rgba(28,72,150,.25);color:var(--blue);font-size:12px}
+.city-badge.show{display:inline-flex}
+.cb-clr{cursor:pointer;opacity:.5;font-size:16px;line-height:1;padding:0 2px}
+.cb-clr:hover{opacity:1}
+
+/* ── FORM BUTTONS ────────────────────────────── */
+.form-btns{display:flex;gap:8px;margin-top:1.25rem;align-items:center;flex-wrap:wrap}
+.form-btns .spacer{flex:1}
+.btn-p{padding:9px 22px;background:var(--blue);color:#fff;border:none;border-radius:2px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:.15s}
+.btn-p:hover{background:var(--blue2)}
+.btn-p:disabled{opacity:.4;cursor:not-allowed}
+.btn-s{padding:9px 15px;background:transparent;color:#8a9ab5;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.12s}
+.btn-s:hover{color:var(--blue3);border-color:#8a9ab5}
+.btn-danger{padding:8px 14px;background:transparent;color:var(--red);border:1px solid rgba(204,31,31,.3);border-radius:2px;font-family:'Barlow',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.12s}
+.btn-danger:hover{background:rgba(204,31,31,.07)}
+
+/* ── IMPORT MODAL ────────────────────────────── */
+.imp-modal{width:720px}
+.imp-step{display:none}
+.imp-step.on{display:block}
+.imp-textarea{width:100%;height:130px;padding:10px;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:13px;color:var(--blue3);background:#f5f7fb;resize:vertical;outline:none;transition:.12s}
+.imp-textarea:focus{border-color:var(--blue)}
+.imp-textarea::placeholder{color:#b0bdd0}
+.imp-hint{font-size:12px;color:#8a9ab5;margin-top:7px;line-height:1.7}
+.imp-hint code{background:#eef1f9;padding:1px 5px;border-radius:2px;font-size:11px;font-family:monospace;color:var(--blue)}
+.col-map-wrap{overflow-x:auto;margin-top:10px;border-radius:3px;overflow:hidden;border:1px solid #c4cedc}
+.col-map-table{border-collapse:collapse;width:100%;font-size:13px}
+.col-map-table th{background:var(--blue);color:#fff;padding:7px 10px;text-align:left;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.05em}
+.col-map-table th .col-hint{font-size:10px;color:rgba(255,255,255,.55);font-weight:400;display:block;margin-bottom:3px;text-transform:none;letter-spacing:0}
+.col-map-table th select{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:2px;color:#fff;font-family:'Barlow',sans-serif;font-size:12px;padding:3px 7px;cursor:pointer;outline:none;width:100%}
+.col-map-table th select option{color:var(--blue3);background:#fff}
+.col-map-table td{padding:5px 10px;border-bottom:1px solid #edf0f5;color:#8a9ab5;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.col-map-table tr:nth-child(even) td{background:#f5f7fb}
+.imp-summary{margin-top:9px;padding:8px 12px;background:#eef1f9;border-radius:3px;border-left:3px solid var(--yellow);font-size:13px;color:#5a7090}
+.imp-summary strong{color:var(--blue)}
+
+/* ── MAP LEGEND ──────────────────────────────── */
+.map-legend{position:absolute;bottom:14px;left:14px;z-index:400;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border:1px solid #c4cedc;border-top:3px solid var(--blue);border-radius:3px;padding:8px 12px;font-size:12px;color:#7a8fa8;pointer-events:none;display:none;box-shadow:var(--sh)}
+.map-legend strong{color:var(--blue3);display:block;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.leg-row{display:flex;align-items:center;gap:7px;margin-top:3px}
+.leg-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid rgba(255,255,255,.8);flex-shrink:0}
+
+/* ── LEAFLET POPUP ───────────────────────────── */
+.leaflet-popup-content-wrapper{border-radius:3px!important;box-shadow:0 8px 30px rgba(15,47,106,.25)!important;padding:0!important;overflow:hidden;border-top:3px solid var(--yellow)}
+.leaflet-popup-content{margin:0!important;padding:0!important;min-width:180px}
+.pop-hdr{padding:7px 12px;background:var(--blue);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--yellow)}
+.pop-player{padding:6px 12px;font-size:13px;color:var(--blue3);border-bottom:1px solid #edf0f5;display:flex;align-items:center;gap:8px;background:#fff}
+.pop-player:last-child{border-bottom:none;padding-bottom:9px}
+.pop-thumb{width:30px;height:30px;border-radius:2px;object-fit:cover;flex-shrink:0;border:1px solid #c4cedc}
+.pop-thumb-ph{width:30px;height:30px;border-radius:2px;background:#eef1f9;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.pop-pname{font-weight:600;font-size:13px;color:var(--blue3)}
+.pop-pmeta{font-size:11px;color:#8a9ab5;margin-top:1px}
+
+/* ── FILTER PANEL ────────────────────────────── */
+.filter-panel{position:absolute;bottom:14px;left:14px;z-index:400;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border:1px solid #c4cedc;border-top:3px solid var(--blue);border-radius:3px;padding:10px 14px;min-width:260px;box-shadow:var(--sh)}
+.fp-modes{display:flex;gap:4px;margin-bottom:0}
+.fp-mode{flex:1;padding:5px 0;background:transparent;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8a9ab5;cursor:pointer;transition:.12s}
+.fp-mode:hover{color:var(--blue);border-color:var(--blue)}
+.fp-mode.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.fp-body{margin-top:10px}
+.fp-label-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.fp-field-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue3)}
+.fp-range-val{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.02em}
+/* dual range slider */
+.fp-slider-wrap{position:relative;height:28px;display:flex;align-items:center}
+.fp-slider{-webkit-appearance:none;appearance:none;position:absolute;width:100%;height:4px;background:transparent;outline:none;pointer-events:none;z-index:2}
+.fp-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--blue);border:2px solid #fff;box-shadow:0 1px 6px rgba(28,72,150,.4);cursor:pointer;pointer-events:all}
+.fp-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--blue);border:2px solid #fff;box-shadow:0 1px 6px rgba(28,72,150,.4);cursor:pointer;pointer-events:all;border:none}
+/* track background */
+.fp-slider-wrap::before{content:'';position:absolute;left:0;right:0;height:4px;background:#dde3ee;border-radius:2px;z-index:0}
+.fp-track-fill{position:absolute;height:4px;background:var(--yellow);border-radius:2px;z-index:1;pointer-events:none}
+.fp-hint{font-size:11px;color:#8a9ab5;margin-top:7px;text-align:center}
+
+@media(max-width:750px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .lp{max-height:44vh}
+  .imp-modal{width:100%}
+  .fg3{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">
+      <div class="badge">🏒</div>
+      <h1>Rodná města <span>hokejistů</span></h1>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-stats" id="hdrStats"></div>
+      <button class="hbtn" onclick="openImport()">⬆ Import</button>
+      <button class="hbtn" onclick="clearAll()">↺ Reset</button>
+    </div>
+  </div>
+  <div class="hdr-stripes"><div class="s1"></div><div class="s2"></div></div>
+</div>
+
+<div class="app">
+  <div class="lp">
+    <div class="list-head">
+      <h2 id="listTitle">Hráči</h2>
+      <button class="btn-import" onclick="openImport()">⬆️ Hromadný import</button>
+      <button class="btn-add" onclick="openEdit()">+ Přidat</button>
+    </div>
+    <div class="players" id="playerList">
+      <div class="empty-msg" id="emptyMsg">
+        <span class="ico">🏒</span>
+        Zatím žádní hráči.<br>
+        Použij <strong>Hromadný import</strong> nebo <strong>+ Přidat</strong>.
+      </div>
+    </div>
+  </div>
+  <div class="rp">
+    <div id="mapEl"></div>
+    <!-- FILTR -->
+    <div class="filter-panel" id="filterPanel" style="display:none">
+      <div class="fp-modes">
+        <button class="fp-mode active" id="fmOff"   onclick="setFilter('off')">Vše</button>
+        <button class="fp-mode"        id="fmBorn"  onclick="setFilter('born')">Narozen</button>
+        <button class="fp-mode"        id="fmSeas"  onclick="setFilter('seasons')">Sezóny</button>
+      </div>
+      <div class="fp-body" id="fpBody" style="display:none">
+        <div class="fp-label-row">
+          <span class="fp-field-label" id="fpLabel">Rok narození</span>
+          <span class="fp-range-val" id="fpVal"></span>
+        </div>
+        <div class="fp-slider-wrap">
+          <input type="range" class="fp-slider" id="sliderMin" oninput="onSlider()">
+          <input type="range" class="fp-slider" id="sliderMax" oninput="onSlider()">
+          <div class="fp-track-fill" id="fpFill"></div>
+        </div>
+        <div class="fp-hint" id="fpHint"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  EDIT / ADD MODAL
+══════════════════════════════════════ -->
+<div class="ovl" id="editOvl" onclick="closeEditOvl(event)">
+<div class="modal">
+  <button class="modal-close" onclick="closeEditOvl()">✕</button>
+  <h3 id="editTitle">Přidat hráče</h3>
+  <input type="hidden" id="editIdx" value="-1">
+
+  <div class="fg2">
+    <div class="field"><label>Příjmení</label><input type="text" id="fSurname" placeholder="Jágr"></div>
+    <div class="field"><label>Jméno</label><input type="text" id="fFirstname" placeholder="Jaromír"></div>
+  </div>
+
+  <div class="fg3">
+    <div class="field"><label>Narozen</label><input type="text" id="fBorn" placeholder="15. 2. 1972"></div>
+    <div class="field"><label>Zemřel</label><input type="text" id="fDied" placeholder="—"></div>
+    <div class="field"><label>Sezóny</label><input type="text" id="fSeasons" placeholder="23"></div>
+  </div>
+
+  <div class="field">
+    <label>Rodné město</label>
+    <div class="ac-wrap">
+      <input type="text" id="fCity" placeholder="Začni psát…" autocomplete="off"
+        oninput="cityInput()" onkeydown="cityKey(event)">
+      <div class="ac-drop" id="acCity"></div>
+    </div>
+    <div class="city-badge" id="cityBadge">
+      <span id="cityBadgeText"></span>
+      <span class="cb-clr" onclick="clearCity()">×</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Fotografie</label>
+    <div class="photo-row">
+      <div class="photo-prev" id="photoPreview">🏒</div>
+      <div class="photo-inputs">
+        <input type="text" id="fPhotoUrl" placeholder="URL fotografie (https://…)" oninput="previewUrl()">
+        <label class="file-btn">
+          📂 Nahrát ze souboru
+          <input type="file" accept="image/*" onchange="loadFile(event)">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-btns">
+    <button class="btn-danger" id="btnDelete" onclick="deleteFromEdit()" style="display:none">Smazat</button>
+    <span class="spacer"></span>
+    <button class="btn-s" onclick="closeEditOvl()">Zrušit</button>
+    <button class="btn-p" onclick="savePlayer()">Uložit</button>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+  IMPORT MODAL
+══════════════════════════════════════ -->
+<div class="ovl" id="importOvl" onclick="closeImportOvl(event)">
+<div class="modal imp-modal">
+  <button class="modal-close" onclick="closeImportOvl()">✕</button>
+  <h3>⬆️ Hromadný import</h3>
+
+  <div class="imp-step on" id="impStep1">
+    <textarea class="imp-textarea" id="impPaste"
+      placeholder="Vlož data z tabulky (Excel, Google Sheets…)&#10;&#10;Příklad:&#10;Jágr&#9;Jaromír&#9;Kladno&#9;15.2.1972&#9;&#9;23&#10;Hašek&#9;Dominik&#9;Pardubice&#9;29.1.1965&#9;&#9;16"></textarea>
+    <div class="imp-hint">
+      Podporované formáty: <strong>záložky</strong> (kopie z Excelu/Sheets), <strong>středníky</strong> nebo <strong>čárky</strong>.<br>
+      Doporučené pořadí sloupců: <code>Příjmení</code> <code>Jméno</code> <code>Rodné město</code> <code>Narozen</code> <code>Zemřel</code> <code>Sezóny</code><br>
+      Záhlaví je nepovinné (rozpoznám automaticky). Přiřazení sloupců lze upravit v dalším kroku.
+    </div>
+    <div class="form-btns" style="margin-top:1rem">
+      <span class="spacer"></span>
+      <button class="btn-s" onclick="closeImportOvl()">Zrušit</button>
+      <button class="btn-p" onclick="impParse()">Zkontrolovat →</button>
+    </div>
+  </div>
+
+  <div class="imp-step" id="impStep2">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:8px">
+      Zkontroluj přiřazení sloupců a uprav je podle potřeby.
+    </p>
+    <div class="col-map-wrap">
+      <table class="col-map-table" id="colMapTable"></table>
+    </div>
+    <div class="imp-summary" id="impSummary"></div>
+    <div class="form-btns" style="margin-top:1rem">
+      <button class="btn-s" onclick="impBack()">← Zpět</button>
+      <span class="spacer"></span>
+      <button class="btn-s" onclick="closeImportOvl()">Zrušit</button>
+      <button class="btn-p" id="impConfirmBtn" onclick="impConfirm()">Importovat</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let players = [];
+let map, mlayers = [];
+let cityTimer = null;
+let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
 const STORAGE_KEY = 'hockey_v2';
 
 // Import state
