@@ -1037,7 +1037,7 @@ const SAMPLES = [
 // MAP
 // ══════════════════════════════════════════════════
 function initMap() {
-  map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.8,15.5],7);
+  map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.05,14.45],9);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
   L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
 }
@@ -1196,11 +1196,8 @@ function updateMap() {
     mlayers.push(mk);
   });
 
-  // Zoom only to Czech+Slovak area markers, not intercontinental ones
-  const czLls = lls.filter(([lt])=>lt>47 && lt<52);
-  if (czLls.length>1) map.fitBounds(L.latLngBounds(czLls).pad(.08));
-  else if (lls.length===1) map.setView(lls[0],9);
-  else map.setView([49.8,15.5],7);
+  // Don't auto-zoom on full dataset — only zoom when showing single marker
+  if (lls.length===1) map.setView(lls[0],10);
   updateStats();
 }
 
@@ -1480,70 +1477,31 @@ function render() {
   Array.from(list.children).forEach(c=>{if(c!==empty)c.remove();});
   empty.style.display=players.length?'none':'block';
 
-  // Group by city
-  const cityGroups = {};
   players.forEach((p,i)=>{
-    const key = p.city||'—';
-    if(!cityGroups[key]) cityGroups[key]=[];
-    cityGroups[key].push({p,i});
-  });
-  const sortedCities = Object.keys(cityGroups).sort((a,b)=>{
-    if(a==='České Budějovice') return -1;
-    if(b==='České Budějovice') return 1;
-    return cityGroups[b].length - cityGroups[a].length || a.localeCompare(b,'cs');
-  });
-
-  sortedCities.forEach(city=>{
-    const entries = cityGroups[city];
-    const count = entries.length;
-    const collapsed = count > 8;
-
-    const section = document.createElement('div');
-    section.className = 'city-section';
-
-    const hdr = document.createElement('div');
-    hdr.className = 'city-hdr' + (collapsed?' collapsed':'');
-    hdr.innerHTML = `<span class="city-hdr-name">📍 ${esc(city)}</span><span class="city-hdr-count">${count}</span><span class="city-hdr-arrow">${collapsed?'▶':'▼'}</span>`;
-    hdr.onclick = ()=>{
-      const body = section.querySelector('.city-body');
-      const isCol = hdr.classList.toggle('collapsed');
-      body.style.display = isCol?'none':'';
-      hdr.querySelector('.city-hdr-arrow').textContent = isCol?'▶':'▼';
-    };
-
-    const body = document.createElement('div');
-    body.className = 'city-body';
-    body.style.display = collapsed?'none':'';
-
-    entries.forEach(({p,i})=>{
-      const nm=fullName(p)||p.city;
-      const thumb=p.photo
-        ?`<img src="${escA(p.photo)}" onerror="this.style.display='none'">`
-        :(p.surname||p.firstname)?initials(p):'🏒';
-      const meta=[
-        p.born?'🎂 '+p.born:'',
-        p.died?'✝ '+p.died:'',
-        p.seasons?p.seasons+' sez.':''
-      ].filter(Boolean);
-      const el=document.createElement('div'); el.className='pc';
-      el.innerHTML=`
-        <div class="pc-avatar">${thumb}</div>
-        <div class="pc-info">
-          <div class="pc-name">${esc(nm)}</div>
-          <div class="pc-meta">
-            ${meta.map(m=>`<span>${esc(m)}</span>`).join('')}
-          </div>
+    const nm=fullName(p)||p.city;
+    const thumb=p.photo
+      ?`<img src="${escA(p.photo)}" onerror="this.style.display='none'">`
+      :(p.surname||p.firstname)?initials(p):'🏒';
+    const meta=[
+      p.born?'🎂 '+p.born:'',
+      p.died?'✝ '+p.died:'',
+      p.seasons?p.seasons+' sez.':''
+    ].filter(Boolean);
+    const el=document.createElement('div'); el.className='pc';
+    el.innerHTML=`
+      <div class="pc-avatar">${thumb}</div>
+      <div class="pc-info">
+        <div class="pc-name">${esc(nm)}</div>
+        <div class="pc-meta">
+          <span class="pc-city">${esc(p.city||'—')}</span>
+          ${meta.map(m=>`<span>${esc(m)}</span>`).join('')}
         </div>
-        <div class="pc-acts">
-          <button class="ib" onclick="openEdit(${i})">✏️</button>
-          <button class="ib del" onclick="del(${i})">✕</button>
-        </div>`;
-      body.appendChild(el);
-    });
-
-    section.appendChild(hdr);
-    section.appendChild(body);
-    list.appendChild(section);
+      </div>
+      <div class="pc-acts">
+        <button class="ib" onclick="openEdit(${i})">✏️</button>
+        <button class="ib del" onclick="del(${i})">✕</button>
+      </div>`;
+    list.appendChild(el);
   });
   updateStats();
 }
