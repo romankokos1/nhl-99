@@ -234,6 +234,34 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pop-rname { font-weight:600; color:var(--blue3); flex:1; }
 .pop-rmeta { display:flex; gap:5px; color:#8a9ab5; font-size:11px; white-space:nowrap; }
 .pop-rmeta span { background:#eef1f8; padding:1px 5px; border-radius:3px; }
+
+/* Search bar */
+.search-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-bottom: 2px solid #d4dae8;
+  background: #f4f7fb; position: sticky; top: 49px; z-index: 9;
+}
+.search-icon { font-size: 13px; opacity: .5; flex-shrink:0; }
+#playerSearch {
+  flex: 1; border: 1px solid #c4cedc; border-radius: 4px;
+  padding: 5px 8px; font-size: 13px; font-family: 'Barlow', sans-serif;
+  outline: none; background: #fff; color: var(--blue3);
+}
+#playerSearch:focus { border-color: #1c4896; box-shadow: 0 0 0 2px rgba(28,72,150,.15); }
+.search-clear {
+  border: none; background: none; cursor: pointer; font-size: 13px;
+  color: #aaa; padding: 2px 4px; display: none; border-radius: 3px;
+}
+.search-clear:hover { background: #e8edf4; color: #555; }
+
+/* Active / highlighted player card */
+.pc-active {
+  background: #e8f0fc !important;
+  border-left: 3px solid #1c4896;
+}
+.pc-highlight { background: #fffbe6; }
+.pc { cursor: pointer; transition: background .12s; }
+.pc:hover { background: #f0f4fb; }
 </style>
 </head>
 <body>
@@ -259,6 +287,11 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
       <h2 id="listTitle">Hráči</h2>
       <button class="btn-import" onclick="openImport()">⬆️ Hromadný import</button>
       <button class="btn-add" onclick="openEdit()">+ Přidat</button>
+    </div>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="playerSearch" placeholder="Hledat podle jména nebo příjmení…" oninput="filterList()" autocomplete="off">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Vymazat">✕</button>
     </div>
     <div class="players" id="playerList">
       <div class="empty-msg" id="emptyMsg">
@@ -1488,6 +1521,7 @@ function render() {
       p.seasons?p.seasons+' sez.':''
     ].filter(Boolean);
     const el=document.createElement('div'); el.className='pc';
+    el.dataset.idx=i;
     el.innerHTML=`
       <div class="pc-avatar">${thumb}</div>
       <div class="pc-info">
@@ -1501,6 +1535,10 @@ function render() {
         <button class="ib" onclick="openEdit(${i})">✏️</button>
         <button class="ib del" onclick="del(${i})">✕</button>
       </div>`;
+    el.addEventListener('click', e=>{
+      if(e.target.closest('.pc-acts')) return;
+      focusPlayer(i);
+    });
     list.appendChild(el);
   });
   updateStats();
@@ -1514,6 +1552,57 @@ function clearAll() {
   if (!confirm('Vymazat vše a obnovit ukázková data?')) return;
   players=SAMPLES.map(s=>({...s})); save(); render(); updateMap();
 }
+// ── SEARCH / FILTER ───────────────────────────────
+let searchQuery = '';
+
+function filterList() {
+  const q = document.getElementById('playerSearch').value.trim().toLowerCase();
+  searchQuery = q;
+  document.getElementById('searchClear').style.display = q ? '' : 'none';
+  const cards = document.querySelectorAll('#playerList .pc');
+  let visible = 0;
+  cards.forEach(card => {
+    const idx = parseInt(card.dataset.idx);
+    const p = players[idx];
+    if (!p) return;
+    const name = (fullName(p)||'').toLowerCase();
+    const match = !q || name.includes(q);
+    card.style.display = match ? '' : 'none';
+    if (match) visible++;
+    card.classList.toggle('pc-highlight', match && q.length > 0);
+  });
+  document.getElementById('listTitle').textContent =
+    q ? `Hráči (${visible})` : 'Hráči';
+}
+
+function clearSearch() {
+  document.getElementById('playerSearch').value = '';
+  filterList();
+}
+
+// ── FOCUS PLAYER ON MAP ────────────────────────────
+function focusPlayer(idx) {
+  const p = players[idx];
+  if (!p || !p.lat) return;
+
+  // Highlight card
+  document.querySelectorAll('#playerList .pc').forEach(c => c.classList.remove('pc-active'));
+  const card = document.querySelector(`.pc[data-idx="${idx}"]`);
+  if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+
+  // Fly map to location and open popup
+  map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
+  setTimeout(()=>{
+    // Find and open the marker at this location
+    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    mlayers.forEach(mk => {
+      const ll = mk.getLatLng();
+      const k = Math.round(ll.lat*200)+','+Math.round(ll.lng*200);
+      if (k === key) mk.openPopup();
+    });
+  }, 900);
+}
+
 function updateStats() {
   const el=document.getElementById('hdrStats');
   if (!players.length){el.innerHTML='';return;}
