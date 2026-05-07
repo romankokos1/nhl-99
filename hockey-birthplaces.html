@@ -261,9 +261,9 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pop-detail-hint { text-align:center; font-size:10px; color:#b0bdd0; padding:3px 0 5px; letter-spacing:.04em; }
 
 /* ── PLAYER DETAIL MODAL ─────────────────────────── */
-.detail-photo { width:90px; height:90px; border-radius:3px; object-fit:cover; border:2px solid #c4cedc; float:right; margin:0 0 10px 14px; flex-shrink:0; }
-.detail-photo-ph { width:90px; height:90px; border-radius:3px; background:#eef1f9; display:flex; align-items:center; justify-content:center; font-size:34px; float:right; margin:0 0 10px 14px; border:2px solid #c4cedc; flex-shrink:0; }
-.detail-name { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:800; color:var(--blue3); text-transform:uppercase; letter-spacing:.05em; line-height:1.1; margin-bottom:6px; }
+.detail-photo { width:110px; height:110px; border-radius:3px; object-fit:cover; border:2px solid #c4cedc; float:right; margin:0 0 10px 16px; flex-shrink:0; image-rendering:auto; -webkit-font-smoothing:antialiased; }
+.detail-photo-ph { width:110px; height:110px; border-radius:3px; background:#eef1f9; display:flex; align-items:center; justify-content:center; font-size:34px; float:right; margin:0 0 10px 16px; border:2px solid #c4cedc; flex-shrink:0; }
+.detail-name { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:800; color:var(--blue3); text-transform:uppercase; letter-spacing:.05em; line-height:1.1; margin-bottom:10px; }
 .detail-city { font-size:13px; color:#8a9ab5; margin-bottom:10px; }
 .detail-rows { clear:both; display:flex; flex-direction:column; gap:5px; margin-top:4px; }
 .detail-row { display:flex; gap:8px; font-size:13px; border-bottom:1px solid #edf0f5; padding-bottom:5px; }
@@ -1804,11 +1804,11 @@ function showPlayerDetail(idx) {
     : `<div class="detail-photo-ph">🏒</div>`;
 
   const rows = [];
-  if (p.city)         rows.push(['📍 Rodné město', esc(p.city)]);
-  if (p.born)         rows.push(['🎂 Narozen', esc(p.born)]);
-  if (p.died)         rows.push(['✝ Zemřel', esc(p.died) + (p.deathcity ? ` <span style="color:#8a9ab5">(${esc(p.deathcity)})</span>` : '')]);
-  if (p.seasonsRange) rows.push(['🏒 Sezóny', `<span class="detail-seasons">${esc(p.seasonsRange)}</span>${p.seasons ? `<span style="color:#8a9ab5;font-size:12px">${esc(p.seasons)} sez.</span>` : ''}`]);
-  else if (p.seasons) rows.push(['🏒 Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`]);
+  if (p.city)         rows.push(['Rodné město', esc(p.city)]);
+  if (p.born)         rows.push(['Narozen', esc(p.born)]);
+  if (p.died)         rows.push(['Zemřel', esc(p.died) + (p.deathcity ? ` <span style="color:#8a9ab5">(${esc(p.deathcity)})</span>` : '')]);
+  if (p.seasonsRange) rows.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasonsRange)}</span>${p.seasons ? `<span style="color:#8a9ab5;font-size:12px">${esc(p.seasons)} sez.</span>` : ''}`]);
+  else if (p.seasons) rows.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`]);
 
   const rowsHtml = rows.map(([lbl,val]) =>
     `<div class="detail-row"><span class="detail-lbl">${lbl}</span><span class="detail-val">${val}</span></div>`
@@ -1818,7 +1818,6 @@ function showPlayerDetail(idx) {
     <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on');focusPlayer(${idx})">← Zobrazit v seznamu</button>
     ${thumb}
     <div class="detail-name">${esc(nm)}</div>
-    <div class="detail-city">${esc(p.display || p.city || '—')}</div>
     <div class="detail-rows">${rowsHtml}</div>
     <div style="clear:both"></div>`;
 
