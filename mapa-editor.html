@@ -7,499 +7,424 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
-  --text:#e6edf3;--muted:#7d8590;--accent:#f0a500;--green:#238636;
-  --red:#da3633;--warn:#d29922;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
-}
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;--text:#e6edf3;--muted:#7d8590;--accent:#f0a500;--green:#238636;--red:#da3633;--warn:#d29922;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;height:100vh;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100vh}
-
-/* ── SETUP/IMPORT SCREENS ── */
 .screen{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
-.screen-box{width:100%;max-width:680px}
-.screen-box h2{font-family:var(--mono);font-size:20px;color:var(--accent);margin-bottom:8px}
-.screen-box p{color:var(--muted);font-size:13px;margin-bottom:16px;line-height:1.7}
-.screen-box textarea{width:100%;height:240px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;color:var(--text);font-family:var(--mono);font-size:11px;resize:vertical}
-.screen-box textarea:focus{outline:none;border-color:var(--accent)}
-.screen-actions{margin-top:12px;display:flex;gap:10px;align-items:center}
-.err{color:var(--red);font-size:12px;font-family:var(--mono)}
-.steps{counter-reset:step;display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-.step{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px}
-.step::before{counter-increment:step;content:counter(step);font-family:var(--mono);font-weight:600;font-size:14px;color:var(--accent);flex-shrink:0;width:20px}
+.box{width:100%;max-width:560px}
+.box h2{font-family:var(--mono);font-size:18px;color:var(--accent);margin-bottom:6px}
+.box p{color:var(--muted);font-size:12px;margin-bottom:16px;line-height:1.7}
+.box textarea{width:100%;height:220px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;color:var(--text);font-family:var(--mono);font-size:11px;resize:vertical}
+.box textarea:focus{outline:none;border-color:var(--accent)}
+.row{margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.err-t{color:var(--red);font-size:12px;font-family:var(--mono)}
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.cf{display:flex;flex-direction:column;gap:4px}
+.cf label{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.cf input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:7px 9px;color:var(--text);font-family:var(--mono);font-size:12px}
+.cf input:focus{outline:none;border-color:var(--accent)}
+.cf.full{grid-column:1/-1}
+.login-box{width:100%;max-width:340px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:28px 24px}
+.login-box h2{font-family:var(--mono);font-size:16px;color:var(--accent);margin-bottom:4px}
+.login-box p{color:var(--muted);font-size:12px;margin-bottom:18px}
+.lf{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.lf label{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.lf input{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--text);font-size:13px}
+.lf input:focus{outline:none;border-color:var(--accent)}
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.step{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px}
+.step::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-weight:600;font-size:13px;color:var(--accent);flex-shrink:0;width:18px}
 .step p{font-size:12px;line-height:1.6;color:var(--muted)}
 .step p strong{color:var(--text)}
 .step p code{background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:11px;color:var(--accent)}
-.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-.cfg-field{display:flex;flex-direction:column;gap:4px}
-.cfg-field label{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-.cfg-field input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 8px;color:var(--text);font-family:var(--mono);font-size:11px}
-.cfg-field input:focus{outline:none;border-color:var(--accent)}
-.cfg-field.full{grid-column:1/-1}
-
-/* ── HEADER ── */
-.header{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-.logo{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--accent)}
-.count-lbl{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.spacer{flex:1}
-.online-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--muted)}
-.online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px #238636;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.sync-indicator{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(35,134,54,.15);color:#3fb950;border:1px solid rgba(35,134,54,.3);transition:all .3s}
-.sync-indicator.saving{background:rgba(240,165,0,.15);color:var(--accent);border-color:rgba(240,165,0,.3)}
-.btn{padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all .15s}
+.btn{padding:6px 13px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all .15s}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
-.btn-primary{background:var(--accent);color:#000;font-weight:600;border-color:var(--accent)}
-.btn-primary:hover{background:#d4920a;color:#000;border-color:#d4920a}
-.btn-green{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
-.btn-green:hover{background:#2ea043}
-
-/* ── TOOLBAR ── */
-.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.search-wrap{position:relative;flex:1;max-width:340px}
-.search-wrap input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:5px 10px 5px 28px;color:var(--text);font-family:var(--sans);font-size:12px}
-.search-wrap input:focus{outline:none;border-color:var(--accent)}
-.si{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:11px}
-select{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--sans);font-size:12px;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:default}
+.btn-p{background:var(--accent);color:#000;font-weight:600;border-color:var(--accent)}
+.btn-p:hover{background:#d4920a;color:#000}
+.btn-g{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+.btn-g:hover{background:#2ea043}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--accent)}
+.cnt-l{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.spacer{flex:1}
+.uchip{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 8px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px #238636}
+.sync{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(35,134,54,.15);color:#3fb950;border:1px solid rgba(35,134,54,.3);transition:all .3s}
+.sync.sav{background:rgba(240,165,0,.15);color:var(--accent);border-color:rgba(240,165,0,.3)}
+.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:7px 16px;display:flex;align-items:center;gap:9px;flex-shrink:0}
+.sw{position:relative;flex:1;max-width:320px}
+.sw input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:5px 10px 5px 28px;color:var(--text);font-size:12px}
+.sw input:focus{outline:none;border-color:var(--accent)}
+.si{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:11px;pointer-events:none}
+select{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:5px 8px;color:var(--text);font-size:12px;cursor:pointer}
 select:focus{outline:none;border-color:var(--accent)}
 .ftag{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--muted)}
 .ftag span{color:var(--accent);font-weight:500}
-
-/* ── TABLE ── */
-.table-wrap{flex:1;overflow-y:auto;overflow-x:auto}
+.tw{flex:1;overflow-y:auto;overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:860px}
 thead{position:sticky;top:0;z-index:10}
 th{background:var(--surface);border-bottom:2px solid var(--border);padding:7px 10px;text-align:left;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap}
 td{padding:5px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:hover td{background:var(--surface2)}
-.td-photo img{width:30px;height:30px;border-radius:3px;object-fit:cover;border:1px solid var(--border);display:block}
-.no-photo{width:30px;height:30px;border-radius:3px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
-.td-name{font-weight:500;font-size:13px}
-.td-name small{display:block;color:var(--muted);font-size:11px;font-weight:400}
-.no-val{color:var(--red);font-style:italic;font-size:11px}
+.td-ph img,.noph{width:30px;height:30px;border-radius:3px;object-fit:cover;border:1px solid var(--border);display:block}
+.noph{background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+.tdn{font-weight:500;font-size:13px}
+.tdn small{display:block;color:var(--muted);font-size:11px;font-weight:400}
+.nv{color:var(--red);font-style:italic;font-size:11px}
 .mono{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:600;font-family:var(--mono)}
 .bw{background:rgba(210,153,34,.15);color:var(--warn);border:1px solid rgba(210,153,34,.3)}
 .bo{background:rgba(35,134,54,.15);color:#3fb950;border:1px solid rgba(35,134,54,.3)}
 .bd{background:rgba(218,54,51,.1);color:#f85149;border:1px solid rgba(218,54,51,.25)}
 .idx{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.edit-btn{background:none;border:1px solid transparent;border-radius:4px;padding:3px 7px;color:var(--muted);cursor:pointer;font-size:11px;transition:all .12s}
-.edit-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(240,165,0,.08)}
-
-/* ── EDIT PANEL ── */
-#panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-start;justify-content:flex-end}
-#panel-overlay.open{display:flex}
-.panel{background:var(--surface);width:460px;height:100vh;border-left:1px solid var(--border);display:flex;flex-direction:column;animation:slideIn .18s ease}
-@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
-.panel-hdr{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
-.panel-hdr h3{font-family:var(--mono);font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.panel-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px}
-.panel-ftr{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.eb{background:none;border:1px solid transparent;border-radius:4px;padding:3px 7px;color:var(--muted);cursor:pointer;font-size:11px;transition:all .12s}
+.eb:hover{border-color:var(--accent);color:var(--accent);background:rgba(240,165,0,.08)}
+#po{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-start;justify-content:flex-end}
+#po.open{display:flex}
+.panel{background:var(--surface);width:460px;height:100vh;border-left:1px solid var(--border);display:flex;flex-direction:column;animation:si .18s ease}
+@keyframes si{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+.ph{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ph h3{font-family:var(--mono);font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px}
+.pf{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .f{display:flex;flex-direction:column;gap:4px}
 .f label{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-.f input,.f textarea{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 8px;color:var(--text);font-family:var(--sans);font-size:12px}
-.f input:focus,.f textarea:focus{outline:none;border-color:var(--accent)}
-.f-full{grid-column:1/-1}
+.f input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 8px;color:var(--text);font-size:12px}
+.f input:focus{outline:none;border-color:var(--accent)}
+.ff{grid-column:1/-1}
 .sec{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);padding-bottom:4px;margin-top:4px}
-.warn-box{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);border-radius:4px;padding:8px 10px}
-.warn-box p{font-size:11px;color:var(--warn);line-height:1.7}
-.photo-row{display:flex;gap:10px;align-items:center}
-.photo-row img{width:56px;height:56px;border-radius:4px;object-fit:cover;border:1px solid var(--border)}
-.photo-placeholder{width:56px;height:56px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:22px;flex-shrink:0}
-
-/* ── EXPORT MODAL ── */
-#exp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
-#exp-overlay.open{display:flex}
-.exp-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;width:100%;max-width:780px;max-height:88vh;display:flex;flex-direction:column}
-.exp-hdr{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.exp-hdr h3{font-family:var(--mono);font-size:13px;flex:1}
-.exp-ta{flex:1;min-height:380px;background:var(--bg);border:none;padding:12px;color:#7ee787;font-family:var(--mono);font-size:11px;resize:none}
-.exp-ta:focus{outline:none}
-.exp-ftr{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center}
-
+.wb{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);border-radius:4px;padding:8px 10px}
+.wb p{font-size:11px;color:var(--warn);line-height:1.7}
+.pr{display:flex;gap:10px;align-items:center}
+.pr img,.pph{width:56px;height:56px;border-radius:4px;object-fit:cover;border:1px solid var(--border);flex-shrink:0}
+.pph{background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:22px}
+#eo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+#eo.open{display:flex}
+.eb2{background:var(--surface);border:1px solid var(--border);border-radius:8px;width:100%;max-width:780px;max-height:88vh;display:flex;flex-direction:column}
+.eh{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.eh h3{font-family:var(--mono);font-size:13px;flex:1}
+.eta{flex:1;min-height:360px;background:var(--bg);border:none;padding:12px;color:#7ee787;font-family:var(--mono);font-size:11px;resize:none}
+.eta:focus{outline:none}
+.ef{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- SETUP SCREEN -->
-<div class="screen" id="setup-screen">
-  <div class="screen-box">
-    <h2>⚙ Nastavení Firebase</h2>
-    <p>Pro sdílení mezi počítači potřebuješ <strong style="color:var(--text)">bezplatný Firebase projekt</strong>.<br>
-       Vytvoř si ho na <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent)">console.firebase.google.com</a> a vyplň tyto údaje:</p>
-    <div class="config-grid">
-      <div class="cfg-field"><label>API Key</label><input id="cfg-apiKey" placeholder="AIzaSy..."></div>
-      <div class="cfg-field"><label>Auth Domain</label><input id="cfg-authDomain" placeholder="moje-app.firebaseapp.com"></div>
-      <div class="cfg-field full"><label>Database URL</label><input id="cfg-dbUrl" placeholder="https://moje-app-default-rtdb.firebaseio.com"></div>
-      <div class="cfg-field"><label>Project ID</label><input id="cfg-projectId" placeholder="moje-app"></div>
-      <div class="cfg-field"><label>App ID</label><input id="cfg-appId" placeholder="1:123456:web:abc..."></div>
-    </div>
-    <div class="screen-actions">
-      <button class="btn btn-primary" onclick="saveConfig()">Připojit →</button>
-      <span class="err" id="cfg-err"></span>
-    </div>
-    <details style="margin-top:20px">
-      <summary style="cursor:pointer;color:var(--muted);font-size:12px;font-family:var(--mono)">▸ Jak najít tyto údaje? (klik)</summary>
-      <div class="steps" style="margin-top:12px">
-        <div class="step"><p>Jdi na <strong>console.firebase.google.com</strong> → klikni <strong>Přidat projekt</strong> → zadej název → pokračuj</p></div>
-        <div class="step"><p>V levém menu vyber <strong>Build → Realtime Database</strong> → klikni <strong>Create Database</strong> → vyber region → v pravidlech nastav <code>".read": true, ".write": true</code></p></div>
-        <div class="step"><p>Klikni na ikonu ⚙ vedle <strong>Project Overview</strong> → <strong>Project settings</strong> → dolů na <strong>Your apps</strong> → klikni <strong>&lt;/&gt;</strong> → zkopíruj <code>firebaseConfig</code></p></div>
-      </div>
-    </details>
+<!-- SETUP -->
+<div class="screen" id="s-setup">
+ <div class="box" style="max-width:640px">
+  <h2>⚙ Nastavení Firebase projektu</h2>
+  <p>Tyto údaje se uloží pouze v tomto prohlížeči. Na stránce jsou vidět jen po přihlášení se správnými hesly.</p>
+  <div class="cfg-grid">
+   <div class="cf"><label>API Key</label><input id="c-key" placeholder="AIzaSy..."></div>
+   <div class="cf"><label>Auth Domain</label><input id="c-auth" placeholder="projekt.firebaseapp.com"></div>
+   <div class="cf full"><label>Database URL</label><input id="c-db" placeholder="https://projekt-default-rtdb.europe-west1.firebasedatabase.app"></div>
+   <div class="cf"><label>Project ID</label><input id="c-proj" placeholder="projekt-id"></div>
+   <div class="cf"><label>App ID</label><input id="c-app" placeholder="1:xxx:web:xxx"></div>
   </div>
+  <div class="row"><button class="btn btn-p" onclick="saveConfig()">Připojit →</button><span class="err-t" id="cfg-err"></span></div>
+  <details style="margin-top:18px">
+   <summary style="cursor:pointer;color:var(--muted);font-size:12px;font-family:var(--mono)">▸ Jak to nastavit (klik pro návod)</summary>
+   <div class="steps" style="margin-top:12px">
+    <div class="step"><p>Jdi na <strong>console.firebase.google.com</strong> → <strong>Add project</strong> → pojmenuj → pokračuj</p></div>
+    <div class="step"><p>Vlevo: <strong>Build → Authentication → Get started</strong> → záložka <strong>Sign-in method</strong> → povol <strong>Email/Password</strong></p></div>
+    <div class="step"><p>V záložce <strong>Users → Add user</strong> → přidej e-mail a heslo pro každého uživatele (jen ty dva)</p></div>
+    <div class="step"><p>Vlevo: <strong>Build → Realtime Database → Create Database</strong> → region Europe → v záložce <strong>Rules</strong> vlož:<br><code>{"rules":{".read":"auth != null",".write":"auth != null"}}</code></p></div>
+    <div class="step"><p>Ikona ⚙ vedle názvu projektu → <strong>Project settings</strong> → klikni <strong>&lt;/&gt;</strong> → pojmenuj app → zkopíruj hodnoty z <code>firebaseConfig</code></p></div>
+   </div>
+  </details>
+ </div>
 </div>
 
-<!-- IMPORT SCREEN -->
-<div class="screen" id="import-screen" style="display:none">
-  <div class="screen-box">
-    <h2>📂 Načíst data hráčů</h2>
-    <p>Vlož obsah proměnné <code style="color:var(--accent);font-family:var(--mono)">const SAMPLES = [...]</code> nebo jen pole <code style="color:var(--accent);font-family:var(--mono)">[{...}]</code>.<br>
-       Data se uloží do Firebase a budou dostupná všem uživatelům.</p>
-    <textarea id="paste-input" placeholder="const SAMPLES = [
-  {surname:'Abdul', firstname:'Jindřich', ...},
-  ...
-];"></textarea>
-    <div class="screen-actions">
-      <button class="btn btn-primary" onclick="importData()">Nahrát do Firebase →</button>
-      <button class="btn" onclick="showMain()">Přeskočit (databáze není prázdná)</button>
-      <span class="err" id="imp-err"></span>
-    </div>
-  </div>
+<!-- LOGIN -->
+<div class="screen" id="s-login" style="display:none">
+ <div class="login-box">
+  <div style="font-size:36px;margin-bottom:12px">🔐</div>
+  <h2>HC Motor Editor</h2>
+  <p>Přihlášení je vyžadováno pro přístup k databázi hráčů.</p>
+  <div class="lf"><label>E-mail</label><input id="l-em" type="email" placeholder="vas@email.cz" onkeydown="if(event.key==='Enter')login()"></div>
+  <div class="lf"><label>Heslo</label><input id="l-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+  <button class="btn btn-p" style="width:100%;padding:9px;font-size:13px;margin-top:4px" onclick="login()" id="lbtn">Přihlásit se</button>
+  <p class="err-t" id="lerr" style="margin-top:10px;min-height:16px"></p>
+  <a href="#" onclick="showSetup()" style="color:var(--muted);font-size:11px;display:block;margin-top:12px">⚙ Změnit Firebase projekt</a>
+ </div>
 </div>
 
-<!-- EDIT PANEL -->
-<div id="panel-overlay">
-  <div class="panel">
-    <div class="panel-hdr">
-      <h3 id="panel-title">Editovat hráče</h3>
-      <button class="btn" onclick="closePanel()">✕</button>
-    </div>
-    <div class="panel-body" id="panel-body"></div>
-    <div class="panel-ftr">
-      <button class="btn btn-primary" onclick="saveRecord()">💾 Uložit</button>
-      <button class="btn" style="border-color:var(--red);color:var(--red)" onclick="deleteRecord()">🗑 Smazat</button>
-      <button class="btn" onclick="closePanel()">Zrušit</button>
-    </div>
+<!-- IMPORT -->
+<div class="screen" id="s-import" style="display:none">
+ <div class="box">
+  <h2>📂 Nahrát data do databáze</h2>
+  <p>Vlož obsah <code style="color:var(--accent);font-family:var(--mono)">const SAMPLES = [...]</code> nebo jen pole. Data se uloží do Firebase — viditelné pouze přihlášeným uživatelům.</p>
+  <textarea id="pi" placeholder="const SAMPLES = [&#10;  {surname:'Abdul', ...},&#10;];"></textarea>
+  <div class="row">
+   <button class="btn btn-p" onclick="importData()">Nahrát →</button>
+   <button class="btn" onclick="showMain()">Přeskočit (data už existují)</button>
+   <span class="err-t" id="ierr"></span>
   </div>
+ </div>
 </div>
 
-<!-- EXPORT MODAL -->
-<div id="exp-overlay">
-  <div class="exp-box">
-    <div class="exp-hdr">
-      <h3>📤 Export — const SAMPLES = [...]</h3>
-      <button class="btn" id="copy-btn" onclick="copyExport()">📋 Kopírovat vše</button>
-      <button class="btn" onclick="document.getElementById('exp-overlay').classList.remove('open')">✕</button>
-    </div>
-    <textarea class="exp-ta" id="exp-ta" readonly spellcheck="false"></textarea>
-    <div class="exp-ftr">
-      <span style="color:var(--muted);font-size:11px;font-family:var(--mono)" id="exp-info"></span>
-    </div>
+<!-- PANEL -->
+<div id="po">
+ <div class="panel">
+  <div class="ph"><h3 id="ptitle">Edit</h3><button class="btn" onclick="closePanel()">✕</button></div>
+  <div class="pb" id="pbody"></div>
+  <div class="pf">
+   <button class="btn btn-p" onclick="saveRec()">💾 Uložit</button>
+   <button class="btn" style="border-color:var(--red);color:var(--red)" onclick="delRec()">🗑 Smazat</button>
+   <button class="btn" onclick="closePanel()">Zrušit</button>
   </div>
+ </div>
 </div>
 
-<!-- MAIN EDITOR -->
-<div id="main-ui" style="display:none;flex-direction:column;height:100%">
-  <div class="header">
-    <div>
-      <span class="logo">HC Motor ⬡</span>
-      <span class="count-lbl" id="count-lbl"></span>
-    </div>
-    <div class="spacer"></div>
-    <div class="online-badge"><span class="online-dot"></span><span id="online-txt">Připojeno</span></div>
-    <span class="sync-indicator" id="sync-ind">✓ Synchronizováno</span>
-    <button class="btn" onclick="showImportScreen()">📂 Nová data</button>
-    <button class="btn btn-green" onclick="showExport()">📤 Export JS</button>
-    <button class="btn btn-primary" onclick="addNew()">+ Přidat</button>
-  </div>
-  <div class="toolbar">
-    <div class="search-wrap">
-      <span class="si">🔍</span>
-      <input type="text" id="search" placeholder="Hledat jméno, město, rok..." oninput="render()">
-    </div>
-    <select id="flt" onchange="render()">
-      <option value="">Všichni</option>
-      <option value="warn">⚠ Neúplné záznamy</option>
-      <option value="dead">† Zemřelí</option>
-      <option value="nophoto">Bez fotky</option>
-      <option value="nocity">Bez města</option>
-    </select>
-    <select id="srt" onchange="render()">
-      <option value="surname">Řadit: Příjmení A–Z</option>
-      <option value="seasons">Řadit: Sezóny (↓)</option>
-      <option value="born">Řadit: Narozen</option>
-    </select>
-    <div class="ftag">Zobrazeno: <span id="vis-cnt">0</span></div>
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr>
-        <th style="width:34px">#</th>
-        <th style="width:40px"></th>
-        <th>Příjmení / Jméno</th>
-        <th>Město</th>
-        <th>Narozen</th>
-        <th>Zemřel</th>
-        <th style="width:46px">Sez.</th>
-        <th>Rozsah</th>
-        <th style="width:62px">Stav</th>
-        <th style="width:58px"></th>
-      </tr></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
+<!-- EXPORT -->
+<div id="eo">
+ <div class="eb2">
+  <div class="eh"><h3>📤 Export — const SAMPLES = [...]</h3><button class="btn" id="cbtn" onclick="copyExp()">📋 Kopírovat</button><button class="btn" onclick="document.getElementById('eo').classList.remove('open')">✕</button></div>
+  <textarea class="eta" id="eta" readonly spellcheck="false"></textarea>
+  <div class="ef"><span style="color:var(--muted);font-size:11px;font-family:var(--mono)" id="einfo"></span></div>
+ </div>
+</div>
+
+<!-- MAIN -->
+<div id="main" style="display:none;flex-direction:column;height:100%">
+ <div class="header">
+  <span class="logo">HC Motor ⬡</span><span class="cnt-l" id="cntl"></span>
+  <div class="spacer"></div>
+  <span class="sync" id="sync">✓ Synchronizováno</span>
+  <div class="uchip"><span class="dot"></span><span id="uem">...</span></div>
+  <button class="btn" onclick="logout()">↩ Odhlásit</button>
+  <button class="btn btn-g" onclick="showExp()">📤 Export JS</button>
+  <button class="btn btn-p" onclick="addNew()">+ Přidat</button>
+ </div>
+ <div class="toolbar">
+  <div class="sw"><span class="si">🔍</span><input type="text" id="sq" placeholder="Hledat jméno, město, rok..." oninput="render()"></div>
+  <select id="sf" onchange="render()">
+   <option value="">Všichni hráči</option>
+   <option value="warn">⚠ Neúplné záznamy</option>
+   <option value="dead">† Zemřelí</option>
+   <option value="nophoto">Bez fotky</option>
+   <option value="nocity">Bez města</option>
+  </select>
+  <select id="ss" onchange="render()">
+   <option value="surname">Řadit: Příjmení A–Z</option>
+   <option value="seasons">Sezóny (↓)</option>
+   <option value="born">Narozen</option>
+  </select>
+  <div class="ftag">Zobrazeno: <span id="vc">0</span></div>
+ </div>
+ <div class="tw">
+  <table>
+   <thead><tr>
+    <th style="width:34px">#</th><th style="width:40px"></th>
+    <th>Příjmení / Jméno</th><th>Město</th><th>Narozen</th><th>Zemřel</th>
+    <th style="width:46px">Sez.</th><th>Rozsah</th><th style="width:60px">Stav</th><th style="width:58px"></th>
+   </tr></thead>
+   <tbody id="tb"></tbody>
+  </table>
+ </div>
 </div>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script>
-// ── STATE ──
-let DB = null;
-let DATA = {};       // keyed by Firebase push key
-let editKey = null;
-let saveTimer = null;
+let DB=null,AUTH=null,DATA={},editKey=null;
 
-// ── CONFIG PERSISTENCE ──
-function saveConfig() {
-  const cfg = {
-    apiKey: v('cfg-apiKey'), authDomain: v('cfg-authDomain'),
-    databaseURL: v('cfg-dbUrl'), projectId: v('cfg-projectId'), appId: v('cfg-appId')
-  };
-  if (!cfg.apiKey || !cfg.databaseURL) { document.getElementById('cfg-err').textContent = 'Vyplň alespoň API Key a Database URL'; return; }
-  localStorage.setItem('hcmotor_fbcfg', JSON.stringify(cfg));
-  initFirebase(cfg);
+function saveConfig(){
+  const cfg={apiKey:g('c-key'),authDomain:g('c-auth'),databaseURL:g('c-db'),projectId:g('c-proj'),appId:g('c-app')};
+  if(!cfg.apiKey||!cfg.databaseURL){se('cfg-err','Vyplň API Key a Database URL');return;}
+  try{localStorage.setItem('hcm_cfg',JSON.stringify(cfg));}catch(e){}
+  initFB(cfg);
 }
 
-function loadConfig() {
-  const raw = localStorage.getItem('hcmotor_fbcfg');
-  if (raw) { try { initFirebase(JSON.parse(raw)); return; } catch(e){} }
-  show('setup-screen');
+function loadConfig(){
+  try{const r=localStorage.getItem('hcm_cfg');if(r){initFB(JSON.parse(r));return;}}catch(e){}
+  show('s-setup');
 }
 
-// ── FIREBASE ──
-function initFirebase(cfg) {
-  try {
-    if (firebase.apps.length) firebase.apps.forEach(a => a.delete());
+function showSetup(){try{if(AUTH)AUTH.signOut();}catch(e){}show('s-setup');}
+
+function initFB(cfg){
+  try{
+    if(firebase.apps.length)firebase.apps.forEach(a=>a.delete());
     firebase.initializeApp(cfg);
-    DB = firebase.database();
-    // test connection
-    DB.ref('.info/connected').on('value', snap => {
-      const ok = snap.val();
-      document.getElementById('online-txt').textContent = ok ? 'Připojeno' : 'Offline';
-      document.querySelector('.online-dot').style.background = ok ? 'var(--green)' : 'var(--warn)';
+    DB=firebase.database();AUTH=firebase.auth();
+    AUTH.onAuthStateChanged(user=>{
+      if(user){
+        document.getElementById('uem').textContent=user.email;
+        DB.ref('players').on('value',snap=>{
+          DATA=snap.val()||{};
+          document.getElementById('cntl').textContent=`— ${Object.keys(DATA).length} hráčů`;
+          if(document.getElementById('main').style.display!=='none')render();
+        });
+        DB.ref('players').once('value',snap=>{
+          if(!snap.val()||Object.keys(snap.val()).length===0)show('s-import');
+          else showMain();
+        });
+      }else{show('s-login');}
     });
-    // listen for data
-    DB.ref('players').on('value', snap => {
-      DATA = snap.val() || {};
-      render();
-      document.getElementById('count-lbl').textContent = `— ${Object.keys(DATA).length} hráčů`;
-    });
-    // check if data exists
-    DB.ref('players').once('value', snap => {
-      if (!snap.val() || Object.keys(snap.val()).length === 0) {
-        show('import-screen');
-      } else {
-        showMain();
-      }
-    });
-  } catch(e) {
-    document.getElementById('cfg-err').textContent = 'Chyba připojení: ' + e.message;
-    show('setup-screen');
-  }
+  }catch(e){se('cfg-err','Chyba: '+e.message);show('s-setup');}
 }
 
-// ── IMPORT ──
-function importData() {
-  const raw = document.getElementById('paste-input').value.trim();
-  const err = document.getElementById('imp-err');
-  err.textContent = '';
-  try {
-    let arr = (new Function('return ' + raw.replace(/^const\s+\w+\s*=\s*/, '')))();
-    if (!Array.isArray(arr)) throw new Error('Není to platné pole');
-    const updates = {};
-    arr.forEach(r => { const k = DB.ref('players').push().key; updates[k] = r; });
-    setSyncing(true);
-    DB.ref('players').set(updates).then(() => { setSyncing(false); showMain(); })
-      .catch(e => { err.textContent = 'Firebase chyba: ' + e.message; });
-  } catch(e) { err.textContent = 'Chyba parsování: ' + e.message; }
+function login(){
+  const em=g('l-em'),pw=g('l-pw');
+  if(!em||!pw){se('lerr','Vyplň e-mail a heslo');return;}
+  const btn=document.getElementById('lbtn');
+  btn.disabled=true;btn.textContent='Přihlašuji...';se('lerr','');
+  AUTH.signInWithEmailAndPassword(em,pw).catch(e=>{
+    const m={'auth/user-not-found':'Účet nenalezen.','auth/wrong-password':'Špatné heslo.',
+      'auth/invalid-email':'Neplatný e-mail.','auth/too-many-requests':'Příliš mnoho pokusů.'};
+    se('lerr',m[e.code]||e.message);btn.disabled=false;btn.textContent='Přihlásit se';
+  });
 }
 
-// ── RENDER TABLE ──
-function render() {
-  const search = (document.getElementById('search')?.value || '').toLowerCase();
-  const flt = document.getElementById('flt')?.value || '';
-  const srt = document.getElementById('srt')?.value || 'surname';
+function logout(){
+  if(!confirm('Odhlásit se?'))return;
+  AUTH.signOut();DATA={};show('s-login');
+}
 
-  let rows = Object.entries(DATA).map(([k, r]) => ({ key: k, ...r })).filter(r => {
-    if (search) { const h = `${r.surname} ${r.firstname} ${r.city} ${r.seasonsRange} ${r.born}`.toLowerCase(); if (!h.includes(search)) return false; }
-    if (flt === 'warn') return warns(r).length > 0;
-    if (flt === 'dead') return r.died && r.died !== '';
-    if (flt === 'nophoto') return isDefault(r.photo);
-    if (flt === 'nocity') return !r.city;
+function importData(){
+  const raw=document.getElementById('pi').value.trim();se('ierr','');
+  try{
+    let arr=(new Function('return '+raw.replace(/^const\s+\w+\s*=\s*/,'')))();
+    if(!Array.isArray(arr))throw new Error('Není to platné pole');
+    const upd={};
+    arr.forEach(r=>{const k=DB.ref('players').push().key;upd[k]=r;});
+    setSy(true);
+    DB.ref('players').set(upd).then(()=>{setSy(false);showMain();}).catch(e=>se('ierr','Firebase: '+e.message));
+  }catch(e){se('ierr','Chyba: '+e.message);}
+}
+
+function render(){
+  const q=(document.getElementById('sq')?.value||'').toLowerCase();
+  const fl=document.getElementById('sf')?.value||'';
+  const sr=document.getElementById('ss')?.value||'surname';
+  let rows=Object.entries(DATA).map(([k,r])=>({_k:k,...r})).filter(r=>{
+    if(q&&!`${r.surname} ${r.firstname} ${r.city} ${r.seasonsRange} ${r.born}`.toLowerCase().includes(q))return false;
+    if(fl==='warn')return warns(r).length>0;
+    if(fl==='dead')return r.died&&r.died!=='';
+    if(fl==='nophoto')return isDef(r.photo);
+    if(fl==='nocity')return!r.city;
     return true;
   });
-
-  rows.sort((a,b) => {
-    if (srt === 'seasons') return (parseInt(b.seasons)||0) - (parseInt(a.seasons)||0);
-    if (srt === 'born') return (a.born||'').localeCompare(b.born||'');
-    return (a.surname||'').localeCompare(b.surname||'','cs');
+  rows.sort((a,b)=>{
+    if(sr==='seasons')return(parseInt(b.seasons)||0)-(parseInt(a.seasons)||0);
+    if(sr==='born')return(a.born||'').localeCompare(b.born||'');
+    return(a.surname||'').localeCompare(b.surname||'','cs');
   });
-
-  document.getElementById('vis-cnt').textContent = rows.length;
-  document.getElementById('tbody').innerHTML = rows.map((r, i) => {
-    const w = warns(r); const dead = r.died && r.died !== '';
-    const hasPhoto = !isDefault(r.photo);
-    const photoHtml = hasPhoto
-      ? `<img src="${r.photo}" onerror="this.parentElement.innerHTML='<div class=no-photo>👤</div>'">`
-      : '<div class="no-photo">👤</div>';
-    const stBadge = w.length > 0 ? `<span class="badge bw">⚠ ${w.length}</span>`
-      : dead ? `<span class="badge bd">†</span>` : `<span class="badge bo">✓</span>`;
-    return `<tr><td><span class="idx">${i+1}</span></td>
-      <td class="td-photo">${photoHtml}</td>
-      <td class="td-name">${esc(r.surname)}<small>${esc(r.firstname)}</small></td>
-      <td>${r.city ? `<span style="font-size:12px">${esc(r.city)}</span>` : '<span class="no-val">—</span>'}</td>
-      <td class="mono">${r.born || '<span class="no-val">—</span>'}</td>
-      <td class="mono">${dead ? `<span style="color:#f85149">${esc(r.died)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
-      <td><span class="badge bo" style="font-size:11px">${r.seasons||'?'}</span></td>
-      <td style="font-family:var(--mono);font-size:11px">${esc(r.seasonsRange)||'—'}</td>
-      <td>${stBadge}</td>
-      <td><button class="edit-btn" onclick="openEdit('${r.key}')">✏ Edit</button></td></tr>`;
+  document.getElementById('vc').textContent=rows.length;
+  document.getElementById('tb').innerHTML=rows.map((r,i)=>{
+    const w=warns(r),dead=r.died&&r.died!=='';
+    const ph=!isDef(r.photo)?`<img src="${esc(r.photo)}" onerror="this.parentElement.innerHTML='<div class=noph>👤</div>'">`:'<div class="noph">👤</div>';
+    const st=w.length?`<span class="badge bw">⚠ ${w.length}</span>`:dead?`<span class="badge bd">†</span>`:`<span class="badge bo">✓</span>`;
+    return`<tr><td><span class="idx">${i+1}</span></td><td style="padding:4px 6px" class="td-ph">${ph}</td>
+    <td class="tdn">${esc(r.surname)}<small>${esc(r.firstname)}</small></td>
+    <td>${r.city?`<span style="font-size:12px">${esc(r.city)}</span>`:'<span class="nv">—</span>'}</td>
+    <td class="mono">${r.born||'<span class="nv">—</span>'}</td>
+    <td class="mono">${dead?`<span style="color:#f85149">${esc(r.died)}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+    <td><span class="badge bo" style="font-size:11px">${r.seasons||'?'}</span></td>
+    <td style="font-family:var(--mono);font-size:11px">${esc(r.seasonsRange)||'—'}</td>
+    <td>${st}</td><td><button class="eb" onclick="openEdit('${r._k}')">✏ Edit</button></td></tr>`;
   }).join('');
 }
 
-// ── EDIT PANEL ──
-function openEdit(key) {
-  const r = DATA[key]; if (!r) return;
-  editKey = key;
-  document.getElementById('panel-title').textContent = `${r.surname} ${r.firstname}`;
-  const w = warns(r);
-  const warnHtml = w.length ? `<div class="warn-box"><p>⚠ ${w.join(' · ')}</p></div>` : '';
-  const photoEl = !isDefault(r.photo) ? `<img src="${esc(r.photo)}" onerror="this.outerHTML='<div class=photo-placeholder>👤</div>'">` : '<div class="photo-placeholder">👤</div>';
-
-  document.getElementById('panel-body').innerHTML = `
-    ${warnHtml}
-    <div class="sec">Identita</div>
-    <div class="fg">
-      <div class="f"><label>Příjmení</label><input id="e-surname" value="${esc(r.surname)}"></div>
-      <div class="f"><label>Jméno</label><input id="e-firstname" value="${esc(r.firstname)}"></div>
-    </div>
-    <div class="sec">Narozen / Zemřel</div>
-    <div class="fg">
-      <div class="f"><label>Datum nar.</label><input id="e-born" value="${esc(r.born)}" placeholder="DD.MM.RRRR"></div>
-      <div class="f"><label>Datum úmrtí</label><input id="e-died" value="${esc(r.died)}"></div>
-      <div class="f f-full"><label>Město úmrtí</label><input id="e-deathcity" value="${esc(r.deathcity)}"></div>
-    </div>
-    <div class="sec">Bydliště / Souřadnice</div>
-    <div class="fg">
-      <div class="f f-full"><label>Město</label><input id="e-city" value="${esc(r.city)}"></div>
-      <div class="f"><label>Lat</label><input id="e-lat" type="number" step="0.0001" value="${r.lat||''}"></div>
-      <div class="f"><label>Lon</label><input id="e-lon" type="number" step="0.0001" value="${r.lon||''}"></div>
-    </div>
-    <div class="sec">Kariéra</div>
-    <div class="fg">
-      <div class="f"><label>Počet sezón</label><input id="e-seasons" value="${esc(r.seasons)}"></div>
-      <div class="f"><label>Rozsah sezón</label><input id="e-seasonsRange" value="${esc(r.seasonsRange)}"></div>
-      <div class="f f-full"><label>Display (volitelné)</label><input id="e-display" value="${esc(r.display)}"></div>
-    </div>
-    <div class="sec">Foto</div>
-    <div class="photo-row">
-      ${photoEl}
-      <div class="f" style="flex:1"><label>URL fotky</label><input id="e-photo" value="${esc(r.photo)}"></div>
-    </div>`;
-  document.getElementById('panel-overlay').classList.add('open');
+function openEdit(key){
+  const r=DATA[key];if(!r)return;
+  editKey=key;
+  document.getElementById('ptitle').textContent=`${r.surname} ${r.firstname}`;
+  const w=warns(r);
+  const wh=w.length?`<div class="wb"><p>⚠ ${w.join(' · ')}</p></div>`:'';
+  const pe=!isDef(r.photo)?`<img src="${esc(r.photo)}" onerror="this.outerHTML='<div class=pph>👤</div>'">`:'<div class="pph">👤</div>';
+  document.getElementById('pbody').innerHTML=`${wh}
+  <div class="sec">Identita</div>
+  <div class="fg">
+   <div class="f"><label>Příjmení</label><input id="e-sn" value="${esc(r.surname)}"></div>
+   <div class="f"><label>Jméno</label><input id="e-fn" value="${esc(r.firstname)}"></div>
+  </div>
+  <div class="sec">Narozen / Zemřel</div>
+  <div class="fg">
+   <div class="f"><label>Datum nar.</label><input id="e-bn" value="${esc(r.born)}" placeholder="DD.MM.RRRR"></div>
+   <div class="f"><label>Datum úmrtí</label><input id="e-di" value="${esc(r.died)}"></div>
+   <div class="f ff"><label>Město úmrtí</label><input id="e-dc" value="${esc(r.deathcity)}"></div>
+  </div>
+  <div class="sec">Bydliště / Souřadnice</div>
+  <div class="fg">
+   <div class="f ff"><label>Město</label><input id="e-ci" value="${esc(r.city)}"></div>
+   <div class="f"><label>Lat</label><input id="e-la" type="number" step="0.0001" value="${r.lat||''}"></div>
+   <div class="f"><label>Lon</label><input id="e-lo" type="number" step="0.0001" value="${r.lon||''}"></div>
+  </div>
+  <div class="sec">Kariéra</div>
+  <div class="fg">
+   <div class="f"><label>Počet sezón</label><input id="e-se" value="${esc(r.seasons)}"></div>
+   <div class="f"><label>Rozsah sezón</label><input id="e-sr" value="${esc(r.seasonsRange)}"></div>
+   <div class="f ff"><label>Display</label><input id="e-dp" value="${esc(r.display)}"></div>
+  </div>
+  <div class="sec">Foto</div>
+  <div class="pr">${pe}<div class="f" style="flex:1"><label>URL fotky</label><input id="e-ph" value="${esc(r.photo)}"></div></div>`;
+  document.getElementById('po').classList.add('open');
 }
 
-function saveRecord() {
-  if (!editKey) return;
-  const updated = {
-    surname: v('e-surname'), firstname: v('e-firstname'),
-    born: v('e-born'), died: v('e-died'), deathcity: v('e-deathcity'),
-    city: v('e-city'), lat: parseFloat(v('e-lat'))||0, lon: parseFloat(v('e-lon'))||0,
-    seasons: v('e-seasons'), seasonsRange: v('e-seasonsRange'),
-    display: v('e-display'), photo: v('e-photo')
-  };
-  setSyncing(true);
-  DB.ref('players/' + editKey).set(updated)
-    .then(() => setSyncing(false))
-    .catch(e => alert('Chyba uložení: ' + e.message));
+function saveRec(){
+  if(!editKey)return;
+  const u={surname:g('e-sn'),firstname:g('e-fn'),born:g('e-bn'),died:g('e-di'),deathcity:g('e-dc'),
+    city:g('e-ci'),lat:parseFloat(g('e-la'))||0,lon:parseFloat(g('e-lo'))||0,
+    seasons:g('e-se'),seasonsRange:g('e-sr'),display:g('e-dp'),photo:g('e-ph')};
+  setSy(true);
+  DB.ref('players/'+editKey).set(u).then(()=>setSy(false)).catch(e=>alert('Chyba: '+e.message));
   closePanel();
 }
 
-function deleteRecord() {
-  if (!editKey || !confirm('Opravdu smazat tohoto hráče?')) return;
-  setSyncing(true);
-  DB.ref('players/' + editKey).remove().then(() => setSyncing(false));
-  closePanel();
+function delRec(){
+  if(!editKey||!confirm('Opravdu smazat tohoto hráče?'))return;
+  setSy(true);DB.ref('players/'+editKey).remove().then(()=>setSy(false));closePanel();
 }
 
-function closePanel() { document.getElementById('panel-overlay').classList.remove('open'); editKey = null; }
+function closePanel(){document.getElementById('po').classList.remove('open');editKey=null;}
 
-function addNew() {
-  const key = DB.ref('players').push().key;
-  DATA[key] = { surname:'Nový', firstname:'Hráč', city:'', lat:48.9745, lon:14.4745, display:'', born:'', died:'', deathcity:'', seasons:'1', seasonsRange:'', photo:'https://php.esports.cz/images/min_https.php?exact&topcut&w=280&h=280&mtime=1496175630&file=https://hcmotor.cz/img/foto-default.jpg' };
-  render();
-  openEdit(key);
+function addNew(){
+  const k=DB.ref('players').push().key;
+  DATA[k]={surname:'Nový',firstname:'Hráč',city:'',lat:48.9745,lon:14.4745,display:'',born:'',died:'',deathcity:'',seasons:'1',seasonsRange:'',photo:'https://php.esports.cz/images/min_https.php?exact&topcut&w=280&h=280&mtime=1496175630&file=https://hcmotor.cz/img/foto-default.jpg'};
+  render();openEdit(k);
 }
 
-// ── EXPORT ──
-function showExport() {
-  const rows = Object.values(DATA);
-  const lines = rows.map(r => {
-    const f = v => `'${String(v||'').replace(/'/g, "\\'")}'`;
-    return `  {surname:${f(r.surname)},firstname:${f(r.firstname)},city:${f(r.city)},lat:${r.lat||0},lon:${r.lon||0},display:${f(r.display)},born:${f(r.born)},died:${f(r.died)},deathcity:${f(r.deathcity)},seasons:${f(r.seasons)},seasonsRange:${f(r.seasonsRange)},photo:${f(r.photo)}}`;
-  });
-  const out = `const SAMPLES = [\n${lines.join(',\n')}\n];`;
-  document.getElementById('exp-ta').value = out;
-  document.getElementById('exp-info').textContent = `${rows.length} záznamů · ${out.length.toLocaleString()} znaků`;
-  document.getElementById('exp-overlay').classList.add('open');
+function showExp(){
+  const f=v=>`'${String(v||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}' `;
+  const lines=Object.values(DATA).map(r=>`  {surname:${f(r.surname)},firstname:${f(r.firstname)},city:${f(r.city)},lat:${r.lat||0},lon:${r.lon||0},display:${f(r.display)},born:${f(r.born)},died:${f(r.died)},deathcity:${f(r.deathcity)},seasons:${f(r.seasons)},seasonsRange:${f(r.seasonsRange)},photo:${f(r.photo)}}`);
+  const out=`const SAMPLES = [\n${lines.join(',\n')}\n];`;
+  document.getElementById('eta').value=out;
+  document.getElementById('einfo').textContent=`${Object.keys(DATA).length} záznamů · ${out.length.toLocaleString()} znaků`;
+  document.getElementById('eo').classList.add('open');
 }
 
-function copyExport() {
-  navigator.clipboard.writeText(document.getElementById('exp-ta').value).then(() => {
-    const b = document.getElementById('copy-btn');
-    b.textContent = '✓ Zkopírováno!'; b.style.background = 'var(--green)'; b.style.color = '#fff';
-    setTimeout(() => { b.textContent = '📋 Kopírovat vše'; b.style.background = ''; b.style.color = ''; }, 2000);
+function copyExp(){
+  navigator.clipboard.writeText(document.getElementById('eta').value).then(()=>{
+    const b=document.getElementById('cbtn');
+    b.textContent='✓ Zkopírováno!';b.style.cssText='background:var(--green);color:#fff;border-color:var(--green)';
+    setTimeout(()=>{b.textContent='📋 Kopírovat';b.style.cssText='';},2000);
   });
 }
 
-// ── HELPERS ──
-function v(id) { return (document.getElementById(id)?.value || '').trim(); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function isDefault(url) { return !url || url.includes('foto-default'); }
-function warns(r) {
-  const w = [];
-  if (!r.city) w.push('Chybí město');
-  if (!r.born) w.push('Chybí datum nar.');
-  if (!r.lat && !r.lon) w.push('Chybí souřadnice');
-  if (isDefault(r.photo)) w.push('Výchozí fotka');
-  if (!r.seasons) w.push('Chybí sezóny');
-  return w;
-}
-function setSyncing(s) {
-  const el = document.getElementById('sync-ind');
-  if (!el) return;
-  if (s) { el.textContent = '↑ Ukládám...'; el.classList.add('saving'); }
-  else { el.textContent = '✓ Synchronizováno'; el.classList.remove('saving'); }
-}
-function show(id) { ['setup-screen','import-screen','main-ui'].forEach(s => { const el = document.getElementById(s); if (el) el.style.display = s===id ? (s==='main-ui'?'flex':'flex') : 'none'; }); }
-function showMain() { ['setup-screen','import-screen'].forEach(s => { const el = document.getElementById(s); if(el) el.style.display='none'; }); document.getElementById('main-ui').style.display='flex'; }
-function showImportScreen() { show('import-screen'); }
+function g(id){return(document.getElementById(id)?.value||'').trim();}
+function se(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function isDef(u){return!u||u.includes('foto-default');}
+function warns(r){const w=[];if(!r.city)w.push('Chybí město');if(!r.born)w.push('Chybí datum nar.');if(!r.lat&&!r.lon)w.push('Chybí souřadnice');if(isDef(r.photo))w.push('Výchozí fotka');if(!r.seasons)w.push('Chybí sezóny');return w;}
+function setSy(s){const el=document.getElementById('sync');if(!el)return;if(s){el.textContent='↑ Ukládám...';el.classList.add('sav');}else{el.textContent='✓ Synchronizováno';el.classList.remove('sav');}}
+function show(id){['s-setup','s-login','s-import','main'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display=s===id?(s==='main'?'flex':'flex'):'none';});}
+function showMain(){['s-setup','s-login','s-import'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display='none';});document.getElementById('main').style.display='flex';}
 
-// close overlays
-document.getElementById('panel-overlay').addEventListener('click', e => { if(e.target===document.getElementById('panel-overlay')) closePanel(); });
-document.getElementById('exp-overlay').addEventListener('click', e => { if(e.target===document.getElementById('exp-overlay')) document.getElementById('exp-overlay').classList.remove('open'); });
-document.addEventListener('keydown', e => { if(e.key==='Escape'){ closePanel(); document.getElementById('exp-overlay').classList.remove('open'); } });
+document.getElementById('po').addEventListener('click',e=>{if(e.target===document.getElementById('po'))closePanel();});
+document.getElementById('eo').addEventListener('click',e=>{if(e.target===document.getElementById('eo'))document.getElementById('eo').classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePanel();document.getElementById('eo').classList.remove('open');}});
 
-// ── INIT ──
 loadConfig();
 </script>
 </body>
