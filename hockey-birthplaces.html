@@ -253,6 +253,26 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pop-rname { font-weight:600; color:var(--blue3); flex:1; }
 .pop-rmeta { display:flex; gap:5px; color:#8a9ab5; font-size:11px; white-space:nowrap; }
 .pop-rmeta span { background:#eef1f8; padding:1px 5px; border-radius:3px; }
+.pop-row { cursor:pointer; }
+.pop-row:hover { background:#dde8fb !important; }
+.pop-row:hover .pop-rname { color:var(--blue); }
+.pop-player { cursor:pointer; transition:.15s; }
+.pop-player:hover { background:#eef2fc !important; }
+.pop-detail-hint { text-align:center; font-size:10px; color:#b0bdd0; padding:3px 0 5px; letter-spacing:.04em; }
+
+/* ── PLAYER DETAIL MODAL ─────────────────────────── */
+.detail-photo { width:90px; height:90px; border-radius:3px; object-fit:cover; border:2px solid #c4cedc; float:right; margin:0 0 10px 14px; flex-shrink:0; }
+.detail-photo-ph { width:90px; height:90px; border-radius:3px; background:#eef1f9; display:flex; align-items:center; justify-content:center; font-size:34px; float:right; margin:0 0 10px 14px; border:2px solid #c4cedc; flex-shrink:0; }
+.detail-name { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:800; color:var(--blue3); text-transform:uppercase; letter-spacing:.05em; line-height:1.1; margin-bottom:6px; }
+.detail-city { font-size:13px; color:#8a9ab5; margin-bottom:10px; }
+.detail-rows { clear:both; display:flex; flex-direction:column; gap:5px; margin-top:4px; }
+.detail-row { display:flex; gap:8px; font-size:13px; border-bottom:1px solid #edf0f5; padding-bottom:5px; }
+.detail-row:last-child { border-bottom:none; }
+.detail-lbl { color:#8a9ab5; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; width:90px; flex-shrink:0; padding-top:1px; }
+.detail-val { color:var(--blue3); font-weight:500; }
+.detail-seasons { display:inline-block; background:var(--blue); color:var(--yellow); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:12px; padding:2px 8px; border-radius:2px; margin-right:4px; }
+.detail-back { display:inline-flex; align-items:center; gap:5px; margin-bottom:12px; padding:4px 10px; border:1px solid #c4cedc; border-radius:2px; background:transparent; color:#8a9ab5; font-family:'Barlow',sans-serif; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; cursor:pointer; transition:.12s; }
+.detail-back:hover { border-color:var(--blue); color:var(--blue); }
 
 /* Search bar */
 .search-bar {
@@ -1279,7 +1299,8 @@ function updateMap() {
   visible.forEach(p=>{
     const key=Math.round(p.lat*200)+','+Math.round(p.lon*200);
     if (!groups[key]) groups[key]={lat:p.lat,lon:p.lon,display:p.display||p.city,ps:[]};
-    groups[key].ps.push(p);
+    const idx=players.indexOf(p);
+    groups[key].ps.push({p, idx});
   });
 
   const lls=[];
@@ -1292,21 +1313,21 @@ function updateMap() {
 
     let popContent;
     if (!multi) {
-      // Single player — full card
-      const p=g.ps[0];
+      // Single player — full card, click → detail modal
+      const {p, idx}=g.ps[0];
       const nm=fullName(p)||p.city;
       const thumb=p.photo
         ?`<img class="pop-thumb" src="${escA(p.photo)}" onerror="this.style.display='none'">`
         :`<div class="pop-thumb-ph">🏒</div>`;
       const meta=[p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
-      popContent=`<div class="pop-hdr">📍 ${esc(g.display)}</div><div class="pop-player">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div>`;
+      popContent=`<div class="pop-hdr">📍 ${esc(g.display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-detail-hint">klikni pro celý profil</div>`;
     } else {
-      // Multi-player city — compact sortable list
-      const sorted=[...g.ps].sort((a,b)=>(a.surname||'').localeCompare(b.surname||'','cs'));
-      const rows=sorted.map(p=>{
+      // Multi-player city — compact sortable list, click → detail
+      const sorted=[...g.ps].sort((a,b)=>(a.p.surname||'').localeCompare(b.p.surname||'','cs'));
+      const rows=sorted.map(({p,idx})=>{
         const yr=p.born?p.born.slice(-4):'';
         const s=p.seasons||'';
-        return `<div class="pop-row"><span class="pop-rname">${esc(fullName(p))}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
+        return `<div class="pop-row" onclick="showPlayerDetail(${idx})" title="Zobrazit detail hráče"><span class="pop-rname">${esc(fullName(p))}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
       }).join('');
       popContent=`<div class="pop-hdr"><span>📍 ${esc(g.display)}</span><span class="pop-badge">${n} hráčů</span></div><div class="pop-list">${rows}</div>`;
     }
@@ -1769,9 +1790,59 @@ document.addEventListener('click',e=>{
 });
 
 // ══════════════════════════════════════════════════
+// PLAYER DETAIL MODAL (from multi-city popup)
+// ══════════════════════════════════════════════════
+function showPlayerDetail(idx) {
+  const p = players[idx];
+  if (!p) return;
+  // Close map popup
+  map.closePopup();
+
+  const nm = fullName(p) || p.city;
+  const thumb = p.photo
+    ? `<img class="detail-photo" src="${escA(p.photo)}" onerror="this.style.display='none'">`
+    : `<div class="detail-photo-ph">🏒</div>`;
+
+  const rows = [];
+  if (p.city)         rows.push(['📍 Rodné město', esc(p.city)]);
+  if (p.born)         rows.push(['🎂 Narozen', esc(p.born)]);
+  if (p.died)         rows.push(['✝ Zemřel', esc(p.died) + (p.deathcity ? ` <span style="color:#8a9ab5">(${esc(p.deathcity)})</span>` : '')]);
+  if (p.seasonsRange) rows.push(['🏒 Sezóny', `<span class="detail-seasons">${esc(p.seasonsRange)}</span>${p.seasons ? `<span style="color:#8a9ab5;font-size:12px">${esc(p.seasons)} sez.</span>` : ''}`]);
+  else if (p.seasons) rows.push(['🏒 Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`]);
+
+  const rowsHtml = rows.map(([lbl,val]) =>
+    `<div class="detail-row"><span class="detail-lbl">${lbl}</span><span class="detail-val">${val}</span></div>`
+  ).join('');
+
+  document.getElementById('detailContent').innerHTML = `
+    <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on');focusPlayer(${idx})">← Zobrazit v seznamu</button>
+    ${thumb}
+    <div class="detail-name">${esc(nm)}</div>
+    <div class="detail-city">${esc(p.display || p.city || '—')}</div>
+    <div class="detail-rows">${rowsHtml}</div>
+    <div style="clear:both"></div>`;
+
+  document.getElementById('detailOvl').classList.add('on');
+}
+
+function closeDetailOvl(e) {
+  if (e && e.target !== document.getElementById('detailOvl')) return;
+  document.getElementById('detailOvl').classList.remove('on');
+}
+
+// ══════════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════════
 load(); initMap(); render(); setTimeout(updateMap,300);
 </script>
+<!-- ══════════════════════════════════════
+  PLAYER DETAIL MODAL
+══════════════════════════════════════ -->
+<div class="ovl" id="detailOvl" onclick="closeDetailOvl(event)">
+<div class="modal" style="max-width:460px;padding:1.4rem 1.6rem">
+  <button class="modal-close" onclick="document.getElementById('detailOvl').classList.remove('on')">✕</button>
+  <div id="detailContent"></div>
+</div>
+</div>
+
 </body>
-</html>
