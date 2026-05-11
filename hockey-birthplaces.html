@@ -1759,30 +1759,24 @@ function updateStats() {
 // ══════════════════════════════════════════════════
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(players));}catch(e){}}
 function load(){
+  const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  const sampleKeys=new Set(SAMPLES.map(s=>norm((s.firstname||'')+' '+(s.surname||''))));
+  // SAMPLES jsou vždy základ — změny v HTML se projeví okamžitě
+  players=SAMPLES.map(s=>({...s}));
   try{
     const r=localStorage.getItem(STORAGE_KEY);
     if(r){
-      players=JSON.parse(r);
-      // Merge photos from SAMPLES into localStorage players
-      const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
-      const photoIdx={};
-      SAMPLES.forEach(s=>{
-        if(!s.photo) return;
-        const k1=norm((s.firstname||'')+' '+(s.surname||''));
-        const k2=norm((s.surname||'')+' '+(s.firstname||''));
-        photoIdx[k1]=s.photo; photoIdx[k2]=s.photo;
+      const stored=JSON.parse(r);
+      const arr=Array.isArray(stored)?stored:(stored.players||[]);
+      // Přidej pouze ručně přidané hráče (ty co nejsou v SAMPLES)
+      arr.forEach(p=>{
+        const k=norm((p.firstname||'')+' '+(p.surname||''));
+        if(!sampleKeys.has(k)) players.push(p);
       });
-      players.forEach(p=>{
-        if(p.photo) return;
-        const k1=norm((p.firstname||'')+' '+(p.surname||''));
-        const k2=norm((p.surname||'')+' '+(p.firstname||''));
-        const photo=photoIdx[k1]||photoIdx[k2];
-        if(photo) p.photo=photo;
-      });
-      save();
-      return;
     }
   }catch(e){}
+  save();
+}
   players=SAMPLES.map(s=>({...s}));save();
 }
 function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
