@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Místa narození hráčů Motor České Budějovice</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -51,8 +54,8 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .lp{overflow-y:auto;background:#fff;border-right:1px solid #d4dae8;display:flex;flex-direction:column;transition:opacity .2s ease,visibility .2s ease}
 .app.lp-hidden .lp{opacity:0;visibility:hidden;pointer-events:none}
 .rp{position:relative}
-.btn-toggle-panel{position:absolute;top:50%;left:0;transform:translateY(-50%);z-index:400;width:18px;height:48px;background:var(--blue);border:none;border-radius:0 4px 4px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;box-shadow:2px 0 6px rgba(0,0,0,.2);transition:background .15s,left .25s ease}
-.btn-toggle-panel:hover{background:var(--blue2)}
+.btn-toggle-panel{position:absolute;top:50%;left:0;transform:translateY(-50%);z-index:400;width:26px;height:56px;background:var(--yellow);border:none;border-radius:0 6px 6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-size:18px;font-weight:700;box-shadow:3px 0 8px rgba(0,0,0,.35);transition:background .15s,transform .15s}
+.btn-toggle-panel:hover{background:#ffd000;transform:translateY(-50%) scale(1.08)}
 #mapEl{height:100%;width:100%}
 
 /* ── LIST HEAD ───────────────────────────────── */
@@ -195,9 +198,13 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .fp-hint{font-size:11px;color:#8a9ab5;margin-top:7px;text-align:center}
 
 @media(max-width:750px){
-  .app{grid-template-columns:1fr;grid-template-rows:50vh 1fr}
-  .lp{max-height:none;min-height:0;order:2}
-  .rp{order:1;min-height:50vh}
+.app{grid-template-columns:1fr;grid-template-rows:50vh 1fr;transition:grid-template-rows .25s ease}
+.app.lp-hidden{grid-template-columns:1fr;grid-template-rows:1fr 0}
+.app.lp-hidden .lp{opacity:0;visibility:hidden;pointer-events:none}
+.lp{max-height:none;min-height:0;order:2}
+.rp{order:1;min-height:50vh}
+.btn-toggle-panel{top:auto;bottom:0;left:50%;transform:translateX(-50%);border-radius:6px 6px 0 0;width:56px;height:26px;font-size:16px}
+.btn-toggle-panel:hover{transform:translateX(-50%) scale(1.08)}
   .hdr-inner{padding:.5rem .8rem;gap:.5rem}
   .hdr-club-logo{height:30px}
   h1{font-size:1rem}
@@ -206,7 +213,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   .hbtn{padding:5px 8px;font-size:10px}
   .list-head{flex-wrap:wrap;padding:.5rem .7rem;gap:5px}
   .list-head h2{font-size:.85rem}
-  .btn-toggle-panel{display:none}
   .sort-bar{padding:4px 8px;gap:4px}
   .search-bar{top:88px}
   .imp-modal{width:100%}
@@ -1840,10 +1846,15 @@ function togglePanel() {
   const app = document.querySelector('.app');
   const btn = document.getElementById('btnTogglePanel');
   const hidden = app.classList.toggle('lp-hidden');
-  btn.innerHTML = hidden ? '&#8250;' : '&#8249;';
+  const mobile = window.innerWidth <= 750;
+  if (mobile) {
+    btn.innerHTML = hidden ? '&#8963;' : '&#8964;';
+  } else {
+    btn.innerHTML = hidden ? '&#8250;' : '&#8249;';
+  }
   btn.title = hidden ? 'Zobrazit panel' : 'Skrýt panel';
   setTimeout(() => map.invalidateSize(), 260);
-}  
+}
 </script>
 <!-- ══════════════════════════════════════
   PLAYER DETAIL MODAL
