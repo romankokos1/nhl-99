@@ -1759,25 +1759,24 @@ function updateStats() {
 // ══════════════════════════════════════════════════
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(players));}catch(e){}}
 function load(){
-  const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
-  const sampleKeys=new Set(SAMPLES.map(s=>norm((s.firstname||'')+' '+(s.surname||''))));
-  // SAMPLES jsou vždy základ — změny v HTML se projeví okamžitě
-  players=SAMPLES.map(s=>({...s}));
+  players=SAMPLES.map(function(s){return Object.assign({},s);});
   try{
-    const r=localStorage.getItem(STORAGE_KEY);
+    var r=localStorage.getItem(STORAGE_KEY);
     if(r){
-      const stored=JSON.parse(r);
-      const arr=Array.isArray(stored)?stored:(stored.players||[]);
-      // Přidej pouze ručně přidané hráče (ty co nejsou v SAMPLES)
-      arr.forEach(p=>{
-        const k=norm((p.firstname||'')+' '+(p.surname||''));
-        if(!sampleKeys.has(k)) players.push(p);
+      var stored=JSON.parse(r);
+      var arr=Array.isArray(stored)?stored:(stored.players||[]);
+      var sampleNames={};
+      SAMPLES.forEach(function(s){
+        var k=((s.firstname||'')+' '+(s.surname||'')).toLowerCase().trim();
+        sampleNames[k]=true;
+      });
+      arr.forEach(function(p){
+        var k=((p.firstname||'')+' '+(p.surname||'')).toLowerCase().trim();
+        if(!sampleNames[k]) players.push(p);
       });
     }
   }catch(e){}
   save();
-}
-  players=SAMPLES.map(s=>({...s}));save();
 }
 function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
