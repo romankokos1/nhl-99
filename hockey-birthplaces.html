@@ -46,9 +46,13 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .hdr-stripes .s3{flex:2;background:var(--yellow)}
 
 /* ── LAYOUT ─────────────────────────────────── */
-.app{display:grid;grid-template-columns:420px 1fr;flex:1;min-height:0}
-.lp{overflow-y:auto;background:#fff;border-right:1px solid #d4dae8;display:flex;flex-direction:column}
+.app{display:grid;grid-template-columns:420px 1fr;flex:1;min-height:0;transition:grid-template-columns .25s ease}
+.app.lp-hidden{grid-template-columns:0 1fr}
+.lp{overflow-y:auto;background:#fff;border-right:1px solid #d4dae8;display:flex;flex-direction:column;transition:opacity .2s ease,visibility .2s ease}
+.app.lp-hidden .lp{opacity:0;visibility:hidden;pointer-events:none}
 .rp{position:relative}
+.btn-toggle-panel{position:absolute;top:50%;left:0;transform:translateY(-50%);z-index:400;width:18px;height:48px;background:var(--blue);border:none;border-radius:0 4px 4px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;box-shadow:2px 0 6px rgba(0,0,0,.2);transition:background .15s,left .25s ease}
+.btn-toggle-panel:hover{background:var(--blue2)}
 #mapEl{height:100%;width:100%}
 
 /* ── LIST HEAD ───────────────────────────────── */
@@ -202,7 +206,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   .hbtn{padding:5px 8px;font-size:10px}
   .list-head{flex-wrap:wrap;padding:.5rem .7rem;gap:5px}
   .list-head h2{font-size:.85rem}
-  .btn-import{display:none}
+  .btn-toggle-panel{display:none}
   .sort-bar{padding:4px 8px;gap:4px}
   .search-bar{top:88px}
   .imp-modal{width:100%}
@@ -333,7 +337,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     </div>
     <div class="hdr-right">
       <div class="hdr-stats" id="hdrStats"></div>
-      <button class="hbtn" onclick="openImport()">⬆ Import</button>
       <button class="hbtn" onclick="clearAll()">↺ Reset</button>
     </div>
   </div>
@@ -344,7 +347,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   <div class="lp">
     <div class="list-head">
       <h2 id="listTitle">Hráči</h2>
-      <button class="btn-import" onclick="openImport()">⬆️ Hromadný import</button>
       <button class="btn-add" onclick="openEdit()">+ Přidat</button>
     </div>
     <div class="sort-bar">
@@ -362,11 +364,12 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
       <div class="empty-msg" id="emptyMsg">
         <span class="ico">🏒</span>
         Zatím žádní hráči.<br>
-        Použij <strong>Hromadný import</strong> nebo <strong>+ Přidat</strong>.
+        Použij <strong>+ Přidat</strong> pro přidání hráče.
       </div>
     </div>
   </div>
   <div class="rp">
+    <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
     <div id="mapEl"></div>
     <!-- FILTR -->
     <div class="filter-panel" id="filterPanel" style="display:none">
@@ -1833,6 +1836,14 @@ function closeDetailOvl(e) {
 // BOOT
 // ══════════════════════════════════════════════════
 load(); initMap(); render(); setTimeout(updateMap,300);
+function togglePanel() {
+  const app = document.querySelector('.app');
+  const btn = document.getElementById('btnTogglePanel');
+  const hidden = app.classList.toggle('lp-hidden');
+  btn.innerHTML = hidden ? '&#8250;' : '&#8249;';
+  btn.title = hidden ? 'Zobrazit panel' : 'Skrýt panel';
+  setTimeout(() => map.invalidateSize(), 260);
+}  
 </script>
 <!-- ══════════════════════════════════════
   PLAYER DETAIL MODAL
