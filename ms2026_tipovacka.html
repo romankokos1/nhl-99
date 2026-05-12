@@ -687,27 +687,27 @@ table.lb-table{width:100%;border-collapse:collapse;min-width:580px;}
       <div class="aw-card">
         <div class="aw-icon">🥅</div>
         <span class="lbl">NEJLEPŠÍ STŘELEC ČR</span>
-        <input type="text" id="aw0" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw0" placeholder="Jméno hráče…" list="czSkaters">
       </div>
       <div class="aw-card">
         <div class="aw-icon">🎯</div>
         <span class="lbl">NEJLEPŠÍ NAHRÁVAČ ČR</span>
-        <input type="text" id="aw1" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw1" placeholder="Jméno hráče…" list="czSkaters">
       </div>
       <div class="aw-card">
         <div class="aw-icon">📊</div>
         <span class="lbl">NEJLEPŠÍ BODOVAČ ČR</span>
-        <input type="text" id="aw2" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw2" placeholder="Jméno hráče…" list="czSkaters">
       </div>
       <div class="aw-card">
         <div class="aw-icon">📈</div>
         <span class="lbl">NEJLEPŠÍ +/- ČR</span>
-        <input type="text" id="aw3" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw3" placeholder="Jméno hráče…" list="czSkaters">
       </div>
       <div class="aw-card">
         <div class="aw-icon">😤</div>
         <span class="lbl">NEJVÍCE TREST. MINUT ČR</span>
-        <input type="text" id="aw4" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw4" placeholder="Jméno hráče…" list="czSkaters">
       </div>
     </div>
 
@@ -717,27 +717,27 @@ table.lb-table{width:100%;border-collapse:collapse;min-width:580px;}
       <div class="aw-card">
         <div class="aw-icon">🥅</div>
         <span class="lbl">NEJLEPŠÍ STŘELEC TURNAJE</span>
-        <input type="text" id="aw5" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw5" placeholder="Jméno hráče…" list="allSkaters">
       </div>
       <div class="aw-card">
         <div class="aw-icon">🎯</div>
         <span class="lbl">NEJLEPŠÍ NAHRÁVAČ TURNAJE</span>
-        <input type="text" id="aw6" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw6" placeholder="Jméno hráče…" list="allSkaters">
       </div>
       <div class="aw-card">
         <div class="aw-icon">⭐</div>
         <span class="lbl">NEJLEPŠÍ BODOVAČ TURNAJE</span>
-        <input type="text" id="aw7" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw7" placeholder="Jméno hráče…" list="allSkaters">
       </div>
       <div class="aw-card">
         <div class="aw-icon">📈</div>
         <span class="lbl">NEJLEPŠÍ +/- TURNAJE</span>
-        <input type="text" id="aw8" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw8" placeholder="Jméno hráče…" list="allSkaters">
       </div>
       <div class="aw-card">
         <div class="aw-icon">😤</div>
         <span class="lbl">NEJVÍCE TREST. MINUT TURNAJE</span>
-        <input type="text" id="aw9" placeholder="Jméno hráče…" autocomplete="off">
+        <input type="text" id="aw9" placeholder="Jméno hráče…" list="allSkaters">
       </div>
     </div>
 
@@ -745,10 +745,222 @@ table.lb-table{width:100%;border-collapse:collapse;min-width:580px;}
     <div class="aw-card">
       <div class="aw-icon">🧤</div>
       <span class="lbl">NEJLEPŠÍ BRANKÁŘ (% zákroků)</span>
-      <input type="text" id="aw10" placeholder="Jméno brankáře…" autocomplete="off">
+      <input type="text" id="aw10" placeholder="Jméno brankáře…" list="allGoalies">
     </div>
 
-    <!-- no player suggestions - nominace není známá -->
+    <!-- PLAYER DATALISTS -->
+    <datalist id="czSkaters">
+      <option value="Roman Červenka">
+      <option value="Dominik Kubalík">
+      <option value="Martin Kaut">
+      <option value="Lukáš Sedlák">
+      <option value="Daniel Voženílek">
+      <option value="Jakub Flek">
+      <option value="Ondřej Beránek">
+      <option value="Jiří Černoch">
+      <option value="Jan Mandát">
+      <option value="Michal Kovařčík">
+      <option value="David Tomášek">
+      <option value="Jaroslav Chmelař">
+      <option value="Matyáš Melovský">
+      <option value="Matěj Blümel">
+      <option value="Filip Hronek">
+      <option value="Libor Hájek">
+      <option value="Michal Kempný">
+      <option value="Jan Ščotka">
+      <option value="Marek Alscher">
+      <option value="Tomáš Cibulka">
+      <option value="Tomáš Galvas">
+      <option value="Jiří Ticháček">
+    </datalist>
+    <datalist id="allSkaters">
+      <!-- CZE -->
+      <option value="Roman Červenka">
+      <option value="Dominik Kubalík">
+      <option value="Martin Kaut">
+      <option value="Lukáš Sedlák">
+      <option value="Daniel Voženílek">
+      <option value="Jakub Flek">
+      <option value="Ondřej Beránek">
+      <option value="Jiří Černoch">
+      <option value="Jan Mandát">
+      <option value="Michal Kovařčík">
+      <option value="David Tomášek">
+      <option value="Jaroslav Chmelař">
+      <option value="Matyáš Melovský">
+      <option value="Matěj Blümel">
+      <option value="Filip Hronek">
+      <option value="Libor Hájek">
+      <option value="Michal Kempný">
+      <option value="Jan Ščotka">
+      <option value="Marek Alscher">
+      <option value="Tomáš Cibulka">
+      <option value="Tomáš Galvas">
+      <option value="Jiří Ticháček">
+      <!-- USA -->
+      <option value="Matthew Tkachuk">
+      <option value="Ryan Leonard">
+      <option value="Tommy Novak">
+      <option value="Sam Lafferty">
+      <option value="Oliver Moore">
+      <option value="Matt Coronato">
+      <option value="Paul Cotter">
+      <option value="James Hagens">
+      <option value="Isaac Howard">
+      <option value="Ryker Lee">
+      <option value="Danny Nelson">
+      <option value="Mathieu Olivier">
+      <option value="Max Plante">
+      <option value="Max Sasson">
+      <option value="Alex Steeves">
+      <option value="Will Borgen">
+      <option value="Declan Carlile">
+      <option value="Connor Clifton">
+      <option value="Justin Faulk">
+      <option value="Wyatt Kaiser">
+      <option value="Ryan Lindgren">
+      <option value="Mason Lohrei">
+      <option value="Ryan Ufko">
+      <!-- CAN -->
+      <option value="Matthew Tkachuk">
+      <option value="Mark Scheifele">
+      <option value="John Tavares">
+      <option value="Ryan O'Reilly">
+      <option value="Robert Thomas">
+      <option value="Mathew Barzal">
+      <option value="Macklin Celebrini">
+      <option value="Dylan Cozens">
+      <option value="Dylan Holloway">
+      <option value="Fraser Minten">
+      <option value="Connor Brown">
+      <option value="Emmitt Finnie">
+      <option value="Gabriel Vilardi">
+      <option value="Evan Bouchard">
+      <option value="Morgan Rielly">
+      <option value="Darnell Nurse">
+      <option value="Sam Dickinson">
+      <option value="Dylan DeMelo">
+      <option value="Denton Mateychuk">
+      <option value="Zach Whitecloud">
+      <option value="Parker Wotherspoon">
+      <!-- SWE -->
+      <option value="Lucas Raymond">
+      <option value="Mattias Ekholm">
+      <option value="Oliver Ekman-Larsson">
+      <option value="Linus Karlsson">
+      <option value="Simon Holmström">
+      <option value="Jack Berglund">
+      <option value="Anton Frondell">
+      <option value="Oskar Sundqvist">
+      <option value="Jakob Silfverberg">
+      <option value="Emil Heineman">
+      <option value="Rasmus Asplund">
+      <option value="Isac Hedqvist">
+      <option value="André Petersson">
+      <option value="Ivar Stenberg">
+      <option value="Viggo Björck">
+      <option value="Jacob de la Rose">
+      <option value="Albert Johansson">
+      <option value="Jacob Larsson">
+      <option value="Robert Hägg">
+      <option value="Erik Brännström">
+      <option value="Tim Heed">
+      <option value="Joel Persson">
+      <!-- GER -->
+      <option value="Moritz Seider">
+      <option value="Dominik Kahun">
+      <option value="Joshua Samanski">
+      <option value="Andreas Eder">
+      <option value="Frederik Tiffels">
+      <option value="Manuel Wiederer">
+      <option value="Dominik Bokk">
+      <option value="Parker Tuomie">
+      <option value="Alexander Ehl">
+      <option value="Marc Michaelis">
+      <option value="Samuel Dove-McFalls">
+      <option value="Daniel Fischbuch">
+      <option value="Maximilian Kastner">
+      <option value="Nicolas Krämmer">
+      <option value="Stefan Loibl">
+      <option value="Eric Mik">
+      <option value="Kai Wissmann">
+      <option value="Phillip Sinn">
+      <option value="Fabio Wagner">
+      <option value="Leon Gawanke">
+      <option value="Leon Hüttl">
+      <option value="Marcus Weber">
+      <!-- FIN -->
+      <option value="Aleksander Barkov">
+      <option value="Anton Lundell">
+      <option value="Teuvo Teräväinen">
+      <option value="Aatu Räty">
+      <option value="Jesse Puljujärvi">
+      <option value="Lenni Hämeenaho">
+      <option value="Sakari Manninen">
+      <option value="Teuvo Teräväinen">
+      <option value="Hannes Björninen">
+      <option value="Saku Mäenalanen">
+      <option value="Eemil Erholtz">
+      <option value="Sami Päivärinta">
+      <option value="Janne Kuokkanen">
+      <option value="Waltteri Merelä">
+      <option value="Patrik Puistola">
+      <option value="Ville Heinola">
+      <option value="Henri Jokiharju">
+      <option value="Mikko Lehtonen">
+      <option value="Olli Määttä">
+      <option value="Nikolas Matinpalo">
+      <option value="Vili Saarijärvi">
+      <option value="Mikael Seppälä">
+      <option value="Urho Vaakanainen">
+      <!-- AUT -->
+      <option value="Dominic Zwerger">
+      <option value="Leon Wallner">
+      <option value="Thimo Nickl">
+      <option value="Mario Huber">
+      <option value="Benjamin Nissner">
+      <option value="Peter Schneider">
+      <option value="Lucas Thaler">
+      <option value="Tim Harnisch">
+      <option value="Paul Huber">
+      <option value="Henrik Neubauer">
+      <option value="Simeon Schwinger">
+      <option value="Maximilian Rebernig">
+      <option value="Leon Kolarik">
+      <option value="Ian Scherzer">
+      <option value="David Maier">
+      <option value="Thimo Nickl">
+      <option value="Clemens Unterweger">
+      <option value="Dominic Hackl">
+      <option value="Ramón Schnetzer">
+      <option value="Paul Stapelfeldt">
+      <option value="Philipp Wimmer">
+      <option value="Gregor Biber">
+      <option value="Bernd Wolf">
+    </datalist>
+    <datalist id="allGoalies">
+      <option value="Petr Kváča">
+      <option value="Josef Kořenář">
+      <option value="Dominik Pavlát">
+      <option value="Drew Commesso">
+      <option value="Devin Cooley">
+      <option value="Joseph Woll">
+      <option value="Jet Greaves">
+      <option value="Jack Ivankovic">
+      <option value="Cam Talbot">
+      <option value="Arvid Söderblom">
+      <option value="Magnus Hellberg">
+      <option value="Love Härenstam">
+      <option value="Philipp Grubauer">
+      <option value="Maximilian Franzreb">
+      <option value="Jonas Stettmer">
+      <option value="Justus Annunen">
+      <option value="Joonas Korpisalo">
+      <option value="Harri Säteri">
+      <option value="David Kickert">
+      <option value="Atte Tolvanen">
+      <option value="Florian Vorauer">
+    </datalist>
 
     <div class="btn-row">
       <button class="btn btn-sec" onclick="scr('sp')">← PLAY-OFF</button>
@@ -1311,7 +1523,8 @@ function renderAdmAwards(){
   AW_FULL.forEach((lbl,i)=>{
     const d=document.createElement('div');d.className='adm-aw-row';
     d.innerHTML=`<span class="adm-aw-lbl">${lbl}</span>
-      <input class="adm-aw-inp" type="text" value="${esc(AR2.aw[i]||'')}" placeholder="Jméno…">`;
+      <input class="adm-aw-inp" type="text" value="${esc(AR2.aw[i]||'')}" placeholder="Jméno…"
+        list="${i<5?'czSkaters':i<10?'allSkaters':'allGoalies'}">`;
     el.appendChild(d);
   });
 }
