@@ -500,7 +500,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdn.osmbuildings.org/OSMBuildings-Leaflet.js"></script>
 <script>
 // ══════════════════════════════════════════════════
 // STATE
@@ -537,7 +536,7 @@ const DETECT_RX = {
 const DATA_URL = 'hcmotor_players.json';
 
 function loadPlayers(callback) {
-  fetch(DATA_URL)
+  fetch(DATA_URL + '?v=' + Date.now())
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => { SAMPLES = data; callback(); })
     .catch(err => {
@@ -550,9 +549,6 @@ function loadPlayers(callback) {
 // ══════════════════════════════════════════════════
 // MAP
 // ══════════════════════════════════════════════════
-const ARENA_LAT = 48.9705361;
-const ARENA_LNG = 14.4711128;
-
 function initMap() {
   map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.05,14.45],9);
   const baseLayers = {
@@ -563,62 +559,6 @@ function initMap() {
   baseLayers['🌍 Voyager (barevný)'].addTo(map);
   L.control.layers(baseLayers, {}, {position:'topright', collapsed:false}).addTo(map);
   L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
-
-  // ── OSM Buildings – 3D budovy ──────────────────
-  try {
-    const osmb = new OSMBuildings(map).load('https://{s}.data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');
-  } catch(e) { console.warn('OSMBuildings se nepodařilo načíst:', e); }
-
-  // ── Marker arény ──────────────────────────────
-  const arenaIcon = L.divIcon({
-    html: `<div style="
-      width:42px;height:42px;border-radius:4px;
-      background:#1c4896;border:3px solid #f5c300;
-      display:flex;align-items:center;justify-content:center;
-      font-size:22px;box-shadow:0 4px 18px rgba(0,0,0,.5);
-      cursor:pointer;
-    ">🏒</div>`,
-    className:'',iconSize:[42,42],iconAnchor:[21,21]
-  });
-
-  const arenaMarker = L.marker([ARENA_LAT, ARENA_LNG], {icon: arenaIcon, zIndexOffset: 9999});
-  arenaMarker.bindPopup(`
-    <div style="padding:10px 14px;min-width:200px">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#1c4896;margin-bottom:4px">🏟 Budvar Aréna</div>
-      <div style="font-size:12px;color:#555;margin-bottom:10px">HC Motor České Budějovice</div>
-      <button onclick="flyToArena3D()" style="
-        width:100%;padding:7px;background:#1c4896;color:#f5c300;border:none;
-        border-radius:2px;font-weight:700;font-size:12px;text-transform:uppercase;
-        letter-spacing:.06em;cursor:pointer;font-family:'Barlow',sans-serif
-      ">🏗 Zobrazit 3D budovy</button>
-    </div>
-  `);
-  arenaMarker.addTo(map);
-
-  // ── Tlačítko "Arena" v mapě ────────────────────
-  const ArenaBtn = L.Control.extend({
-    options: { position: 'bottomright' },
-    onAdd: function() {
-      const btn = L.DomUtil.create('button','arena-btn');
-      btn.innerHTML = '🏒 Aréna';
-      btn.title = 'Zobrazit Budvar Arénu v 3D';
-      btn.style.cssText = `
-        background:#1c4896;color:#f5c300;border:2px solid #f5c300;
-        border-radius:3px;padding:8px 14px;font-family:'Barlow Condensed',sans-serif;
-        font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;
-        cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.4);
-      `;
-      L.DomEvent.on(btn,'click', L.DomEvent.stopPropagation);
-      L.DomEvent.on(btn,'click', flyToArena3D);
-      return btn;
-    }
-  });
-  new ArenaBtn().addTo(map);
-}
-
-function flyToArena3D() {
-  map.closePopup();
-  map.flyTo([ARENA_LAT, ARENA_LNG], 17, {duration: 1.4});
 }
 
 function mkIcon(label, color, sz, textColor) {
