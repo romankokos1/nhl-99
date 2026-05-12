@@ -536,7 +536,7 @@ const DETECT_RX = {
 const DATA_URL = 'hcmotor_players.json';
 
 function loadPlayers(callback) {
-  fetch(DATA_URL)
+  fetch(DATA_URL + '?v=' + Date.now())
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => { SAMPLES = data; callback(); })
     .catch(err => {
