@@ -71,20 +71,20 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .empty-msg strong{color:var(--blue)}
 
 /* ── PLAYER CARD ─────────────────────────────── */
-.pc{background:#f5f7fb;border:1px solid #dde3ee;border-left:3px solid transparent;border-radius:2px;padding:.55rem .85rem;display:flex;align-items:center;gap:10px;transition:.15s;cursor:default}
-.pc:hover{background:#eef1f9;border-left-color:var(--yellow)}
-.pc-avatar{width:38px;height:38px;border-radius:2px;background:var(--blue);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;flex-shrink:0;overflow:hidden;border:1px solid #c4cedc}
+.pc{background:#fff;border:1px solid #e4e9f2;border-left:3px solid transparent;border-radius:10px;padding:.6rem .85rem;display:flex;align-items:center;gap:10px;transition:background .15s,box-shadow .15s,border-color .15s;cursor:pointer;box-shadow:0 1px 4px rgba(28,60,120,.06)}
+.pc:hover{background:#f4f7fd;border-left-color:var(--yellow);box-shadow:0 3px 12px rgba(28,60,120,.11)}
+.pc-avatar{width:40px;height:40px;border-radius:8px;background:var(--blue);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;flex-shrink:0;overflow:hidden;border:1.5px solid #d4dcea;box-shadow:0 1px 4px rgba(0,0,0,.10)}
 .pc-avatar img{width:100%;height:100%;object-fit:cover}
 .pc-info{flex:1;min-width:0}
 .pc-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--blue3)}
-.pc-meta{font-size:11px;color:#7a8fa8;margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pc-meta{font-size:11px;color:#7a8fa8;margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .pc-city{display:flex;align-items:center;gap:4px}
 .pc-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
 .pc-dot.pending{background:var(--yellow)}
 .pc-acts{display:flex;gap:3px;flex-shrink:0;opacity:0;transition:.15s}
 .pc:hover .pc-acts{opacity:1}
-.ib{width:26px;height:26px;border-radius:2px;border:1px solid #c4cedc;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#8a9ab5;transition:.1s}
-.ib:hover{background:#dde3ee;color:var(--blue3)}
+.ib{width:26px;height:26px;border-radius:6px;border:1px solid #d4dcea;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#8a9ab5;transition:.1s}
+.ib:hover{background:#e8edf8;color:var(--blue3)}
 .ib.del:hover{background:#fce8e6;color:#b02020;border-color:#f0a8a0}
 
 /* ── OVERLAY ─────────────────────────────────── */
@@ -409,12 +409,12 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 
 /* Active / highlighted player card */
 .pc-active {
-  background: #e8f0fc !important;
-  border-left: 3px solid #1c4896;
+  background: linear-gradient(90deg, #e4edfc 0%, #eef3fd 100%) !important;
+  border-left: 3px solid var(--blue) !important;
+  box-shadow: 0 4px 16px rgba(28,72,150,.14) !important;
 }
+.pc-active .pc-name { color: var(--blue); }
 .pc-highlight { background: #fffbe6; }
-.pc { cursor: pointer; transition: background .12s; }
-.pc:hover { background: #f0f4fb; }
 
 .hdr-club-logo { height: 42px; width: auto; flex-shrink: 0; }
 
@@ -1279,12 +1279,10 @@ function showPlayerDetail(idx) {
     ? `<img class="detail-photo" src="${escA(p.photo)}" onerror="this.style.display='none'">`
     : `<div class="detail-photo-ph">🏒</div>`;
 
-  const cityTag = p.city
-    ? `<div class="detail-city-tag">📍 ${esc(p.city)}</div>`
-    : '';
+  const bornVal = [p.born ? esc(p.born) : null, p.city ? `<span style="color:#8a9ab5;font-size:13px;font-weight:400">(${esc(p.city)})</span>` : null].filter(Boolean).join(' ');
 
   const items = [];
-  if (p.born) items.push(['Narozen', esc(p.born), false]);
+  if (bornVal) items.push(['Narozen', bornVal, false]);
   if (p.died) items.push(['Zemřel', esc(p.died) + (p.deathcity ? ` <span style="color:#8a9ab5;font-size:12px">(${esc(p.deathcity)})</span>` : ''), false]);
   if (p.seasonsRange) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasonsRange)}</span>${p.seasons ? `<span style="color:#8a9ab5;font-size:12px;font-weight:400"> ${esc(p.seasons)} sez.</span>` : ''}`, true]);
   else if (p.seasons) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`, true]);
@@ -1301,7 +1299,6 @@ function showPlayerDetail(idx) {
       ${thumb}
       <div class="detail-header-info">
         <div class="detail-name">${esc(nm)}</div>
-        ${cityTag}
       </div>
     </div>
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
