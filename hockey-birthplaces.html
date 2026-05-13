@@ -170,7 +170,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .leaflet-popup-content{margin:0!important;padding:0!important;min-width:180px}
 /* ── LAYERS CONTROL – collapsed premium button ─ */
 .leaflet-control-layers{border-radius:12px!important;border:1.5px solid rgba(28,72,150,.18)!important;box-shadow:0 4px 16px rgba(15,40,100,.16)!important;overflow:hidden}
-.leaflet-control-layers-toggle{width:36px!important;height:36px!important;background-color:rgba(246,249,255,.96)!important;background-image:none!important;border-radius:10px!important}
+.leaflet-control-layers-toggle{width:36px!important;height:36px!important;background-color:rgba(246,249,255,.96)!important;background-image:none!important;border-radius:10px!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .leaflet-control-layers-toggle::after{content:'';display:block;width:18px;height:18px;margin:auto;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c4896' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='12 2 2 7 12 12 22 7'/%3E%3Cpolyline points='2 17 12 22 22 17'/%3E%3Cpolyline points='2 12 12 17 22 12'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;background-position:center}
 .leaflet-control-layers-expanded{background:rgba(246,249,255,.97)!important;border-radius:12px!important;padding:10px 12px 8px!important;min-width:140px}
 .leaflet-control-layers-expanded .leaflet-control-layers-toggle{display:none!important}
@@ -265,7 +265,9 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     border:none!important;border-top:none!important;
     overflow-y:auto;
   }
-  .app:not(.lp-hidden) .lp{transform:translateY(0)}
+  .lp.lp-open{transform:translateY(0)}
+  /* Header stays above lp overlay */
+  .hdr{position:relative;z-index:3100}
   /* Filter panel above nav */
   .filter-panel{bottom:calc(72px + env(safe-area-inset-bottom,0px))!important}
   /* Stats panel above nav */
@@ -1429,21 +1431,22 @@ function togglePanel() {
 // ── MOBILE NAV ─────────────────────────────────────
 function mobTab(tab) {
   const app = document.querySelector('.app');
+  const lp  = document.querySelector('.lp');
   const stats = document.getElementById('mobStatsPanel');
   ['mapa','seznam','statistiky'].forEach(t => {
     document.getElementById('mt'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.remove('active');
   });
   document.getElementById('mt'+tab.charAt(0).toUpperCase()+tab.slice(1))?.classList.add('active');
-  if (tab === 'mapa') {
-    app.classList.add('lp-hidden');
+  if (tab === 'seznam') {
+    lp?.classList.add('lp-open');
     stats.classList.remove('on');
-  } else if (tab === 'seznam') {
-    app.classList.remove('lp-hidden');
-    stats.classList.remove('on');
-  } else {
-    app.classList.add('lp-hidden');
+  } else if (tab === 'statistiky') {
+    lp?.classList.remove('lp-open');
     stats.classList.add('on');
     renderMobStats();
+  } else {
+    lp?.classList.remove('lp-open');
+    stats.classList.remove('on');
   }
   setTimeout(() => map.invalidateSize(), 260);
 }
