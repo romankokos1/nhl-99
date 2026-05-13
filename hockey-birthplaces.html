@@ -168,6 +168,14 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 /* ── LEAFLET POPUP ───────────────────────────── */
 .leaflet-popup-content-wrapper{border-radius:3px!important;box-shadow:0 8px 30px rgba(15,47,106,.25)!important;padding:0!important;overflow:hidden;border-top:3px solid var(--yellow)}
 .leaflet-popup-content{margin:0!important;padding:0!important;min-width:180px}
+/* ── LAYERS CONTROL – collapsed premium button ─ */
+.leaflet-control-layers{border-radius:12px!important;border:1.5px solid rgba(28,72,150,.18)!important;box-shadow:0 4px 16px rgba(15,40,100,.16)!important;overflow:hidden}
+.leaflet-control-layers-toggle{width:36px!important;height:36px!important;background-color:rgba(246,249,255,.96)!important;background-image:none!important;border-radius:10px!important}
+.leaflet-control-layers-toggle::after{content:'';display:block;width:18px;height:18px;margin:auto;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c4896' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='12 2 2 7 12 12 22 7'/%3E%3Cpolyline points='2 17 12 22 22 17'/%3E%3Cpolyline points='2 12 12 17 22 12'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;background-position:center}
+.leaflet-control-layers-expanded{background:rgba(246,249,255,.97)!important;border-radius:12px!important;padding:10px 12px 8px!important;min-width:140px}
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle{display:none!important}
+.leaflet-control-layers label{font-family:'Barlow',sans-serif;font-size:13px;font-weight:500;color:#1c2e4a!important;display:flex;align-items:center;gap:6px;padding:3px 0;cursor:pointer}
+.leaflet-control-layers input[type=radio]{accent-color:#1c4896}
 .pop-hdr{padding:7px 12px;background:var(--blue);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--yellow)}
 .pop-player{padding:6px 12px;font-size:13px;color:var(--blue3);border-bottom:1px solid #edf0f5;display:flex;align-items:center;gap:8px;background:#fff}
 .pop-player:last-child{border-bottom:none;padding-bottom:9px}
@@ -528,7 +536,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   <div class="hdr-stripes"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
 </div>
 
-<div class="app lp-hidden">
+<div class="app">
   <div class="lp">
     <div class="list-head">
       <h2 id="listTitle">Hráči</h2>
@@ -738,7 +746,7 @@ function initMap() {
     '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}),
   };
   baseLayers['🌍 Voyager (barevný)'].addTo(map);
-  L.control.layers(baseLayers, {}, {position:'topright', collapsed:false}).addTo(map);
+  L.control.layers(baseLayers, {}, {position:'topright', collapsed:true}).addTo(map);
   L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
 }
 
@@ -1280,22 +1288,28 @@ function focusPlayer(idx) {
   const p = players[idx];
   if (!p || !p.lat) return;
 
+  // On mobile: switch to mapa tab, then fly
+  const isMobile = window.innerWidth <= 750;
+  if (isMobile) mobTab('mapa');
+
   // Highlight card
   document.querySelectorAll('#playerList .pc').forEach(c => c.classList.remove('pc-active'));
   const card = document.querySelector(`.pc[data-idx="${idx}"]`);
   if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 
   // Fly map to location and open popup
-  map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
-  setTimeout(()=>{
-    // Find and open the marker at this location
-    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
-    mlayers.forEach(mk => {
-      const ll = mk.getLatLng();
-      const k = Math.round(ll.lat*200)+','+Math.round(ll.lng*200);
-      if (k === key) mk.openPopup();
-    });
-  }, 900);
+  const delay = isMobile ? 350 : 0;
+  setTimeout(() => {
+    map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
+    setTimeout(()=>{
+      const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+      mlayers.forEach(mk => {
+        const ll = mk.getLatLng();
+        const k = Math.round(ll.lat*200)+','+Math.round(ll.lng*200);
+        if (k === key) mk.openPopup();
+      });
+    }, 900);
+  }, delay);
 }
 
 function updateStats() {
