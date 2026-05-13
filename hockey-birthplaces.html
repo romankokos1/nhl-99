@@ -234,6 +234,58 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   .rp{min-height:45vh}
 }
 
+/* ── MOBILE BOTTOM NAV ──────────────────────── */
+.mob-nav{display:none}
+.mob-stats-panel{
+  position:fixed;bottom:0;left:0;right:0;height:68vh;z-index:2900;
+  background:#f2f5fb;border-radius:20px 20px 0 0;
+  box-shadow:0 -8px 36px rgba(15,40,100,.18);
+  overflow-y:auto;
+  transform:translateY(100%);opacity:0;pointer-events:none;
+  transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s;
+}
+.mob-stats-panel.on{transform:translateY(0);opacity:1;pointer-events:all}
+.msp-handle{width:36px;height:4px;border-radius:2px;background:rgba(28,72,150,.18);margin:10px auto 0}
+.msp-head{padding:.85rem 1.2rem .5rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--blue3);border-bottom:1px solid #dde5f0;margin-bottom:.6rem}
+.msp-body{padding:.4rem 1rem 2rem}
+.msp-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.2rem}
+.msp-kpi{background:#fff;border-radius:12px;border:1px solid #e4eaf5;padding:.65rem .5rem;text-align:center;box-shadow:0 1px 4px rgba(28,60,120,.06)}
+.msp-kpi-val{display:block;font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;color:var(--blue);line-height:1}
+.msp-kpi-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9aaac4;margin-top:3px}
+.msp-section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9aaac4;margin-bottom:.65rem}
+.msp-bars{display:flex;flex-direction:column;gap:.55rem}
+.msp-bar-row{display:flex;align-items:center;gap:.55rem}
+.msp-bar-city{font-size:12px;font-weight:600;color:var(--blue3);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msp-bar-track{flex:1;height:6px;background:rgba(28,72,150,.10);border-radius:3px;overflow:hidden}
+.msp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue) 0%,var(--blue-light) 100%);border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.msp-bar-count{font-size:11px;font-weight:700;color:var(--blue);width:20px;text-align:right;flex-shrink:0}
+@media(max-width:750px){
+  body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+  .btn-toggle-panel{display:none!important}
+  .mob-stats-panel{bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+  .mob-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:3000;
+    background:rgba(246,249,255,.95);
+    -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+    border-radius:16px 16px 0 0;
+    border-top:1px solid rgba(200,215,240,.55);
+    box-shadow:0 -4px 24px rgba(15,40,100,.13);
+    padding:8px 4px max(env(safe-area-inset-bottom,0px),10px);
+  }
+  .mob-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:5px 0 3px;background:none;border:none;cursor:pointer;
+    color:#a0b0cc;font-family:'Barlow',sans-serif;font-size:10px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;
+    transition:color .18s;-webkit-tap-highlight-color:transparent;position:relative;
+  }
+  .mob-tab svg{width:22px;height:22px;stroke-width:1.65;transition:filter .18s}
+  .mob-tab.active{color:var(--blue)}
+  .mob-tab.active svg{filter:drop-shadow(0 1px 4px rgba(28,72,150,.32))}
+  .mob-tab::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:3px;border-radius:0 0 3px 3px;background:var(--blue);transition:width .2s cubic-bezier(.4,0,.2,1)}
+  .mob-tab.active::after{width:24px}
+}
+
 /* City group sections */
 .city-section { margin-bottom: 2px; }
 .city-hdr {
@@ -1332,7 +1384,7 @@ function closeDetailOvl(e) {
 loadPlayers(function() {
   load(); initMap(); render(); setTimeout(updateMap,300);
 });
-  window.addEventListener('load', () => { map.invalidateSize(); });
+  
 window.addEventListener('resize', () => { map.invalidateSize(); });
 function togglePanel() {
   const app = document.querySelector('.app');
@@ -1347,7 +1399,58 @@ function togglePanel() {
   btn.title = hidden ? 'Zobrazit panel' : 'Skrýt panel';
   setTimeout(() => map.invalidateSize(), 260);
 }
-</script>
+
+// ── MOBILE NAV ─────────────────────────────────────
+function mobTab(tab) {
+  const app = document.querySelector('.app');
+  const stats = document.getElementById('mobStatsPanel');
+  ['mapa','seznam','statistiky'].forEach(t => {
+    document.getElementById('mt'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.remove('active');
+  });
+  document.getElementById('mt'+tab.charAt(0).toUpperCase()+tab.slice(1))?.classList.add('active');
+  if (tab === 'mapa') {
+    app.classList.add('lp-hidden');
+    stats.classList.remove('on');
+  } else if (tab === 'seznam') {
+    app.classList.remove('lp-hidden');
+    stats.classList.remove('on');
+  } else {
+    app.classList.add('lp-hidden');
+    stats.classList.add('on');
+    renderMobStats();
+  }
+  setTimeout(() => map.invalidateSize(), 260);
+}
+function renderMobStats() {
+  const body = document.getElementById('mspBody');
+  if (!body || !players.length) return;
+  const withCoords = players.filter(p => p.lat);
+  const cityMap = {};
+  withCoords.forEach(p => { const k = p.city||'—'; cityMap[k]=(cityMap[k]||0)+1; });
+  const top = Object.entries(cityMap).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const maxC = top[0]?.[1]||1;
+  body.innerHTML = `
+    <div class="msp-kpis">
+      <div class="msp-kpi"><span class="msp-kpi-val">${players.length}</span><span class="msp-kpi-lbl">Hráčů</span></div>
+      <div class="msp-kpi"><span class="msp-kpi-val">${Object.keys(cityMap).length}</span><span class="msp-kpi-lbl">Měst</span></div>
+      <div class="msp-kpi"><span class="msp-kpi-val">${withCoords.length}</span><span class="msp-kpi-lbl">Na mapě</span></div>
+    </div>
+    <div class="msp-section-lbl">Nejčastější rodná města</div>
+    <div class="msp-bars">${top.map(([city,count])=>`
+      <div class="msp-bar-row">
+        <span class="msp-bar-city">${esc(city)}</span>
+        <div class="msp-bar-track"><div class="msp-bar-fill" style="width:${Math.round(count/maxC*100)}%"></div></div>
+        <span class="msp-bar-count">${count}</span>
+      </div>`).join('')}
+    </div>`;
+}
+window.addEventListener('load', () => {
+  map.invalidateSize();
+  if (window.innerWidth <= 750) {
+    document.querySelector('.app')?.classList.add('lp-hidden');
+    document.getElementById('mtMapa')?.classList.add('active');
+  }
+});
 <!-- ══════════════════════════════════════
   PLAYER DETAIL MODAL
 ══════════════════════════════════════ -->
@@ -1356,5 +1459,41 @@ function togglePanel() {
   <div id="detailContent"></div>
 </div>
 </div>
+
+<!-- ══════════════════════════════════════
+  MOBILE STATS PANEL
+══════════════════════════════════════ -->
+<div class="mob-stats-panel" id="mobStatsPanel">
+  <div class="msp-handle"></div>
+  <div class="msp-head">📊 Statistiky</div>
+  <div class="msp-body" id="mspBody"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+  MOBILE BOTTOM NAV
+══════════════════════════════════════ -->
+<nav class="mob-nav" role="navigation" aria-label="Navigace">
+  <button class="mob-tab active" id="mtMapa" onclick="mobTab('mapa')" aria-label="Mapa">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/>
+    </svg>
+    Mapa
+  </button>
+  <button class="mob-tab" id="mtSeznam" onclick="mobTab('seznam')" aria-label="Seznam hráčů">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 6h16M4 10h16M4 14h10M4 18h7"/>
+      <circle cx="19" cy="16" r="3"/>
+    </svg>
+    Seznam
+  </button>
+  <button class="mob-tab" id="mtStatistiky" onclick="mobTab('statistiky')" aria-label="Statistiky">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="12" width="4" height="9" rx="1"/>
+      <rect x="10" y="7" width="4" height="14" rx="1"/>
+      <rect x="17" y="3" width="4" height="18" rx="1"/>
+    </svg>
+    Statistiky
+  </button>
+</nav>
 
 </body>
