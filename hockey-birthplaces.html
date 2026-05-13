@@ -207,26 +207,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .fp-track-fill{position:absolute;height:4px;background:var(--yellow);border-radius:2px;z-index:1;pointer-events:none}
 .fp-hint{font-size:11px;color:#7a8fa8;margin-top:8px;text-align:center;letter-spacing:.02em}
 
-@media(max-width:750px){
-  .app{flex-direction:column}
-  .lp{width:100% !important;height:45vh;flex-shrink:0;overflow-y:auto;overflow-x:hidden;border-right:none;border-top:1px solid #d4dae8;order:2;transition:height .3s cubic-bezier(.4,0,.2,1)}
-  .app.lp-hidden .lp{height:0;border-top:none}
-  .rp{flex:1;min-height:50vh;order:1}
-  .btn-toggle-panel{position:fixed;top:auto;bottom:16px;left:50%;transform:translateX(-50%);width:72px;height:30px;border-radius:15px;border:2px solid var(--blue3);border-left:2px solid var(--blue3);font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.45)}
-  .btn-toggle-panel:hover{transform:translateX(-50%)}
-  .hdr-inner{padding:.5rem .8rem;gap:.5rem}
-  .hdr-club-logo{height:30px}
-  h1{font-size:1rem}
-  h1 span{display:none}
-  .hdr-stats{display:none}
-  .hbtn{padding:5px 8px;font-size:10px}
-  .list-head{flex-wrap:wrap;padding:.5rem .7rem;gap:5px}
-  .list-head h2{font-size:.85rem}
-  .sort-bar{padding:4px 8px;gap:4px}
-  .search-bar{top:88px}
-  .imp-modal{width:100%}
-  .fg3{grid-template-columns:1fr 1fr}
-}
+
 @media(max-width:480px){
   h1{font-size:.85rem}
   .hbtn{font-size:9px;padding:4px 6px}
@@ -262,7 +243,38 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 @media(max-width:750px){
   body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
   .btn-toggle-panel{display:none!important}
+  /* Layout: map full-screen, list as sliding full-screen overlay */
+  .app{flex-direction:column}
+  .rp{flex:1;min-height:0;order:1}
+  .lp{
+    position:fixed!important;
+    top:0;left:0;right:0;
+    bottom:calc(60px + env(safe-area-inset-bottom,0px));
+    width:100%!important;height:auto!important;
+    z-index:2800;
+    transform:translateY(100%);
+    transition:transform .32s cubic-bezier(.4,0,.2,1);
+    border:none!important;border-top:none!important;
+    overflow-y:auto;
+  }
+  .app:not(.lp-hidden) .lp{transform:translateY(0)}
+  /* Filter panel above nav */
+  .filter-panel{bottom:calc(72px + env(safe-area-inset-bottom,0px))!important}
+  /* Stats panel above nav */
   .mob-stats-panel{bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+  /* Header tweaks */
+  .hdr-inner{padding:.5rem .8rem;gap:.5rem}
+  .hdr-club-logo{height:30px}
+  h1{font-size:1rem}
+  h1 span{display:none}
+  .hdr-stats{display:none}
+  .hbtn{padding:5px 8px;font-size:10px}
+  .list-head{flex-wrap:wrap;padding:.5rem .7rem;gap:5px}
+  .list-head h2{font-size:.85rem}
+  .sort-bar{padding:4px 8px;gap:4px}
+  .search-bar{top:88px}
+  .imp-modal{width:100%}
+  .fg3{grid-template-columns:1fr 1fr}
   .mob-nav{
     display:flex;position:fixed;bottom:0;left:0;right:0;z-index:3000;
     background:rgba(246,249,255,.95);
@@ -516,7 +528,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   <div class="hdr-stripes"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
 </div>
 
-<div class="app">
+<div class="app lp-hidden">
   <div class="lp">
     <div class="list-head">
       <h2 id="listTitle">Hráči</h2>
