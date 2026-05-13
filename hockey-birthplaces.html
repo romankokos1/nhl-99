@@ -268,19 +268,125 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pop-player:hover { background:#eef2fc !important; }
 .pop-detail-hint { text-align:center; font-size:10px; color:#b0bdd0; padding:3px 0 5px; letter-spacing:.04em; }
 
-/* ── PLAYER DETAIL MODAL ─────────────────────────── */
-.detail-photo { width:110px; height:110px; border-radius:3px; object-fit:cover; border:2px solid #c4cedc; float:right; margin:0 0 10px 16px; flex-shrink:0; image-rendering:auto; -webkit-font-smoothing:antialiased; }
-.detail-photo-ph { width:110px; height:110px; border-radius:3px; background:#eef1f9; display:flex; align-items:center; justify-content:center; font-size:34px; float:right; margin:0 0 10px 16px; border:2px solid #c4cedc; flex-shrink:0; }
-.detail-name { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:800; color:var(--blue3); text-transform:uppercase; letter-spacing:.05em; line-height:1.1; margin-bottom:10px; }
-.detail-city { font-size:13px; color:#8a9ab5; margin-bottom:10px; }
-.detail-rows { clear:both; display:flex; flex-direction:column; gap:5px; margin-top:4px; }
-.detail-row { display:flex; gap:8px; font-size:13px; border-bottom:1px solid #edf0f5; padding-bottom:5px; }
-.detail-row:last-child { border-bottom:none; }
-.detail-lbl { color:#8a9ab5; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; width:90px; flex-shrink:0; padding-top:1px; }
-.detail-val { color:var(--blue3); font-weight:500; }
-.detail-seasons { display:inline-block; background:var(--blue); color:var(--yellow); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:12px; padding:2px 8px; border-radius:2px; margin-right:4px; }
-.detail-back { display:inline-flex; align-items:center; gap:5px; margin-bottom:12px; padding:4px 10px; border:1px solid #c4cedc; border-radius:2px; background:transparent; color:#8a9ab5; font-family:'Barlow',sans-serif; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; cursor:pointer; transition:.12s; }
-.detail-back:hover { border-color:var(--blue); color:var(--blue); }
+/* ── PLAYER DETAIL MODAL – premium card redesign ─── */
+#detailOvl .modal {
+  max-width: 460px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-top: none !important;
+  border-radius: 24px !important;
+  overflow: hidden;
+  box-shadow: 0 28px 70px rgba(10,30,80,.38), 0 8px 20px rgba(0,0,0,.16) !important;
+}
+.detail-card-header {
+  background: linear-gradient(140deg, var(--blue3) 0%, var(--blue) 55%, var(--blue-light) 100%);
+  padding: 1.75rem 1.75rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  position: relative;
+}
+.detail-photo {
+  width: 120px; height: 120px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,.22);
+  box-shadow: 0 10px 28px rgba(0,0,0,.40);
+  flex-shrink: 0;
+  float: none; margin: 0;
+  display: block;
+}
+.detail-photo-ph {
+  width: 120px; height: 120px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.18);
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px;
+  flex-shrink: 0;
+  float: none; margin: 0;
+}
+.detail-header-info {
+  flex: 1; min-width: 0;
+  padding-top: 4px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.detail-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.7rem; font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  line-height: 1.05;
+  margin: 0;
+}
+.detail-city-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(245,195,0,.16);
+  border: 1px solid rgba(245,195,0,.38);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px; font-weight: 600;
+  color: var(--yellow);
+  letter-spacing: .03em;
+  width: fit-content;
+}
+.detail-card-body {
+  padding: 1.5rem 1.75rem 1.3rem;
+}
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem .75rem;
+}
+.detail-info-item {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.detail-info-item.full { grid-column: 1 / -1; }
+.detail-lbl {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .09em;
+  color: #8a9ab5;
+}
+.detail-val {
+  font-size: 14px; font-weight: 600;
+  color: var(--blue3); line-height: 1.3;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.detail-seasons {
+  display: inline-block;
+  background: rgba(28,72,150,.10);
+  color: var(--blue); font-size: 12px; font-weight: 700;
+  padding: 2px 9px; border-radius: 10px;
+  border: 1px solid rgba(28,72,150,.2);
+}
+.detail-card-footer {
+  border-top: 1px solid #edf0f5;
+  padding: .9rem 1.75rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.detail-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  background: transparent;
+  border: 1px solid #c4cedc; border-radius: 20px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em;
+  color: #7a8fa8; cursor: pointer; transition: .15s;
+  margin: 0;
+}
+.detail-back:hover { border-color: var(--blue); color: var(--blue); background: rgba(28,72,150,.04); }
+.detail-close-btn {
+  margin-left: auto;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: transparent; border: 1px solid #c4cedc;
+  color: #8a9ab5; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: .15s; flex-shrink: 0;
+}
+.detail-close-btn:hover { background: #fce8e6; border-color: #f0a8a0; color: var(--red); }
 
 /* Search bar */
 .search-bar {
@@ -536,7 +642,7 @@ const DETECT_RX = {
 const DATA_URL = 'hcmotor_players.json';
 
 function loadPlayers(callback) {
-  fetch(DATA_URL + '?v=' + Date.now())
+  fetch(DATA_URL)
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => { SAMPLES = data; callback(); })
     .catch(err => {
@@ -1166,7 +1272,6 @@ document.addEventListener('click',e=>{
 function showPlayerDetail(idx) {
   const p = players[idx];
   if (!p) return;
-  // Close map popup
   map.closePopup();
 
   const nm = fullName(p) || p.city;
@@ -1174,23 +1279,36 @@ function showPlayerDetail(idx) {
     ? `<img class="detail-photo" src="${escA(p.photo)}" onerror="this.style.display='none'">`
     : `<div class="detail-photo-ph">🏒</div>`;
 
-  const rows = [];
-  if (p.city)         rows.push(['Rodné město', esc(p.city)]);
-  if (p.born)         rows.push(['Narozen', esc(p.born)]);
-  if (p.died)         rows.push(['Zemřel', esc(p.died) + (p.deathcity ? ` <span style="color:#8a9ab5">(${esc(p.deathcity)})</span>` : '')]);
-  if (p.seasonsRange) rows.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasonsRange)}</span>${p.seasons ? `<span style="color:#8a9ab5;font-size:12px">${esc(p.seasons)} sez.</span>` : ''}`]);
-  else if (p.seasons) rows.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`]);
+  const cityTag = p.city
+    ? `<div class="detail-city-tag">📍 ${esc(p.city)}</div>`
+    : '';
 
-  const rowsHtml = rows.map(([lbl,val]) =>
-    `<div class="detail-row"><span class="detail-lbl">${lbl}</span><span class="detail-val">${val}</span></div>`
+  const items = [];
+  if (p.born) items.push(['Narozen', esc(p.born), false]);
+  if (p.died) items.push(['Zemřel', esc(p.died) + (p.deathcity ? ` <span style="color:#8a9ab5;font-size:12px">(${esc(p.deathcity)})</span>` : ''), false]);
+  if (p.seasonsRange) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasonsRange)}</span>${p.seasons ? `<span style="color:#8a9ab5;font-size:12px;font-weight:400"> ${esc(p.seasons)} sez.</span>` : ''}`, true]);
+  else if (p.seasons) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`, true]);
+
+  const gridHtml = items.map(([lbl, val, full]) =>
+    `<div class="detail-info-item${full ? ' full' : ''}">
+      <span class="detail-lbl">${lbl}</span>
+      <span class="detail-val">${val}</span>
+    </div>`
   ).join('');
 
   document.getElementById('detailContent').innerHTML = `
-    <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on');focusPlayer(${idx})">← Zobrazit v seznamu</button>
-    ${thumb}
-    <div class="detail-name">${esc(nm)}</div>
-    <div class="detail-rows">${rowsHtml}</div>
-    <div style="clear:both"></div>`;
+    <div class="detail-card-header">
+      ${thumb}
+      <div class="detail-header-info">
+        <div class="detail-name">${esc(nm)}</div>
+        ${cityTag}
+      </div>
+    </div>
+    ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
+    <div class="detail-card-footer">
+      <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on');focusPlayer(${idx})">← Zobrazit v seznamu</button>
+      <button class="detail-close-btn" onclick="document.getElementById('detailOvl').classList.remove('on')">✕</button>
+    </div>`;
 
   document.getElementById('detailOvl').classList.add('on');
 }
@@ -1226,8 +1344,7 @@ function togglePanel() {
   PLAYER DETAIL MODAL
 ══════════════════════════════════════ -->
 <div class="ovl" id="detailOvl" onclick="closeDetailOvl(event)">
-<div class="modal" style="max-width:460px;padding:1.4rem 1.6rem">
-  <button class="modal-close" onclick="document.getElementById('detailOvl').classList.remove('on')">✕</button>
+<div class="modal">
   <div id="detailContent"></div>
 </div>
 </div>
