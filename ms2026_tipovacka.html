@@ -1056,6 +1056,98 @@ table.lb-table{width:100%;border-collapse:collapse;min-width:580px;}
       <option value="Maxim Štrbák">
       <option value="Mislav Rosandič">
       <option value="Patrik Koch">
+      <!-- SLO -->
+      <option value="Rok Tičar">
+      <option value="Robert Sabolič">
+      <option value="Matic Török">
+      <option value="Anže Kuralt">
+      <option value="Miha Beričič">
+      <option value="Jan Drozg">
+      <option value="Žan Jezovšek">
+      <option value="Nace Langus">
+      <option value="Marcel Mahkovec">
+      <option value="Luka Maver">
+      <option value="Ken Ograjenšek">
+      <option value="Nik Simšič">
+      <option value="Filip Sitar">
+      <option value="Jaka Sodja">
+      <option value="Rožle Bohinc">
+      <option value="Aljoša Crnovič">
+      <option value="Jan Goličič">
+      <option value="Blaž Gregorc">
+      <option value="Aleksandar Magovac">
+      <option value="Jan Ćosić">
+      <option value="Miha Štebih">
+      <!-- ITA -->
+      <option value="Luca Frigo">
+      <option value="Tommaso De Luca">
+      <option value="Matt Bradley">
+      <option value="Ivan Deluca">
+      <option value="Cristiano DiGiacinto">
+      <option value="Mikael Frycklund">
+      <option value="Daniel Mantenuto">
+      <option value="Matthias Mantinger">
+      <option value="Bryce Misley">
+      <option value="Tommy Purdeller">
+      <option value="Nick Saracino">
+      <option value="Alessandro Segafredo">
+      <option value="Marco Zanetti">
+      <option value="Niccolò Mansueto">
+      <option value="Dylan Di Perna">
+      <option value="Phil Pietroniro">
+      <option value="Peter Spornberger">
+      <option value="Alex Trivellato">
+      <option value="Luca Zanatta">
+      <option value="Carmine Buono">
+      <option value="Gregorio Gios">
+      <option value="Gabriel Nitz">
+      <!-- GBR -->
+      <option value="Liam Kirk">
+      <option value="Robert Dowd">
+      <option value="Brett Perlini">
+      <option value="Oliver Betteridge">
+      <option value="Johnny Curran">
+      <option value="Ben Davies">
+      <option value="Bayley Harewood">
+      <option value="Jack Hopkins">
+      <option value="Robert Lachowicz">
+      <option value="Cade Neilson">
+      <option value="Logan Neilson">
+      <option value="Ivan Björkly Nordström">
+      <option value="Cole Shudra">
+      <option value="Joshua Waller">
+      <option value="Travis Brown">
+      <option value="David Clements">
+      <option value="Nathanael Halbert">
+      <option value="Archie Hazeldine">
+      <option value="Joseph Hazeldine">
+      <option value="Bradley Jenion">
+      <option value="Mark Richardson">
+      <option value="Liam Steele">
+      <option value="Joshua Tetlow">
+      <!-- HUN -->
+      <option value="István Bartalis">
+      <option value="János Hári">
+      <option value="Vilmos Galló">
+      <option value="Bence Horváth">
+      <option value="Csanád Erdély">
+      <option value="Krisztián Nagy">
+      <option value="István Sofron">
+      <option value="István Dániel Terbócs">
+      <option value="Csanád Ravasz">
+      <option value="Márton Nemes">
+      <option value="Kristóf Papp">
+      <option value="Róbert Sárpátki">
+      <option value="Péter Vincze">
+      <option value="Domán Kristóf Szongoth">
+      <option value="Zsombor Garát">
+      <option value="Zétény Hadobás">
+      <option value="Milán Horváth">
+      <option value="Roland Kiss">
+      <option value="Tamás Ortenszky">
+      <option value="Bence Stipsicz">
+      <option value="Gábor Tornyai">
+      <option value="Márkó Csollák">
     </datalist>
     <datalist id="allGoalies">
       <option value="Petr Kváča">
@@ -1094,6 +1186,18 @@ table.lb-table{width:100%;border-collapse:collapse;min-width:580px;}
       <option value="Eugen Rabčan">
       <option value="Samuel Hlavaj">
       <option value="Adam Gajan">
+      <option value="Lukáš Horák">
+      <option value="Luka Kolin">
+      <option value="Žan Us">
+      <option value="Davide Fadani">
+      <option value="Colin Furlong">
+      <option value="Jacob Smith">
+      <option value="Ben Bowns">
+      <option value="Lucas Brine">
+      <option value="Mat Robson">
+      <option value="Bence Bálizs">
+      <option value="Levente Hegedüs">
+      <option value="Ádám Vay">
     </datalist>
 
     <div class="btn-row">
@@ -1178,6 +1282,31 @@ table.lb-table{width:100%;border-collapse:collapse;min-width:580px;}
             <button onclick="ovClearPicks()" style="background:transparent;border:1.5px solid rgba(200,16,46,.3);border-radius:6px;color:rgba(200,16,46,.6);font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:2px;padding:4px 10px;cursor:pointer;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='#C8102E';this.style.color='#C8102E'" onmouseout="this.style.borderColor='rgba(200,16,46,.3)';this.style.color='rgba(200,16,46,.6)'">SMAZAT VŠE</button>
           </div>
           <div class="picks-list" id="picksList"></div>
+        </div>
+
+        <!-- EXPORT / IMPORT -->
+        <div class="pc">
+          <div class="pc-title" style="margin-bottom:10px;">SDÍLENÍ TIPŮ</div>
+
+          <div style="margin-bottom:12px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:3px;color:var(--mut);margin-bottom:6px;font-weight:600;">EXPORT — vygeneruj kód se všemi tipy</div>
+            <button onclick="exportPicks()" style="width:100%;padding:9px;background:rgba(0,208,255,.06);border:1.5px solid var(--neon);border-radius:8px;color:var(--neon);font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:3px;font-weight:700;cursor:pointer;transition:all .2s;">
+              📤 EXPORTOVAT TIPY
+            </button>
+            <div id="exportBox" style="display:none;margin-top:8px;">
+              <div onclick="cpExport()" id="exportCode" style="background:var(--surface2);border:1.5px solid var(--bd);border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.58rem;color:var(--blue2);word-break:break-all;cursor:pointer;line-height:1.6;user-select:all;"></div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:.58rem;color:var(--mut);text-align:center;margin-top:4px;" id="exportHint">↑ klikni pro zkopírování</div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:3px;color:var(--mut);margin-bottom:6px;font-weight:600;">IMPORT — vlož kód od někoho jiného</div>
+            <div style="display:flex;gap:8px;">
+              <textarea id="importBox" placeholder="Vlož exportní kód…" style="flex:1;background:var(--surface2);border:1.5px solid var(--bd);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.62rem;outline:none;resize:none;height:56px;line-height:1.5;transition:border-color .2s;"></textarea>
+              <button onclick="importPicks()" style="padding:0 16px;background:var(--red);border:none;border-radius:8px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:3px;font-weight:700;cursor:pointer;white-space:nowrap;align-self:stretch;">IMPORTOVAT</button>
+            </div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.52rem;color:var(--red);margin-top:5px;display:none;" id="importErr">⚠ Kód se nepodařilo načíst</div>
+          </div>
         </div>
       </div>
 
@@ -1554,6 +1683,62 @@ function parseTipUrl(url){
 }
 function ovDelPick(i){const p=rLoadPicks();p.splice(i,1);rSavePicks(p);renderPicksList();}
 function ovClearPicks(){if(!confirm('Smazat vše?'))return;localStorage.removeItem(RK_PICKS);localStorage.removeItem(RK_ADJ);renderPicksList();}
+
+function exportPicks(){
+  const picks=rLoadPicks(), adj=rLoadAdj();
+  if(!picks.length){showNf('⚠ Žádné tipy k exportu');return;}
+  const payload={picks, adj, v:1};
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const box=document.getElementById('exportBox');
+  box.style.display='block';
+  document.getElementById('exportCode').textContent=code;
+  document.getElementById('exportHint').textContent='↑ klikni pro zkopírování';
+  document.getElementById('exportCode').style.borderColor='var(--bd)';
+}
+function cpExport(){
+  const code=document.getElementById('exportCode').textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    document.getElementById('exportCode').style.borderColor='var(--grn)';
+    document.getElementById('exportHint').textContent='✓ zkopírováno!';
+    showNf('✓ KÓD ZKOPÍROVÁN!');
+  }).catch(()=>{
+    const el=document.getElementById('exportCode');
+    const r=document.createRange();r.selectNodeContents(el);
+    window.getSelection().removeAllRanges();window.getSelection().addRange(r);
+  });
+}
+
+function importPicks(){
+  const raw=document.getElementById('importBox').value.trim();
+  const errEl=document.getElementById('importErr'); errEl.style.display='none';
+  if(!raw) return;
+  try{
+    const payload=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    if(!payload.picks||!Array.isArray(payload.picks)) throw new Error('bad format');
+    const existing=rLoadPicks();
+    const existingAdj=rLoadAdj();
+    let added=0;
+    payload.picks.forEach((p,i)=>{
+      if(!p.name||!p.picks) return;
+      if(!existing.some(x=>x.name===p.name&&JSON.stringify(x.games||x.picks)===JSON.stringify(p.games||p.picks))){
+        const newIdx=existing.length;
+        existing.push(p);
+        // import adj for this pick if present
+        if(payload.adj&&payload.adj[i]){
+          existingAdj[newIdx]=payload.adj[i];
+        }
+        added++;
+      }
+    });
+    rSavePicks(existing);
+    rSaveAdj(existingAdj);
+    document.getElementById('importBox').value='';
+    showNf('✓ IMPORTOVÁNO '+added+' TIP'+(added===1?'':'Ů'));
+    renderPicksList();
+  }catch(e){
+    errEl.style.display='block';
+  }
+}
 function renderPicksList(){
   const picks=rLoadPicks();
   document.getElementById('picksCountLbl').textContent=picks.length+' tipovač'+(picks.length===1?'':'ů');
