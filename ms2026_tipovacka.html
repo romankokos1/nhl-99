@@ -1557,9 +1557,11 @@ function dec(str){
   }catch{return false;}
 }
 function shareUrl(){saveAwards();return location.href.split('#')[0]+'#n='+encodeURIComponent(nm)+'&d='+enc();}
+// Parse hash manually — URLSearchParams decodes + as space, breaking base64
+function parseHash(h){const p={};h.split('&').forEach(s=>{const i=s.indexOf('=');if(i>0)p[decodeURIComponent(s.slice(0,i))]=s.slice(i+1);});return p;}
 function loadUrl(){
   const h=location.hash.slice(1);if(!h)return false;
-  const q=new URLSearchParams(h),n=q.get('n'),d=q.get('d');
+  const q=parseHash(h),n=q.n,d=q.d;
   if(!n&&!d)return false;if(n)nm=decodeURIComponent(n);if(d)dec(d);return true;
 }
 
@@ -1673,7 +1675,7 @@ function ovAddPicks(){
 function parseTipUrl(url){
   try{
     const hash=url.includes('#')?url.split('#')[1]:url;
-    const q=new URLSearchParams(hash),n=q.get('n'),d=q.get('d');if(!d)return null;
+    const q=parseHash(hash),n=q.n,d=q.d;if(!d)return null;
     const raw=JSON.parse(decodeURIComponent(escape(atob(d))));
     return{name:n?decodeURIComponent(n):'?',
       games:(raw.games||[]).map(g=>({cz:g.c,op:g.o,t:g.t||'R'})),
@@ -2044,8 +2046,8 @@ let lvData=null, lvOpenIdx=null;
 
 function tryLoadLiveUrl(){
   const h=location.hash.slice(1);if(!h)return false;
-  const q=new URLSearchParams(h);
-  const lv=q.get('lv');if(!lv)return false;
+  const q=parseHash(h);
+  const lv=q.lv;if(!lv)return false;
   try{
     lvData=JSON.parse(decodeURIComponent(escape(atob(lv))));
     return true;
