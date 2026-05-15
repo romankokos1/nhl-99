@@ -255,6 +255,18 @@ input[type=text]:focus{border-color:var(--red);}
 .pick-del{background:none;border:none;color:var(--mut);cursor:pointer;font-size:.8rem;
   padding:3px 7px;border-radius:4px;transition:color .12s;}
 .pick-del:hover{color:var(--red);}
+.pick-group-inp{background:transparent;border:1px solid var(--bd);border-radius:4px;
+  color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-size:.58rem;
+  letter-spacing:2px;font-weight:700;padding:2px 7px;width:90px;outline:none;
+  transition:all .15s;text-transform:uppercase;}
+.pick-group-inp:focus{border-color:var(--red);color:var(--text);}
+.pick-group-inp::placeholder{opacity:.35;}
+.grp-filter{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.grp-btn{padding:5px 12px;font-family:'Barlow Condensed',sans-serif;font-size:.65rem;
+  font-weight:700;letter-spacing:3px;border:1.5px solid var(--bd);border-radius:6px;
+  cursor:pointer;color:var(--mut);background:transparent;transition:all .15s;text-transform:uppercase;}
+.grp-btn:hover{border-color:var(--blue2);color:var(--blue);}
+.grp-btn.act{border-color:var(--red);color:var(--red);background:var(--redl);}
 /* Admin lock */
 .adm-locked{display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 16px;}
 .adm-locked p{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:3px;
@@ -1749,9 +1761,23 @@ function renderPicksList(){
   picks.forEach((p,i)=>{
     const filled=p.games.filter(g=>g.cz!==null).length,poPicked=(p.po||[]).filter(x=>x!==null).length;
     const item=document.createElement('div');item.className='pick-item';
-    item.innerHTML=`<span class="pick-name">${esc(p.name)}</span><span class="pick-meta">${filled}/7 záp · ${poPicked}/8 po</span><button class="pick-del" onclick="ovDelPick(${i})">✕</button>`;
+    item.innerHTML=`<span class="pick-name">${esc(p.name)}</span>
+      <span class="pick-meta">${filled}/7 · ${poPicked}/8</span>
+      <input class="pick-group-inp" type="text" value="${esc(p.group||'')}" placeholder="skupina…"
+        title="Štítek skupiny — Enter nebo klikni jinam pro uložení"
+        onchange="setGroup(${i},this.value)" onblur="setGroup(${i},this.value)"
+        onkeydown="if(event.key==='Enter'){setGroup(${i},this.value);this.blur();}">
+      <button class="pick-del" onclick="ovDelPick(${i})">✕</button>`;
     el.appendChild(item);
   });
+}
+function setGroup(idx,val){
+  const picks=rLoadPicks();
+  if(!picks[idx]||picks[idx].group===val.trim()) return;
+  picks[idx].group=val.trim();
+  rSavePicks(picks);
+  const lb=document.getElementById('ov-lb');
+  if(lb&&lb.style.display!=='none') renderLB();
 }
 
 // ── ADMIN ──
@@ -1961,42 +1987,58 @@ function maxPossible(rows,adjMap){
 // ══════════════════════════════
 // LEADERBOARD (admin view)
 // ══════════════════════════════
-let openDetailIdx=null;
+let openDetailIdx=null, activeGroup=null;
+function setActiveGroup(g){activeGroup=g;openDetailIdx=null;renderLB();}
 function renderLB(){
   const real=rLoadReal(),picks=rLoadPicks();
   const el=document.getElementById('lbWrap');
   if(!real){el.innerHTML='<div class="no-real">Nejdřív zadej správné výsledky v záložce ⚙ ODPOVĚDI.</div>';return;}
   if(!picks.length){el.innerHTML='<div class="no-real">Přidej tipy kamarádů v záložce TIPY.</div>';return;}
+  // Groups
+  const groups=[...new Set(picks.map(p=>p.group||'').filter(Boolean))].sort();
+  if(activeGroup&&!groups.includes(activeGroup))activeGroup=null;
+  const filtered=activeGroup
+    ?picks.map((p,i)=>({...p,_idx:i})).filter(p=>(p.group||'')===activeGroup)
+    :picks.map((p,i)=>({...p,_idx:i}));
   const adj=rLoadAdj();
-  const scored=picks.map((p,idx)=>{
+  const scored=filtered.map(p=>{
     const rows=scoreDetail(p,real);
-    const adjMap=adj[idx]||{};
+    const adjMap=adj[p._idx]||{};
     const secs=totalFromDetail(rows,adjMap);
-    return{name:p.name,secs,rows,adjMap,idx};
+    return{name:p.name,group:p.group||'',secs,rows,adjMap,idx:p._idx};
   });
   scored.sort((a,b)=>b.secs.total-a.secs.total);
   const medals=['🥇','🥈','🥉'];
   const secKeys=['games','gB','gA','po','aw'];
   const secLabels=['ZÁPASY','SK.B','SK.A','PLAY-OFF','OCENĚNÍ'];
   const maxPts=[35,16,16,16,33];
-  let html=`<div class="pc-title" style="margin-bottom:10px;">🏆 ŽEBŘÍČEK</div>
+  const showGrpCol=!activeGroup&&groups.length>0;
+  let grpHtml='<div class="grp-filter">';
+  grpHtml+=`<button class="grp-btn ${!activeGroup?'act':''}" onclick="setActiveGroup(null)">VŠE (${picks.length})</button>`;
+  groups.forEach(g=>{const cnt=picks.filter(p=>(p.group||'')===g).length;grpHtml+=`<button class="grp-btn ${activeGroup===g?'act':''}" onclick="setActiveGroup('${g.replace(/'/g,"\\'")}')">${esc(g)} (${cnt})</button>`;});
+  grpHtml+='</div>';
+  let html=`<div class="pc-title" style="margin-bottom:8px;">🏆 ŽEBŘÍČEK${activeGroup?' · '+esc(activeGroup):''}</div>
+  ${grpHtml}
   <div style="font-family:'Barlow Condensed',sans-serif;font-size:.55rem;color:var(--mut);letter-spacing:2px;margin-bottom:12px;">
     Klikni na jméno → detail · ± = manuální korekce
   </div>
   <div class="lb-scroll"><table class="lb-table">
   <thead><tr><th class="name-th">JMÉNO</th>`;
+  if(showGrpCol)html+=`<th>SK.</th>`;
   secLabels.forEach((l,i)=>html+=`<th>${l}<br><span style="font-weight:400;font-size:.44rem;opacity:.6;">max ${maxPts[i]}</span></th>`);
   html+=`<th>CELKEM</th></tr></thead><tbody>`;
   scored.forEach((row,rank)=>{
     const isOpen=openDetailIdx===row.idx;
+    const colSpan=2+secKeys.length+(showGrpCol?1:0);
     html+=`<tr class="${rank<3?'rank-'+(rank+1):''}">
       <td class="name-td" style="cursor:pointer" onclick="toggleDetail(${row.idx})">
         ${rank<3?medals[rank]+' ':''}${esc(row.name)} <span style="font-size:.6rem;opacity:.4;">${isOpen?'▲':'▼'}</span>
       </td>`;
+    if(showGrpCol)html+=`<td style="font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;color:var(--mut);">${esc(row.group)}</td>`;
     secKeys.forEach(k=>{const pts=row.secs[k];html+=`<td><div class="pts-cell"><span class="pts-val ${pts===0?'zero':''}">${pts}</span></div></td>`;});
     html+=`<td><span class="pts-total">${row.secs.total}</span></td></tr>`;
     if(isOpen){
-      html+=`<tr class="detail-row"><td colspan="${2+secKeys.length}">
+      html+=`<tr class="detail-row"><td colspan="${colSpan}">
         <div class="detail-panel" id="det-${row.idx}">${buildDetailHTML(row.rows,row.adjMap,row.idx)}</div>
       </td></tr>`;
     }
