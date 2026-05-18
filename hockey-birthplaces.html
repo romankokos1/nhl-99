@@ -829,10 +829,43 @@ function initMap() {
 }
 
 function mkIcon(label, color, sz, textColor) {
-  sz=sz||28; const fs=sz>=34?13:11; const tc=textColor||'#fff';
+  const multi = label !== '●';
+  const n = multi ? parseInt(label) || 0 : 0;
+
+  if (!multi) {
+    // Single player: blue teardrop pin with yellow dot
+    return L.divIcon({
+      html: `<svg width="24" height="33" viewBox="0 0 24 33" style="filter:drop-shadow(0 3px 8px rgba(10,30,80,.42))">
+        <path d="M12 0C5.4 0 0 5.4 0 12C0 21 12 33 12 33C12 33 24 21 24 12C24 5.4 18.6 0 12 0Z" fill="#1c4896"/>
+        <path d="M12 1C5.9 1 1 5.9 1 12C1 20.5 12 32 12 32C12 32 23 20.5 23 12C23 5.9 18.1 1 12 1Z" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+        <circle cx="12" cy="12" r="5.5" fill="#f5c300"/>
+      </svg>`,
+      className: '',
+      iconSize: [24, 33],
+      iconAnchor: [12, 33],
+      popupAnchor: [0, -34]
+    });
+  }
+
+  // Multi player: yellow pill badge with pointer triangle
+  const digits = String(n).length;
+  const w = digits >= 3 ? 46 : digits === 2 ? 38 : 30;
+  const h = n >= 100 ? 32 : n >= 10 ? 28 : 26;
+  const fs = n >= 100 ? 13 : n >= 10 ? 14 : 14;
+  const ptr = 6; // triangle height
+
   return L.divIcon({
-    html:`<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${color};color:${tc};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${fs}px;border:2.5px solid rgba(255,255,255,.9);box-shadow:0 3px 14px rgba(15,47,106,.4);font-family:'Barlow Condensed',sans-serif">${label}</div>`,
-    className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]
+    html: `<svg width="${w}" height="${h+ptr}" viewBox="0 0 ${w} ${h+ptr}" style="filter:drop-shadow(0 3px 10px rgba(10,30,80,.40))">
+      <rect x="0" y="0" width="${w}" height="${h}" rx="${h/2}" fill="#f5c300" stroke="#d4a800" stroke-width="1"/>
+      <text x="${w/2}" y="${h*0.695}" text-anchor="middle"
+        font-size="${fs}" font-weight="800" fill="#0f2f6a"
+        font-family="Barlow Condensed,sans-serif" letter-spacing="-0.3">${n}</text>
+      <polygon points="${w/2-5},${h} ${w/2+5},${h} ${w/2},${h+ptr}" fill="#f5c300"/>
+    </svg>`,
+    className: '',
+    iconSize: [w, h+ptr],
+    iconAnchor: [w/2, h+ptr],
+    popupAnchor: [0, -(h+ptr+2)]
   });
 }
 
@@ -978,7 +1011,7 @@ function updateMap() {
       popContent=`<div class="pop-hdr"><span>📍 ${esc(g.display)}</span><span class="pop-badge">${n} hráčů</span></div><div class="pop-list">${rows}</div>`;
     }
 
-    const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●',color,sz,textColor)})
+    const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●')})
       .bindPopup(popContent,{maxWidth:320,maxHeight:400})
       .addTo(map);
     // stagger pop animation
