@@ -266,6 +266,15 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .msp-rec-val{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;color:var(--blue);flex-shrink:0}
 .msp-rec.dim .msp-rec-name{color:#b0bdd0;font-style:italic}
 .msp-rec.dim .msp-rec-val{color:#c4cedc}
+/* Year line chart */
+.msp-year-chart{display:block;width:100%;margin-bottom:2px;overflow:visible}
+/* Expandable region list */
+.msp-bars-wrap{position:relative}
+.msp-bars-wrap .msp-bars{max-height:132px;overflow:hidden;transition:max-height .3s}
+.msp-bars-wrap .msp-bars.exp{max-height:600px}
+.msp-show-more{display:block;width:100%;margin-top:4px;padding:4px;background:none;border:none;font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);cursor:pointer;text-align:center}
+/* Stats backdrop */
+.mob-stats-backdrop{display:none;position:fixed;inset:0;z-index:2850;cursor:pointer;background:rgba(0,0,0,.12)}
 @media(max-width:750px){
   body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
   .btn-toggle-panel{display:none!important}
@@ -398,9 +407,9 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   border: 2px solid rgba(255,255,255,.18);
   box-shadow: 0 8px 24px rgba(0,0,0,.28);
   display: flex; align-items: center; justify-content: center;
-  font-size: 42px;
-  flex-shrink: 0;
-  float: none; margin: 0;
+  font-size: 2.4rem; font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; letter-spacing: .06em; color: #fff;
+  flex-shrink: 0; float: none; margin: 0;
 }
 .detail-header-info {
   flex: 1; min-width: 0;
@@ -1442,9 +1451,9 @@ function togglePanel() {
 
 // ── MOBILE NAV ─────────────────────────────────────
 function mobTab(tab) {
-  const app = document.querySelector('.app');
   const lp  = document.querySelector('.lp');
   const stats = document.getElementById('mobStatsPanel');
+  const backdrop = document.getElementById('mobStatsBackdrop');
   ['mapa','seznam','statistiky'].forEach(t => {
     document.getElementById('mt'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.remove('active');
   });
@@ -1452,27 +1461,165 @@ function mobTab(tab) {
   if (tab === 'seznam') {
     lp?.classList.add('lp-open');
     stats.classList.remove('on');
+    backdrop.style.display = 'none';
   } else if (tab === 'statistiky') {
     lp?.classList.remove('lp-open');
     stats.classList.add('on');
+    backdrop.style.display = 'block';
     renderMobStats();
   } else {
     lp?.classList.remove('lp-open');
     stats.classList.remove('on');
+    backdrop.style.display = 'none';
   }
   setTimeout(() => map.invalidateSize(), 260);
 }
-function classifyRegion(lat, lon) {
-  if (!lat || !lon) return null;
-  if (lat < 48.55 || lat > 51.06 || lon < 12.09 || lon > 18.87) return 'Zahraničí 🌍';
-  if (lat > 49.9 && lat < 50.22 && lon > 14.2 && lon < 14.75) return 'Praha';
-  if (lat < 49.55 && lon < 15.7) return 'Jihočeský';
-  if (lon < 13.9) return 'Plzeňský';
-  if (lon > 17.75 && lat > 49.3) return 'Moravskoslezský';
-  if (lon > 16.2 && lat < 49.7) return 'Jihomoravský';
-  if (lon > 15.5 && lat < 50.1) return 'Moravský';
-  if (lat > 50.3) return 'Severní Čechy';
-  return 'Středočeský';
+function classifyOrigin(lat, lon) {
+  if (!lat || !lon) return 'Neznámo';
+  // Czech Republic regions
+  if (lat >= 48.55 && lat <= 51.06 && lon >= 12.09 && lon <= 18.87) {
+    if (lat > 49.9 && lat < 50.22 && lon > 14.2 && lon < 14.75) return 'Praha';
+    if (lat < 49.55 && lon < 15.7)  return 'Jihočeský kraj';
+    if (lon < 13.9)                  return 'Plzeňský kraj';
+    if (lon > 17.75 && lat > 49.3)  return 'Moravskoslezský kraj';
+    if (lon > 16.2 && lat < 49.7)   return 'Jihomoravský kraj';
+    if (lon > 15.5 && lat < 50.1)   return 'Zlínský / Olomoucký';
+    if (lat > 50.3)                  return 'Severní Čechy';
+    return 'Středočeský kraj';
+  }
+  // Foreign countries
+  if (lat >= 47.7  && lat <= 49.6  && lon >= 16.8  && lon <= 22.6)  return 'Slovensko';
+  if (lat >= 47.3  && lat <= 55.05 && lon >= 6.1   && lon <= 15.05) return 'Německo';
+  if (lat >= 46.4  && lat <= 49.05 && lon >= 9.5   && lon <= 17.2)  return 'Rakousko';
+  if (lat >= 49.0  && lat <= 54.9  && lon >= 14.1  && lon <= 24.2)  return 'Polsko';
+  if (lat >= 55.3  && lat <= 69.1  && lon >= 11.0  && lon <= 24.2)  return 'Švédsko';
+  if (lat >= 59.8  && lat <= 70.1  && lon >= 20.0  && lon <= 31.6)  return 'Finsko';
+  if (lat >= 56.0  && lat <= 71.0  && lon >= 24.0  && lon <= 32.0)  return 'Pobaltí';
+  if (lat >= 44.0  && lat <= 70.0  && lon >= 23.5)                  return 'Rusko / SNS';
+  if (lon <= -52   && lat >= 43)                                     return 'Kanada';
+  if (lon <= -67   && lat >= 25    && lat <= 50)                     return 'USA';
+  return 'Ostatní';
+}
+
+function buildYearChart(players) {
+  const yearMap = {};
+  players.forEach(p => {
+    if (!p.born) return;
+    const m = p.born.match(/\d{4}/);
+    if (!m) return;
+    const yr = parseInt(m[0]);
+    if (yr < 1920 || yr > 2015) return;
+    yearMap[yr] = (yearMap[yr]||0)+1;
+  });
+  const years = Object.keys(yearMap).map(Number).sort((a,b)=>a-b);
+  if (years.length < 2) return '';
+  const minY = years[0], maxY = years[years.length-1];
+  const all = [], counts = [];
+  for (let y = minY; y <= maxY; y++) { all.push(y); counts.push(yearMap[y]||0); }
+  const maxC = Math.max(...counts, 1);
+  const W = 300, H = 72, pL = 6, pR = 6, pT = 12, pB = 18;
+  const cW = W - pL - pR, cH = H - pT - pB;
+  const px = i => pL + (i / (all.length - 1)) * cW;
+  const py = v => pT + cH - (v / maxC) * cH;
+  const pts = all.map((_, i) => `${px(i).toFixed(1)},${py(counts[i]).toFixed(1)}`);
+  const line = 'M ' + pts.join(' L ');
+  const area = `M ${pL},${pT+cH} L ${pts.join(' L ')} L ${W-pR},${pT+cH} Z`;
+  const labels = all.filter(y => y % 10 === 0).map(y => {
+    const i = all.indexOf(y);
+    return `<text x="${px(i).toFixed(1)}" y="${H-4}" font-size="8" text-anchor="middle" fill="#9aaac4">${y}</text>`;
+  });
+  // Peak dots for max values
+  const peak = counts.indexOf(maxC);
+  const dot = `<circle cx="${px(peak).toFixed(1)}" cy="${py(maxC).toFixed(1)}" r="3" fill="var(--blue)"/>
+    <text x="${px(peak).toFixed(1)}" y="${(py(maxC)-6).toFixed(1)}" font-size="8" text-anchor="middle" fill="var(--blue)" font-weight="700">${maxC}</text>`;
+  return `<svg class="msp-year-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1c4896" stop-opacity=".22"/>
+        <stop offset="100%" stop-color="#1c4896" stop-opacity=".02"/>
+      </linearGradient>
+    </defs>
+    <path d="${area}" fill="url(#ag)"/>
+    <path d="${line}" fill="none" stroke="#1c4896" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${labels.join('')}${dot}
+  </svg>`;
+}
+
+function renderMobStats() {
+  const body = document.getElementById('mspBody');
+  if (!body || !players.length) return;
+  const withCoords = players.filter(p => p.lat);
+  const citySet = new Set(withCoords.map(p => Math.round(p.lat*200)+','+Math.round(p.lon*200)));
+
+  // Origins
+  const originMap = {};
+  withCoords.forEach(p => { const o = classifyOrigin(p.lat, p.lon); originMap[o]=(originMap[o]||0)+1; });
+  const origins = Object.entries(originMap).sort((a,b)=>b[1]-a[1]);
+  const maxO = origins[0]?.[1]||1;
+  const SHOW = 5;
+  const showMore = origins.length > SHOW;
+  const barsHtml = origins.map(([o,n],i)=>`
+    <div class="msp-bar-row" style="${i>=SHOW?'display:none':''}" data-extra="${i>=SHOW?1:0}">
+      <span class="msp-bar-city">${esc(o)}</span>
+      <div class="msp-bar-track"><div class="msp-bar-fill" style="width:${Math.round(n/maxO*100)}%"></div></div>
+      <span class="msp-bar-count">${n}</span>
+    </div>`).join('');
+
+  // Records
+  const bySeason = [...players].filter(p=>p.seasons).sort((a,b)=>Number(b.seasons)-Number(a.seasons));
+  const topSeason = bySeason[0];
+  function parseRange(r){if(!r)return 0;const m=r.match(/(\d{4})[–\-](\d{2,4})/);if(!m)return 0;const y1=parseInt(m[1]);const y2=m[2].length===2?Math.floor(y1/100)*100+parseInt(m[2]):parseInt(m[2]);return y2-y1;}
+  const byRange = [...players].filter(p=>p.seasonsRange).sort((a,b)=>parseRange(b.seasonsRange)-parseRange(a.seasonsRange));
+  const longestRange = byRange[0];
+
+  body.innerHTML = `
+    <div class="msp-kpis">
+      <div class="msp-kpi"><span class="msp-kpi-val">${players.length}</span><span class="msp-kpi-lbl">Hráčů</span></div>
+      <div class="msp-kpi"><span class="msp-kpi-val">${citySet.size}</span><span class="msp-kpi-lbl">Míst</span></div>
+      <div class="msp-kpi"><span class="msp-kpi-val">${withCoords.length}</span><span class="msp-kpi-lbl">Na mapě</span></div>
+    </div>
+
+    <div class="msp-section-lbl">Původ hráčů</div>
+    <div class="msp-bars-wrap">
+      <div class="msp-bars" id="mspRegionBars">${barsHtml}</div>
+      ${showMore ? `<button class="msp-show-more" onclick="
+        const b=document.getElementById('mspRegionBars');
+        const exp=b.classList.toggle('exp');
+        b.querySelectorAll('[data-extra=\\'1\\']').forEach(r=>r.style.display=exp?'flex':'none');
+        this.textContent=exp?'Zobrazit méně':'Zobrazit vše (${origins.length})'
+      ">Zobrazit vše (${origins.length})</button>` : ''}
+    </div>
+
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Rok narození</div>
+    ${buildYearChart(players)}
+
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Rekordy</div>
+    <div class="msp-rec-grid">
+      <div class="msp-rec">
+        <span class="msp-rec-ico">🏒</span>
+        <div class="msp-rec-main">
+          <span class="msp-rec-lbl">Nejvíce sezón v Motoru</span>
+          <span class="msp-rec-name">${topSeason?esc(fullName(topSeason)||topSeason.city):'—'}</span>
+        </div>
+        <span class="msp-rec-val">${topSeason?topSeason.seasons+' sez.':'—'}</span>
+      </div>
+      <div class="msp-rec">
+        <span class="msp-rec-ico">📅</span>
+        <div class="msp-rec-main">
+          <span class="msp-rec-lbl">Nejdelší kariéra v Motoru</span>
+          <span class="msp-rec-name">${longestRange?esc(fullName(longestRange)||longestRange.city):'—'}</span>
+        </div>
+        <span class="msp-rec-val">${longestRange?parseRange(longestRange.seasonsRange)+' let':'—'}</span>
+      </div>
+      <div class="msp-rec dim">
+        <span class="msp-rec-ico">🎂</span>
+        <div class="msp-rec-main">
+          <span class="msp-rec-lbl">Nejstarší hráč</span>
+          <span class="msp-rec-name">připraveno</span>
+        </div>
+        <span class="msp-rec-val">—</span>
+      </div>
+    </div>`;
 }
 
 function renderMobStats() {
@@ -1600,6 +1747,11 @@ window.addEventListener('load', () => {
   <div id="detailContent"></div>
 </div>
 </div>
+
+<!-- ══════════════════════════════════════
+  MOBILE STATS BACKDROP
+══════════════════════════════════════ -->
+<div class="mob-stats-backdrop" id="mobStatsBackdrop" onclick="mobTab('mapa')"></div>
 
 <!-- ══════════════════════════════════════
   MOBILE STATS PANEL
