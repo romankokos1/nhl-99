@@ -181,7 +181,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pop-player{padding:10px 14px;font-size:13px;color:var(--blue3);border-bottom:1px solid #edf0f5;display:flex;align-items:center;gap:10px;background:#fff;cursor:pointer;transition:background .15s}
 .pop-player:last-child{border-bottom:none;padding-bottom:11px}
 .pop-thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1.5px solid #d4dcea;box-shadow:0 1px 4px rgba(0,0,0,.10)}
-.pop-thumb-ph{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--blue3),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.pop-thumb-ph{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--blue3),var(--blue));display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#fff;letter-spacing:.04em;flex-shrink:0}
 .pop-pname{font-weight:700;font-size:13px;color:var(--blue3)}
 .pop-pmeta{font-size:11px;color:#8a9ab5;margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 
@@ -249,6 +249,23 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .msp-bar-track{flex:1;height:6px;background:rgba(28,72,150,.10);border-radius:3px;overflow:hidden}
 .msp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue) 0%,var(--blue-light) 100%);border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
 .msp-bar-count{font-size:11px;font-weight:700;color:var(--blue);width:20px;text-align:right;flex-shrink:0}
+/* Timeline chart */
+.msp-timeline{display:flex;align-items:flex-end;gap:4px;height:72px;padding:0 2px;margin-bottom:4px}
+.msp-decade-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:default}
+.msp-decade-bar{width:100%;background:linear-gradient(180deg,var(--blue-light) 0%,var(--blue) 100%);border-radius:4px 4px 2px 2px;min-height:3px;transition:height .5s cubic-bezier(.4,0,.2,1)}
+.msp-decade-bar:hover{filter:brightness(1.2)}
+.msp-decade-lbl{font-size:9px;font-weight:700;color:#9aaac4;letter-spacing:-.02em;text-align:center;line-height:1}
+.msp-decade-cnt{font-size:9px;font-weight:700;color:var(--blue);line-height:1}
+/* Records */
+.msp-rec-grid{display:flex;flex-direction:column;gap:.5rem}
+.msp-rec{display:flex;align-items:center;gap:.75rem;background:#fff;border-radius:12px;padding:.6rem .85rem;border:1px solid #e4eaf5;box-shadow:0 1px 4px rgba(28,60,120,.05)}
+.msp-rec-ico{font-size:1.3rem;flex-shrink:0;width:28px;text-align:center}
+.msp-rec-main{flex:1;min-width:0}
+.msp-rec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9aaac4;display:block;margin-bottom:2px}
+.msp-rec-name{font-size:13px;font-weight:700;color:var(--blue3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.msp-rec-val{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;color:var(--blue);flex-shrink:0}
+.msp-rec.dim .msp-rec-name{color:#b0bdd0;font-style:italic}
+.msp-rec.dim .msp-rec-val{color:#c4cedc}
 @media(max-width:750px){
   body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
   .btn-toggle-panel{display:none!important}
@@ -878,9 +895,10 @@ function updateMap() {
       // Single player — full card, click → detail modal
       const {p, idx}=g.ps[0];
       const nm=fullName(p)||p.city;
+      const ini=[p.firstname,p.surname].filter(Boolean).map(s=>s[0].toUpperCase()).join('').slice(0,2)||'?';
       const thumb=p.photo
-        ?`<img class="pop-thumb" src="${escA(p.photo)}" onerror="this.style.display='none'">`
-        :`<div class="pop-thumb-ph">🏒</div>`;
+        ?`<img class="pop-thumb" src="${escA(p.photo)}" onerror="this.outerHTML='<div class=pop-thumb-ph>${ini}</div>'">`
+        :`<div class="pop-thumb-ph">${ini}</div>`;
       const meta=[p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
       popContent=`<div class="pop-hdr">📍 ${esc(g.display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-detail-hint">klikni pro celý profil</div>`;
     } else {
@@ -1359,9 +1377,10 @@ function showPlayerDetail(idx) {
   map.closePopup();
 
   const nm = fullName(p) || p.city;
+  const ini = initials(p);
   const thumb = p.photo
-    ? `<img class="detail-photo" src="${escA(p.photo)}" onerror="this.style.display='none'">`
-    : `<div class="detail-photo-ph">🏒</div>`;
+    ? `<img class="detail-photo" src="${escA(p.photo)}" onerror="this.outerHTML='<div class=detail-photo-ph>${ini}</div>'">`
+    : `<div class="detail-photo-ph">${ini}</div>`;
 
   const bornVal = [p.born ? esc(p.born) : null, p.city ? `<span style="color:#8a9ab5;font-size:13px;font-weight:400">(${esc(p.city)})</span>` : null].filter(Boolean).join(' ');
 
@@ -1443,27 +1462,126 @@ function mobTab(tab) {
   }
   setTimeout(() => map.invalidateSize(), 260);
 }
+function classifyRegion(lat, lon) {
+  if (!lat || !lon) return null;
+  if (lat < 48.55 || lat > 51.06 || lon < 12.09 || lon > 18.87) return 'Zahraničí 🌍';
+  if (lat > 49.9 && lat < 50.22 && lon > 14.2 && lon < 14.75) return 'Praha';
+  if (lat < 49.55 && lon < 15.7) return 'Jihočeský';
+  if (lon < 13.9) return 'Plzeňský';
+  if (lon > 17.75 && lat > 49.3) return 'Moravskoslezský';
+  if (lon > 16.2 && lat < 49.7) return 'Jihomoravský';
+  if (lon > 15.5 && lat < 50.1) return 'Moravský';
+  if (lat > 50.3) return 'Severní Čechy';
+  return 'Středočeský';
+}
+
 function renderMobStats() {
   const body = document.getElementById('mspBody');
   if (!body || !players.length) return;
+
   const withCoords = players.filter(p => p.lat);
+
+  // KPIs
+  const citySet = new Set(withCoords.map(p => Math.round(p.lat*200)+','+Math.round(p.lon*200)));
+
+  // Top cities
   const cityMap = {};
   withCoords.forEach(p => { const k = p.city||'—'; cityMap[k]=(cityMap[k]||0)+1; });
-  const top = Object.entries(cityMap).sort((a,b)=>b[1]-a[1]).slice(0,7);
-  const maxC = top[0]?.[1]||1;
+  const topCities = Object.entries(cityMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxC = topCities[0]?.[1]||1;
+
+  // Regions
+  const regionMap = {};
+  withCoords.forEach(p => {
+    const r = classifyRegion(p.lat, p.lon) || 'Ostatní';
+    regionMap[r] = (regionMap[r]||0)+1;
+  });
+  const topRegions = Object.entries(regionMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxR = topRegions[0]?.[1]||1;
+
+  // Birth decade timeline
+  const decadeMap = {};
+  players.forEach(p => {
+    if (!p.born) return;
+    const m = p.born.match(/\d{4}/);
+    if (!m) return;
+    const yr = parseInt(m[0]);
+    if (yr < 1920 || yr > 2015) return;
+    const dec = Math.floor(yr/10)*10;
+    decadeMap[dec] = (decadeMap[dec]||0)+1;
+  });
+  const decades = Object.entries(decadeMap).sort((a,b)=>a[0]-b[0]);
+  const maxD = Math.max(...decades.map(d=>d[1]), 1);
+
+  // Records
+  const bySeason = [...players].filter(p=>p.seasons).sort((a,b)=>Number(b.seasons)-Number(a.seasons));
+  const topSeason = bySeason[0];
+
+  function parseRange(r) {
+    if (!r) return 0;
+    const m = r.match(/(\d{4})[–-](\d{2,4})/);
+    if (!m) return 0;
+    const y1 = parseInt(m[1]);
+    const y2 = m[2].length===2 ? Math.floor(y1/100)*100+parseInt(m[2]) : parseInt(m[2]);
+    return y2 - y1;
+  }
+  const byRange = [...players].filter(p=>p.seasonsRange).sort((a,b)=>parseRange(b.seasonsRange)-parseRange(a.seasonsRange));
+  const longestRange = byRange[0];
+  const lrYears = longestRange ? parseRange(longestRange.seasonsRange) : 0;
+
   body.innerHTML = `
     <div class="msp-kpis">
       <div class="msp-kpi"><span class="msp-kpi-val">${players.length}</span><span class="msp-kpi-lbl">Hráčů</span></div>
-      <div class="msp-kpi"><span class="msp-kpi-val">${Object.keys(cityMap).length}</span><span class="msp-kpi-lbl">Měst</span></div>
+      <div class="msp-kpi"><span class="msp-kpi-val">${citySet.size}</span><span class="msp-kpi-lbl">Míst</span></div>
       <div class="msp-kpi"><span class="msp-kpi-val">${withCoords.length}</span><span class="msp-kpi-lbl">Na mapě</span></div>
     </div>
-    <div class="msp-section-lbl">Nejčastější rodná města</div>
-    <div class="msp-bars">${top.map(([city,count])=>`
-      <div class="msp-bar-row">
-        <span class="msp-bar-city">${esc(city)}</span>
-        <div class="msp-bar-track"><div class="msp-bar-fill" style="width:${Math.round(count/maxC*100)}%"></div></div>
-        <span class="msp-bar-count">${count}</span>
-      </div>`).join('')}
+
+    <div class="msp-section-lbl">Původ hráčů — region</div>
+    <div class="msp-bars">
+      ${topRegions.map(([r,n])=>`
+        <div class="msp-bar-row">
+          <span class="msp-bar-city">${r}</span>
+          <div class="msp-bar-track"><div class="msp-bar-fill" style="width:${Math.round(n/maxR*100)}%"></div></div>
+          <span class="msp-bar-count">${n}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Rok narození — po dekádách</div>
+    <div class="msp-timeline">
+      ${decades.map(([dec,cnt])=>`
+        <div class="msp-decade-col" title="${dec}s: ${cnt} hráčů">
+          <span class="msp-decade-cnt">${cnt}</span>
+          <div class="msp-decade-bar" style="height:${Math.round(cnt/maxD*56)+4}px"></div>
+          <span class="msp-decade-lbl">${String(dec).slice(2)}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Rekordy</div>
+    <div class="msp-rec-grid">
+      <div class="msp-rec">
+        <span class="msp-rec-ico">🏒</span>
+        <div class="msp-rec-main">
+          <span class="msp-rec-lbl">Nejvíce sezón v Motoru</span>
+          <span class="msp-rec-name">${topSeason ? esc(fullName(topSeason)||topSeason.city) : '—'}</span>
+        </div>
+        <span class="msp-rec-val">${topSeason ? topSeason.seasons+' sez.' : '—'}</span>
+      </div>
+      <div class="msp-rec">
+        <span class="msp-rec-ico">📅</span>
+        <div class="msp-rec-main">
+          <span class="msp-rec-lbl">Nejdelší kariéra v Motoru</span>
+          <span class="msp-rec-name">${longestRange ? esc(fullName(longestRange)||longestRange.city) : '—'}</span>
+        </div>
+        <span class="msp-rec-val">${longestRange ? lrYears+' let' : '—'}</span>
+      </div>
+      <div class="msp-rec dim">
+        <span class="msp-rec-ico">🎂</span>
+        <div class="msp-rec-main">
+          <span class="msp-rec-lbl">Nejstarší hráč</span>
+          <span class="msp-rec-name">připraveno</span>
+        </div>
+        <span class="msp-rec-val">—</span>
+      </div>
     </div>`;
 }
 window.addEventListener('load', () => {
