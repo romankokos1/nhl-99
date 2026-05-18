@@ -166,8 +166,9 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .leg-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid rgba(255,255,255,.8);flex-shrink:0}
 
 /* ── LEAFLET POPUP ───────────────────────────── */
-.leaflet-popup-content-wrapper{border-radius:3px!important;box-shadow:0 8px 30px rgba(15,47,106,.25)!important;padding:0!important;overflow:hidden;border-top:3px solid var(--yellow)}
-.leaflet-popup-content{margin:0!important;padding:0!important;min-width:180px}
+.leaflet-popup-content-wrapper{border-radius:16px!important;box-shadow:0 12px 40px rgba(15,47,106,.24),0 2px 8px rgba(0,0,0,.10)!important;padding:0!important;overflow:hidden;border:none!important}
+.leaflet-popup-tip-container{filter:drop-shadow(0 4px 6px rgba(15,47,106,.15))}
+.leaflet-popup-content{margin:0!important;padding:0!important;min-width:200px}
 /* ── LAYERS CONTROL – collapsed premium button ─ */
 .leaflet-control-layers{border-radius:12px!important;border:1.5px solid rgba(28,72,150,.18)!important;box-shadow:0 4px 16px rgba(15,40,100,.16)!important;overflow:hidden}
 .leaflet-control-layers-toggle{width:36px!important;height:36px!important;background-color:rgba(246,249,255,.96)!important;background-image:none!important;border-radius:10px!important;display:flex!important;align-items:center!important;justify-content:center!important}
@@ -176,13 +177,13 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .leaflet-control-layers-expanded .leaflet-control-layers-toggle{display:none!important}
 .leaflet-control-layers label{font-family:'Barlow',sans-serif;font-size:13px;font-weight:500;color:#1c2e4a!important;display:flex;align-items:center;gap:6px;padding:3px 0;cursor:pointer}
 .leaflet-control-layers input[type=radio]{accent-color:#1c4896}
-.pop-hdr{padding:7px 12px;background:var(--blue);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--yellow)}
-.pop-player{padding:6px 12px;font-size:13px;color:var(--blue3);border-bottom:1px solid #edf0f5;display:flex;align-items:center;gap:8px;background:#fff}
-.pop-player:last-child{border-bottom:none;padding-bottom:9px}
-.pop-thumb{width:30px;height:30px;border-radius:2px;object-fit:cover;flex-shrink:0;border:1px solid #c4cedc}
-.pop-thumb-ph{width:30px;height:30px;border-radius:2px;background:#eef1f9;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.pop-pname{font-weight:600;font-size:13px;color:var(--blue3)}
-.pop-pmeta{font-size:11px;color:#8a9ab5;margin-top:1px}
+.pop-hdr{padding:10px 14px;background:linear-gradient(135deg,var(--blue3) 0%,var(--blue) 100%);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pop-player{padding:10px 14px;font-size:13px;color:var(--blue3);border-bottom:1px solid #edf0f5;display:flex;align-items:center;gap:10px;background:#fff;cursor:pointer;transition:background .15s}
+.pop-player:last-child{border-bottom:none;padding-bottom:11px}
+.pop-thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1.5px solid #d4dcea;box-shadow:0 1px 4px rgba(0,0,0,.10)}
+.pop-thumb-ph{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--blue3),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.pop-pname{font-weight:700;font-size:13px;color:var(--blue3)}
+.pop-pmeta{font-size:11px;color:#8a9ab5;margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 
 /* ── FILTER PANEL – glassmorphism redesign ───── */
 .filter-panel{
@@ -333,25 +334,17 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .city-body { margin-left: 4px; }
 
 /* Multi-player popup compact list */
-.pop-hdr { padding:8px 12px; background:var(--blue); font-family:'Barlow Condensed',sans-serif;
-  font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.05em;
-  color:var(--yellow); display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.pop-badge { background:var(--yellow); color:var(--blue3); font-size:11px; font-weight:800;
-  padding:2px 8px; border-radius:10px; white-space:nowrap; }
-.pop-list { max-height:320px; overflow-y:auto; }
-.pop-row { display:flex; align-items:baseline; justify-content:space-between; gap:6px;
-  padding:4px 12px; border-bottom:1px solid #edf0f5; font-size:12px; }
-.pop-row:last-child { border-bottom:none; }
-.pop-row:nth-child(odd) { background:#f8fafd; }
-.pop-rname { font-weight:600; color:var(--blue3); flex:1; }
-.pop-rmeta { display:flex; gap:5px; color:#8a9ab5; font-size:11px; white-space:nowrap; }
-.pop-rmeta span { background:#eef1f8; padding:1px 5px; border-radius:3px; }
-.pop-row { cursor:pointer; }
-.pop-row:hover { background:#dde8fb !important; }
-.pop-row:hover .pop-rname { color:var(--blue); }
-.pop-player { cursor:pointer; transition:.15s; }
-.pop-player:hover { background:#eef2fc !important; }
-.pop-detail-hint { text-align:center; font-size:10px; color:#b0bdd0; padding:3px 0 5px; letter-spacing:.04em; }
+.pop-badge{background:rgba(245,195,0,.2);color:var(--yellow);border:1px solid rgba(245,195,0,.4);font-size:11px;font-weight:800;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.pop-list{max-height:300px;overflow-y:auto}
+.pop-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 14px;border-bottom:1px solid #edf0f5;font-size:12px;cursor:pointer;transition:background .15s}
+.pop-row:last-child{border-bottom:none}
+.pop-row:hover{background:#eef3fc!important}
+.pop-row:hover .pop-rname{color:var(--blue)}
+.pop-rname{font-weight:600;color:var(--blue3);flex:1}
+.pop-rmeta{display:flex;gap:4px;color:#8a9ab5;font-size:11px;white-space:nowrap;align-items:center}
+.pop-rmeta span{background:#eef1f8;padding:2px 6px;border-radius:6px;font-weight:600}
+.pop-player:hover{background:#eef3fc!important}
+.pop-detail-hint{text-align:center;font-size:10px;color:#b0bdd0;padding:4px 0 7px;letter-spacing:.04em}
 
 /* ── PLAYER DETAIL MODAL – premium card redesign ─── */
 #detailOvl .modal {
@@ -1394,7 +1387,7 @@ function showPlayerDetail(idx) {
     </div>
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
     <div class="detail-card-footer">
-      <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on');focusPlayer(${idx})">← Zobrazit v seznamu</button>
+      <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on'); window.innerWidth<=750 ? mobTab('seznam') : focusPlayer(${idx})">← Zobrazit v seznamu</button>
       <button class="detail-close-btn" onclick="document.getElementById('detailOvl').classList.remove('on')">✕</button>
     </div>`;
 
