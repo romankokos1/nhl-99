@@ -1750,30 +1750,6 @@ function onMobSearch(q) {
   }).join('')
   : `<div class="mob-sr-empty">Žádné výsledky pro „${esc(q)}"</div>`;
 }
-  // Czech Republic regions
-  if (lat >= 48.55 && lat <= 51.06 && lon >= 12.09 && lon <= 18.87) {
-    if (lat > 49.9 && lat < 50.22 && lon > 14.2 && lon < 14.75) return 'Praha';
-    if (lat < 49.55 && lon < 15.7)  return 'Jihočeský kraj';
-    if (lon < 13.9)                  return 'Plzeňský kraj';
-    if (lon > 17.75 && lat > 49.3)  return 'Moravskoslezský kraj';
-    if (lon > 16.2 && lat < 49.7)   return 'Jihomoravský kraj';
-    if (lon > 15.5 && lat < 50.1)   return 'Zlínský / Olomoucký';
-    if (lat > 50.3)                  return 'Severní Čechy';
-    return 'Středočeský kraj';
-  }
-  // Foreign countries
-  if (lat >= 47.7  && lat <= 49.6  && lon >= 16.8  && lon <= 22.6)  return 'Slovensko';
-  if (lat >= 47.3  && lat <= 55.05 && lon >= 6.1   && lon <= 15.05) return 'Německo';
-  if (lat >= 46.4  && lat <= 49.05 && lon >= 9.5   && lon <= 17.2)  return 'Rakousko';
-  if (lat >= 49.0  && lat <= 54.9  && lon >= 14.1  && lon <= 24.2)  return 'Polsko';
-  if (lat >= 55.3  && lat <= 69.1  && lon >= 11.0  && lon <= 24.2)  return 'Švédsko';
-  if (lat >= 59.8  && lat <= 70.1  && lon >= 20.0  && lon <= 31.6)  return 'Finsko';
-  if (lat >= 56.0  && lat <= 71.0  && lon >= 24.0  && lon <= 32.0)  return 'Pobaltí';
-  if (lat >= 44.0  && lat <= 70.0  && lon >= 23.5)                  return 'Rusko / SNS';
-  if (lon <= -52   && lat >= 43)                                     return 'Kanada';
-  if (lon <= -67   && lat >= 25    && lat <= 50)                     return 'USA';
-  return 'Ostatní';
-}
 
 function buildYearChart(players) {
   const yearMap = {};
