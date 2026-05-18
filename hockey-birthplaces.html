@@ -542,10 +542,10 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 
 /* ── MARKER POP ANIMATION ──────────────────────── */
 @keyframes mkPop {
-  from { transform: scale(0) translateY(-8px); opacity: 0; }
-  to   { transform: scale(1) translateY(0);    opacity: 1; }
+  from { opacity: 0; filter: blur(2px) brightness(.6); }
+  to   { opacity: 1; filter: blur(0)   brightness(1); }
 }
-.mk-anim { animation: mkPop .32s cubic-bezier(.34,1.56,.64,1) both; }
+.mk-anim { animation: mkPop .35s ease both; }
 
 /* ── CAREER TIMELINE ────────────────────────────── */
 .career-tl { padding: 0 1.75rem 1.2rem; }
@@ -1499,26 +1499,37 @@ window.addEventListener('resize', () => { map.invalidateSize(); });
 // ── CAREER TIMELINE ───────────────────────────────
 function buildCareerTimeline(p) {
   if (!p.seasonsRange) return '';
-  const m = p.seasonsRange.match(/(\d{4})[–\-](\d{2,4})/);
-  if (!m) return '';
-  const y1 = parseInt(m[1]);
-  const s  = m[2];
-  const y2raw = s.length <= 2 ? Math.floor(y1/100)*100 + parseInt(s) : parseInt(s);
-  const y2 = y2raw < y1 ? y2raw + 100 : y2raw;
-  const TL_S = 1950, TL_E = 2026, span = TL_E - TL_S;
-  const left  = Math.max(0, Math.min(98, (y1 - TL_S) / span * 100));
-  const width = Math.max(1, Math.min(100 - left, (y2 - y1) / span * 100));
+  const TL_S = 1920, TL_E = 2026, span = TL_E - TL_S;
+
+  // Parse all ranges (e.g. "1958-63, 1965-70")
+  const ranges = [];
+  const re = /(\d{4})[–\-](\d{2,4})/g;
+  let m;
+  while ((m = re.exec(p.seasonsRange)) !== null) {
+    const y1 = parseInt(m[1]);
+    const raw = m[2].length <= 2 ? Math.floor(y1/100)*100 + parseInt(m[2]) : parseInt(m[2]);
+    const y2 = raw < y1 ? raw + 100 : raw;
+    ranges.push({ y1, y2 });
+  }
+  if (!ranges.length) return '';
+
+  const bars = ranges.map(({y1, y2}) => {
+    const left  = Math.max(0, Math.min(98, (y1 - TL_S) / span * 100));
+    const width = Math.max(1.2, Math.min(100 - left, (y2 - y1) / span * 100));
+    return `<div class="career-tl-bar" style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%" title="${y1}–${y2}"></div>`;
+  }).join('');
+
+  const label = ranges.map(({y1,y2})=>`${y1}–${y2}`).join(', ');
   const seasons = p.seasons ? ` · ${p.seasons} sez.` : '';
+
   return `<div class="career-tl">
-    <div class="career-tl-lbl">Kariéra v Motoru</div>
+    <div class="career-tl-lbl">Kariéra v ČB</div>
     <div class="career-tl-wrap">
       <span class="career-tl-y">${TL_S}</span>
-      <div class="career-tl-track">
-        <div class="career-tl-bar" style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%"></div>
-      </div>
+      <div class="career-tl-track">${bars}</div>
       <span class="career-tl-y">${TL_E}</span>
     </div>
-    <div class="career-tl-seasons">${y1}–${y2}${seasons}</div>
+    <div class="career-tl-seasons">${label}${seasons}</div>
   </div>`;
 }
 
