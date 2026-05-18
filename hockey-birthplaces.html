@@ -1407,23 +1407,28 @@ function updateStats() {
 // ══════════════════════════════════════════════════
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(players));}catch(e){}}
 function load(){
-  players=SAMPLES.map(function(s){return Object.assign({},s);});
-  try{
-    var r=localStorage.getItem(STORAGE_KEY);
-    if(r){
-      var stored=JSON.parse(r);
-      var arr=Array.isArray(stored)?stored:(stored.players||[]);
-      var sampleNames={};
-      SAMPLES.forEach(function(s){
-        var k=((s.firstname||'')+' '+(s.surname||'')).toLowerCase().trim();
-        sampleNames[k]=true;
-      });
-      arr.forEach(function(p){
-        var k=((p.firstname||'')+' '+(p.surname||'')).toLowerCase().trim();
-        if(!sampleNames[k]) players.push(p);
-      });
+  // JSON je autoritativní zdroj — localStorage slouží jen pro dočasné lokální úpravy
+  // Pokud localStorage obsahuje data, použij je jen pokud jsou novější (více hráčů)
+  players = SAMPLES.map(function(s){ return Object.assign({},s); });
+  try {
+    var r = localStorage.getItem(STORAGE_KEY);
+    if (r) {
+      var stored = JSON.parse(r);
+      var arr = Array.isArray(stored) ? stored : (stored.players || []);
+      // Použij localStorage jen pokud má VÍCE hráčů než JSON (lokálně přidaní)
+      if (arr.length > SAMPLES.length) {
+        var sampleNames = {};
+        SAMPLES.forEach(function(s) {
+          var k = ((s.firstname||'')+' '+(s.surname||'')).toLowerCase().trim();
+          sampleNames[k] = true;
+        });
+        arr.forEach(function(p) {
+          var k = ((p.firstname||'')+' '+(p.surname||'')).toLowerCase().trim();
+          if (!sampleNames[k]) players.push(p);
+        });
+      }
     }
-  }catch(e){}
+  } catch(e) {}
   save();
 }
 function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
