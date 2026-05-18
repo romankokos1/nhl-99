@@ -1293,7 +1293,7 @@ function focusPlayer(idx) {
   if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 
   // Fly map to location and open popup
-  const delay = isMobile ? 350 : 0;
+  const delay = isMobile ? 400 : 0;
   setTimeout(() => {
     map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
     setTimeout(()=>{
@@ -1387,7 +1387,7 @@ function showPlayerDetail(idx) {
     </div>
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
     <div class="detail-card-footer">
-      <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on'); window.innerWidth<=750 ? mobTab('seznam') : focusPlayer(${idx})">← Zobrazit v seznamu</button>
+      <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on'); focusPlayer(${idx})">← Zobrazit v seznamu</button>
       <button class="detail-close-btn" onclick="document.getElementById('detailOvl').classList.remove('on')">✕</button>
     </div>`;
 
