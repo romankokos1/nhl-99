@@ -539,6 +539,57 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 
 /* Adjust search bar sticky top to sit below sort bar */
 .search-bar { top: 88px !important; }
+
+/* ── MARKER POP ANIMATION ──────────────────────── */
+@keyframes mkPop {
+  from { transform: scale(0) translateY(-8px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);    opacity: 1; }
+}
+.mk-anim { animation: mkPop .32s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* ── CAREER TIMELINE ────────────────────────────── */
+.career-tl { padding: 0 1.75rem 1.2rem; }
+.career-tl-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: #8a9ab5; margin-bottom: 8px; }
+.career-tl-wrap { display: flex; align-items: center; gap: 8px; }
+.career-tl-y { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; color: #8a9ab5; flex-shrink: 0; }
+.career-tl-track { flex: 1; height: 8px; background: #edf0f7; border-radius: 4px; position: relative; overflow: visible; }
+.career-tl-bar { position: absolute; top: 0; height: 100%; background: linear-gradient(90deg, var(--blue) 0%, var(--blue-light) 100%); border-radius: 4px; box-shadow: 0 2px 6px rgba(28,72,150,.3); transition: width .4s cubic-bezier(.4,0,.2,1); }
+.career-tl-seasons { font-size: 11px; color: #8a9ab5; text-align: center; margin-top: 5px; }
+
+/* ── DESKTOP STATS MODAL ────────────────────────── */
+#statsOvl .modal { max-width: 580px !important; padding: 0 !important; border: none !important; border-top: none !important; border-radius: 20px !important; overflow: hidden; box-shadow: 0 24px 64px rgba(10,30,80,.32) !important; }
+.stats-modal-head { background: linear-gradient(135deg, var(--blue3), var(--blue)); padding: 1rem 1.4rem; display: flex; align-items: center; justify-content: space-between; }
+.stats-modal-head h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #fff; margin: 0; }
+.stats-modal-body { padding: 1.2rem 1.4rem 1.4rem; background: #f2f5fb; max-height: 80vh; overflow-y: auto; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.stats-grid .msp-bars-wrap { grid-column: 1; }
+.stats-grid .msp-rec-grid  { grid-column: 2; }
+.stats-year-full { margin-top: 1rem; background: #fff; border-radius: 12px; padding: .8rem 1rem .5rem; border: 1px solid #e4eaf5; }
+.stats-year-full .msp-year-chart { height: 90px; }
+.hbtn-stats { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 8px; padding: 5px 12px; font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; transition: .15s; display: none; }
+.hbtn-stats:hover { background: rgba(255,255,255,.25); }
+@media(min-width:751px) { .hbtn-stats { display: inline-flex; align-items: center; gap: 5px; } }
+
+/* ── MOBILE SEARCH OVERLAY ──────────────────────── */
+.mob-search-btn { display: none; background: none; border: none; cursor: pointer; padding: 4px; color: rgba(255,255,255,.85); }
+.mob-search-btn svg { width: 20px; height: 20px; }
+@media(max-width:750px) { .mob-search-btn { display: flex; align-items: center; } }
+.mob-search-ovl { display: none; position: fixed; inset: 0; z-index: 4000; background: #f2f5fb; flex-direction: column; }
+.mob-search-ovl.on { display: flex; }
+.mob-search-bar { display: flex; align-items: center; gap: 8px; padding: .7rem .9rem; background: #fff; border-bottom: 1px solid #e4eaf5; box-shadow: 0 2px 8px rgba(15,40,100,.08); }
+.mob-search-back { background: none; border: none; cursor: pointer; font-size: 1.3rem; color: var(--blue); padding: 2px 6px; flex-shrink: 0; }
+.mob-search-input { flex: 1; border: none; outline: none; font-family: 'Barlow', sans-serif; font-size: 15px; color: var(--blue3); background: transparent; }
+.mob-search-input::placeholder { color: #a0b0cc; }
+.mob-search-results { flex: 1; overflow-y: auto; padding: .5rem .75rem; }
+.mob-sr-row { display: flex; align-items: center; gap: 10px; padding: .7rem .5rem; border-bottom: 1px solid #edf0f5; cursor: pointer; border-radius: 8px; transition: background .15s; }
+.mob-sr-row:hover, .mob-sr-row:active { background: #e8edf8; }
+.mob-sr-thumb { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex-shrink: 0; border: 1.5px solid #d4dcea; }
+.mob-sr-ini { width: 38px; height: 38px; border-radius: 8px; background: linear-gradient(135deg, var(--blue3), var(--blue)); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.mob-sr-info { flex: 1; min-width: 0; }
+.mob-sr-name { font-size: 14px; font-weight: 600; color: var(--blue3); }
+.mob-sr-city { font-size: 11px; color: #8a9ab5; margin-top: 1px; }
+.mob-sr-meta { font-size: 11px; font-weight: 700; color: var(--blue); flex-shrink: 0; }
+.mob-sr-empty { text-align: center; padding: 2rem; color: #a0b0cc; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -551,7 +602,13 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     </div>
     <div class="hdr-right">
       <div class="hdr-stats" id="hdrStats"></div>
+      <button class="hbtn-stats" onclick="openStatsDesktop()">📊 Statistiky</button>
       <button class="hbtn" onclick="clearAll()">↺ Reset</button>
+      <button class="mob-search-btn" onclick="openMobSearch()" aria-label="Hledat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
     </div>
   </div>
   <div class="hdr-stripes"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
@@ -892,7 +949,7 @@ function updateMap() {
   });
 
   const lls=[];
-  Object.values(groups).forEach(g=>{
+  Object.values(groups).forEach((g, markerIdx)=>{
     lls.push([g.lat,g.lon]);
     const n=g.ps.length, multi=n>1;
     const color=multi?'#f5c300':'#1c4896';
@@ -924,6 +981,9 @@ function updateMap() {
     const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●',color,sz,textColor)})
       .bindPopup(popContent,{maxWidth:320,maxHeight:400})
       .addTo(map);
+    // stagger pop animation
+    const el = mk.getElement();
+    if (el) { el.style.animationDelay = `${markerIdx * 25}ms`; el.classList.add('mk-anim'); }
     mlayers.push(mk);
   });
 
@@ -1414,6 +1474,7 @@ function showPlayerDetail(idx) {
       </div>
     </div>
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
+    ${buildCareerTimeline(p)}
     <div class="detail-card-footer">
       <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on'); focusPlayer(${idx})">← Zobrazit v seznamu</button>
       <button class="detail-close-btn" onclick="document.getElementById('detailOvl').classList.remove('on')">✕</button>
@@ -1435,6 +1496,32 @@ loadPlayers(function() {
 });
   
 window.addEventListener('resize', () => { map.invalidateSize(); });
+// ── CAREER TIMELINE ───────────────────────────────
+function buildCareerTimeline(p) {
+  if (!p.seasonsRange) return '';
+  const m = p.seasonsRange.match(/(\d{4})[–\-](\d{2,4})/);
+  if (!m) return '';
+  const y1 = parseInt(m[1]);
+  const s  = m[2];
+  const y2raw = s.length <= 2 ? Math.floor(y1/100)*100 + parseInt(s) : parseInt(s);
+  const y2 = y2raw < y1 ? y2raw + 100 : y2raw;
+  const TL_S = 1950, TL_E = 2026, span = TL_E - TL_S;
+  const left  = Math.max(0, Math.min(98, (y1 - TL_S) / span * 100));
+  const width = Math.max(1, Math.min(100 - left, (y2 - y1) / span * 100));
+  const seasons = p.seasons ? ` · ${p.seasons} sez.` : '';
+  return `<div class="career-tl">
+    <div class="career-tl-lbl">Kariéra v Motoru</div>
+    <div class="career-tl-wrap">
+      <span class="career-tl-y">${TL_S}</span>
+      <div class="career-tl-track">
+        <div class="career-tl-bar" style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%"></div>
+      </div>
+      <span class="career-tl-y">${TL_E}</span>
+    </div>
+    <div class="career-tl-seasons">${y1}–${y2}${seasons}</div>
+  </div>`;
+}
+
 function togglePanel() {
   const app = document.querySelector('.app');
   const btn = document.getElementById('btnTogglePanel');
@@ -1476,6 +1563,193 @@ function mobTab(tab) {
 }
 function classifyOrigin(lat, lon) {
   if (!lat || !lon) return 'Neznámo';
+  if (lat >= 48.55 && lat <= 51.06 && lon >= 12.09 && lon <= 18.87) {
+    if (lat > 49.9 && lat < 50.22 && lon > 14.2 && lon < 14.75) return 'Praha';
+    if (lat < 49.55 && lon < 15.7)  return 'Jihočeský kraj';
+    if (lon < 13.9)                  return 'Plzeňský kraj';
+    if (lon > 17.75 && lat > 49.3)  return 'Moravskoslezský kraj';
+    if (lon > 16.2 && lat < 49.7)   return 'Jihomoravský kraj';
+    if (lon > 15.5 && lat < 50.1)   return 'Zlínský / Olomoucký';
+    if (lat > 50.3)                  return 'Severní Čechy';
+    return 'Středočeský kraj';
+  }
+  if (lat>=47.7&&lat<=49.6&&lon>=16.8&&lon<=22.6)  return 'Slovensko';
+  if (lat>=47.3&&lat<=55.1&&lon>=6.1&&lon<=15.05)  return 'Německo';
+  if (lat>=46.4&&lat<=49.1&&lon>=9.5&&lon<=17.2)   return 'Rakousko';
+  if (lat>=49.0&&lat<=54.9&&lon>=14.1&&lon<=24.2)  return 'Polsko';
+  if (lat>=55.3&&lat<=69.1&&lon>=11.0&&lon<=24.2)  return 'Švédsko';
+  if (lat>=59.8&&lat<=70.1&&lon>=20.0&&lon<=31.6)  return 'Finsko';
+  if (lat>=44.0&&lat<=70.0&&lon>=23.5)              return 'Rusko / SNS';
+  if (lon<=-52&&lat>=43)                            return 'Kanada';
+  if (lon<=-67&&lat>=25&&lat<=50)                   return 'USA';
+  return 'Ostatní';
+}
+
+function buildYearChart(players) {
+  const ym = {};
+  players.forEach(p => {
+    if (!p.born) return;
+    const m = p.born.match(/\d{4}/);
+    if (!m) return;
+    const yr = parseInt(m[0]);
+    if (yr < 1920 || yr > 2015) return;
+    ym[yr] = (ym[yr]||0)+1;
+  });
+  const yrs = Object.keys(ym).map(Number).sort((a,b)=>a-b);
+  if (yrs.length < 2) return '';
+  const minY = yrs[0], maxY = yrs[yrs.length-1];
+  const all = [], cnts = [];
+  for (let y = minY; y <= maxY; y++) { all.push(y); cnts.push(ym[y]||0); }
+  const maxC = Math.max(...cnts, 1);
+  const W=300,H=72,pL=6,pR=6,pT=14,pB=18,cW=W-pL-pR,cH=H-pT-pB;
+  const px=i=>pL+(i/(all.length-1))*cW;
+  const py=v=>pT+cH-(v/maxC)*cH;
+  const pts=all.map((_,i)=>`${px(i).toFixed(1)},${py(cnts[i]).toFixed(1)}`);
+  const line='M '+pts.join(' L ');
+  const area=`M ${pL},${pT+cH} L ${pts.join(' L ')} L ${W-pR},${pT+cH} Z`;
+  const xlabels=all.filter(y=>y%10===0).map(y=>{
+    const i=all.indexOf(y);
+    return `<text x="${px(i).toFixed(1)}" y="${H-3}" font-size="8" text-anchor="middle" fill="#9aaac4">${y}</text>`;
+  });
+  const peak=cnts.indexOf(maxC);
+  const dot=`<circle cx="${px(peak).toFixed(1)}" cy="${py(maxC).toFixed(1)}" r="3" fill="#1c4896"/>
+    <text x="${px(peak).toFixed(1)}" y="${(py(maxC)-6).toFixed(1)}" font-size="8" text-anchor="middle" fill="#1c4896" font-weight="700">${maxC}</text>`;
+  return `<svg class="msp-year-chart" viewBox="0 0 ${W} ${H}" style="width:100%;display:block">
+    <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c4896" stop-opacity=".2"/>
+      <stop offset="100%" stop-color="#1c4896" stop-opacity=".02"/>
+    </linearGradient></defs>
+    <path d="${area}" fill="url(#ag)"/>
+    <path d="${line}" fill="none" stroke="#1c4896" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${xlabels.join('')}${dot}
+  </svg>`;
+}
+
+function toggleRegions(barsId, btnId) {
+  const bars = document.getElementById(barsId);
+  const btn  = document.getElementById(btnId);
+  if (!bars) return;
+  const exp = bars.classList.toggle('exp');
+  bars.querySelectorAll('[data-extra="1"]').forEach(r => r.style.display = exp ? 'flex' : 'none');
+  if (btn) btn.textContent = exp ? 'Zobrazit méně' : btn.dataset.label;
+}
+
+function renderStats(ids) {
+  // ids: { kpis, regionBars, showMore, records, yearChart }
+  if (!players.length) return;
+  const withC = players.filter(p => p.lat);
+  const citySet = new Set(withC.map(p => Math.round(p.lat*200)+','+Math.round(p.lon*200)));
+
+  // KPIs
+  if (ids.kpis) document.getElementById(ids.kpis).innerHTML = `
+    <div class="msp-kpi"><span class="msp-kpi-val">${players.length}</span><span class="msp-kpi-lbl">Hráčů</span></div>
+    <div class="msp-kpi"><span class="msp-kpi-val">${citySet.size}</span><span class="msp-kpi-lbl">Míst</span></div>
+    <div class="msp-kpi"><span class="msp-kpi-val">${withC.length}</span><span class="msp-kpi-lbl">Na mapě</span></div>`;
+
+  // Origins
+  const oMap = {};
+  withC.forEach(p => { const o=classifyOrigin(p.lat,p.lon); oMap[o]=(oMap[o]||0)+1; });
+  const origins = Object.entries(oMap).sort((a,b)=>b[1]-a[1]);
+  const maxO = origins[0]?.[1]||1;
+  const SHOW = 5;
+  if (ids.regionBars) {
+    document.getElementById(ids.regionBars).innerHTML = origins.map(([o,n],i)=>`
+      <div class="msp-bar-row" data-extra="${i>=SHOW?1:0}" style="${i>=SHOW?'display:none':''}">
+        <span class="msp-bar-city">${esc(o)}</span>
+        <div class="msp-bar-track"><div class="msp-bar-fill" style="width:${Math.round(n/maxO*100)}%"></div></div>
+        <span class="msp-bar-count">${n}</span>
+      </div>`).join('');
+  }
+  if (ids.showMore) {
+    const btn = document.getElementById(ids.showMore);
+    if (btn) {
+      btn.style.display = origins.length > SHOW ? '' : 'none';
+      btn.dataset.label = `Zobrazit vše (${origins.length})`;
+      btn.textContent   = `Zobrazit vše (${origins.length})`;
+    }
+  }
+
+  // Records
+  function parseSR(r){if(!r)return 0;const m=r.match(/(\d{4})[–\-](\d{2,4})/);if(!m)return 0;const y1=parseInt(m[1]);const s=m[2];const y2=s.length<=2?Math.floor(y1/100)*100+parseInt(s):parseInt(s);return(y2<y1?y2+100:y2)-y1;}
+  const topSeason   = [...players].filter(p=>p.seasons).sort((a,b)=>Number(b.seasons)-Number(a.seasons))[0];
+  const longestRange= [...players].filter(p=>p.seasonsRange).sort((a,b)=>parseSR(b.seasonsRange)-parseSR(a.seasonsRange))[0];
+  if (ids.records) document.getElementById(ids.records).innerHTML = `
+    <div class="msp-rec">
+      <span class="msp-rec-ico">🏒</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejvíce sezón v Motoru</span>
+        <span class="msp-rec-name">${topSeason?esc(fullName(topSeason)||topSeason.city):'—'}</span>
+      </div>
+      <span class="msp-rec-val">${topSeason?topSeason.seasons+' sez.':'—'}</span>
+    </div>
+    <div class="msp-rec">
+      <span class="msp-rec-ico">📅</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejdelší kariéra v Motoru</span>
+        <span class="msp-rec-name">${longestRange?esc(fullName(longestRange)||longestRange.city):'—'}</span>
+      </div>
+      <span class="msp-rec-val">${longestRange?parseSR(longestRange.seasonsRange)+' let':'—'}</span>
+    </div>
+    <div class="msp-rec dim">
+      <span class="msp-rec-ico">🎂</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejstarší hráč</span>
+        <span class="msp-rec-name">připraveno</span>
+      </div>
+      <span class="msp-rec-val">—</span>
+    </div>`;
+
+  // Year chart
+  if (ids.yearChart) document.getElementById(ids.yearChart).innerHTML = buildYearChart(players);
+}
+
+function renderMobStats() {
+  renderStats({ kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart' });
+}
+
+// ── DESKTOP STATS ─────────────────────────────────
+function openStatsDesktop() {
+  document.getElementById('statsOvl').classList.add('on');
+  renderStats({ kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart' });
+}
+function closeStatsDesktop(e) {
+  if (e && e.target !== document.getElementById('statsOvl')) return;
+  document.getElementById('statsOvl').classList.remove('on');
+}
+
+// ── MOBILE SEARCH ─────────────────────────────────
+function openMobSearch() {
+  document.getElementById('mobSearchOvl').classList.add('on');
+  setTimeout(() => document.getElementById('mobSearchInput').focus(), 100);
+}
+function closeMobSearch() {
+  document.getElementById('mobSearchOvl').classList.remove('on');
+  document.getElementById('mobSearchInput').value = '';
+  document.getElementById('mobSearchResults').innerHTML = '';
+}
+function onMobSearch(q) {
+  const el = document.getElementById('mobSearchResults');
+  if (!q.trim()) { el.innerHTML = ''; return; }
+  const ql = q.toLowerCase();
+  const res = players.map((p,i)=>({p,i})).filter(({p})=>{
+    return (fullName(p)||'').toLowerCase().includes(ql) || (p.city||'').toLowerCase().includes(ql);
+  }).slice(0, 25);
+  el.innerHTML = res.length ? res.map(({p,i})=>{
+    const ini = initials(p);
+    const th = p.photo
+      ? `<img class="mob-sr-thumb" src="${escA(p.photo)}" onerror="this.outerHTML='<div class=mob-sr-ini>${ini}</div>'">`
+      : `<div class="mob-sr-ini">${ini}</div>`;
+    return `<div class="mob-sr-row" onclick="closeMobSearch();focusPlayer(${i})">
+      ${th}
+      <div class="mob-sr-info">
+        <div class="mob-sr-name">${esc(fullName(p)||p.city)}</div>
+        ${p.city?`<div class="mob-sr-city">${esc(p.city)}</div>`:''}
+      </div>
+      ${p.seasons?`<span class="mob-sr-meta">${p.seasons} sez.</span>`:''}
+    </div>`;
+  }).join('')
+  : `<div class="mob-sr-empty">Žádné výsledky pro „${esc(q)}"</div>`;
+}
   // Czech Republic regions
   if (lat >= 48.55 && lat <= 51.06 && lon >= 12.09 && lon <= 18.87) {
     if (lat > 49.9 && lat < 50.22 && lon > 14.2 && lon < 14.75) return 'Praha';
@@ -1759,7 +2033,18 @@ window.addEventListener('load', () => {
 <div class="mob-stats-panel" id="mobStatsPanel">
   <div class="msp-handle"></div>
   <div class="msp-head">📊 Statistiky</div>
-  <div class="msp-body" id="mspBody"></div>
+  <div class="msp-body" id="mspBody">
+    <div class="msp-kpis" id="mspKpis"></div>
+    <div class="msp-section-lbl">Původ hráčů</div>
+    <div class="msp-bars-wrap">
+      <div class="msp-bars" id="mspRegionBars"></div>
+      <button class="msp-show-more" id="mspShowMore" style="display:none" onclick="toggleRegions('mspRegionBars','mspShowMore')">Zobrazit vše</button>
+    </div>
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Rok narození</div>
+    <div id="mspYearChart"></div>
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Rekordy</div>
+    <div class="msp-rec-grid" id="mspRecords"></div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -1788,5 +2073,46 @@ window.addEventListener('load', () => {
     Statistiky
   </button>
 </nav>
+
+<!-- ══════════════════════════════════════
+  DESKTOP STATS MODAL
+══════════════════════════════════════ -->
+<div class="ovl" id="statsOvl" onclick="closeStatsDesktop(event)">
+<div class="modal">
+  <div class="stats-modal-head">
+    <h2>📊 Statistiky</h2>
+    <button class="modal-close" onclick="closeStatsDesktop()" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff">✕</button>
+  </div>
+  <div class="stats-modal-body" id="statsModalBody">
+    <div class="msp-kpis" id="statsKpis"></div>
+    <div class="stats-grid">
+      <div>
+        <div class="msp-section-lbl">Původ hráčů</div>
+        <div class="msp-bars-wrap"><div class="msp-bars" id="statsRegionBars"></div>
+        <button class="msp-show-more" id="statsShowMore" style="display:none" onclick="toggleRegions('statsRegionBars','statsShowMore')">Zobrazit vše</button></div>
+      </div>
+      <div>
+        <div class="msp-section-lbl">Rekordy</div>
+        <div class="msp-rec-grid" id="statsRecords"></div>
+      </div>
+    </div>
+    <div class="stats-year-full">
+      <div class="msp-section-lbl">Rok narození</div>
+      <div id="statsYearChart"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+  MOBILE SEARCH OVERLAY
+══════════════════════════════════════ -->
+<div class="mob-search-ovl" id="mobSearchOvl">
+  <div class="mob-search-bar">
+    <button class="mob-search-back" onclick="closeMobSearch()">←</button>
+    <input class="mob-search-input" id="mobSearchInput" type="search" placeholder="Hledat hráče nebo město..." oninput="onMobSearch(this.value)">
+  </div>
+  <div class="mob-search-results" id="mobSearchResults"></div>
+</div>
 
 </body>
