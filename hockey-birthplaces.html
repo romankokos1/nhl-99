@@ -546,6 +546,10 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   to   { opacity: 1; filter: blur(0)   brightness(1); }
 }
 .mk-anim { animation: mkPop .35s ease both; }
+@keyframes mkPulse {
+  0%   { transform: scale(1);   opacity: .6; }
+  100% { transform: scale(2.4); opacity: 0;  }
+}
 
 /* ── CAREER TIMELINE ────────────────────────────── */
 .career-tl { padding: 0 1.75rem 1.2rem; }
@@ -847,25 +851,42 @@ function mkIcon(label, color, sz, textColor) {
     });
   }
 
-  // Multi player: yellow pill badge with pointer triangle
+  // Multi: size tiers
+  const big   = n >= 100;
+  const med   = n >= 10;
   const digits = String(n).length;
-  const w = digits >= 3 ? 46 : digits === 2 ? 38 : 30;
-  const h = n >= 100 ? 32 : n >= 10 ? 28 : 26;
-  const fs = n >= 100 ? 13 : n >= 10 ? 14 : 14;
-  const ptr = 6; // triangle height
+  const w = big ? (digits >= 3 ? 52 : 44) : med ? 40 : 32;
+  const h = big ? 36 : med ? 30 : 26;
+  const fs = big ? 15 : med ? 14 : 13;
+  const ptr = 7;
+  const pulse = n >= 50;
+
+  // Pulse ring wrapper (only for large clusters)
+  const pulseHtml = pulse ? `<div style="
+    position:absolute;inset:-8px;border-radius:50%;
+    background:rgba(245,195,0,.25);
+    animation:mkPulse 2s ease-out infinite;
+    pointer-events:none;
+  "></div>` : '';
 
   return L.divIcon({
-    html: `<svg width="${w}" height="${h+ptr}" viewBox="0 0 ${w} ${h+ptr}" style="filter:drop-shadow(0 3px 10px rgba(10,30,80,.40))">
-      <rect x="0" y="0" width="${w}" height="${h}" rx="${h/2}" fill="#f5c300" stroke="#d4a800" stroke-width="1"/>
-      <text x="${w/2}" y="${h*0.695}" text-anchor="middle"
-        font-size="${fs}" font-weight="800" fill="#0f2f6a"
-        font-family="Barlow Condensed,sans-serif" letter-spacing="-0.3">${n}</text>
-      <polygon points="${w/2-5},${h} ${w/2+5},${h} ${w/2},${h+ptr}" fill="#f5c300"/>
-    </svg>`,
+    html: `<div style="position:relative;width:${w}px;height:${h+ptr}px">
+      ${pulseHtml}
+      <svg width="${w}" height="${h+ptr}" viewBox="0 0 ${w} ${h+ptr}"
+        style="position:relative;filter:drop-shadow(0 ${big?5:3}px ${big?14:8}px rgba(10,30,80,${big?.50:.38}))">
+        <rect x="0" y="0" width="${w}" height="${h}" rx="${h/2}"
+          fill="#f5c300" stroke="${big?'#c89000':'#d4a800'}" stroke-width="${big?1.5:1}"/>
+        ${big ? `<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="${(h-4)/2}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>` : ''}
+        <text x="${w/2}" y="${h*0.70}" text-anchor="middle"
+          font-size="${fs}" font-weight="800" fill="#0f2f6a"
+          font-family="Barlow Condensed,sans-serif" letter-spacing="-0.3">${n}</text>
+        <polygon points="${w/2-6},${h} ${w/2+6},${h} ${w/2},${h+ptr}" fill="#f5c300"/>
+      </svg>
+    </div>`,
     className: '',
     iconSize: [w, h+ptr],
     iconAnchor: [w/2, h+ptr],
-    popupAnchor: [0, -(h+ptr+2)]
+    popupAnchor: [0, -(h+ptr+4)]
   });
 }
 
@@ -1011,7 +1032,7 @@ function updateMap() {
       popContent=`<div class="pop-hdr"><span>📍 ${esc(g.display)}</span><span class="pop-badge">${n} hráčů</span></div><div class="pop-list">${rows}</div>`;
     }
 
-    const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●')})
+    const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●'), zIndexOffset: multi ? n*10 : 0})
       .bindPopup(popContent,{maxWidth:320,maxHeight:400})
       .addTo(map);
     // stagger pop animation
