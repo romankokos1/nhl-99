@@ -1891,7 +1891,7 @@
   },
   {
     "surname": "Gába",
-    "firstname": "Ondřej",
+    "firstname": "David",
     "city": "Písek",
     "lat": 49.3086,
     "lon": 14.148,
@@ -6409,7 +6409,7 @@
     "deathcity": "",
     "seasons": "7",
     "seasonsRange": "1964-66, 1967-72",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto/podlaha.jpg"
   },
   {
     "surname": "Podlešák",
@@ -7347,7 +7347,7 @@
     "deathcity": "",
     "seasons": "19",
     "seasonsRange": "1979-80, 1982-90, 1994-2004",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto/suchanek.jpg"
   },
   {
     "surname": "Suja",
