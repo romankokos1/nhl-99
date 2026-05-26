@@ -205,7 +205,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pop-hdr{padding:10px 14px;background:linear-gradient(135deg,var(--blue3) 0%,var(--blue) 100%);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pop-player{padding:10px 14px;font-size:13px;color:var(--blue3);border-bottom:1px solid #edf0f5;display:flex;align-items:center;gap:10px;background:#fff;cursor:pointer;transition:background .15s}
 .pop-player:last-child{border-bottom:none;padding-bottom:11px}
-.pop-thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1.5px solid #d4dcea;box-shadow:0 1px 4px rgba(0,0,0,.10)}
+.pop-thumb{width:40px;height:40px;border-radius:8px;overflow:hidden;flex-shrink:0;border:1.5px solid #d4dcea;box-shadow:0 1px 4px rgba(0,0,0,.10)}
 .pop-thumb-ph{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--blue3),var(--blue));display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#fff;letter-spacing:.04em;flex-shrink:0}
 .pop-pname{font-weight:700;font-size:13px;color:var(--blue3)}
 .pop-pmeta{font-size:11px;color:#8a9ab5;margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
@@ -1082,7 +1082,7 @@ function updateMap() {
       const nm=fullName(p)||p.city;
       const ini=[p.firstname,p.surname].filter(Boolean).map(s=>s[0].toUpperCase()).join('').slice(0,2)||'?';
       const thumb=p.photo
-        ?`<img class="pop-thumb" src="${escA(p.photo)}" onerror="this.outerHTML='<div class=pop-thumb-ph>${ini}</div>'">`
+        ?`<div class="pop-thumb"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'"></div>`
         :`<div class="pop-thumb-ph">${ini}</div>`;
       const meta=[p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
       popContent=`<div class="pop-hdr">📍 ${esc(g.display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-detail-hint">klikni pro celý profil</div>`;
@@ -1404,7 +1404,7 @@ function render() {
   sorted.forEach(({p,i})=>{
     const nm=fullName(p)||p.city;
     const thumb=p.photo
-      ?`<img src="${escA(p.photo)}" onerror="this.style.display='none'">`
+      ?`<img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'">`
       :(p.surname||p.firstname)?initials(p):'🏒';
     const meta=[
       p.born?'🎂 '+p.born:'',
