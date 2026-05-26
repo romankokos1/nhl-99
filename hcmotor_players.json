@@ -2481,7 +2481,9 @@
     "deathcity": "České Budějovice",
     "seasons": "10",
     "seasonsRange": "1951-52, 1954-56, 1959-64, 1965-67",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/MiroslavHonigHCMotor.jpeg",
+    "photoPos": "55% 23%",
+    "photoZoom": 3.6
   },
   {
     "surname": "Horák",
@@ -3701,7 +3703,9 @@
     "deathcity": "",
     "seasons": "11",
     "seasonsRange": "1978-87, 1988-90",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/IMG-20200707-WA0011.jpg",
+    "photoPos": "90% 17%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Kolda",
