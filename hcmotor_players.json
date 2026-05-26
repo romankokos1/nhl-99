@@ -53,7 +53,9 @@
     "deathcity": "České Budějovice",
     "seasons": "22",
     "seasonsRange": "1927-49",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/stadion1931.jpg",
+    "photoPos": "32% 11%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Albrecht",
@@ -683,7 +685,9 @@
     "deathcity": "",
     "seasons": "12",
     "seasonsRange": "1980-84, 1986-91, 1993-96",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2024_20_mlb/20231119_067.jpg",
+    "photoPos": "30% 9%",
+    "photoZoom": 3.15
   },
   {
     "surname": "Brabec",
@@ -1397,7 +1401,9 @@
     "deathcity": "České Budějovice",
     "seasons": "3",
     "seasonsRange": "1927-30",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/stadion1931.jpg",
+    "photoPos": "98% 9%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Doležal",
@@ -2629,7 +2635,9 @@
     "deathcity": "České Budějovice",
     "seasons": "10",
     "seasonsRange": "1927-35, 1938-40",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/stadion1931.jpg",
+    "photoPos": "50% 10%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Houfek",
@@ -6257,7 +6265,9 @@
     "deathcity": "České Budějovice",
     "seasons": "2",
     "seasonsRange": "1930-32",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/stadion1931.jpg",
+    "photoPos": "69% 14%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Piloušek",
@@ -8875,7 +8885,9 @@
     "deathcity": "České Budějovice",
     "seasons": "13",
     "seasonsRange": "1927-40",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/stadion1931.jpg",
+    "photoPos": "1% 10%",
+    "photoZoom": 3.2
   },
   {
     "surname": "Zeman",
