@@ -1733,8 +1733,10 @@ function importPicks(){
     const existingAdj=rLoadAdj();
     let added=0;
     payload.picks.forEach((p,i)=>{
-      if(!p.name||!p.picks) return;
-      if(!existing.some(x=>x.name===p.name&&JSON.stringify(x.games||x.picks)===JSON.stringify(p.games||p.picks))){
+      // MS format uses 'games', SC format uses 'picks' — accept both
+      if(!p.name||(!p.games&&!p.picks)) return;
+      const key=JSON.stringify(p.games||p.picks||[]);
+      if(!existing.some(x=>x.name===p.name&&JSON.stringify(x.games||x.picks||[])===key)){
         const newIdx=existing.length;
         existing.push(p);
         // import adj for this pick if present
