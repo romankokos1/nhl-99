@@ -1141,19 +1141,27 @@ function admSave(){
 // Returns array of 15 detail rows for a pick vs real
 function scoreDetail(pickArr, realArr){
   const rows=[];
-  // We need to resolve winners using realArr, not global AR
+
+  // REAL resolution — uses actual results
   function rTeams(id){
     const g=GAMES[id];
     if(g.t) return [...g.t];
-    return [rWin(g.s[0]),rWin(g.s[1])];
+    return [rWin(g.s[0]), rWin(g.s[1])];
   }
   function rWin(id){
     if(realArr[id]==null) return null;
     return rTeams(id)[realArr[id]];
   }
+
+  // PICK resolution — uses user's own picks to trace which team they predicted
+  function pTeams(id){
+    const g=GAMES[id];
+    if(g.t) return [...g.t];
+    return [pWin(g.s[0]), pWin(g.s[1])];
+  }
   function pWin(id){
     if(pickArr[id]==null) return null;
-    return rTeams(id)[pickArr[id]]; // use real team resolution to get team codes
+    return pTeams(id)[pickArr[id]];
   }
 
   for(let id=0;id<15;id++){
@@ -1161,9 +1169,13 @@ function scoreDetail(pickArr, realArr){
     const played=rw!==null;
     const correct=played&&pw!==null&&rw===pw;
     const pts=correct?RND_PTS[id]:0;
+    const pickColor=pw&&T[pw]?T[pw].col:'';
+    const realColor=rw&&T[rw]?T[rw].col:'';
     rows.push({id, label:PICK_LABELS[id],
       pickVal:pw?T[pw]?T[pw].c+' '+T[pw].n:pw:'—',
+      pickTeam:pw, pickColor,
       realVal:rw?T[rw]?T[rw].c+' '+T[rw].n:rw:'?',
+      realTeam:rw, realColor,
       autoPts:pts, maxPts:RND_PTS[id], played,
       section:id<8?'r1':id<12?'r2':id<14?'cf':'scf'});
   }
@@ -1236,25 +1248,27 @@ function renderLB(){
 
 function buildDetailHTML(rows,adjMap,pickIdx){
   const secMeta={
-    r1:{label:'ROUND 1',color:'var(--neon)'},
-    r2:{label:'ROUND 2',color:'var(--neon)'},
-    cf:{label:'CONFERENCE FINALS',color:'var(--gold)'},
-    scf:{label:'🏆 STANLEY CUP FINAL',color:'var(--gold)'}
+    r1:{label:'ROUND 1',color:'var(--neon)',pts:'1b/série'},
+    r2:{label:'ROUND 2',color:'#00bfff',pts:'2b/série'},
+    cf:{label:'CONFERENCE FINALS',color:'var(--gold)',pts:'4b'},
+    scf:{label:'🏆 STANLEY CUP FINAL',color:'var(--gold)',pts:'8b'}
   };
   let html='', lastSec='';
   rows.forEach(r=>{
     if(r.section!==lastSec){
       if(lastSec) html+=`</div>`;
       const m=secMeta[r.section];
-      html+=`<div class="det-sec" style="color:${m.color};border-bottom-color:${m.color};opacity:.55;">${m.label}</div><div class="det-grid">`;
+      html+=`<div class="det-sec" style="color:${m.color};border-bottom-color:${m.color};opacity:.7;">${m.label} <span style="font-size:.42rem;opacity:.7;">${m.pts}</span></div><div class="det-grid">`;
       lastSec=r.section;
     }
     const manAdj=adjMap[r.id]||0, totalPts=(r.autoPts||0)+manAdj;
     const rowCls=manAdj!==0?'manual':r.autoPts>0?'ok':'no';
-    html+=`<div class="det-row ${rowCls}">
-      <span class="det-q">${esc(r.label)}</span>
-      <span class="det-pick" title="${esc(r.pickVal)}">${esc(r.pickVal)}</span>
-      <span class="det-real">→ ${esc(r.realVal)}</span>
+    const pickStyle=r.pickColor?`color:${r.pickColor};font-weight:800;`:'';
+    const realStyle=r.realColor?`color:${r.realColor};`:'';
+    html+=`<div class="det-row ${rowCls}" style="align-items:center;">
+      <span class="det-q" style="font-size:.46rem;">${esc(r.label)}</span>
+      <span class="det-pick" style="${pickStyle}" title="${esc(r.pickVal)}">${esc(r.pickVal)}</span>
+      <span class="det-real" style="${realStyle}">${r.played?'→ '+esc(r.realVal):'<span style=\'opacity:.4\'>TBD</span>'}</span>
       <div class="det-pts">
         <span class="det-pts-val ${totalPts===0?'zero':manAdj!==0?'bonus':''}">${totalPts}</span>
         <div class="det-adj2">
