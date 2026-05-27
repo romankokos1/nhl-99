@@ -1216,83 +1216,115 @@ function renderLB(){
     const rows=scoreDetail(p.picks,real);
     const adjMap=adj[idx]||{};
     const secs=totalFromDetail(rows,adjMap);
-    return{name:p.name,secs,rows,adjMap,idx};
+    const manTotal=Object.values(adjMap).reduce((a,b)=>a+(b||0),0);
+    return{name:p.name,secs,rows,adjMap,idx,manTotal};
   });
   scored.sort((a,b)=>b.secs.total-a.secs.total);
   const medals=['🥇','🥈','🥉'];
-  const secKeys=['r1','r2','cf','scf'];
-  const secLabels=['R1','R2','CONF FINAL','SCF'];
-  const maxPts=[8,8,8,8];
-  let html=`<div class="pc-title" style="margin-bottom:10px;">🏆 ŽEBŘÍČEK · STANLEY CUP 2026</div>
-  <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:#3a6080;letter-spacing:2px;margin-bottom:12px;line-height:1.9;">
-    Klikni na jméno → detail · ± = manuální korekce · R1=1b R2=2b CF=4b SCF=8b
-  </div>
-  <div class="lb-scroll"><table class="lb-table">
-  <thead><tr><th class="nm-th">JMÉNO</th>`;
-  secLabels.forEach((l,i)=>html+=`<th>${l}<br><span style="font-weight:400;font-size:.42rem;opacity:.5;">max ${maxPts[i]}</span></th>`);
-  html+=`<th>CELKEM</th></tr></thead><tbody>`;
+
+  let html=`<div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:#3a6080;letter-spacing:2px;margin-bottom:14px;line-height:1.9;">
+    R1 = 1b · R2 = 2b · CONF FINAL = 4b · SCF = 8b · max 32b<br>
+    Klikni na řádek → detail s možností opravit body
+  </div><div style="display:flex;flex-direction:column;gap:4px;">`;
 
   scored.forEach((row,rank)=>{
     const isOpen=openDetailIdx===row.idx;
-    html+=`<tr class="${rank<3?'rank-'+(rank+1):''}">
-      <td class="nm-td" onclick="toggleDetail(${row.idx})">
-        ${rank<3?medals[rank]+' ':''}${esc(row.name)} <span style="font-size:.55rem;opacity:.35;">${isOpen?'▲':'▼'}</span>
-      </td>`;
-    secKeys.forEach(k=>{
-      const pts=row.secs[k];
-      html+=`<td><div class="pts-cell"><span class="pts-val ${pts===0?'zero':''}">${pts}</span></div></td>`;
-    });
-    html+=`<td><span class="pts-total">${row.secs.total}</span></td></tr>`;
-    if(isOpen){
-      html+=`<tr class="det-row"><td colspan="6">
-        <div class="det-panel" id="det-${row.idx}">${buildDetailHTML(row.rows,row.adjMap,row.idx)}</div>
-      </td></tr>`;
-    }
+    const pct=Math.round((row.secs.total/32)*100);
+    const r1ok=row.rows.filter(r=>r.section==='r1'&&r.autoPts>0).length;
+    const r2ok=row.rows.filter(r=>r.section==='r2'&&r.autoPts>0).length;
+    const cfok=row.rows.filter(r=>r.section==='cf'&&r.autoPts>0).length;
+    const scfok=row.rows.filter(r=>r.section==='scf'&&r.autoPts>0).length;
+    const playedCount=row.rows.filter(r=>r.played).length;
+    const medal=rank<3?medals[rank]:'';
+
+    html+=`<div style="background:rgba(0,0,0,.2);border:1px solid ${isOpen?'#00d0ff':'#1e3f68'};border-radius:9px;overflow:hidden;cursor:pointer;" onclick="toggleDetail(${row.idx})">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.75rem;color:${rank===0?'var(--gold)':rank===1?'#888':rank===2?'#cd7f32':'#3a6080'};width:20px;text-align:center;flex-shrink:0;">${medal||rank+1+'.'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--ice);letter-spacing:2px;font-weight:700;">${esc(row.name)}</div>
+          <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:.46rem;color:${r1ok>0?'var(--neon)':'#3a6080'};">R1 ${r1ok}/8</span>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:.46rem;color:${r2ok>0?'var(--neon)':'#3a6080'};">R2 ${r2ok}/4</span>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:.46rem;color:${cfok>0?'var(--gold)':'#3a6080'};">CF ${cfok}/2</span>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:.46rem;color:${scfok>0?'var(--gold)':'#3a6080'};">SCF ${scfok}/1</span>
+            ${row.manTotal!==0?`<span style="font-family:'Share Tech Mono',monospace;font-size:.44rem;color:var(--gold);">±${row.manTotal>0?'+':''}${row.manTotal}b ruč.</span>`:''}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:${rank<3?'var(--gold)':'var(--neon)'};font-weight:900;">${row.secs.total}</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:.44rem;color:#3a6080;">b z ${playedCount>0?playedCount*1+'her':'—'}</div>
+        </div>
+        <div style="color:#3a6080;font-size:.65rem;flex-shrink:0;margin-left:4px;">${isOpen?'▲':'▼'}</div>
+      </div>
+      ${isOpen?`<div style="border-top:1px solid #1e3f68;">${buildDetailHTML(row.rows,row.adjMap,row.idx)}</div>`:''}
+    </div>`;
   });
-  html+=`</tbody></table></div>`;
+
+  html+=`</div>`;
   el.innerHTML=html;
 }
 
 function buildDetailHTML(rows,adjMap,pickIdx){
-  const secMeta={
-    r1:{label:'ROUND 1',color:'var(--neon)',pts:'1b/série'},
-    r2:{label:'ROUND 2',color:'#00bfff',pts:'2b/série'},
-    cf:{label:'CONFERENCE FINALS',color:'var(--gold)',pts:'4b'},
-    scf:{label:'🏆 STANLEY CUP FINAL',color:'var(--gold)',pts:'8b'}
+  const secInfo={
+    r1:{label:'ROUND 1',col:'rgba(0,208,255,.6)',pts:1},
+    r2:{label:'ROUND 2',col:'rgba(0,191,255,.7)',pts:2},
+    cf:{label:'CONFERENCE FINALS',col:'rgba(255,215,0,.7)',pts:4},
+    scf:{label:'🏆 STANLEY CUP FINAL',col:'rgba(255,215,0,.9)',pts:8}
   };
-  let html='', lastSec='';
-  rows.forEach(r=>{
-    if(r.section!==lastSec){
-      if(lastSec) html+=`</div>`;
-      const m=secMeta[r.section];
-      html+=`<div class="det-sec" style="color:${m.color};border-bottom-color:${m.color};opacity:.7;">${m.label} <span style="font-size:.42rem;opacity:.7;">${m.pts}</span></div><div class="det-grid">`;
-      lastSec=r.section;
-    }
-    const manAdj=adjMap[r.id]||0, totalPts=(r.autoPts||0)+manAdj;
-    const rowCls=manAdj!==0?'manual':r.autoPts>0?'ok':'no';
-    const pickStyle=r.pickColor?`color:${r.pickColor};font-weight:800;`:'';
-    const realStyle=r.realColor?`color:${r.realColor};`:'';
-    html+=`<div class="det-row ${rowCls}" style="align-items:center;">
-      <span class="det-q" style="font-size:.46rem;">${esc(r.label)}</span>
-      <span class="det-pick" style="${pickStyle}" title="${esc(r.pickVal)}">${esc(r.pickVal)}</span>
-      <span class="det-real" style="${realStyle}">${r.played?'→ '+esc(r.realVal):'<span style=\'opacity:.4\'>TBD</span>'}</span>
-      <div class="det-pts">
-        <span class="det-pts-val ${totalPts===0?'zero':manAdj!==0?'bonus':''}">${totalPts}</span>
-        <div class="det-adj2">
-          <button class="det-adj-btn plus" onclick="adjQ(${pickIdx},${r.id},1)">▲</button>
-          <button class="det-adj-btn minus" onclick="adjQ(${pickIdx},${r.id},-1)">▼</button>
-        </div>
+  const secs={r1:[],r2:[],cf:[],scf:[]};
+  rows.forEach(r=>secs[r.section].push(r));
+
+  let html='<div style="padding:10px 14px;display:flex;flex-direction:column;gap:12px;">';
+
+  Object.entries(secs).forEach(([key,secRows])=>{
+    if(!secRows.length) return;
+    const info=secInfo[key];
+    const correct=secRows.filter(r=>r.autoPts>0).length;
+    const played=secRows.filter(r=>r.played).length;
+
+    html+=`<div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:4px;color:${info.col};margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+        <span>${info.label}</span>
+        <span style="opacity:.7;">${info.pts}b/série · ${correct}/${played} správně</span>
       </div>
-    </div>`;
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px;">`;
+
+    secRows.forEach(r=>{
+      const manAdj=adjMap[r.id]||0, totalPts=(r.autoPts||0)+manAdj;
+      const isCorrect=r.autoPts>0;
+      const hasMan=manAdj!==0;
+      const borderCol=hasMan?'rgba(255,215,0,.5)':isCorrect?'rgba(0,230,118,.4)':r.played?'rgba(244,67,54,.2)':'rgba(30,63,104,.8)';
+      const bgCol=hasMan?'rgba(255,215,0,.04)':isCorrect?'rgba(0,230,118,.05)':'rgba(0,0,0,.15)';
+
+      html+=`<div style="border:1px solid ${borderCol};border-radius:7px;background:${bgCol};padding:6px 9px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.4rem;color:#3a6080;letter-spacing:2px;margin-bottom:4px;">${esc(r.label)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.62rem;${r.pickColor?'color:'+r.pickColor+';':''}">${esc(r.pickVal)}</div>
+            ${r.played ? '<div style="font-size:.52rem;color:#3a6080;margin-top:1px;">→ <span style="'+(r.realColor?'color:'+r.realColor:'')+'">'+esc(r.realVal)+'</span></div>' : '<div style="font-size:.46rem;color:#3a6080;margin-top:1px;">TBD</div>'}
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:.85rem;font-weight:900;color:${hasMan?'var(--gold)':isCorrect?'#00e676':'#3a6080'};">${totalPts}</span>
+            <div style="display:flex;flex-direction:column;gap:1px;">
+              <button onclick="adjQ(${pickIdx},${r.id},1)" style="background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);border-radius:3px;color:#00e676;font-size:.5rem;width:18px;height:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">+</button>
+              <button onclick="adjQ(${pickIdx},${r.id},-1)" style="background:rgba(244,67,54,.1);border:1px solid rgba(244,67,54,.3);border-radius:3px;color:#f44336;font-size:.5rem;width:18px;height:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">−</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    html+=`</div></div>`;
   });
-  if(lastSec) html+=`</div>`;
+
+  html+=`</div>`;
   return html;
 }
 
 function toggleDetail(pickIdx){
   openDetailIdx=openDetailIdx===pickIdx?null:pickIdx;
   renderLB();
-  if(openDetailIdx===pickIdx) setTimeout(()=>{const el=document.getElementById('det-'+pickIdx);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
+  if(openDetailIdx===pickIdx) setTimeout(()=>{const el=document.querySelector(`[onclick="toggleDetail(${pickIdx})"]`);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
 }
 function adjQ(pickIdx,gameId,delta){
   const adj=rLoadAdj();
