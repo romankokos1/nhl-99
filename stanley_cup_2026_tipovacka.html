@@ -278,22 +278,25 @@ input.pw-inp:focus{border-color:var(--gold);}
   color:var(--gold);padding-bottom:4px;border-bottom:1px solid rgba(255,215,0,.2);margin-bottom:8px;opacity:.7;}
 
 /* Admin bracket slots */
-.adm-bracket-group{display:flex;flex-direction:column;gap:4px;}
-.adm-card{background:rgba(0,0,0,.2);border:1px solid #152e50;border-radius:8px;overflow:hidden;}
-.adm-card-lbl{font-family:'Share Tech Mono',monospace;font-size:.42rem;letter-spacing:2px;
-  color:var(--neon);opacity:.3;text-align:center;padding:4px;border-bottom:1px solid #152e50;}
-.adm-slot{display:flex;align-items:center;gap:7px;padding:6px 10px;height:34px;
-  cursor:pointer;transition:background .1s;}
-.adm-slot:hover{background:rgba(255,215,0,.04);}
-.adm-slot.win{background:rgba(0,230,118,.07);}
-.adm-slot.elim{opacity:.25;}
+.adm-bracket-group{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.adm-bracket-group.single{grid-template-columns:1fr;}
+.adm-card{background:rgba(0,0,0,.25);border:1px solid #1e3f68;border-radius:7px;overflow:hidden;}
+.adm-card.decided{border-color:rgba(0,230,118,.3);}
+.adm-card-lbl{font-family:'Share Tech Mono',monospace;font-size:.38rem;letter-spacing:2px;
+  color:var(--neon);opacity:.28;text-align:center;padding:3px 5px;border-bottom:1px solid #152e50;}
+.adm-slot{display:flex;align-items:center;gap:6px;padding:4px 8px;height:28px;
+  cursor:pointer;transition:all .12s;}
+.adm-slot:hover{background:rgba(255,215,0,.06);}
+.adm-slot.win{background:rgba(0,230,118,.1);}
+.adm-slot.win .adm-snm{color:#00e676;}
+.adm-slot.elim{opacity:.2;}
 .adm-slot+.adm-slot{border-top:1px solid #152e50;}
-.adm-sbar{width:3px;height:14px;border-radius:2px;flex-shrink:0;}
-.adm-sflag{font-size:.88rem;flex-shrink:0;}  
-.adm-snm{flex:1;font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--ice);}
-.adm-ck{font-size:.6rem;opacity:0;color:#00e676;}
+.adm-sbar{width:3px;height:12px;border-radius:2px;flex-shrink:0;}
+.adm-snm{flex:1;font-family:'Share Tech Mono',monospace;font-size:.58rem;
+  color:var(--ice);letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.adm-ck{font-size:.55rem;opacity:0;color:#00e676;flex-shrink:0;}
 .adm-slot.win .adm-ck{opacity:1;}
-.adm-stbd{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:#3a6080;opacity:.5;}
+.adm-stbd{font-family:'Share Tech Mono',monospace;font-size:.44rem;color:#3a6080;opacity:.4;letter-spacing:2px;}
 .btn-save2{width:100%;padding:12px;background:rgba(255,215,0,.08);border:1px solid var(--gold);
   border-radius:9px;color:var(--gold);font-family:'Share Tech Mono',monospace;
   font-size:.7rem;letter-spacing:5px;cursor:pointer;transition:all .2s;margin-top:4px;}
@@ -1097,31 +1100,35 @@ function setAR(id,sl){
 
 function renderAdmPanel(){
   if(!admUnlocked) return;
-  renderAdmGroup('admR1',[0,1,2,3,4,5,6,7]);
-  renderAdmGroup('admR2',[8,9,10,11]);
-  renderAdmGroup('admCF',[12,13]);
-  renderAdmGroup('admSCF',[14]);
+  // R1: two columns (East left, West right) within each column stacked
+  renderAdmSection('admR1',[0,1,2,3,4,5,6,7],'wide');
+  renderAdmSection('admR2',[8,9,10,11],'wide');
+  renderAdmSection('admCF',[12,13],'wide');
+  renderAdmSection('admSCF',[14],'single');
 }
-function renderAdmGroup(elId, ids){
-  const el=document.getElementById(elId); if(!el) return; el.innerHTML='';
+function renderAdmSection(elId, ids, cls){
+  const el=document.getElementById(elId); if(!el) return;
+  el.innerHTML=''; el.className='adm-bracket-group '+cls;
   ids.forEach(id=>{
     const g=GAMES[id], ts=arTeams(id), w=AR[id]!=null?ts[AR[id]]:null;
-    const card=document.createElement('div'); card.className='adm-card';
+    const decided=AR[id]!=null;
+    const card=document.createElement('div');
+    card.className='adm-card'+(decided?' decided':'');
     const lbl=document.createElement('div'); lbl.className='adm-card-lbl';
-    lbl.textContent=id===14?'🏆 STANLEY CUP FINAL':g.l;
+    lbl.textContent=id===14?'🏆 SCF':g.l;
     card.appendChild(lbl);
     for(let sl=0;sl<2;sl++){
       const tm=ts[sl];
       const slot=document.createElement('div');
       if(!tm){
-        slot.className='adm-slot'; slot.innerHTML='<span class="adm-stbd">TBD</span>';
+        slot.className='adm-slot';
+        slot.innerHTML='<span class="adm-stbd">TBD</span>';
       }else{
-        const info=T[tm], isW=w===tm, isL=w&&w!==tm;
+        const info=T[tm], isW=w===tm, isL=w!=null&&w!==tm;
         slot.className='adm-slot'+(isW?' win':'')+(isL?' elim':'');
-        slot.innerHTML=`<div class="adm-sbar" style="background:${info.col}"></div>
-          <span class="adm-sflag">${info.col?'':''}</span>
-          <span class="adm-snm">${info.c} ${info.n}</span>
-          <span class="adm-ck">✓</span>`;
+        slot.innerHTML=`<div class="adm-sbar" style="background:${info.col}"></div>`+
+          `<span class="adm-snm">${info.n}</span>`+
+          `<span class="adm-ck">✓</span>`;
         slot.addEventListener('click',()=>setAR(id,sl));
       }
       card.appendChild(slot);
