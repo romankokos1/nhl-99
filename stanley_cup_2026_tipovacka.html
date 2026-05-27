@@ -537,9 +537,31 @@ table.lb-table{width:100%;border-collapse:collapse;min-width:500px;}
           </div>
           <div class="picks-list" id="picksList"></div>
         </div>
-      </div>
 
-      <!-- ADMIN -->
+        <!-- EXPORT / IMPORT -->
+        <div class="pc">
+          <div class="pc-title" style="margin-bottom:10px;">PŘENOS MEZI ZAŘÍZENÍMI</div>
+
+          <div style="margin-bottom:12px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.48rem;letter-spacing:3px;color:#3a6080;margin-bottom:6px;">EXPORT — zkopíruj na tomto zařízení</div>
+            <button onclick="exportPicks()" style="width:100%;padding:9px;background:rgba(0,208,255,.06);border:1px solid var(--neon);border-radius:8px;color:var(--neon);font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:3px;cursor:pointer;transition:all .2s;">
+              📤 EXPORTOVAT TIPY
+            </button>
+            <div id="exportBox" style="display:none;margin-top:8px;">
+              <div onclick="cpExport()" id="exportCode" style="background:rgba(0,0,0,.25);border:1px solid #152e50;border-radius:7px;padding:10px 12px;font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--neon);word-break:break-all;cursor:pointer;line-height:1.6;user-select:all;"></div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:.48rem;color:#3a6080;text-align:center;margin-top:4px;" id="exportHint">↑ klikni pro zkopírování</div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.48rem;letter-spacing:3px;color:#3a6080;margin-bottom:6px;">IMPORT — vlož kód na druhém zařízení</div>
+            <div style="display:flex;gap:8px;">
+              <textarea id="importBox" placeholder="Vlož exportní kód…" style="flex:1;background:rgba(0,0,0,.25);border:1px solid #152e50;border-radius:8px;padding:9px 12px;color:var(--ice);font-family:'Share Tech Mono',monospace;font-size:.55rem;outline:none;resize:none;height:54px;line-height:1.5;transition:border-color .2s;"></textarea>
+              <button onclick="importPicks()" style="padding:0 14px;background:linear-gradient(135deg,#003f7f,#005faa);border:1px solid var(--neon);border-radius:8px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:2px;cursor:pointer;white-space:nowrap;align-self:stretch;">IMPORTOVAT</button>
+            </div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.48rem;color:#f44336;margin-top:5px;display:none;" id="importErr">⚠ Kód se nepodařilo načíst</div>
+          </div>
+        </div>
       <div id="ov-admin" style="display:none;">
         <div class="pc">
           <div class="adm-locked" id="admLocked">
@@ -944,6 +966,53 @@ function parseTipUrl(url){
 }
 function ovDelPick(i){const p=rLoadPicks();p.splice(i,1);rSavePicks(p);renderPicksList();}
 function ovClearPicks(){if(!confirm('Smazat vše?'))return;localStorage.removeItem(RK_PICKS);localStorage.removeItem(RK_ADJ);renderPicksList();}
+
+function exportPicks(){
+  const picks=rLoadPicks(),adj=rLoadAdj();
+  if(!picks.length){showNf('⚠ Žádné tipy k exportu');return;}
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify({picks,adj,v:1}))));
+  const box=document.getElementById('exportBox');
+  box.style.display='block';
+  document.getElementById('exportCode').textContent=code;
+  document.getElementById('exportCode').style.borderColor='#152e50';
+  document.getElementById('exportHint').textContent='↑ klikni pro zkopírování';
+}
+function cpExport(){
+  const code=document.getElementById('exportCode').textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    document.getElementById('exportCode').style.borderColor='#00e676';
+    document.getElementById('exportHint').textContent='✓ zkopírováno!';
+    showNf('✓ KÓD ZKOPÍROVÁN!');
+  }).catch(()=>{
+    const el=document.getElementById('exportCode');
+    const r=document.createRange();r.selectNodeContents(el);
+    window.getSelection().removeAllRanges();window.getSelection().addRange(r);
+  });
+}
+function importPicks(){
+  const raw=document.getElementById('importBox').value.trim();
+  const errEl=document.getElementById('importErr');errEl.style.display='none';
+  if(!raw)return;
+  try{
+    const payload=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    if(!payload.picks||!Array.isArray(payload.picks))throw new Error('bad');
+    const existing=rLoadPicks(),existingAdj=rLoadAdj();
+    let added=0;
+    payload.picks.forEach((p,i)=>{
+      if(!p.name||!p.picks)return;
+      if(!existing.some(x=>x.name===p.name&&x.enc===p.enc)){
+        const ni=existing.length;
+        existing.push(p);
+        if(payload.adj&&payload.adj[i])existingAdj[ni]=payload.adj[i];
+        added++;
+      }
+    });
+    rSavePicks(existing);rSaveAdj(existingAdj);
+    document.getElementById('importBox').value='';
+    showNf('✓ IMPORTOVÁNO '+added+' TIP'+(added===1?'':'Ů'));
+    renderPicksList();
+  }catch(e){errEl.style.display='block';}
+}
 
 function importFromVysledky(){
   // vysledky.html stores entries under 'sc2026_entries' as [{name, pk: number[]}]
