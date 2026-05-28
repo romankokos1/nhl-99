@@ -181,7 +181,7 @@
     "deathcity": "",
     "seasons": "3",
     "seasonsRange": "1999-2000, 2002-04",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto/hraci/babka.jpg"
   },
   {
     "surname": "Babka",
@@ -1221,7 +1221,9 @@
     "deathcity": "České Budějovice",
     "seasons": "6",
     "seasonsRange": "1947-50, 1953-56",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/skp1954.jpg",
+    "photoPos": "50% 54%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Čierny",
@@ -1853,7 +1855,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "1991-92",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2022_43_vit/20220208_012.jpg"
   },
   {
     "surname": "Frolo",
@@ -2881,7 +2883,9 @@
     "deathcity": "",
     "seasons": "5",
     "seasonsRange": "1989-94",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2018_9_tre/IMG_6075.JPG",
+    "photoPos": "49% 35%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Chábera",
@@ -4161,7 +4165,9 @@
     "deathcity": "České Budějovice",
     "seasons": "11",
     "seasonsRange": "1946-48, 1950-51, 1953-61",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/skp1954.jpg",
+    "photoPos": "77% 51%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Krstev",
@@ -5659,7 +5665,9 @@
     "deathcity": "Hirzenhain",
     "seasons": "9",
     "seasonsRange": "1947-56",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/skp1954.jpg",
+    "photoPos": "19% 53%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Němeček",
@@ -7659,7 +7667,7 @@
     "deathcity": "České Budějovice",
     "seasons": "13",
     "seasonsRange": "1951-64",
-    "photo": "https://www.hokej.cz/static/images/hraci/s/spaninger_antonin/spaninger_antonin.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/spaningerdetail.jpg"
   },
   {
     "surname": "Špatný",
@@ -7743,7 +7751,7 @@
     "deathcity": "",
     "seasons": "6",
     "seasonsRange": "1971-76, 1978-79",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/ohlasy_2013/121024_sramek_jiri_01.jpg"
   },
   {
     "surname": "Štencel",
@@ -8683,7 +8691,7 @@
     "deathcity": "",
     "seasons": "7",
     "seasonsRange": "1971-73, 1975-80",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/michal%20Vondrka.jpg"
   },
   {
     "surname": "Vondrka",
