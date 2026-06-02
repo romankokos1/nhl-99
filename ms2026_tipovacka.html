@@ -1360,6 +1360,7 @@ table.lb-table{width:100%;border-collapse:collapse;min-width:580px;}
             <div id="admAwards"></div>
             <button class="btn-save-real" onclick="admSave()">⚡ ULOŽIT A PŘEPOČÍTAT</button>
             <button class="btn-share-live" onclick="genLiveUrl()">🔗 SDÍLET PRŮBĚŽNÉ VÝSLEDKY</button>
+            <button class="btn-share-live" onclick="exportPlachta()" style="margin-top:6px;border-color:rgba(200,16,46,.5);color:var(--red);background:var(--redl);">📋 EXPORTOVAT PLACHTU</button>
             <div class="live-url-box" id="liveUrlBox" onclick="cpLiveUrl()"></div>
             <div style="font-family:'Barlow Condensed',sans-serif;font-size:.52rem;color:var(--mut);text-align:center;margin-top:4px;display:none;" id="liveUrlHint">↑ klikni pro zkopírování</div>
           </div>
@@ -2177,6 +2178,216 @@ function buildLvDetail(rows,adjMap){
 function lvToggleDetail(idx,scored,lbEl){
   lvOpenIdx=lvOpenIdx===idx?null:idx;
   renderLiveView();
+}
+
+// ══════════════════════════════
+// PLACHTA EXPORT
+// ══════════════════════════════
+function exportPlachta(){
+  const picks=rLoadPicks(), real=rLoadReal(), adj=rLoadAdj();
+  if(!picks.length){showNf('⚠ Žádné tipy');return;}
+
+  const TM_N={CZE:'🇨🇿 ČR',CAN:'🇨🇦 KAN',SWE:'🇸🇪 ŠVE',DEN:'🇩🇰 DEN',SVK:'🇸🇰 SVK',
+    NOR:'🇳🇴 NOR',SLO:'🇸🇮 SLO',ITA:'🇮🇹 ITA',USA:'🇺🇸 USA',SUI:'🇨🇭 SUI',
+    FIN:'🇫🇮 FIN',GER:'🇩🇪 NĚM',LAT:'🇱🇻 LOT',AUT:'🇦🇹 RAK',HUN:'🇭🇺 MAĎ',GBR:'🇬🇧 GBR'};
+  const OPPS=['DEN','SLO','SWE','ITA','SVK','NOR','CAN'];
+  const DATES=['15.5.','16.5.','18.5.','20.5.','23.5.','25.5.','26.5.'];
+  const AW_FULL=['Střelec ČR','Nahrávač ČR','Bodovač ČR','+/- ČR','TM ČR',
+    'Střelec turn.','Nahrávač turn.','Bodovač turn.','+/- turn.','TM turn.','Brankář'];
+  const PO_LABELS=['ČF1 (A1–B4)','ČF2 (A2–B3)','ČF3 (B1–A4)','ČF4 (B2–A3)','SF1','SF2','O bronz','O zlato'];
+  const PO_PTS=[1,1,1,1,2,2,3,5];
+
+  function normS(s){return(s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');}
+  function gameRes(g){if(!g||g.cz===null)return null;if(g.cz>g.op)return g.t==='R'?'W':'OTW';if(g.cz<g.op)return g.t==='R'?'L':'OTL';return'D';}
+
+  // Score each pick
+  const scored = picks.map((p,idx)=>{
+    const adjMap=adj[idx]||{};
+    let total=0;
+    const rows=scoreDetail(p,real||{games:Array(7).fill({cz:null,op:null,t:'R'}),gB:[...GRP_B_INIT],gA:[...GRP_A_INIT],po:Array(8).fill(null),aw:Array(11).fill('')});
+    rows.forEach(r=>{total+=(r.autoPts||0)+(adjMap[r.key]||0);});
+    return{...p,total,adjMap,rows};
+  });
+  scored.sort((a,b)=>b.total-a.total);
+
+  // Helpers
+  function cell(val,status,pts){
+    const bg=status==='ok'?'#d4edda':status==='no'?'#f8d7da':status==='adj'?'#fff3cd':'#f8f9fa';
+    const border=status==='ok'?'#28a745':status==='no'?'#dc3545':status==='adj'?'#ffc107':'#dee2e6';
+    return `<td style="background:${bg};border:1px solid ${border};padding:5px 7px;text-align:center;font-size:.72rem;vertical-align:middle;">
+      ${val||'—'}${pts?`<br><span style="font-size:.58rem;font-weight:700;color:#666;">+${pts}b</span>`:''}
+    </td>`;
+  }
+  function realCell(val){
+    return `<td style="background:#e8f4f8;border:1px solid #b8d4e3;padding:5px 7px;text-align:center;font-size:.72rem;font-weight:700;color:#0a2351;vertical-align:middle;">${val||'—'}</td>`;
+  }
+  function hdrCell(val){
+    return `<td style="background:#0a2351;color:#fff;padding:6px 8px;font-size:.68rem;font-weight:700;border:1px solid #152e50;white-space:nowrap;">${val}</td>`;
+  }
+  function secHdr(label,colspan){
+    return `<tr><td colspan="${colspan}" style="background:#c8102e;color:#fff;padding:8px 10px;font-size:.78rem;font-weight:800;letter-spacing:2px;border:1px solid #a00d24;">${label}</td></tr>`;
+  }
+
+  let rows='';
+  const N=scored.length;
+  const totalCols=N+2; // label + real + picks
+
+  // Header row
+  rows+=`<tr>
+    ${hdrCell('OTÁZKA')}
+    ${hdrCell('✓ SPRÁVNĚ')}
+    ${scored.map(p=>`<td style="background:${p.group==='hotovci'?'#1a3a6c':'#4a1a1a'};color:#fff;padding:6px 8px;font-size:.72rem;font-weight:800;border:1px solid #152e50;text-align:center;">${p.name.toUpperCase()}<br><span style="font-size:.55rem;opacity:.6;">${p.group||''}</span></td>`).join('')}
+  </tr>
+  <tr>
+    ${hdrCell('CELKEM BODŮ')}
+    <td style="background:#e8f4f8;border:1px solid #b8d4e3;padding:5px 7px;font-size:.72rem;text-align:center;">—</td>
+    ${scored.map((p,i)=>`<td style="background:#fff3cd;border:1px solid #ffc107;padding:5px 7px;text-align:center;font-weight:800;font-size:.9rem;">${p.total}b</td>`).join('')}
+  </tr>`;
+
+  // ZÁPASY ČR
+  rows+=secHdr('⚽ ZÁPASY ČR — skóre přesně 5b · výsledek 2b',totalCols);
+  OPPS.forEach((opp,i)=>{
+    const r=real&&real.games[i];
+    const rHas=r&&r.cz!==null;
+    const rStr=rHas?r.cz+':'+r.op+(r.t!=='R'?' '+r.t:''):'—';
+    rows+=`<tr><td style="padding:5px 8px;font-size:.72rem;border:1px solid #dee2e6;white-space:nowrap;">${DATES[i]} vs ${TM_N[opp]||opp}</td>${realCell(rStr)}`;
+    scored.forEach(p=>{
+      const pg=p.games[i];const pHas=pg&&pg.cz!==null;
+      const pStr=pHas?pg.cz+':'+pg.op+(pg.t!=='R'?' '+pg.t:''):'—';
+      let st='pending',pts=0;
+      if(rHas&&pHas){
+        if(pg.cz===r.cz&&pg.op===r.op&&pg.t===r.t){st='ok';pts=5;}
+        else if(gameRes(pg)===gameRes(r)){st='adj';pts=2;}
+        else st='no';
+      }
+      rows+=cell(pStr,st,pts>0?pts:null);
+    });
+    rows+='</tr>';
+  });
+
+  // SKUPINA B
+  rows+=secHdr('🏒 SKUPINA B — přesné místo 2b · postup správný 1b',totalCols);
+  const GB_INIT=['CAN','SWE','CZE','SVK','DEN','NOR','SLO','ITA'];
+  const realGB=real&&real.gB;
+  GB_INIT.forEach((code,pos)=>{
+    const ri=realGB?realGB.indexOf(code):-1;
+    const rStr=ri>=0?(ri+1)+'. '+TM_N[code]:'—';
+    rows+=`<tr><td style="padding:5px 8px;font-size:.72rem;border:1px solid #dee2e6;">${TM_N[code]||code}</td>${realCell(rStr)}`;
+    scored.forEach(p=>{
+      const pi=(p.gB||[]).indexOf(code);
+      const pStr=pi>=0?(pi+1)+'. místo':'—';
+      let st='pending',pts=0;
+      if(ri>=0&&pi>=0){
+        if(pi===ri){st='ok';pts=2;}
+        else if((ri<4&&pi<4)||(ri>=4&&pi>=4)){st='adj';pts=ri<4?1:0;}
+        else st='no';
+      }
+      rows+=cell(pStr,st,pts>0?pts:null);
+    });
+    rows+='</tr>';
+  });
+
+  // SKUPINA A
+  rows+=secHdr('🏒 SKUPINA A — přesné místo 2b · postup správný 1b',totalCols);
+  const GA_INIT=['USA','FIN','SUI','GER','LAT','AUT','HUN','GBR'];
+  const realGA=real&&real.gA;
+  GA_INIT.forEach((code)=>{
+    const ri=realGA?realGA.indexOf(code):-1;
+    const rStr=ri>=0?(ri+1)+'. '+TM_N[code]:'—';
+    rows+=`<tr><td style="padding:5px 8px;font-size:.72rem;border:1px solid #dee2e6;">${TM_N[code]||code}</td>${realCell(rStr)}`;
+    scored.forEach(p=>{
+      const pi=(p.gA||[]).indexOf(code);
+      const pStr=pi>=0?(pi+1)+'. místo':'—';
+      let st='pending',pts=0;
+      if(ri>=0&&pi>=0){
+        if(pi===ri){st='ok';pts=2;}
+        else if((ri<4&&pi<4)||(ri>=4&&pi>=4)){st='adj';pts=ri<4?1:0;}
+        else st='no';
+      }
+      rows+=cell(pStr,st,pts>0?pts:null);
+    });
+    rows+='</tr>';
+  });
+
+  // PLAY-OFF
+  rows+=secHdr('🏆 PLAY-OFF',totalCols);
+  function poWinnerFrom(po,gB,gA,m){
+    const PO_DEFS=[
+      {top:{grp:'A',seed:1},bot:{grp:'B',seed:4}},{top:{grp:'A',seed:2},bot:{grp:'B',seed:3}},
+      {top:{grp:'B',seed:1},bot:{grp:'A',seed:4}},{top:{grp:'B',seed:2},bot:{grp:'A',seed:3}},
+      {top:{match:0,side:'win'},bot:{match:1,side:'win'}},{top:{match:2,side:'win'},bot:{match:3,side:'win'}},
+      {top:{match:4,side:'lose'},bot:{match:5,side:'lose'}},{top:{match:4,side:'win'},bot:{match:5,side:'win'}}
+    ];
+    function pt(slot){if(!slot)return null;if(slot.grp)return(slot.grp==='B'?gB:gA)[slot.seed-1]||null;const g=po[slot.match];if(g===null)return null;const{top,bot}=getPair(slot.match);return slot.side==='win'?(g===0?top:bot):(g===0?bot:top);}
+    function getPair(m){const d=PO_DEFS[m];return{top:pt(d.top),bot:pt(d.bot)};}
+    const g=po[m];if(g===null)return null;const{top,bot}=getPair(m);return g===0?top:bot;
+  }
+  PO_LABELS.forEach((lbl,m)=>{
+    const rw=real?poWinnerFrom(real.po||Array(8).fill(null),real.gB||[...GRP_B_INIT],real.gA||[...GRP_A_INIT],m):null;
+    const rStr=rw?TM_N[rw]||rw:'—';
+    rows+=`<tr><td style="padding:5px 8px;font-size:.72rem;border:1px solid #dee2e6;white-space:nowrap;">${lbl}</td>${realCell(rStr)}`;
+    scored.forEach(p=>{
+      const pw=poWinnerFrom(p.po||Array(8).fill(null),p.gB||[...GRP_B_INIT],p.gA||[...GRP_A_INIT],m);
+      const pStr=pw?TM_N[pw]||pw:'—';
+      let st='pending',pts=0;
+      if(rw&&pw){st=pw===rw?'ok':'no';if(pw===rw)pts=PO_PTS[m];}
+      else if(!rw)st='pending';
+      rows+=cell(pStr,st,pts>0?pts:null);
+    });
+    rows+='</tr>';
+  });
+
+  // OCENĚNÍ
+  rows+=secHdr('🎖 OCENĚNÍ — shoda 3b',totalCols);
+  AW_FULL.forEach((lbl,i)=>{
+    const rv=(real&&real.aw&&real.aw[i])||'';
+    rows+=`<tr><td style="padding:5px 8px;font-size:.72rem;border:1px solid #dee2e6;">${lbl}</td>${realCell(rv||'—')}`;
+    scored.forEach(p=>{
+      const pv=(p.aw&&p.aw[i])||'';
+      let st='pending',pts=0;
+      if(rv){st=normS(rv)===normS(pv)?'ok':'no';if(st==='ok')pts=3;}
+      rows+=cell(pv||'—',st,pts>0?pts:null);
+    });
+    rows+='</tr>';
+  });
+
+  const html=`<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8">
+<title>MS Hokej 2026 · Plachta tipů</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;padding:16px;}
+h1{font-size:1.3rem;font-weight:800;color:#0a2351;margin-bottom:4px;letter-spacing:2px;}
+.sub{font-size:.72rem;color:#666;margin-bottom:14px;}
+.legend{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:5px;font-size:.68rem;}
+.leg-sq{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+.wrap{overflow-x:auto;}
+table{border-collapse:collapse;background:#fff;min-width:100%;}
+td{border:1px solid #dee2e6;padding:5px 7px;font-size:.72rem;}
+tr:hover td{filter:brightness(.97);}
+@media print{body{padding:0;}h1{font-size:1rem;}.sub,.legend{display:none;}}
+</style>
+</head><body>
+<h1>🏒 MS HOKEJ 2026 · PLACHTA TIPŮ</h1>
+<div class="sub">Vygenerováno ${new Date().toLocaleString('cs-CZ')} · ${picks.length} tipovačů</div>
+<div class="legend">
+  <div class="leg"><div class="leg-sq" style="background:#d4edda;border:1px solid #28a745"></div> Správně (plný počet bodů)</div>
+  <div class="leg"><div class="leg-sq" style="background:#fff3cd;border:1px solid #ffc107"></div> Částečně (postup/výsledek)</div>
+  <div class="leg"><div class="leg-sq" style="background:#f8d7da;border:1px solid #dc3545"></div> Špatně</div>
+  <div class="leg"><div class="leg-sq" style="background:#f8f9fa;border:1px solid #dee2e6"></div> Čeká na výsledek</div>
+  <div class="leg"><div class="leg-sq" style="background:#e8f4f8;border:1px solid #b8d4e3"></div> Správná odpověď</div>
+</div>
+<div class="wrap"><table>${rows}</table></div>
+</body></html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='ms2026_plachta.html';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showNf('✓ PLACHTA STAŽENA');
 }
 
 // ══════════════════════════════
