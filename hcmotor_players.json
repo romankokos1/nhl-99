@@ -53,9 +53,9 @@
     "deathcity": "České Budějovice",
     "seasons": "22",
     "seasonsRange": "1927-49",
-    "photo": "https://hcmotor.cz/foto_ceb/stadion1931.jpg",
-    "photoPos": "32% 11%",
-    "photoZoom": 4.0
+    "photo": "https://hcmotor.cz/files/editor/1948.bmp",
+    "photoPos": "87% 4%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Albrecht",
@@ -2575,7 +2575,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "1964-65",
-    "photo": "https://hcmotor.cz/foto_ceb/horcicka.jpg"
+    "photo": ""
   },
   {
     "surname": "Horešovský",
@@ -4765,7 +4765,9 @@
     "deathcity": "Hodonín",
     "seasons": "9",
     "seasonsRange": "1940-41, 1942-50",
-    "photo": ""
+    "photo": "https://hcmotor.cz/files/editor/1948.bmp",
+    "photoPos": "0% 34%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Macháček",
@@ -5881,7 +5883,9 @@
     "deathcity": "České Budějovice",
     "seasons": "7",
     "seasonsRange": "1946-51, 1952-54",
-    "photo": ""
+    "photo": "https://hcmotor.cz/files/editor/1948.bmp",
+    "photoPos": "63% 6%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Olesen",
@@ -6305,7 +6309,9 @@
     "deathcity": "České Budějovice",
     "seasons": "15",
     "seasonsRange": "1937-52",
-    "photo": ""
+    "photo": "https://hcmotor.cz/files/editor/1948.bmp",
+    "photoPos": "62% 34%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Piloušek",
