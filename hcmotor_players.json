@@ -921,7 +921,9 @@
     "deathcity": "České Budějovice",
     "seasons": "11",
     "seasonsRange": "1953-54, 1956-66",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/skp1953.jpg",
+    "photoPos": "33% 21%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Buřič",
@@ -1033,7 +1035,9 @@
     "deathcity": "České Budějovice",
     "seasons": "6",
     "seasonsRange": "1933-37, 1940-42",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/ac-stadion-cb-1933.jpg",
+    "photoPos": "63% 12%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Cvach",
@@ -1329,7 +1333,9 @@
     "deathcity": "České Budějovice",
     "seasons": "6",
     "seasonsRange": "1932-37, 1943-44",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/ac-stadion-cb-1933.jpg",
+    "photoPos": "59% 37%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Dej",
@@ -3965,7 +3971,9 @@
     "deathcity": "České Budějovice",
     "seasons": "13",
     "seasonsRange": "1927-40",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/ac-stadion-cb-1933.jpg",
+    "photoPos": "36% 42%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Kotrla",
@@ -6341,7 +6349,9 @@
     "deathcity": "Praha",
     "seasons": "3",
     "seasonsRange": "1933-36",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/ac-stadion-cb-1933.jpg",
+    "photoPos": "100% 12%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Piskáček",
@@ -7071,7 +7081,9 @@
     "deathcity": "České Budějovice",
     "seasons": "11",
     "seasonsRange": "1927-38",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/ac-stadion-cb-1933.jpg",
+    "photoPos": "89% 10%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Řehoř",
@@ -7719,7 +7731,9 @@
     "deathcity": "České Budějovice",
     "seasons": "8",
     "seasonsRange": "1930-37, 1939-40",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/ac-stadion-cb-1933.jpg",
+    "photoPos": "84% 42%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Šperger",
