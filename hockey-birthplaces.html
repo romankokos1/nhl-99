@@ -348,11 +348,11 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   .rp{flex:1;min-height:0;order:1}
   .lp{
     position:fixed!important;
-    top:0;left:0;right:0;
+    top:var(--hdr-h,54px);left:0;right:0;
     bottom:calc(60px + env(safe-area-inset-bottom,0px));
     width:100%!important;height:auto!important;
     z-index:2800;
-    transform:translateY(100%);
+    transform:translateY(110%);
     transition:transform .32s cubic-bezier(.4,0,.2,1);
     border:none!important;border-top:none!important;
     overflow-y:auto;
@@ -1617,7 +1617,14 @@ loadPlayers(function() {
   load(); initMap(); render(); setTimeout(updateMap,300);
 });
   
-window.addEventListener('resize', () => { map.invalidateSize(); });
+window.addEventListener('resize', () => { map.invalidateSize(); setHdrHeight(); });
+
+// Measure header height for mobile lp overlay positioning
+function setHdrHeight() {
+  const h = document.querySelector('.hdr')?.offsetHeight || 54;
+  document.documentElement.style.setProperty('--hdr-h', h + 'px');
+}
+setHdrHeight();
 
 // Scroll to top button
 document.querySelector('.lp')?.addEventListener('scroll', function() {
@@ -1999,6 +2006,7 @@ function buildYearChart(players) {
 
 window.addEventListener('load', () => {
   map.invalidateSize();
+  setHdrHeight();
   if (window.innerWidth <= 750) {
     document.querySelector('.app')?.classList.add('lp-hidden');
     document.getElementById('mtMapa')?.classList.add('active');
