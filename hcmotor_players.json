@@ -8313,7 +8313,9 @@
     "deathcity": "Český Krumlov",
     "seasons": "11",
     "seasonsRange": "1940-50, 1952-53",
-    "photo": ""
+    "photo": "https://hcmotor.cz/files/editor/retrodres1949.jpg",
+    "photoPos": "52% 14%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Vacovský",
@@ -8537,7 +8539,9 @@
     "deathcity": "České Budějovice",
     "seasons": "16",
     "seasonsRange": "1935-51",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/leopold-vavra.jpg",
+    "photoPos": "38% 0%",
+    "photoZoom": 4.5
   },
   {
     "surname": "Vavroch",
