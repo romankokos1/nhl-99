@@ -139,7 +139,9 @@
     "deathcity": "",
     "seasons": "9",
     "seasonsRange": "1972-81",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/ANDERLE.jpg",
+    "photoPos": "53% 19%",
+    "photoZoom": 3.5
   },
   {
     "surname": "Antipin",
@@ -349,7 +351,9 @@
     "deathcity": "",
     "seasons": "8",
     "seasonsRange": "1959-61, 1963-65, 1970-74",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2020_54_ltm/IMG_1536.JPG",
+    "photoPos": "100% 34%",
+    "photoZoom": 4.5
   },
   {
     "surname": "Bednář",
@@ -1813,7 +1817,9 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "1958-60",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2020_54_ltm/IMG_1536.JPG",
+    "photoPos": "78% 37%",
+    "photoZoom": 5.55
   },
   {
     "surname": "Forman",
@@ -2659,7 +2665,9 @@
     "deathcity": "",
     "seasons": "9",
     "seasonsRange": "1958-67",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2020_54_ltm/IMG_1536.JPG",
+    "photoPos": "50% 32%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Hovora",
@@ -2673,7 +2681,9 @@
     "deathcity": "",
     "seasons": "7",
     "seasonsRange": "1964-65, 1967-73",
-    "photo": "https://hcmotor.cz/foto_ceb/hovora.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/FERDINANDHOVORA.png",
+    "photoPos": "71% 2%",
+    "photoZoom": 2.0
   },
   {
     "surname": "Hovorka",
@@ -2927,7 +2937,9 @@
     "deathcity": "České Budějovice",
     "seasons": "17",
     "seasonsRange": "1937-53, 1954-55",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/josefjelinek02.jpg",
+    "photoPos": "96% 6%",
+    "photoZoom": 4.5
   },
   {
     "surname": "Chlubna",
@@ -3433,7 +3445,9 @@
     "deathcity": "České Budějovice",
     "seasons": "8",
     "seasonsRange": "1953-56, 1958-63",
-    "photo": "https://hcmotor.cz/foto_ceb/kaucky_zdenek.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/2020_3_unl/JH_00295.jpg",
+    "photoPos": "46% 37%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Klabouch",
@@ -5709,7 +5723,9 @@
     "deathcity": "",
     "seasons": "12",
     "seasonsRange": "1959-60, 1962-73",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2020_54_ltm/IMG_1536.JPG",
+    "photoPos": "22% 28%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Neumann",
@@ -7569,7 +7585,9 @@
     "deathcity": "",
     "seasons": "4",
     "seasonsRange": "1990-91, 1992-93, 1994-95, 1996-97",
-    "photo": "https://www.hokej.cz/static/images/hraci/s/sevcik_frantisek/sevcik_frantisek.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/2023_9_vit/20221009_021.jpg",
+    "photoPos": "50% 12%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Šimánek",
@@ -7723,7 +7741,9 @@
     "deathcity": "",
     "seasons": "7",
     "seasonsRange": "1958-60, 1962-67",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2020_54_ltm/IMG_1536.JPG",
+    "photoPos": "0% 36%",
+    "photoZoom": 5.0
   },
   {
     "surname": "Šrámek",
@@ -7919,7 +7939,9 @@
     "deathcity": "",
     "seasons": "4",
     "seasonsRange": "1974-78",
-    "photo": "https://www.hokej.cz/static/images/hraci/t/tikal_frantisek/tikal_frantisek.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/2023_47_spa/20230217_064.jpg",
+    "photoPos": "47% 13%",
+    "photoZoom": 4.0
   },
   {
     "surname": "Tikal",
