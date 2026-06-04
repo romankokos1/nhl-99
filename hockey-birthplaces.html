@@ -1084,13 +1084,7 @@ function updateMap() {
       popContent=buildSinglePopup(p, idx, g.display);
     } else {
       // Multi-player city — compact sortable list, click → detail
-      const sorted=[...g.ps].sort((a,b)=>(a.p.surname||'').localeCompare(b.p.surname||'','cs'));
-      const rows=sorted.map(({p,idx})=>{
-        const yr=p.born?p.born.slice(-4):'';
-        const s=p.seasons||'';
-        return `<div class="pop-row" onclick="showPlayerDetail(${idx})" title="Zobrazit detail hráče"><span class="pop-rname">${esc(fullName(p))}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
-      }).join('');
-      popContent=`<div class="pop-hdr"><span>📍 ${esc(g.display)}</span><span class="pop-badge">${n} hráčů</span></div><div class="pop-list">${rows}</div>`;
+      popContent=buildCityPopup(g.ps, g.display);
     }
 
     const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●'), zIndexOffset: multi ? n*10 : 0})
@@ -1489,19 +1483,44 @@ function buildSinglePopup(p, idx, cityDisplay) {
     : `<div class="pop-thumb-ph">${ini}</div>`;
   const meta = [p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
   const display = cityDisplay || p.city || '';
-  return `<div class="pop-hdr">📍 ${esc(display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-actions"><span class="pop-act" onclick="showPlayerDetail(${idx})">👤 Celý profil</span><span class="pop-act" onclick="showInList(${idx})">📋 V seznamu</span></div>`;
+  return `<div class="pop-hdr">📍 ${esc(display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-actions"><span class="pop-act" onclick="showPlayerDetail(${idx})">👤 Celý profil</span><span class="pop-act" onclick="showCityList(${idx})">📋 V seznamu</span></div>`;
 }
 
-function showInList(idx) {
-  const isMobile = window.innerWidth <= 750;
+function buildCityPopup(list, display) {
+  const sorted = [...list].sort((a,b)=>(a.p.surname||'').localeCompare(b.p.surname||'','cs'));
+  const rows = sorted.map(({p,idx})=>{
+    const yr=p.born?p.born.slice(-4):'';
+    const s=p.seasons||'';
+    return `<div class="pop-row" onclick="showPlayerDetail(${idx})" title="Zobrazit detail hráče"><span class="pop-rname">${esc(fullName(p))}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
+  }).join('');
+  return `<div class="pop-hdr"><span>📍 ${esc(display)}</span><span class="pop-badge">${list.length} hráčů</span></div><div class="pop-list">${rows}</div>`;
+}
+
+// Open popup with ALL players from the player's birthplace
+function showCityList(idx) {
+  const p = players[idx];
+  if (!p || !p.lat) return;
   document.getElementById('detailOvl').classList.remove('on');
-  map.closePopup();
-  if (isMobile) mobTab('seznam');
+  const isMobile = window.innerWidth <= 750;
+  if (isMobile) mobTab('mapa');
+
+  const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+  const samePlace = players.map((pl,i)=>({p:pl,idx:i}))
+    .filter(({p:pl}) => pl.lat && (Math.round(pl.lat*200)+','+Math.round(pl.lon*200)) === key);
+
+  const delay = isMobile ? 400 : 0;
   setTimeout(() => {
-    document.querySelectorAll('#playerList .pc').forEach(c => c.classList.remove('pc-active'));
-    const card = document.querySelector(`.pc[data-idx="${idx}"]`);
-    if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth', block:'center'}); }
-  }, isMobile ? 360 : 0);
+    map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
+    setTimeout(() => {
+      const content = samePlace.length === 1
+        ? buildSinglePopup(p, idx, p.city)
+        : buildCityPopup(samePlace, p.city);
+      L.popup({maxWidth:320, maxHeight:400})
+        .setLatLng([p.lat, p.lon])
+        .setContent(content)
+        .openOn(map);
+    }, 900);
+  }, delay);
 }
 
 function focusPlayer(idx) {
@@ -1617,7 +1636,7 @@ function showPlayerDetail(idx) {
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
     ${buildCareerTimeline(p)}
     <div class="detail-card-footer">
-      <button class="detail-back" onclick="showInList(${idx})">← Zobrazit v seznamu</button>
+      <button class="detail-back" onclick="showCityList(${idx})">← Zobrazit v seznamu</button>
       <button class="detail-close-btn" onclick="document.getElementById('detailOvl').classList.remove('on')">✕</button>
     </div>`;
 
