@@ -435,6 +435,10 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pop-rmeta span{background:#eef1f8;padding:2px 6px;border-radius:6px;font-weight:600}
 .pop-player:hover{background:#eef3fc!important}
 .pop-detail-hint{text-align:center;font-size:10px;color:#b0bdd0;padding:4px 0 7px;letter-spacing:.04em}
+.pop-actions{display:flex;border-top:1px solid #edf0f5}
+.pop-act{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;transition:background .15s;letter-spacing:.02em}
+.pop-act:hover{background:#eef3fc}
+.pop-act+.pop-act{border-left:1px solid #edf0f5}
 
 /* ── PLAYER DETAIL MODAL – premium card redesign ─── */
 #detailOvl .modal {
@@ -1485,7 +1489,19 @@ function buildSinglePopup(p, idx, cityDisplay) {
     : `<div class="pop-thumb-ph">${ini}</div>`;
   const meta = [p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
   const display = cityDisplay || p.city || '';
-  return `<div class="pop-hdr">📍 ${esc(display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-detail-hint">klikni pro celý profil</div>`;
+  return `<div class="pop-hdr">📍 ${esc(display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-actions"><span class="pop-act" onclick="showPlayerDetail(${idx})">👤 Celý profil</span><span class="pop-act" onclick="showInList(${idx})">📋 V seznamu</span></div>`;
+}
+
+function showInList(idx) {
+  const isMobile = window.innerWidth <= 750;
+  document.getElementById('detailOvl').classList.remove('on');
+  map.closePopup();
+  if (isMobile) mobTab('seznam');
+  setTimeout(() => {
+    document.querySelectorAll('#playerList .pc').forEach(c => c.classList.remove('pc-active'));
+    const card = document.querySelector(`.pc[data-idx="${idx}"]`);
+    if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth', block:'center'}); }
+  }, isMobile ? 360 : 0);
 }
 
 function focusPlayer(idx) {
@@ -1601,7 +1617,7 @@ function showPlayerDetail(idx) {
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
     ${buildCareerTimeline(p)}
     <div class="detail-card-footer">
-      <button class="detail-back" onclick="document.getElementById('detailOvl').classList.remove('on'); focusPlayer(${idx})">← Zobrazit v seznamu</button>
+      <button class="detail-back" onclick="showInList(${idx})">← Zobrazit v seznamu</button>
       <button class="detail-close-btn" onclick="document.getElementById('detailOvl').classList.remove('on')">✕</button>
     </div>`;
 
