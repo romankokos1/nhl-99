@@ -1077,13 +1077,7 @@ function updateMap() {
     if (!multi) {
       // Single player — full card, click → detail modal
       const {p, idx}=g.ps[0];
-      const nm=fullName(p)||p.city;
-      const ini=[p.firstname,p.surname].filter(Boolean).map(s=>s[0].toUpperCase()).join('').slice(0,2)||'?';
-      const thumb=p.photo
-        ?`<div class="pop-thumb"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'"></div>`
-        :`<div class="pop-thumb-ph">${ini}</div>`;
-      const meta=[p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
-      popContent=`<div class="pop-hdr">📍 ${esc(g.display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-detail-hint">klikni pro celý profil</div>`;
+      popContent=buildSinglePopup(p, idx, g.display);
     } else {
       // Multi-player city — compact sortable list, click → detail
       const sorted=[...g.ps].sort((a,b)=>(a.p.surname||'').localeCompare(b.p.surname||'','cs'));
@@ -1483,6 +1477,17 @@ function clearSearch() {
 }
 
 // ── FOCUS PLAYER ON MAP ────────────────────────────
+function buildSinglePopup(p, idx, cityDisplay) {
+  const nm = fullName(p) || p.city;
+  const ini = [p.firstname,p.surname].filter(Boolean).map(s=>s[0].toUpperCase()).join('').slice(0,2)||'?';
+  const thumb = p.photo
+    ? `<div class="pop-thumb"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'"></div>`
+    : `<div class="pop-thumb-ph">${ini}</div>`;
+  const meta = [p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
+  const display = cityDisplay || p.city || '';
+  return `<div class="pop-hdr">📍 ${esc(display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-detail-hint">klikni pro celý profil</div>`;
+}
+
 function focusPlayer(idx) {
   const p = players[idx];
   if (!p || !p.lat) return;
@@ -1496,17 +1501,15 @@ function focusPlayer(idx) {
   const card = document.querySelector(`.pc[data-idx="${idx}"]`);
   if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 
-  // Fly map to location and open popup
+  // Fly map to location, then open a SINGLE-player popup (even at multi-player cities)
   const delay = isMobile ? 400 : 0;
   setTimeout(() => {
     map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
     setTimeout(()=>{
-      const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
-      mlayers.forEach(mk => {
-        const ll = mk.getLatLng();
-        const k = Math.round(ll.lat*200)+','+Math.round(ll.lng*200);
-        if (k === key) mk.openPopup();
-      });
+      L.popup({maxWidth:320, maxHeight:400})
+        .setLatLng([p.lat, p.lon])
+        .setContent(buildSinglePopup(p, idx, p.city))
+        .openOn(map);
     }, 900);
   }, delay);
 }
