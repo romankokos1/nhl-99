@@ -3729,7 +3729,9 @@
     "deathcity": "",
     "seasons": "7",
     "seasonsRange": "1984-91",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2016_sf2_sla/IMG_8300.JPG",
+    "photoPos": "30% 32%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Kolda",
@@ -4283,7 +4285,9 @@
     "deathcity": "",
     "seasons": "9",
     "seasonsRange": "1985-87, 1989-96",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2017_42_tre/IMG_1088.JPG",
+    "photoPos": "48% 31%",
+    "photoZoom": 4.5
   },
   {
     "surname": "Kubíček",
@@ -4549,7 +4553,9 @@
     "deathcity": "",
     "seasons": "3",
     "seasonsRange": "2001-03, 2004-05",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto/ceb0203-tym.jpg",
+    "photoPos": "83% 10%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Langhammer",
@@ -7519,7 +7525,9 @@
     "deathcity": "",
     "seasons": "4",
     "seasonsRange": "1995-99",
-    "photo": "https://hcmotor.cz/foto_ceb/nezarazene_2012/svoboda.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/2017_48_pro/IMG_0432.JPG",
+    "photoPos": "37% 13%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Šachl",
@@ -8525,7 +8533,9 @@
     "deathcity": "České Budějovice",
     "seasons": "8",
     "seasonsRange": "1964-65, 1967-74",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2016_cf5_pre/IMG_6415.JPG",
+    "photoPos": "53% 46%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Varvařovský",
@@ -8807,7 +8817,9 @@
     "deathcity": "",
     "seasons": "9",
     "seasonsRange": "1987-88, 1990-98",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/2019_14_por/IMG_0272.JPG",
+    "photoPos": "30% 26%",
+    "photoZoom": 6.0
   },
   {
     "surname": "Voženílek",
