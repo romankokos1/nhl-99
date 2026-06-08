@@ -307,6 +307,31 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .msp-name-years{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#8a9ab5;white-space:nowrap;width:72px;flex-shrink:0;padding-top:1px}
 .msp-name-val{font-size:12px;font-weight:500;color:var(--blue3);line-height:1.35}
 .msp-name-row.current .msp-name-val{font-weight:700;color:var(--blue)}
+/* Captain badge */
+.detail-captain-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(245,195,0,.18);border:1px solid rgba(245,195,0,.55);
+  border-radius:20px;padding:4px 12px;
+  font-size:12px;font-weight:700;color:var(--yellow);
+  letter-spacing:.03em;width:fit-content;
+}
+.detail-captain-badge::before{
+  content:'C';display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--yellow);color:var(--blue3);
+  font-size:10px;font-weight:900;flex-shrink:0;
+}
+/* Captain dot on list card avatar */
+.pc-avatar{position:relative}
+.pc-captain-dot{
+  position:absolute;bottom:-2px;right:-2px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--yellow);color:var(--blue3);
+  font-size:8px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid #fff;line-height:1;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
 /* Scroll to top */
 .scroll-top{
   position:sticky;bottom:12px;
@@ -1404,7 +1429,7 @@ function render() {
     const el=document.createElement('div'); el.className='pc';
     el.dataset.idx=i;
     el.innerHTML=`
-      <div class="pc-avatar">${thumb}</div>
+      <div class="pc-avatar">${thumb}${p.captainYears?'<span class="pc-captain-dot">C</span>':''}</div>
       <div class="pc-info">
         <div class="pc-name">${esc(nm)}</div>
         <div class="pc-meta">
@@ -1626,11 +1651,16 @@ function showPlayerDetail(idx) {
     </div>`
   ).join('');
 
+  const captainBadge = p.captainYears
+    ? `<div class="detail-captain-badge">Kapitán · ${esc(p.captainYears)}</div>`
+    : '';
+
   document.getElementById('detailContent').innerHTML = `
     <div class="detail-card-header">
       ${thumb}
       <div class="detail-header-info">
         <div class="detail-name">${esc(nm)}</div>
+        ${captainBadge}
       </div>
     </div>
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
