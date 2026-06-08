@@ -55,7 +55,8 @@
     "seasonsRange": "1927-49",
     "photo": "https://hcmotor.cz/files/editor/1948.bmp",
     "photoPos": "87% 4%",
-    "photoZoom": 6.0
+    "photoZoom": 6.0,
+    "captainYears": "1938-1949"
   },
   {
     "surname": "Albrecht",
@@ -395,7 +396,8 @@
     "deathcity": "",
     "seasons": "12",
     "seasonsRange": "1988-89, 1990-97, 2000-01, 2003-06",
-    "photo": "https://hcmotor.cz/foto/hraci/2018/belohlav_radek.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2018/belohlav_radek.jpg",
+    "captainYears": "2004-2006"
   },
   {
     "surname": "Benák",
@@ -555,7 +557,8 @@
     "deathcity": "",
     "seasons": "6",
     "seasonsRange": "1987-92, 1993-94",
-    "photo": ""
+    "photo": "",
+    "captainYears": "1990, 1991"
   },
   {
     "surname": "Bláha",
@@ -867,7 +870,8 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2025-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/bulir_michal.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2026/bulir_michal.jpg",
+    "captainYears": "2025-2026"
   },
   {
     "surname": "Bünter",
@@ -981,7 +985,8 @@
     "deathcity": "",
     "seasons": "13",
     "seasonsRange": "1976-86, 1987-89, 1993-94",
-    "photo": "https://hcmotor.cz/foto_ceb/2026_Treneri-mladez-2026/caldr-vladimir.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/2026_Treneri-mladez-2026/caldr-vladimir.jpg",
+    "captainYears": "1985-1986"
   },
   {
     "surname": "Cibulka",
@@ -1053,7 +1058,8 @@
     "deathcity": "Landshut",
     "seasons": "3",
     "seasonsRange": "1960-62, 1968-69",
-    "photo": "https://www.hokej.cz/static/images/hraci/c/cvach_josef/cvach_josef.jpg"
+    "photo": "https://www.hokej.cz/static/images/hraci/c/cvach_josef/cvach_josef.jpg",
+    "captainYears": "1968-1969"
   },
   {
     "surname": "Čada",
@@ -1619,7 +1625,8 @@
     "deathcity": "České Budějovice",
     "seasons": "12",
     "seasonsRange": "1969-72, 1974-82, 1988-89",
-    "photo": "https://hcmotor.cz/foto_ceb/historie/historie_dvorakm.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/historie/historie_dvorakm.jpg",
+    "captainYears": "1974-1982"
   },
   {
     "surname": "Dvořák",
@@ -2017,7 +2024,8 @@
     "deathcity": "",
     "seasons": "12",
     "seasonsRange": "2003-04, 2005-12, 2021-25",
-    "photo": "https://hcmotor.cz/foto/hraci/2024/gulas_milan.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2024/gulas_milan.jpg",
+    "captainYears": "2021-2025"
   },
   {
     "surname": "Gulaši",
@@ -2131,7 +2139,8 @@
     "seasonsRange": "1951-62",
     "photo": "https://hcmotor.cz/foto_ceb/1952skp.jpg",
     "photoPos": "77% 36%",
-    "photoZoom": 6.0
+    "photoZoom": 6.0,
+    "captainYears": "1956-1958, 1959-1961"
   },
   {
     "surname": "Hála",
@@ -2513,7 +2522,8 @@
     "seasonsRange": "1951-52, 1954-56, 1959-64, 1965-67",
     "photo": "https://hcmotor.cz/foto_ceb/MiroslavHonigHCMotor.jpeg",
     "photoPos": "55% 23%",
-    "photoZoom": 3.6
+    "photoZoom": 3.6,
+    "captainYears": "1966-1967"
   },
   {
     "surname": "Horák",
@@ -2555,7 +2565,8 @@
     "deathcity": "",
     "seasons": "9",
     "seasonsRange": "1986-89, 1990-95, 2001-02",
-    "photo": "https://www.hokej.cz/static/images/hraci/h/horak_roman/horak_roman.jpg"
+    "photo": "https://www.hokej.cz/static/images/hraci/h/horak_roman/horak_roman.jpg",
+    "captainYears": "1992-1995"
   },
   {
     "surname": "Horák",
@@ -3197,7 +3208,8 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "1989-91",
-    "photo": "https://hcmotor.cz/foto/hraci/jelinek.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/jelinek.jpg",
+    "captainYears": "1991"
   },
   {
     "surname": "Ježek",
@@ -3253,7 +3265,8 @@
     "deathcity": "Sokolov",
     "seasons": "7",
     "seasonsRange": "1958-65",
-    "photo": ""
+    "photo": "",
+    "captainYears": "1961-1965"
   },
   {
     "surname": "Jonák",
@@ -3465,7 +3478,8 @@
     "seasonsRange": "1953-56, 1958-63",
     "photo": "https://hcmotor.cz/foto_ceb/2020_3_unl/JH_00295.jpg",
     "photoPos": "46% 37%",
-    "photoZoom": 6.0
+    "photoZoom": 6.0,
+    "captainYears": "1958-1959"
   },
   {
     "surname": "Klabouch",
@@ -3647,7 +3661,8 @@
     "deathcity": "",
     "seasons": "13",
     "seasonsRange": "1972-74, 1976-85, 1986-88",
-    "photo": "https://hcmotor.cz/foto_ceb/kocerjar.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/kocerjar.jpg",
+    "captainYears": "1982-1985"
   },
   {
     "surname": "Kočí",
@@ -3749,7 +3764,8 @@
     "seasonsRange": "1978-87, 1988-90",
     "photo": "https://hcmotor.cz/foto_ceb/IMG-20200707-WA0011.jpg",
     "photoPos": "90% 17%",
-    "photoZoom": 4.0
+    "photoZoom": 4.0,
+    "captainYears": "1989-1990"
   },
   {
     "surname": "Kolda",
@@ -3947,7 +3963,8 @@
     "deathcity": "",
     "seasons": "7",
     "seasonsRange": "1997-2001, 2011-14",
-    "photo": "https://hcmotor.cz/foto/hraci/2013/kotalik_ales.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2013/kotalik_ales.jpg",
+    "captainYears": "2013-2014"
   },
   {
     "surname": "Kotaška",
@@ -4457,7 +4474,8 @@
     "deathcity": "",
     "seasons": "6",
     "seasonsRange": "1998-2000, 2005-07, 2017-19",
-    "photo": "https://hcmotor.cz/foto/hraci/2018/kutlak_zdenek.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2018/kutlak_zdenek.jpg",
+    "captainYears": "2017-2019"
   },
   {
     "surname": "Kváča",
@@ -4499,7 +4517,8 @@
     "deathcity": "",
     "seasons": "14",
     "seasonsRange": "2002-13, 2015-18",
-    "photo": "https://hcmotor.cz/foto/hraci/2017/kveton_lukas.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2017/kveton_lukas.jpg",
+    "captainYears": "2016-2017"
   },
   {
     "surname": "Kysela",
@@ -4541,7 +4560,8 @@
     "deathcity": "",
     "seasons": "12",
     "seasonsRange": "1976-80, 1982-89, 1993-94",
-    "photo": "https://hcmotor.cz/foto_ceb/nezarazene09/lala_jiri.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/nezarazene09/lala_jiri.jpg",
+    "captainYears": "1986-1989"
   },
   {
     "surname": "Lála",
@@ -4981,7 +5001,8 @@
     "deathcity": "",
     "seasons": "14",
     "seasonsRange": "1965-67, 1969-81",
-    "photo": "https://hcmotor.cz/foto_ceb/nezarazene_2012/Ma%C5%99%C3%ADk.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/nezarazene_2012/Ma%C5%99%C3%ADk.jpg",
+    "captainYears": "1973-1974"
   },
   {
     "surname": "Masák",
@@ -5375,7 +5396,8 @@
     "deathcity": "České Budějovice",
     "seasons": "24",
     "seasonsRange": "1933-57",
-    "photo": "https://hcmotor.cz/foto_ceb/mizera.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/mizera.jpg",
+    "captainYears": "1949-1956"
   },
   {
     "surname": "Mizera",
@@ -5627,7 +5649,8 @@
     "deathcity": "",
     "seasons": "8",
     "seasonsRange": "1994-2000, 2001-03",
-    "photo": "https://hcmotor.cz/foto/hraci/nedoma.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/nedoma.jpg",
+    "captainYears": "2002"
   },
   {
     "surname": "Nedorost",
@@ -5757,7 +5780,8 @@
     "seasonsRange": "1959-60, 1962-73",
     "photo": "https://hcmotor.cz/foto_ceb/2020_54_ltm/IMG_1536.JPG",
     "photoPos": "22% 28%",
-    "photoZoom": 6.0
+    "photoZoom": 6.0,
+    "captainYears": "1969-1970"
   },
   {
     "surname": "Neumann",
@@ -6061,7 +6085,8 @@
     "seasonsRange": "1963-65, 1967-76",
     "photo": "https://hcmotor.cz/foto_ceb/2018_37_kva/IMG_8726.JPG",
     "photoPos": "48% 13%",
-    "photoZoom": 4.0
+    "photoZoom": 4.0,
+    "captainYears": "1970-1973"
   },
   {
     "surname": "Parýzek",
@@ -6613,7 +6638,8 @@
     "deathcity": "",
     "seasons": "14",
     "seasonsRange": "1962-64, 1966-78",
-    "photo": "https://hcmotor.cz/foto_ceb/82770319_3444657515576363_7022366018240512000_n.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/82770319_3444657515576363_7022366018240512000_n.jpg",
+    "captainYears": "1973"
   },
   {
     "surname": "Procházka",
@@ -6795,7 +6821,8 @@
     "deathcity": "",
     "seasons": "5",
     "seasonsRange": "2008-13",
-    "photo": "https://hcmotor.cz/foto/hraci/2012/ptacek_frantisek.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2012/ptacek_frantisek.jpg",
+    "captainYears": "2010-2012"
   },
   {
     "surname": "Punčochář",
@@ -6837,7 +6864,8 @@
     "deathcity": "",
     "seasons": "9",
     "seasonsRange": "2015-21, 2023-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/pycha_pavel.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2026/pycha_pavel.jpg",
+    "captainYears": "2019-2020"
   },
   {
     "surname": "Rabetz",
@@ -6979,7 +7007,8 @@
     "deathcity": "",
     "seasons": "17",
     "seasonsRange": "1987-90, 1991-2005",
-    "photo": "https://hcmotor.cz/foto_ceb/rob_frantisek.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/rob_frantisek.jpg",
+    "captainYears": "2002-2004"
   },
   {
     "surname": "Rob",
@@ -7093,7 +7122,8 @@
     "seasonsRange": "1927-38",
     "photo": "https://hcmotor.cz/foto_ceb/ac-stadion-cb-1933.jpg",
     "photoPos": "89% 10%",
-    "photoZoom": 6.0
+    "photoZoom": 6.0,
+    "captainYears": "1928-1938"
   },
   {
     "surname": "Řehoř",
@@ -7135,7 +7165,8 @@
     "deathcity": "",
     "seasons": "17",
     "seasonsRange": "1994-2010, 2011-12",
-    "photo": "https://hcmotor.cz/foto/hraci/2012/sailer_petr.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2012/sailer_petr.jpg",
+    "captainYears": "2006-2008, 2009-2010"
   },
   {
     "surname": "Samec",
@@ -7389,7 +7420,8 @@
     "deathcity": "",
     "seasons": "3",
     "seasonsRange": "2014-17",
-    "photo": "https://hcmotor.cz/foto/hraci/2015/straka_josef.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2015/straka_josef.jpg",
+    "captainYears": "2014-2016"
   },
   {
     "surname": "Strmeň",
@@ -7445,7 +7477,8 @@
     "deathcity": "",
     "seasons": "19",
     "seasonsRange": "1979-80, 1982-90, 1994-2004",
-    "photo": "https://hcmotor.cz/foto/suchanek.jpg"
+    "photo": "https://hcmotor.cz/foto/suchanek.jpg",
+    "captainYears": "2000-2002"
   },
   {
     "surname": "Suja",
@@ -7601,7 +7634,8 @@
     "deathcity": "České Budějovice",
     "seasons": "10",
     "seasonsRange": "1957-58, 1961-64, 1966-72",
-    "photo": ""
+    "photo": "",
+    "captainYears": "1967-1968"
   },
   {
     "surname": "Šenkeřík",
@@ -7645,7 +7679,8 @@
     "deathcity": "",
     "seasons": "18",
     "seasonsRange": "1997-2013, 2018-20",
-    "photo": "https://hcmotor.cz/foto/hraci/2019/simanek_jiri.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2019/simanek_jiri.jpg",
+    "captainYears": "2012-2013"
   },
   {
     "surname": "Šimánek",
@@ -7789,7 +7824,8 @@
     "seasonsRange": "1958-60, 1962-67",
     "photo": "https://hcmotor.cz/foto_ceb/2020_54_ltm/IMG_1536.JPG",
     "photoPos": "0% 36%",
-    "photoZoom": 5.0
+    "photoZoom": 5.0,
+    "captainYears": "1965-1966"
   },
   {
     "surname": "Šrámek",
@@ -8171,7 +8207,8 @@
     "deathcity": "",
     "seasons": "15",
     "seasonsRange": "1982-90, 1993-2000",
-    "photo": "https://www.hokej.cz/static/images/hraci/t/toupal_radek/toupal_radek1.jpg"
+    "photo": "https://www.hokej.cz/static/images/hraci/t/toupal_radek/toupal_radek1.jpg",
+    "captainYears": "1989, 1995-2000"
   },
   {
     "surname": "Trhlín",
@@ -8639,7 +8676,8 @@
     "deathcity": "",
     "seasons": "5",
     "seasonsRange": "2005-10",
-    "photo": "https://hcmotor.cz/foto/hraci/2010/vesely_ondrej.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/vesely_ondrej.jpg",
+    "captainYears": "2008-2009"
   },
   {
     "surname": "Ville",
