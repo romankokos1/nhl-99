@@ -470,28 +470,71 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
   <div class="body">
     <div class="sec-lbl">Individuální ocenění</div>
     <div class="scr-title">Ocenění</div>
-    <div class="scr-desc">Tipni nejlepší hráče a statistiky turnaje.</div>
+    <div class="scr-desc">Tipni nejlepší hráče a statistiky turnaje. Sekce "celý turnaj" = kdokoliv, "pouze ČR" = hráč Česka.</div>
+
+    <div class="sec-lbl" style="margin-top:4px;">⚽ Celý turnaj</div>
     <div class="aw-card">
       <div class="aw-icon">⚽</div>
       <span class="lbl">Nejlepší střelec</span>
       <input type="text" id="aw0" placeholder="Jméno hráče…" list="allPlayers">
     </div>
     <div class="aw-card">
+      <div class="aw-icon">🎯</div>
+      <span class="lbl">Nejlepší nahrávač</span>
+      <input type="text" id="aw1" placeholder="Jméno hráče…" list="allPlayers">
+    </div>
+    <div class="aw-card">
       <div class="aw-icon">🧤</div>
       <span class="lbl">Nejlepší brankář</span>
-      <input type="text" id="aw1" placeholder="Jméno brankáře…" list="allGoalies">
+      <input type="text" id="aw2" placeholder="Jméno brankáře…" list="allGoalies">
     </div>
-    <div class="aw-card number">
+    <div class="aw-card">
       <div class="aw-icon">🟨</div>
-      <span class="lbl">Nejvíc žlutých karet (tým)</span>
-      <input type="text" id="aw2" placeholder="Tým…" list="allTeams">
+      <span class="lbl">Nejvíc ŽK — hráč (turnaj)</span>
+      <input type="text" id="aw3" placeholder="Jméno hráče…" list="allPlayers">
     </div>
-    <div class="aw-card number">
+    <div class="aw-card">
       <div class="aw-icon">🟥</div>
-      <span class="lbl">Nejvíc červených karet (tým)</span>
-      <input type="text" id="aw3" placeholder="Tým…" list="allTeams">
+      <span class="lbl">Nejvíc ČK — hráč (turnaj)</span>
+      <input type="text" id="aw4" placeholder="Jméno hráče…" list="allPlayers">
     </div>
-    <datalist id="allPlayers">
+
+    <div class="sec-lbl" style="margin-top:12px;">🇨🇿 Pouze ČR</div>
+    <div class="aw-card">
+      <div class="aw-icon">⚽</div>
+      <span class="lbl">Nejlepší střelec ČR</span>
+      <input type="text" id="aw5" placeholder="Jméno hráče…" list="czPlayers">
+    </div>
+    <div class="aw-card">
+      <div class="aw-icon">🎯</div>
+      <span class="lbl">Nejlepší nahrávač ČR</span>
+      <input type="text" id="aw6" placeholder="Jméno hráče…" list="czPlayers">
+    </div>
+    <div class="aw-card">
+      <div class="aw-icon">🟨</div>
+      <span class="lbl">Nejvíc ŽK — hráč ČR</span>
+      <input type="text" id="aw7" placeholder="Jméno hráče…" list="czPlayers">
+    </div>
+    <div class="aw-card">
+      <div class="aw-icon">🟥</div>
+      <span class="lbl">Nejvíc ČK — hráč ČR</span>
+      <input type="text" id="aw8" placeholder="Jméno hráče…" list="czPlayers">
+    </div>
+    <datalist id="czPlayers">
+      <option value="Patrik Schick">
+      <option value="Adam Hložek">
+      <option value="Tomáš Souček">
+      <option value="Lukáš Provod">
+      <option value="Vladimír Coufal">
+      <option value="Ondřej Duda">
+      <option value="Jan Kuchta">
+      <option value="Mojmír Chytil">
+      <option value="Matěj Jurásek">
+      <option value="Ladislav Krejčí">
+      <option value="Robin Hranáč">
+      <option value="David Jurásek">
+      <option value="Jakub Brabec">
+    </datalist>
       <option value="Kylian Mbappé">
       <option value="Erling Haaland">
       <option value="Harry Kane">
@@ -712,7 +755,11 @@ const MATCH_BY_ID = {}; ALL_MATCHES.forEach(x=>MATCH_BY_ID[x.m]=x);
 const ROUND_OF = {}; R32_DEF.forEach(x=>ROUND_OF[x.m]='R32'); R16_DEF.forEach(x=>ROUND_OF[x.m]='R16');
 QF_DEF.forEach(x=>ROUND_OF[x.m]='QF'); SF_DEF.forEach(x=>ROUND_OF[x.m]='SF'); ROUND_OF[104]='FIN';
 
-const AW_LABELS = ['Nejlepší střelec','Nejlepší brankář','Nejvíc žlutých (tým)','Nejvíc červených (tým)'];
+const AW_LABELS = [
+  'Nejlepší střelec','Nejlepší nahrávač','Nejlepší brankář',
+  'Nejvíc ŽK — hráč','Nejvíc ČK — hráč',
+  'Střelec ČR','Nahrávač ČR','Nejvíc ŽK ČR','Nejvíc ČK ČR'
+];
 
 // ══════════════════════════════
 // STATE
@@ -723,7 +770,7 @@ let S = {
   groups: {},                                     // group letter -> ordered team array
   thirds: [],                                     // selected 8 third-place group letters
   winners: {},                                    // matchId -> 0(top)/1(bot)/null
-  aw: ['','','','']
+  aw: ['','','','','','','','','']
 };
 GROUP_KEYS.forEach(g=>S.groups[g]=[...GROUPS[g]]);
 
@@ -1194,7 +1241,7 @@ function initAR(){
   const saved=rLoadReal();
   if(saved){ AR=JSON.parse(JSON.stringify(saved)); }
   else{
-    AR={games:CZ_OPPS.map(()=>({cz:null,op:null})),groups:{},thirds:[],winners:{},aw:['','','','']};
+    AR={games:CZ_OPPS.map(()=>({cz:null,op:null})),groups:{},thirds:[],winners:{},aw:['','','','','','','','','']};
     GROUP_KEYS.forEach(g=>AR.groups[g]=[...GROUPS[g]]);
   }
   if(!AR.groups)AR.groups={};GROUP_KEYS.forEach(g=>{if(!AR.groups[g])AR.groups[g]=[...GROUPS[g]];});
@@ -1316,10 +1363,10 @@ function setARWinner(mid,slot){
 }
 function renderAdmAwards(){
   const el=document.getElementById('admAwards');el.innerHTML='';
+  const lists=['allPlayers','allPlayers','allGoalies','allPlayers','allPlayers','czPlayers','czPlayers','czPlayers','czPlayers'];
   AW_LABELS.forEach((lbl,i)=>{
     const d=document.createElement('div');d.className='adm-aw-row';
-    const list=i===1?'allGoalies':i>=2?'allTeams':'allPlayers';
-    d.innerHTML=`<span class="adm-aw-lbl">${lbl}</span><input class="adm-aw-inp" type="text" value="${esc(AR.aw[i]||'')}" placeholder="…" list="${list}">`;
+    d.innerHTML=`<span class="adm-aw-lbl">${lbl}</span><input class="adm-aw-inp" type="text" value="${esc(AR.aw[i]||'')}" placeholder="…" list="${lists[i]}">`;
     el.appendChild(d);
   });
 }
