@@ -473,89 +473,38 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
     <div class="scr-desc">Tipni nejlepší hráče a statistiky turnaje. Sekce "celý turnaj" = kdokoliv, "pouze ČR" = hráč Česka.</div>
 
     <div class="sec-lbl" style="margin-top:4px;">⚽ Celý turnaj</div>
-    <div class="aw-card">
-      <div class="aw-icon">⚽</div>
-      <span class="lbl">Nejlepší střelec</span>
-      <input type="text" id="aw0" placeholder="Jméno hráče…" list="allPlayers">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">🎯</div>
-      <span class="lbl">Nejlepší nahrávač</span>
-      <input type="text" id="aw1" placeholder="Jméno hráče…" list="allPlayers">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">🧤</div>
-      <span class="lbl">Nejlepší brankář</span>
-      <input type="text" id="aw2" placeholder="Jméno brankáře…" list="allGoalies">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">🟨</div>
-      <span class="lbl">Nejvíc ŽK — hráč (turnaj)</span>
-      <input type="text" id="aw3" placeholder="Jméno hráče…" list="allPlayers">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">🟥</div>
-      <span class="lbl">Nejvíc ČK — hráč (turnaj)</span>
-      <input type="text" id="aw4" placeholder="Jméno hráče…" list="allPlayers">
-    </div>
+    <div class="aw-card"><div class="aw-icon">⚽</div><span class="lbl">Nejlepší střelec</span><input type="text" id="aw0" placeholder="Jméno hráče…" list="allPlayers"></div>
+    <div class="aw-card"><div class="aw-icon">🎯</div><span class="lbl">Nejlepší nahrávač</span><input type="text" id="aw1" placeholder="Jméno hráče…" list="allPlayers"></div>
+    <div class="aw-card"><div class="aw-icon">🧤</div><span class="lbl">Nejlepší brankář</span><input type="text" id="aw2" placeholder="Jméno brankáře…" list="allGoalies"></div>
+    <div class="aw-card"><div class="aw-icon">🟨</div><span class="lbl">Nejvíc ŽK — hráč (turnaj)</span><input type="text" id="aw3" placeholder="Jméno hráče…" list="allPlayers"></div>
+    <div class="aw-card"><div class="aw-icon">🟥</div><span class="lbl">Nejvíc ČK — hráč (turnaj)</span><input type="text" id="aw4" placeholder="Jméno hráče…" list="allPlayers"></div>
 
     <div class="sec-lbl" style="margin-top:12px;">🇨🇿 Pouze ČR</div>
-    <div class="aw-card">
-      <div class="aw-icon">⚽</div>
-      <span class="lbl">Nejlepší střelec ČR</span>
-      <input type="text" id="aw5" placeholder="Jméno hráče…" list="czPlayers">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">🎯</div>
-      <span class="lbl">Nejlepší nahrávač ČR</span>
-      <input type="text" id="aw6" placeholder="Jméno hráče…" list="czPlayers">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">🟨</div>
-      <span class="lbl">Nejvíc ŽK — hráč ČR</span>
-      <input type="text" id="aw7" placeholder="Jméno hráče…" list="czPlayers">
-    </div>
-    <div class="aw-card">
-      <div class="aw-icon">🟥</div>
-      <span class="lbl">Nejvíc ČK — hráč ČR</span>
-      <input type="text" id="aw8" placeholder="Jméno hráče…" list="czPlayers">
-    </div>
-    <datalist id="czPlayers">
-      <option value="Patrik Schick">
-      <option value="Adam Hložek">
-      <option value="Tomáš Souček">
-      <option value="Lukáš Provod">
-      <option value="Vladimír Coufal">
-      <option value="Ondřej Duda">
-      <option value="Jan Kuchta">
-      <option value="Mojmír Chytil">
-      <option value="Matěj Jurásek">
-      <option value="Ladislav Krejčí">
-      <option value="Robin Hranáč">
-      <option value="David Jurásek">
-      <option value="Jakub Brabec">
-    </datalist>
-      <option value="Kylian Mbappé">
-      <option value="Erling Haaland">
-      <option value="Harry Kane">
-      <option value="Lionel Messi">
-      <option value="Vinícius Júnior">
-      <option value="Lamine Yamal">
-      <option value="Julián Álvarez">
-      <option value="Cristiano Ronaldo">
-      <option value="Antoine Griezmann">
-      <option value="Bukayo Saka">
-      <option value="Patrik Schick">
-      <option value="Adam Hložek">
+    <div class="aw-card"><div class="aw-icon">⚽</div><span class="lbl">Střelec ČR</span><input type="text" id="aw5" placeholder="Jméno hráče…" list="czPlayers"></div>
+    <div class="aw-card"><div class="aw-icon">🎯</div><span class="lbl">Nahrávač ČR</span><input type="text" id="aw6" placeholder="Jméno hráče…" list="czPlayers"></div>
+    <div class="aw-card"><div class="aw-icon">🟨</div><span class="lbl">Nejvíc ŽK — hráč ČR</span><input type="text" id="aw7" placeholder="Jméno hráče…" list="czPlayers"></div>
+    <div class="aw-card"><div class="aw-icon">🟥</div><span class="lbl">Nejvíc ČK — hráč ČR</span><input type="text" id="aw8" placeholder="Jméno hráče…" list="czPlayers"></div>
+
+    <datalist id="allPlayers">
+      <option value="Kylian Mbappé"><option value="Erling Haaland"><option value="Harry Kane">
+      <option value="Lionel Messi"><option value="Vinícius Júnior"><option value="Lamine Yamal">
+      <option value="Julián Álvarez"><option value="Cristiano Ronaldo"><option value="Antoine Griezmann">
+      <option value="Bukayo Saka"><option value="Patrik Schick"><option value="Adam Hložek">
+      <option value="Tomáš Souček"><option value="Rodrigo"><option value="Pedri">
+      <option value="Jude Bellingham"><option value="Federico Valverde"><option value="Phil Foden">
     </datalist>
     <datalist id="allGoalies">
-      <option value="Gianluigi Donnarumma">
-      <option value="Thibaut Courtois">
-      <option value="Emiliano Martínez">
-      <option value="Jordan Pickford">
-      <option value="Alisson Becker">
-      <option value="Unai Simón">
-      <option value="Jindřich Staněk">
+      <option value="Gianluigi Donnarumma"><option value="Thibaut Courtois">
+      <option value="Emiliano Martínez"><option value="Jordan Pickford">
+      <option value="Alisson Becker"><option value="Unai Simón">
+      <option value="Jindřich Staněk"><option value="Marc-André ter Stegen">
+    </datalist>
+    <datalist id="czPlayers">
+      <option value="Patrik Schick"><option value="Adam Hložek"><option value="Tomáš Souček">
+      <option value="Lukáš Provod"><option value="Vladimír Coufal"><option value="Ondřej Duda">
+      <option value="Jan Kuchta"><option value="Mojmír Chytil"><option value="Matěj Jurásek">
+      <option value="Ladislav Krejčí"><option value="Robin Hranáč"><option value="David Jurásek">
+      <option value="Jakub Brabec"><option value="Jakub Pešek"><option value="Tomáš Čvančara">
     </datalist>
     <datalist id="allTeams">
       <option value="Argentina"><option value="Brazílie"><option value="Francie">
@@ -564,10 +513,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
       <option value="Chorvatsko"><option value="Uruguay"><option value="Maroko">
       <option value="Česko"><option value="Mexiko"><option value="USA">
     </datalist>
-  <div class="navbar"><button class="nav-btn nav-prev" onclick="scr('sp')">← Zpět</button><button class="nav-btn nav-next nav-share" onclick="toShare()">Hotovo · Sdílet →</button></div>
+
+    <div class="navbar">
+      <button class="nav-btn nav-prev" onclick="scr('sp')">← Zpět</button>
+      <button class="nav-btn nav-next nav-share" onclick="toShare()">Hotovo · Sdílet →</button>
+    </div>
   </div>
 </div>
-
 <!-- SHARE -->
 <div id="ss" class="s">
   <div class="hdr"><div class="hdr-row" id="hdr-ss"></div></div>
@@ -583,6 +535,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
     <div class="pc-title" style="text-align:center;">📲 Sdílej svůj tip</div>
     <div class="url-box" id="urlb" onclick="cpUrl()">—</div>
     <div class="cp-hint" id="cph">↑ klikni pro zkopírování</div>
+    <div class="navbar">
+      <button class="nav-btn nav-prev" onclick="scr('so')">← Zpět</button>
+      <button class="nav-btn nav-next" onclick="cpUrl()">📋 Kopírovat odkaz</button>
+    </div>
   </div>
 </div>
 
@@ -1022,7 +978,7 @@ function matchLabel(mid){
 // ══════════════════════════════
 // AWARDS
 // ══════════════════════════════
-function saveAwards(){for(let i=0;i<4;i++){const el=document.getElementById('aw'+i);if(el)S.aw[i]=el.value.trim();}}
+function saveAwards(){for(let i=0;i<9;i++){const el=document.getElementById('aw'+i);if(el)S.aw[i]=el.value.trim();}}
 
 // ══════════════════════════════
 // ENCODE / DECODE
@@ -1045,7 +1001,7 @@ function dec(str){
     if(d.grp)GROUP_KEYS.forEach(g=>{ if(d.grp[g])S.groups[g]=d.grp[g].map(i=>GROUPS[g][i]); });
     if(d.thirds)S.thirds=d.thirds;
     if(d.win)S.winners=d.win;
-    S.aw=d.aw||['','','',''];
+    S.aw=d.aw||['','','','','','','','',''];
     S.aw.forEach((v,i)=>{const el=document.getElementById('aw'+i);if(el)el.value=v;});
     return true;
   }catch(e){return false;}
