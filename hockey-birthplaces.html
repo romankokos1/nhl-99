@@ -2072,6 +2072,133 @@ function hideYearTip() {
   document.querySelectorAll('.chart-vline').forEach(l=>l.setAttribute('opacity','0'));
 }
 
+function toggleRegions(barsId, btnId) {
+  const bars = document.getElementById(barsId);
+  const btn  = document.getElementById(btnId);
+  if (!bars) return;
+  const exp = bars.classList.toggle('exp');
+  bars.querySelectorAll('[data-extra="1"]').forEach(r => r.style.display = exp ? 'flex' : 'none');
+  if (btn) btn.textContent = exp ? 'Zobrazit méně' : btn.dataset.label;
+}
+
+function renderStats(ids) {
+  // ids: { kpis, regionBars, showMore, records, yearChart }
+  if (!players.length) return;
+  const withC = players.filter(p => p.lat);
+  const citySet = new Set(withC.map(p => Math.round(p.lat*200)+','+Math.round(p.lon*200)));
+
+  // KPIs
+  if (ids.kpis) document.getElementById(ids.kpis).innerHTML = `
+    <div class="msp-kpi"><span class="msp-kpi-val">${players.length}</span><span class="msp-kpi-lbl">Hráčů</span></div>
+    <div class="msp-kpi"><span class="msp-kpi-val">${citySet.size}</span><span class="msp-kpi-lbl">Míst</span></div>
+    <div class="msp-kpi"><span class="msp-kpi-val">${withC.length}</span><span class="msp-kpi-lbl">Na mapě</span></div>`;
+
+  // Origins
+  const oMap = {};
+  withC.forEach(p => { const o=classifyOrigin(p.lat,p.lon); oMap[o]=(oMap[o]||0)+1; });
+  const origins = Object.entries(oMap).sort((a,b)=>b[1]-a[1]);
+  const maxO = origins[0]?.[1]||1;
+  const SHOW = 5;
+  if (ids.regionBars) {
+    document.getElementById(ids.regionBars).innerHTML = origins.map(([o,n],i)=>`
+      <div class="msp-bar-row" data-extra="${i>=SHOW?1:0}" style="${i>=SHOW?'display:none':''}">
+        <span class="msp-bar-city">${esc(o)}</span>
+        <div class="msp-bar-track"><div class="msp-bar-fill" style="width:${Math.round(n/maxO*100)}%"></div></div>
+        <span class="msp-bar-count">${n}</span>
+      </div>`).join('');
+  }
+  if (ids.showMore) {
+    const btn = document.getElementById(ids.showMore);
+    if (btn) {
+      btn.style.display = origins.length > SHOW ? '' : 'none';
+      btn.dataset.label = `Zobrazit vše (${origins.length})`;
+      btn.textContent   = `Zobrazit vše (${origins.length})`;
+    }
+  }
+
+  // Records
+  function parseSR(r){if(!r)return 0;const m=r.match(/(\d{4})[–\-](\d{2,4})/);if(!m)return 0;const y1=parseInt(m[1]);const s=m[2];const y2=s.length<=2?Math.floor(y1/100)*100+parseInt(s):parseInt(s);return(y2<y1?y2+100:y2)-y1;}
+  const topSeason   = [...players].filter(p=>p.seasons).sort((a,b)=>Number(b.seasons)-Number(a.seasons))[0];
+  const longestRange= [...players].filter(p=>p.seasonsRange).sort((a,b)=>parseSR(b.seasonsRange)-parseSR(a.seasonsRange))[0];
+  if (ids.records) document.getElementById(ids.records).innerHTML = `
+    <div class="msp-rec">
+      <span class="msp-rec-ico">🏒</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejvíce sezón v Motoru</span>
+        <span class="msp-rec-name">${topSeason?esc(fullName(topSeason)||topSeason.city):'—'}</span>
+      </div>
+      <span class="msp-rec-val">${topSeason?topSeason.seasons+' sez.':'—'}</span>
+    </div>
+    <div class="msp-rec">
+      <span class="msp-rec-ico">📅</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejdelší kariéra v Motoru</span>
+        <span class="msp-rec-name">${longestRange?esc(fullName(longestRange)||longestRange.city):'—'}</span>
+      </div>
+      <span class="msp-rec-val">${longestRange?parseSR(longestRange.seasonsRange)+' let':'—'}</span>
+    </div>
+    <div class="msp-rec dim">
+      <span class="msp-rec-ico">🎂</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejstarší hráč</span>
+        <span class="msp-rec-name">připraveno</span>
+      </div>
+      <span class="msp-rec-val">—</span>
+    </div>`;
+
+  // Year chart
+  if (ids.yearChart) document.getElementById(ids.yearChart).innerHTML = buildYearChart(players);
+}
+
+function renderMobStats() {
+  renderStats({ kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart' });
+}
+
+// ── DESKTOP STATS ─────────────────────────────────
+function openStatsDesktop() {
+  document.getElementById('statsOvl').classList.add('on');
+  renderStats({ kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart' });
+}
+function closeStatsDesktop(e) {
+  if (e && e.target !== document.getElementById('statsOvl')) return;
+  document.getElementById('statsOvl').classList.remove('on');
+}
+
+// ── MOBILE SEARCH ─────────────────────────────────
+function openMobSearch() {
+  document.getElementById('mobSearchOvl').classList.add('on');
+  setTimeout(() => document.getElementById('mobSearchInput').focus(), 100);
+}
+function closeMobSearch() {
+  document.getElementById('mobSearchOvl').classList.remove('on');
+  document.getElementById('mobSearchInput').value = '';
+  document.getElementById('mobSearchResults').innerHTML = '';
+}
+function onMobSearch(q) {
+  const el = document.getElementById('mobSearchResults');
+  if (!q.trim()) { el.innerHTML = ''; return; }
+  const ql = q.toLowerCase();
+  const res = players.map((p,i)=>({p,i})).filter(({p})=>{
+    return (fullName(p)||'').toLowerCase().includes(ql) || (p.city||'').toLowerCase().includes(ql);
+  }).slice(0, 25);
+  el.innerHTML = res.length ? res.map(({p,i})=>{
+    const ini = initials(p);
+    const th = p.photo
+      ? `<img class="mob-sr-thumb" src="${escA(p.photo)}" onerror="this.outerHTML='<div class=mob-sr-ini>${ini}</div>'">`
+      : `<div class="mob-sr-ini">${ini}</div>`;
+    return `<div class="mob-sr-row" onclick="closeMobSearch();focusPlayer(${i})">
+      ${th}
+      <div class="mob-sr-info">
+        <div class="mob-sr-name">${esc(fullName(p)||p.city)}</div>
+        ${p.city?`<div class="mob-sr-city">${esc(p.city)}</div>`:''}
+      </div>
+      ${p.seasons?`<span class="mob-sr-meta">${p.seasons} sez.</span>`:''}
+    </div>`;
+  }).join('')
+  : `<div class="mob-sr-empty">Žádné výsledky pro „${esc(q)}"</div>`;
+}
+
+
 function classifyOrigin(lat, lon) {
   if (!lat || !lon) return 'Neznámo';
   if (lat >= 48.55 && lat <= 51.06 && lon >= 12.09 && lon <= 18.87) {
