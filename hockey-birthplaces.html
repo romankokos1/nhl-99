@@ -2143,16 +2143,36 @@ function renderStats(ids) {
 
   // Year chart
   if (ids.yearChart) document.getElementById(ids.yearChart).innerHTML = buildYearChart(players);
+
+  // Club info
+  const clubInfoHtml = `<div class="msp-club-info">
+    <div class="msp-club-row"><span class="msp-club-key">Název klubu</span><span class="msp-club-val">Banes Motor České Budějovice</span></div>
+    <div class="msp-club-row"><span class="msp-club-key">Datum založení</span><span class="msp-club-val">10. ledna 1928</span></div>
+    <div class="msp-club-row"><span class="msp-club-key">Barvy klubu</span><span class="msp-club-val"><span class="msp-club-colors"><span class="msp-color-dot" style="background:#fff;border-color:#ccc"></span><span class="msp-color-dot" style="background:#c8102e"></span><span class="msp-color-dot" style="background:#1c4896"></span><span class="msp-color-dot" style="background:#f5c300"></span> bílá, červená, modrá, žlutá</span></span></div>
+  </div>`;
+  if (ids.clubInfo) document.getElementById(ids.clubInfo).innerHTML = clubInfoHtml;
+
+  // Achievements
+  const ACHIEVEMENTS=[['🥇','Mistr republiky','1951'],['🥈','2. místo','1981'],['🥉','3. místo','1937, 1953, 1995, 2008, 2022'],['🏆','Vítěz poháru','1960, 2000'],['📊','Vítěz základní části','1988, 2008']];
+  if (ids.achieve) document.getElementById(ids.achieve).innerHTML = `<div class="msp-achieve">${ACHIEVEMENTS.map(([ico,lbl,yrs])=>`<div class="msp-ach-row"><span class="msp-ach-ico">${ico}</span><span class="msp-ach-lbl">${lbl}</span><span class="msp-ach-years">${yrs}</span></div>`).join('')}</div>`;
+
+  // Name history
+  const NAMES=[['1928–1948','AC Stadion České Budějovice',false],['1948–1949','Sokol Stadion České Budějovice',false],['1949–1950','ZSJ Obchodní domy Stadion ČB',false],['1950–1952','ZSJ Sdružené komunální podniky JNV ČB',false],['1953–1957','DSO Slavoj České Budějovice',false],['1957–1965','TJ Slavoj České Budějovice',false],['1965–1992','TJ Motor České Budějovice',false],['1992–2006','HC České Budějovice',false],['2006–2013','HC Mountfield',false],['2013–2020','ČEZ Motor České Budějovice',false],['2020–2021','Madeta Motor České Budějovice',false],['2021–2023','HC Motor České Budějovice',false],['od 2023','Banes Motor České Budějovice',true]];
+  if (ids.names) document.getElementById(ids.names).innerHTML = `<div class="msp-names">${NAMES.map(([yrs,name,cur])=>`<div class="msp-name-row${cur?' current':''}"><span class="msp-name-years">${yrs}</span><span class="msp-name-val">${name}</span></div>`).join('')}</div>`;
+
+  // Captains
+  const captains=players.filter(p=>p.captainYears).map(p=>{const m=(p.captainYears||'').match(/\d{4}/);return{p,startYear:m?parseInt(m[0]):9999};}).sort((a,b)=>a.startYear-b.startYear);
+  if (ids.captains&&captains.length) document.getElementById(ids.captains).innerHTML=`<div class="msp-captain-grid">${captains.map(({p})=>`<div class="msp-cap-row"><span class="msp-cap-years">${esc(p.captainYears)}</span><span class="msp-cap-name">${esc(fullName(p))}</span></div>`).join('')}</div>`;
 }
 
 function renderMobStats() {
-  renderStats({ kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart' });
+  renderStats({ clubInfo:'mspClubInfo', kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart', achieve:'mspAchieve', names:'mspNames', captains:'mspCaptains' });
 }
 
 // ── DESKTOP STATS ─────────────────────────────────
 function openStatsDesktop() {
   document.getElementById('statsOvl').classList.add('on');
-  renderStats({ kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart' });
+  renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains' });
 }
 function closeStatsDesktop(e) {
   if (e && e.target !== document.getElementById('statsOvl')) return;
