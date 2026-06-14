@@ -1964,153 +1964,211 @@ function generateShareImage(){
   const picks=rLoadPicks(), real=rLoadReal(), adj=rLoadAdj();
   if(!real){showNf('⚠ Nejdřív ulož výsledky');return;}
   if(!picks.length){showNf('⚠ Žádné tipy');return;}
+  showNf('⏳ Generuji obrázek…');
+  _doGenerateImage(picks,real,adj).catch(e=>{console.error(e);showNf('⚠ Chyba: '+e.message);});
+}
 
-  // Score & sort
+async function _doGenerateImage(picks,real,adj){
+  // ── Score & sort ──
   const scored=picks.map((p,i)=>{
     const rows=scoreDetail(p,real);const am=adj[i]||{};
     const total=totalFromDetail(rows,am);
     const maxPos=rows.reduce((s,r)=>s+(r.pts||0)+(am[r.key]||0)+(!r.played?r.max:0),0);
-    return{name:p.name,group:p.group||'',total,maxPos};
+    return{name:p.name,group:p.group||'',total,maxPos,code:null};
   }).sort((a,b)=>b.total-a.total);
-  const maxTotal=Math.max(...scored.map(s=>s.maxPos),1);
+  const maxPts=Math.max(...scored.map(s=>s.maxPos),1);
 
-  const S=1080, cv=document.createElement('canvas');
-  cv.width=S; cv.height=S;
+  // ── Load Anton font ──
+  try{
+    const f=new FontFace('Anton','url(https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm0Kz8AM.woff2)');
+    await f.load(); document.fonts.add(f);
+  }catch(e){console.warn('Anton font load failed',e);}
+
+  // ── Load flag images ──
+  async function loadFlag(iso){
+    return new Promise(res=>{
+      if(!iso){res(null);return;}
+      const img=new Image(); img.crossOrigin='anonymous';
+      img.onload=()=>res(img); img.onerror=()=>res(null);
+      img.src=`https://flagcdn.com/w80/${iso}.png`;
+    });
+  }
+  // Preload all unique flags needed
+  const neededCodes=[...new Set([...CZ_OPPS,...picks.map(()=>null)])].filter(Boolean);
+  const allCodes=[...CZ_OPPS]; // ČR game opponents
+  const flagCache={};
+  await Promise.all([...new Set(['cz',...allCodes.map(c=>FLAG_ISO[c])])].filter(Boolean).map(async iso=>{
+    flagCache[iso]=await loadFlag(iso);
+  }));
+
+  // ── Canvas setup — 1080 x 1350 (4:5, ideální pro Instagram/FB) ──
+  const W=1080, H=1350;
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
   const cx=cv.getContext('2d');
 
-  // ── BG ──
-  cx.fillStyle='#001233'; cx.fillRect(0,0,S,S);
-  // subtle radial glow top
-  const g=cx.createRadialGradient(540,-100,0,540,-100,700);
-  g.addColorStop(0,'rgba(10,125,60,.18)'); g.addColorStop(1,'transparent');
-  cx.fillStyle=g; cx.fillRect(0,0,S,S);
+  // ── Helpers ──
+  function rr(x,y,w,h,r,fill){
+    cx.fillStyle=fill;
+    cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);
+    cx.arcTo(x+w,y,x+w,y+r,r);cx.lineTo(x+w,y+h-r);
+    cx.arcTo(x+w,y+h,x+w-r,y+h,r);cx.lineTo(x+r,y+h);
+    cx.arcTo(x,y+h,x,y+h-r,r);cx.lineTo(x,y+r);
+    cx.arcTo(x,y,x+r,y,r);cx.closePath();cx.fill();
+  }
+  function circle(x,y,r,fill){
+    cx.fillStyle=fill;cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.fill();
+  }
+  function drawFlag(iso,x,y,r){
+    const img=flagCache[iso];
+    cx.save();
+    cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.closePath();cx.clip();
+    if(img){cx.drawImage(img,x-r,y-r,r*2,r*2);}
+    else{cx.fillStyle='rgba(255,255,255,.2)';cx.fill();}
+    cx.restore();
+    // border ring
+    cx.strokeStyle='rgba(255,255,255,.25)';cx.lineWidth=2;
+    cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.stroke();
+  }
+  function txt(str,x,y,font,fill,align='left'){
+    cx.font=font; cx.fillStyle=fill; cx.textAlign=align; cx.fillText(str,x,y);
+  }
 
-  // ── CORNER ACCENTS ──
-  cx.fillStyle='#C89B3C';
-  [[0,0,80,3],[0,0,3,80],[S-80,0,80,3],[S-3,0,3,80],
-   [0,S-3,80,3],[0,S-80,3,80],[S-80,S-3,80,3],[S-3,S-80,3,80]]
-  .forEach(([x,y,w,h])=>{cx.fillRect(x,y,w,h);});
+  // ══ BACKGROUND ══
+  // Full dark navy
+  cx.fillStyle='#0d1632'; cx.fillRect(0,0,W,H);
+  // Subtle dot pattern
+  cx.fillStyle='rgba(255,255,255,.022)';
+  for(let gx=0;gx<W;gx+=28) for(let gy=0;gy<H;gy+=28)
+    {cx.beginPath();cx.arc(gx,gy,1.2,0,Math.PI*2);cx.fill();}
 
-  // ── HEADER ──
-  cx.font='bold 22px Arial';
-  cx.fillStyle='#C89B3C'; cx.letterSpacing='12px';
-  cx.textAlign='center'; cx.fillText('MS VE FOTBALE 2026',540,52);
+  // ══ HERO HEADER ══ (FIFA blue, 260px)
+  const hg=cx.createLinearGradient(0,0,W,260);
+  hg.addColorStop(0,'#1a56f0'); hg.addColorStop(1,'#0e3db8');
+  cx.fillStyle=hg; cx.fillRect(0,0,W,260);
+  // dot pattern overlay on header
+  cx.fillStyle='rgba(255,255,255,.04)';
+  for(let gx=0;gx<W;gx+=28) for(let gy=0;gy<260;gy+=28)
+    {cx.beginPath();cx.arc(gx,gy,1.2,0,Math.PI*2);cx.fill();}
+  // bottom edge glow
+  const eg=cx.createLinearGradient(0,220,0,260);
+  eg.addColorStop(0,'transparent'); eg.addColorStop(1,'rgba(0,0,0,.4)');
+  cx.fillStyle=eg; cx.fillRect(0,220,W,40);
+
+  // Trophy SVG-like drawn on canvas
+  const tc={x:W/2,y:100};
+  cx.fillStyle='rgba(212,175,55,.9)';
+  // cup body
+  cx.beginPath();cx.moveTo(tc.x-38,tc.y-52);cx.lineTo(tc.x+38,tc.y-52);
+  cx.lineTo(tc.x+34,tc.y+10);cx.quadraticCurveTo(tc.x+34,tc.y+28,tc.x,tc.y+34);
+  cx.quadraticCurveTo(tc.x-34,tc.y+28,tc.x-34,tc.y+10);cx.closePath();cx.fill();
+  // handles
+  cx.strokeStyle='rgba(212,175,55,.9)'; cx.lineWidth=8; cx.lineCap='round';
+  cx.beginPath();cx.moveTo(tc.x-38,tc.y-44);cx.quadraticCurveTo(tc.x-64,tc.y-44,tc.x-64,tc.y-18);cx.quadraticCurveTo(tc.x-64,tc.y+4,tc.x-38,tc.y+4);cx.stroke();
+  cx.beginPath();cx.moveTo(tc.x+38,tc.y-44);cx.quadraticCurveTo(tc.x+64,tc.y-44,tc.x+64,tc.y-18);cx.quadraticCurveTo(tc.x+64,tc.y+4,tc.x+38,tc.y+4);cx.stroke();
+  // stem + base
+  cx.fillStyle='rgba(212,175,55,.9)';
+  cx.fillRect(tc.x-10,tc.y+34,20,16);
+  cx.fillRect(tc.x-26,tc.y+50,52,10);
+
+  // Title text
+  txt('FIFA WORLD CUP 2026™',W/2,168,'bold 22px Barlow Condensed,sans-serif','rgba(255,255,255,.55)','center');
+  // Spacing for letter-spacing simulation
+  cx.letterSpacing='8px';
+  txt('PRŮBĚŽNÉ POŘADÍ',W/2,210,'900 42px Anton,Impact,sans-serif','#ffffff','center');
   cx.letterSpacing='0px';
-  cx.font='52px Arial'; cx.fillText('⚽',540,108);
 
-  // divider
-  cx.strokeStyle='rgba(200,155,60,.4)'; cx.lineWidth=1;
-  cx.beginPath(); cx.moveTo(80,130); cx.lineTo(1000,130); cx.stroke();
+  // ══ ČR GAMES ══ (below header)
+  const GY=280, GH=130, GW=(W-80-32)/3;
+  txt('ČESKO VE SKUPINĚ A',60,272,'800 13px Barlow Condensed','rgba(255,255,255,.35)');
 
-  // sec label
-  cx.font='bold 13px Arial'; cx.letterSpacing='8px';
-  cx.fillStyle='rgba(200,155,60,.7)'; cx.textAlign='left';
-  cx.fillText('PRŮBĚŽNÉ POŘADÍ',80,158); cx.letterSpacing='0px';
-  cx.font='13px Arial'; cx.fillStyle='#4a6fa5'; cx.textAlign='right';
-  cx.fillText(new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),1000,158);
+  CZ_OPPS.forEach((opp,i)=>{
+    const gx=60+i*(GW+16), gy=GY;
+    const r=real.games[i], has=r&&r.cz!==null&&r.op!==null;
+    const win=has&&r.cz>r.op, lose=has&&r.cz<r.op, draw=has&&r.cz===r.op;
+    const accent=win?'#00c060':lose?'#e81c3c':draw?'#ff5c28':'rgba(255,255,255,.12)';
+    const bgFill=win?'rgba(0,192,96,.1)':lose?'rgba(232,28,60,.09)':draw?'rgba(255,92,40,.08)':'rgba(255,255,255,.05)';
+    rr(gx,gy,GW,GH,14,bgFill);
+    // top accent bar
+    cx.fillStyle=accent; rr(gx,gy,GW,4,2,accent);
+    // date
+    txt(CZ_DATES[i],gx+GW/2,gy+26,'700 14px Barlow Condensed','rgba(255,255,255,.4)','center');
+    // flags
+    drawFlag('cz',gx+GW/2-30,gy+72,24);
+    drawFlag(FLAG_ISO[opp],gx+GW/2+30,gy+72,24);
+    // score
+    const scoreStr=has?`${r.cz} : ${r.op}`:'? : ?';
+    cx.fillStyle=has?'#fff':'rgba(255,255,255,.2)';
+    txt(scoreStr,gx+GW/2,gy+108,'900 22px Anton,Impact,sans-serif',has?accent:'rgba(255,255,255,.2)','center');
+  });
 
-  // ── ROWS ──
-  const medals=['🥇','🥈','🥉'];
-  const rankColors=['#C89B3C','#9ca3af','#cd7f32'];
-  const barColors=['#4ade80','#60a5fa','#60a5fa'];
-  const rowY0=175, rowH=82, rowGap=6;
+  // ══ LEADERBOARD ══
+  const LY=440, LH=88, LG=8;
   const maxRows=Math.min(scored.length,7);
+  txt('POŘADÍ',60,436,'800 13px Barlow Condensed','rgba(255,255,255,.35)');
+  const medals=['🥇','🥈','🥉'];
+  const rankAccents=['#FF5C28','rgba(255,255,255,.4)','rgba(205,127,50,.7)'];
 
-  scored.slice(0,maxRows).forEach((row,i)=>{
-    const y=rowY0+i*(rowH+rowGap);
-    const isTop=i<3;
+  for(let i=0;i<maxRows;i++){
+    const row=scored[i], ry=LY+i*(LH+LG);
+    const isTop=i===0;
 
     // card bg
-    cx.fillStyle=i===0?'rgba(74,222,128,.07)':'rgba(255,255,255,.035)';
-    roundRect(cx,80,y,920,rowH,12);
-
-    // left accent bar
-    cx.fillStyle=i<3?rankColors[i]:'rgba(255,255,255,.15)';
-    cx.fillRect(80,y,4,rowH);
+    rr(60,ry,W-120,LH,14,isTop?'rgba(255,92,40,.1)':'rgba(255,255,255,.04)');
+    // left accent
+    cx.fillStyle=i<3?rankAccents[i]:'rgba(255,255,255,.1)';
+    cx.fillRect(60,ry,4,LH);
 
     // rank
-    cx.font=`bold 13px Arial`; cx.letterSpacing='4px';
-    cx.fillStyle=i<3?rankColors[i]:'rgba(255,255,255,.3)'; cx.textAlign='left';
-    cx.fillText(i<3?medals[i]:(i+1)+'.',108,y+42); cx.letterSpacing='0px';
-
-    // name
-    cx.font=`bold ${isTop?24:20}px Arial`;
-    cx.fillStyle=isTop?'#ffffff':'#94a3b8'; cx.textAlign='left';
-    cx.fillText(row.name,175,y+40);
-    // group
-    if(row.group){
-      cx.font='12px Arial'; cx.fillStyle='rgba(74,166,133,.6)';
-      cx.fillText(row.group.toUpperCase(),175,y+60);
+    if(i<3){
+      txt(medals[i],96,ry+LH/2+10,'900 28px Anton,Impact,sans-serif','#fff','center');
+    } else {
+      txt(String(i+1)+'.',96,ry+LH/2+8,'900 22px Anton,Impact,sans-serif','rgba(255,255,255,.3)','center');
     }
 
-    // pts
-    cx.font=`bold ${isTop?36:28}px Arial`;
-    cx.fillStyle=i===0?'#C89B3C':isTop?'#e2e8f0':'#94a3b8'; cx.textAlign='right';
-    cx.fillText(row.total,980,y+46);
-    cx.font='11px Arial'; cx.fillStyle='#4a6fa5';
-    cx.fillText('max '+row.maxPos,980,y+64);
+    // name
+    cx.font=`900 ${isTop?30:24}px Anton,Impact,sans-serif`;
+    cx.fillStyle=isTop?'#ffffff':'rgba(255,255,255,.85)';
+    cx.textAlign='left';
+    cx.fillText(row.name.toUpperCase(),130,ry+LH/2+(isTop?5:4));
+    if(row.group){
+      txt(row.group.toUpperCase(),130,ry+LH/2+26,'700 13px Barlow Condensed','rgba(255,255,255,.3)');
+    }
 
     // progress bar
-    const bx=175, bw=600, by=y+rowH-14, bh=4;
-    cx.fillStyle='rgba(255,255,255,.08)'; roundRect(cx,bx,by,bw,bh,2);
-    const fill=Math.round((row.total/maxTotal)*bw);
-    cx.fillStyle=i<3?barColors[i]:'rgba(255,255,255,.18)'; roundRect(cx,bx,by,fill,bh,2);
+    const bx=130,bw=W-310,by=ry+LH-18,bh=3;
+    rr(bx,by,bw,bh,2,'rgba(255,255,255,.08)');
+    const fill=Math.max(4,Math.round((row.total/maxPts)*bw));
+    const barCol=i===0?'#FF5C28':i<3?'rgba(255,255,255,.5)':'rgba(255,255,255,.2)';
+    rr(bx,by,fill,bh,2,barCol);
+
+    // pts
+    cx.textAlign='right';
+    cx.font=`900 ${isTop?44:34}px Anton,Impact,sans-serif`;
+    cx.fillStyle=i===0?'#FF5C28':'rgba(255,255,255,.85)';
+    cx.fillText(String(row.total),W-80,ry+LH/2+12);
+    txt('b',W-62,ry+LH/2+12,'700 16px Barlow Condensed','rgba(255,255,255,.35)');
+    txt('max '+row.maxPos,W-80,ry+LH/2+30,'600 13px Barlow Condensed','rgba(255,255,255,.22)','right');
+  }
+
+  // ══ FOOTER ══
+  const FY=H-110;
+  cx.strokeStyle='rgba(255,255,255,.07)'; cx.lineWidth=1;
+  cx.beginPath(); cx.moveTo(60,FY); cx.lineTo(W-60,FY); cx.stroke();
+
+  // Host flags
+  const hosts=['us','ca','mx'];
+  hosts.forEach((iso,i)=>{
+    drawFlag(flagCache[iso]?iso:iso,W/2+(i-1)*58,FY+44,20);
   });
 
-  const afterRows=rowY0+maxRows*(rowH+rowGap)+20;
+  txt('romankokos1.github.io/nhl-99',W/2,FY+84,'600 15px Barlow Condensed','rgba(255,255,255,.2)','center');
+  txt(new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),W/2,H-22,'600 13px Barlow Condensed','rgba(255,255,255,.18)','center');
 
-  // ── DIVIDER ──
-  cx.strokeStyle='rgba(30,58,95,1)'; cx.lineWidth=1;
-  cx.beginPath(); cx.moveTo(80,afterRows); cx.lineTo(1000,afterRows); cx.stroke();
-
-  // ── ČR GAMES ──
-  const gsecY=afterRows+14;
-  cx.font='bold 12px Arial'; cx.letterSpacing='7px';
-  cx.fillStyle='rgba(200,155,60,.65)'; cx.textAlign='left';
-  cx.fillText('ZÁPASY ČESKA',80,gsecY+14); cx.letterSpacing='0px';
-
-  const chipW=270, chipH=110, chipGap=20;
-  const chipY=gsecY+28;
-  const chipX=[80,80+chipW+chipGap,80+(chipW+chipGap)*2];
-  const czOpps=['KOR','RSA','MEX'], czFlags=['🇰🇷','🇿🇦','🇲🇽'];
-  const czDates=['11.6.','18.6.','24.6.'];
-
-  czOpps.forEach((opp,i)=>{
-    const r=real.games&&real.games[i];
-    const has=r&&r.cz!==null&&r.op!==null;
-    const win=has&&r.cz>r.op, lose=has&&r.cz<r.op, draw=has&&r.cz===r.op;
-    const accentCol=win?'#4ade80':lose?'#f87171':draw?'#fbbf24':'rgba(255,255,255,.15)';
-    const bgCol=win?'rgba(10,31,10,.9)':lose?'rgba(31,10,10,.7)':'rgba(255,255,255,.04)';
-
-    cx.fillStyle=bgCol; roundRect(cx,chipX[i],chipY,chipW,chipH,12);
-    // top accent
-    cx.fillStyle=accentCol; roundRect(cx,chipX[i],chipY,chipW,3,2);
-
-    cx.font='bold 11px Arial'; cx.letterSpacing='3px';
-    cx.fillStyle=has?accentCol:'rgba(255,255,255,.25)'; cx.textAlign='center';
-    const statusTxt=win?'VÝHRA':lose?'PROHRA':draw?'REMÍZA':'ČEKÁ';
-    cx.fillText(czDates[i]+' — '+statusTxt,chipX[i]+chipW/2,chipY+24); cx.letterSpacing='0px';
-
-    cx.font='28px Arial'; cx.fillText('🇨🇿 '+czFlags[i],chipX[i]+chipW/2,chipY+62);
-    cx.font='bold '+(has?30:22)+'px Arial';
-    cx.fillStyle=has?'#ffffff':'rgba(255,255,255,.2)';
-    cx.fillText(has?r.cz+' : '+r.op:'? : ?',chipX[i]+chipW/2,chipY+92);
-  });
-
-  // ── FOOTER ──
-  const footY=chipY+chipH+28;
-  cx.strokeStyle='rgba(30,58,95,1)'; cx.lineWidth=1;
-  cx.beginPath(); cx.moveTo(80,footY); cx.lineTo(1000,footY); cx.stroke();
-  cx.font='11px Arial'; cx.letterSpacing='4px';
-  cx.fillStyle='rgba(255,255,255,.15)'; cx.textAlign='center';
-  cx.fillText('TIPOVAČKA · ROMANKOKOS1.GITHUB.IO',540,footY+30); cx.letterSpacing='0px';
-  cx.font='26px Arial'; cx.fillText('🇺🇸  🇨🇦  🇲🇽',540,footY+65);
-
-  // ── DOWNLOAD ──
+  // ══ DOWNLOAD ══
   cv.toBlob(blob=>{
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url; a.download='ms2026_fotbal_standings.png';
+    a.href=url; a.download='ms2026_standings.png';
     document.body.appendChild(a); a.click();
     document.body.removeChild(a); URL.revokeObjectURL(url);
     showNf('✓ OBRÁZEK STAŽEN!');
@@ -2124,6 +2182,7 @@ function roundRect(cx,x,y,w,h,r){
   cx.arcTo(x,y+h,x,y+h-r,r);cx.lineTo(x,y+r);
   cx.arcTo(x,y,x+r,y,r);cx.closePath();cx.fill();
 }
+
 
 // ══════════════════════════════
 // PLACHTA EXPORT
