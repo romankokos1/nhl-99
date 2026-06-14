@@ -1969,211 +1969,141 @@ function generateShareImage(){
 }
 
 async function _doGenerateImage(picks,real,adj){
-  // ── Score & sort ──
   const scored=picks.map((p,i)=>{
     const rows=scoreDetail(p,real);const am=adj[i]||{};
     const total=totalFromDetail(rows,am);
-    const maxPos=rows.reduce((s,r)=>s+(r.pts||0)+(am[r.key]||0)+(!r.played?r.max:0),0);
-    return{name:p.name,group:p.group||'',total,maxPos,code:null};
+    return{name:p.name,group:p.group||'',total};
   }).sort((a,b)=>b.total-a.total);
-  const maxPts=Math.max(...scored.map(s=>s.maxPos),1);
 
-  // ── Load Anton font ──
-  try{
-    const f=new FontFace('Anton','url(https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm0Kz8AM.woff2)');
-    await f.load(); document.fonts.add(f);
-  }catch(e){console.warn('Anton font load failed',e);}
+  // Load Anton font
+  try{const f=new FontFace('Anton','url(https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm0Kz8AM.woff2)');await f.load();document.fonts.add(f);}catch(e){}
 
-  // ── Load flag images ──
-  async function loadFlag(iso){
-    return new Promise(res=>{
-      if(!iso){res(null);return;}
-      const img=new Image(); img.crossOrigin='anonymous';
-      img.onload=()=>res(img); img.onerror=()=>res(null);
-      img.src=`https://flagcdn.com/w80/${iso}.png`;
-    });
-  }
-  // Preload all unique flags needed
-  const neededCodes=[...new Set([...CZ_OPPS,...picks.map(()=>null)])].filter(Boolean);
-  const allCodes=[...CZ_OPPS]; // ČR game opponents
-  const flagCache={};
-  await Promise.all([...new Set(['cz',...allCodes.map(c=>FLAG_ISO[c])])].filter(Boolean).map(async iso=>{
-    flagCache[iso]=await loadFlag(iso);
+  // Load flags
+  async function loadImg(url){return new Promise(res=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=()=>res(null);i.src=url;});}
+  const flagImgs={};
+  await Promise.all(Object.entries(FLAG_ISO).map(async([code,iso])=>{
+    flagImgs[code]=await loadImg(`https://flagcdn.com/w80/${iso}.png`);
   }));
 
-  // ── Canvas setup — 1080 x 1350 (4:5, ideální pro Instagram/FB) ──
-  const W=1080, H=1350;
-  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  // Canvas — 1080x1080
+  const W=1080,H=1080,cv=document.createElement('canvas');
+  cv.width=W;cv.height=H;
   const cx=cv.getContext('2d');
 
-  // ── Helpers ──
   function rr(x,y,w,h,r,fill){
-    cx.fillStyle=fill;
-    cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);
-    cx.arcTo(x+w,y,x+w,y+r,r);cx.lineTo(x+w,y+h-r);
-    cx.arcTo(x+w,y+h,x+w-r,y+h,r);cx.lineTo(x+r,y+h);
-    cx.arcTo(x,y+h,x,y+h-r,r);cx.lineTo(x,y+r);
-    cx.arcTo(x,y,x+r,y,r);cx.closePath();cx.fill();
+    cx.fillStyle=fill;cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);
+    cx.arcTo(x+w,y,x+w,y+r,r);cx.lineTo(x+w,y+h-r);cx.arcTo(x+w,y+h,x+w-r,y+h,r);
+    cx.lineTo(x+r,y+h);cx.arcTo(x,y+h,x,y+h-r,r);cx.lineTo(x,y+r);cx.arcTo(x,y,x+r,y,r);
+    cx.closePath();cx.fill();
   }
-  function circle(x,y,r,fill){
-    cx.fillStyle=fill;cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.fill();
-  }
-  function drawFlag(iso,x,y,r){
-    const img=flagCache[iso];
-    cx.save();
-    cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.closePath();cx.clip();
-    if(img){cx.drawImage(img,x-r,y-r,r*2,r*2);}
-    else{cx.fillStyle='rgba(255,255,255,.2)';cx.fill();}
+  function drawCircleFlag(code,x,y,r){
+    const img=flagImgs[code];
+    cx.save();cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.closePath();cx.clip();
+    if(img)cx.drawImage(img,x-r,y-r,r*2,r*2);
+    else{cx.fillStyle='rgba(255,255,255,.15)';cx.fill();}
     cx.restore();
-    // border ring
-    cx.strokeStyle='rgba(255,255,255,.25)';cx.lineWidth=2;
+    cx.strokeStyle='rgba(255,255,255,.2)';cx.lineWidth=2;
     cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.stroke();
   }
-  function txt(str,x,y,font,fill,align='left'){
-    cx.font=font; cx.fillStyle=fill; cx.textAlign=align; cx.fillText(str,x,y);
+  function txt(s,x,y,font,fill,align='left'){
+    cx.font=font;cx.fillStyle=fill;cx.textAlign=align;cx.fillText(String(s),x,y);
   }
 
-  // ══ BACKGROUND ══
-  // Full dark navy
-  cx.fillStyle='#0d1632'; cx.fillRect(0,0,W,H);
-  // Subtle dot pattern
-  cx.fillStyle='rgba(255,255,255,.022)';
-  for(let gx=0;gx<W;gx+=28) for(let gy=0;gy<H;gy+=28)
-    {cx.beginPath();cx.arc(gx,gy,1.2,0,Math.PI*2);cx.fill();}
+  const maxRows=Math.min(scored.length,6);
+  // Dynamic row height to fill canvas comfortably
+  const PAD=54;
+  const HDR=200;   // header height
+  const FOOT=80;   // footer height
+  const available=H-HDR-FOOT-PAD*2;
+  const ROW=Math.floor(available/maxRows)-8;  // ~130px for 6 rows
 
-  // ══ HERO HEADER ══ (FIFA blue, 260px)
-  const hg=cx.createLinearGradient(0,0,W,260);
-  hg.addColorStop(0,'#1a56f0'); hg.addColorStop(1,'#0e3db8');
-  cx.fillStyle=hg; cx.fillRect(0,0,W,260);
-  // dot pattern overlay on header
-  cx.fillStyle='rgba(255,255,255,.04)';
-  for(let gx=0;gx<W;gx+=28) for(let gy=0;gy<260;gy+=28)
-    {cx.beginPath();cx.arc(gx,gy,1.2,0,Math.PI*2);cx.fill();}
-  // bottom edge glow
-  const eg=cx.createLinearGradient(0,220,0,260);
-  eg.addColorStop(0,'transparent'); eg.addColorStop(1,'rgba(0,0,0,.4)');
-  cx.fillStyle=eg; cx.fillRect(0,220,W,40);
+  // ── BACKGROUND ──
+  cx.fillStyle='#0d1632';cx.fillRect(0,0,W,H);
+  // Dot pattern
+  cx.fillStyle='rgba(255,255,255,.018)';
+  for(let gx=0;gx<W;gx+=30)for(let gy=0;gy<H;gy+=30){cx.beginPath();cx.arc(gx,gy,1.3,0,Math.PI*2);cx.fill();}
 
-  // Trophy SVG-like drawn on canvas
-  const tc={x:W/2,y:100};
-  cx.fillStyle='rgba(212,175,55,.9)';
-  // cup body
-  cx.beginPath();cx.moveTo(tc.x-38,tc.y-52);cx.lineTo(tc.x+38,tc.y-52);
-  cx.lineTo(tc.x+34,tc.y+10);cx.quadraticCurveTo(tc.x+34,tc.y+28,tc.x,tc.y+34);
-  cx.quadraticCurveTo(tc.x-34,tc.y+28,tc.x-34,tc.y+10);cx.closePath();cx.fill();
-  // handles
-  cx.strokeStyle='rgba(212,175,55,.9)'; cx.lineWidth=8; cx.lineCap='round';
-  cx.beginPath();cx.moveTo(tc.x-38,tc.y-44);cx.quadraticCurveTo(tc.x-64,tc.y-44,tc.x-64,tc.y-18);cx.quadraticCurveTo(tc.x-64,tc.y+4,tc.x-38,tc.y+4);cx.stroke();
-  cx.beginPath();cx.moveTo(tc.x+38,tc.y-44);cx.quadraticCurveTo(tc.x+64,tc.y-44,tc.x+64,tc.y-18);cx.quadraticCurveTo(tc.x+64,tc.y+4,tc.x+38,tc.y+4);cx.stroke();
-  // stem + base
-  cx.fillStyle='rgba(212,175,55,.9)';
-  cx.fillRect(tc.x-10,tc.y+34,20,16);
-  cx.fillRect(tc.x-26,tc.y+50,52,10);
+  // ── HEADER ──
+  const hg=cx.createLinearGradient(0,0,W,HDR);
+  hg.addColorStop(0,'#1a56f0');hg.addColorStop(1,'#1040c8');
+  cx.fillStyle=hg;cx.fillRect(0,0,W,HDR);
+  // dot overlay
+  cx.fillStyle='rgba(255,255,255,.035)';
+  for(let gx=0;gx<W;gx+=30)for(let gy=0;gy<HDR;gy+=30){cx.beginPath();cx.arc(gx,gy,1.3,0,Math.PI*2);cx.fill();}
+  // fade bottom
+  const fade=cx.createLinearGradient(0,HDR-40,0,HDR);
+  fade.addColorStop(0,'transparent');fade.addColorStop(1,'rgba(0,0,0,.35)');
+  cx.fillStyle=fade;cx.fillRect(0,HDR-40,W,40);
 
-  // Title text
-  txt('FIFA WORLD CUP 2026™',W/2,168,'bold 22px Barlow Condensed,sans-serif','rgba(255,255,255,.55)','center');
-  // Spacing for letter-spacing simulation
-  cx.letterSpacing='8px';
-  txt('PRŮBĚŽNÉ POŘADÍ',W/2,210,'900 42px Anton,Impact,sans-serif','#ffffff','center');
-  cx.letterSpacing='0px';
+  // Trophy
+  cx.save();cx.translate(W/2,76);
+  cx.fillStyle='rgba(212,175,55,.95)';
+  cx.beginPath();cx.moveTo(-32,-48);cx.lineTo(32,-48);cx.lineTo(28,12);
+  cx.quadraticCurveTo(28,26,0,30);cx.quadraticCurveTo(-28,26,-28,12);cx.closePath();cx.fill();
+  cx.strokeStyle='rgba(212,175,55,.95)';cx.lineWidth=7;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(-32,-40);cx.quadraticCurveTo(-54,-40,-54,-18);cx.quadraticCurveTo(-54,2,-32,2);cx.stroke();
+  cx.beginPath();cx.moveTo(32,-40);cx.quadraticCurveTo(54,-40,54,-18);cx.quadraticCurveTo(54,2,32,2);cx.stroke();
+  cx.fillStyle='rgba(212,175,55,.95)';
+  cx.fillRect(-9,30,18,14);cx.fillRect(-22,44,44,9);
+  cx.restore();
 
-  // ══ ČR GAMES ══ (below header)
-  const GY=280, GH=130, GW=(W-80-32)/3;
-  txt('ČESKO VE SKUPINĚ A',60,272,'800 13px Barlow Condensed','rgba(255,255,255,.35)');
+  txt('PRŮBĚŽNÉ POŘADÍ',W/2,162,'900 36px Anton,Impact,sans-serif','#fff','center');
+  txt('FIFA WORLD CUP 2026™',W/2,188,'700 16px Barlow Condensed,sans-serif','rgba(255,255,255,.45)','center');
 
-  CZ_OPPS.forEach((opp,i)=>{
-    const gx=60+i*(GW+16), gy=GY;
-    const r=real.games[i], has=r&&r.cz!==null&&r.op!==null;
-    const win=has&&r.cz>r.op, lose=has&&r.cz<r.op, draw=has&&r.cz===r.op;
-    const accent=win?'#00c060':lose?'#e81c3c':draw?'#ff5c28':'rgba(255,255,255,.12)';
-    const bgFill=win?'rgba(0,192,96,.1)':lose?'rgba(232,28,60,.09)':draw?'rgba(255,92,40,.08)':'rgba(255,255,255,.05)';
-    rr(gx,gy,GW,GH,14,bgFill);
-    // top accent bar
-    cx.fillStyle=accent; rr(gx,gy,GW,4,2,accent);
-    // date
-    txt(CZ_DATES[i],gx+GW/2,gy+26,'700 14px Barlow Condensed','rgba(255,255,255,.4)','center');
-    // flags
-    drawFlag('cz',gx+GW/2-30,gy+72,24);
-    drawFlag(FLAG_ISO[opp],gx+GW/2+30,gy+72,24);
-    // score
-    const scoreStr=has?`${r.cz} : ${r.op}`:'? : ?';
-    cx.fillStyle=has?'#fff':'rgba(255,255,255,.2)';
-    txt(scoreStr,gx+GW/2,gy+108,'900 22px Anton,Impact,sans-serif',has?accent:'rgba(255,255,255,.2)','center');
-  });
+  // ── ROWS ──
+  const rowX=PAD, rowW=W-PAD*2;
+  let ry=HDR+PAD;
 
-  // ══ LEADERBOARD ══
-  const LY=440, LH=88, LG=8;
-  const maxRows=Math.min(scored.length,7);
-  txt('POŘADÍ',60,436,'800 13px Barlow Condensed','rgba(255,255,255,.35)');
-  const medals=['🥇','🥈','🥉'];
-  const rankAccents=['#FF5C28','rgba(255,255,255,.4)','rgba(205,127,50,.7)'];
-
-  for(let i=0;i<maxRows;i++){
-    const row=scored[i], ry=LY+i*(LH+LG);
+  scored.slice(0,maxRows).forEach((row,i)=>{
     const isTop=i===0;
+    const cardCol=isTop?'rgba(255,92,40,.12)':'rgba(255,255,255,.05)';
+    rr(rowX,ry,rowW,ROW,16,cardCol);
+    // left bar
+    const barCol=i===0?'#FF5C28':i===1?'rgba(200,200,200,.6)':i===2?'rgba(205,127,50,.7)':'rgba(255,255,255,.12)';
+    cx.fillStyle=barCol;cx.fillRect(rowX,ry,5,ROW);
 
-    // card bg
-    rr(60,ry,W-120,LH,14,isTop?'rgba(255,92,40,.1)':'rgba(255,255,255,.04)');
-    // left accent
-    cx.fillStyle=i<3?rankAccents[i]:'rgba(255,255,255,.1)';
-    cx.fillRect(60,ry,4,LH);
+    const cy2=ry+ROW/2;
 
-    // rank
-    if(i<3){
-      txt(medals[i],96,ry+LH/2+10,'900 28px Anton,Impact,sans-serif','#fff','center');
-    } else {
-      txt(String(i+1)+'.',96,ry+LH/2+8,'900 22px Anton,Impact,sans-serif','rgba(255,255,255,.3)','center');
-    }
+    // Rank
+    const rankTxt=i===0?'1':i===1?'2':i===2?'3':String(i+1);
+    txt(rankTxt,rowX+42,cy2+12,'900 '+(isTop?36:28)+'px Anton,Impact,sans-serif',barCol,'center');
 
-    // name
-    cx.font=`900 ${isTop?30:24}px Anton,Impact,sans-serif`;
-    cx.fillStyle=isTop?'#ffffff':'rgba(255,255,255,.85)';
-    cx.textAlign='left';
-    cx.fillText(row.name.toUpperCase(),130,ry+LH/2+(isTop?5:4));
-    if(row.group){
-      txt(row.group.toUpperCase(),130,ry+LH/2+26,'700 13px Barlow Condensed','rgba(255,255,255,.3)');
-    }
+    // Name
+    const nameSize=isTop?38:30;
+    txt(row.name.toUpperCase(),rowX+90,cy2+(row.group?4:12),'900 '+nameSize+'px Anton,Impact,sans-serif','#fff');
+    if(row.group) txt(row.group.toUpperCase(),rowX+90,cy2+26,'700 16px Barlow Condensed,sans-serif','rgba(255,255,255,.3)');
 
-    // progress bar
-    const bx=130,bw=W-310,by=ry+LH-18,bh=3;
-    rr(bx,by,bw,bh,2,'rgba(255,255,255,.08)');
-    const fill=Math.max(4,Math.round((row.total/maxPts)*bw));
-    const barCol=i===0?'#FF5C28':i<3?'rgba(255,255,255,.5)':'rgba(255,255,255,.2)';
-    rr(bx,by,fill,bh,2,barCol);
+    // Points
+    txt(String(row.total),rowX+rowW-30,cy2+14,'900 '+(isTop?52:40)+'px Anton,Impact,sans-serif',isTop?'#FF5C28':'rgba(255,255,255,.85)','right');
 
-    // pts
-    cx.textAlign='right';
-    cx.font=`900 ${isTop?44:34}px Anton,Impact,sans-serif`;
-    cx.fillStyle=i===0?'#FF5C28':'rgba(255,255,255,.85)';
-    cx.fillText(String(row.total),W-80,ry+LH/2+12);
-    txt('b',W-62,ry+LH/2+12,'700 16px Barlow Condensed','rgba(255,255,255,.35)');
-    txt('max '+row.maxPos,W-80,ry+LH/2+30,'600 13px Barlow Condensed','rgba(255,255,255,.22)','right');
-  }
-
-  // ══ FOOTER ══
-  const FY=H-110;
-  cx.strokeStyle='rgba(255,255,255,.07)'; cx.lineWidth=1;
-  cx.beginPath(); cx.moveTo(60,FY); cx.lineTo(W-60,FY); cx.stroke();
-
-  // Host flags
-  const hosts=['us','ca','mx'];
-  hosts.forEach((iso,i)=>{
-    drawFlag(flagCache[iso]?iso:iso,W/2+(i-1)*58,FY+44,20);
+    ry+=ROW+8;
   });
 
-  txt('romankokos1.github.io/nhl-99',W/2,FY+84,'600 15px Barlow Condensed','rgba(255,255,255,.2)','center');
-  txt(new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),W/2,H-22,'600 13px Barlow Condensed','rgba(255,255,255,.18)','center');
+  // ── FOOTER ──
+  const FY=H-FOOT;
+  cx.strokeStyle='rgba(255,255,255,.07)';cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(PAD,FY);cx.lineTo(W-PAD,FY);cx.stroke();
+  // Host flags
+  ['us','ca','mx'].forEach((iso,i)=>{
+    const fi=new Image();fi.crossOrigin='anonymous';
+    const fx=W/2+(i-1)*56;
+    const fimg=Object.values(flagImgs).find((_,k)=>Object.keys(FLAG_ISO)[k]&&FLAG_ISO[Object.keys(FLAG_ISO)[k]]===iso);
+    // draw from cache
+    const codeForIso=Object.entries(FLAG_ISO).find(([,v])=>v===iso)?.[0];
+    if(codeForIso&&flagImgs[codeForIso]) drawCircleFlag(codeForIso,fx,FY+30,18);
+  });
+  txt('romankokos1.github.io/nhl-99',W/2,FY+64,'600 14px Barlow Condensed,sans-serif','rgba(255,255,255,.18)','center');
+  txt(new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),W-PAD,FY+64,'600 14px Barlow Condensed,sans-serif','rgba(255,255,255,.18)','right');
 
-  // ══ DOWNLOAD ══
+  // ── SAVE ──
   cv.toBlob(blob=>{
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download='ms2026_standings.png';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a); URL.revokeObjectURL(url);
+    const a=document.createElement('a');a.href=url;a.download='ms2026_standings.png';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
     showNf('✓ OBRÁZEK STAŽEN!');
   },'image/png');
 }
+
 
 function roundRect(cx,x,y,w,h,r){
   cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);
