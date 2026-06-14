@@ -116,7 +116,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .ib.del:hover{background:#fce8e6;color:#b02020;border-color:#f0a8a0}
 
 /* ── OVERLAY ─────────────────────────────────── */
-.ovl{display:none;position:fixed;inset:0;background:rgba(15,47,106,.5);z-index:2500;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+.ovl{display:flex;position:fixed;inset:0;background:rgba(15,47,106,.5);z-index:2500;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
 .ovl.on{display:flex}
 .modal{background:#fff;border:1px solid #c4cedc;border-top:4px solid var(--blue);border-radius:3px;padding:1.75rem;width:520px;max-width:100%;box-shadow:var(--sh2);margin:auto}
 .modal h3{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue3);margin-bottom:1.25rem;border-bottom:2px solid var(--yellow);padding-bottom:.6rem}
@@ -646,9 +646,34 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   to   { opacity: 1; filter: blur(0)   brightness(1); }
 }
 .mk-anim { animation: mkPop .35s ease both; }
-/* Marker hover */
-.leaflet-marker-icon { transition: transform .15s cubic-bezier(.34,1.56,.64,1); transform-origin: center bottom; cursor: pointer; }
-.leaflet-marker-icon:hover { transform: scale(1.2); }
+/* Marker hover — scale on CHILD (not on .leaflet-marker-icon which has Leaflet's translate3d) */
+.leaflet-marker-icon { cursor: pointer; }
+.leaflet-marker-icon > svg, .leaflet-marker-icon > div {
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1);
+  transform-origin: center bottom;
+}
+.leaflet-marker-icon:hover > svg { transform: scale(1.22); }
+.leaflet-marker-icon:hover > div { transform: scale(1.12); }
+/* Round photo bubble on hover */
+.mk-wrap { position: relative; display: inline-block; }
+.mk-photo-bubble {
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%) scale(.7); transform-origin: center bottom;
+  width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
+  border: 2.5px solid #fff; box-shadow: 0 4px 16px rgba(10,30,80,.38);
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s, transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.mk-wrap:hover .mk-photo-bubble { opacity: 1; transform: translateX(-50%) scale(1); }
+.mk-photo-bubble img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Modal fade + scale animation */
+.ovl { display: flex; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
+.ovl.on { pointer-events: all; opacity: 1; }
+.ovl .modal {
+  transform: scale(.94) translateY(14px); opacity: 0;
+  transition: transform .28s cubic-bezier(.34,1.2,.64,1), opacity .22s ease;
+}
+.ovl.on .modal { transform: scale(1) translateY(0); opacity: 1; }
 /* Fullscreen control */
 .leaflet-fullscreen-btn {
   width:36px!important;height:36px!important;
@@ -889,7 +914,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 <script>
 // ══════════════════════════════════════════════════
 // STATE
@@ -956,15 +980,7 @@ function initMap() {
     '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}),
   };
   baseLayers['🌍 Voyager (barevný)'].addTo(map);
-
-  // Heatmap overlay
-  heatLayer = L.heatLayer([], {radius:28, blur:18, maxZoom:12, gradient:{0.3:'#1c4896',0.6:'#f5c300',1:'#c8102e'}});
-  heatLayer.on('add', () => {
-    const pts = players.filter(p=>p.lat&&p.lon).map(p=>[p.lat,p.lon,0.6]);
-    heatLayer.setLatLngs(pts);
-  });
-
-  L.control.layers(baseLayers, {'🔥 Heatmapa': heatLayer}, {position:'topright', collapsed:true}).addTo(map);
+  L.control.layers(baseLayers, {}, {position:'topright', collapsed:true}).addTo(map);
   L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
 
   // Fullscreen control
@@ -987,22 +1003,32 @@ function initMap() {
   new FullscreenControl({position:'topleft'}).addTo(map);
 }
 
-function mkIcon(label, color, sz, textColor) {
+function mkIcon(label, photo, photoZoom, photoPos) {
   const multi = label !== '●';
   const n = multi ? parseInt(label) || 0 : 0;
 
   if (!multi) {
-    // Single player: blue teardrop pin with yellow dot
+    const photoStyle = photo
+      ? (photoZoom && photoZoom > 1
+          ? `transform:scale(${photoZoom});transform-origin:${photoPos||'50% 50%'};`
+          : `object-position:${photoPos||'50% 50%'};`)
+      : '';
+    const bubble = photo
+      ? `<div class="mk-photo-bubble"><img src="${photo.replace(/"/g,'&quot;')}" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}"></div>`
+      : '';
     return L.divIcon({
-      html: `<svg width="24" height="33" viewBox="0 0 24 33" style="filter:drop-shadow(0 3px 8px rgba(10,30,80,.42))">
-        <path d="M12 0C5.4 0 0 5.4 0 12C0 21 12 33 12 33C12 33 24 21 24 12C24 5.4 18.6 0 12 0Z" fill="#1c4896"/>
-        <path d="M12 1C5.9 1 1 5.9 1 12C1 20.5 12 32 12 32C12 32 23 20.5 23 12C23 5.9 18.1 1 12 1Z" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
-        <circle cx="12" cy="12" r="5.5" fill="#f5c300"/>
-      </svg>`,
+      html: `<div class="mk-wrap">
+        ${bubble}
+        <svg width="24" height="33" viewBox="0 0 24 33" style="display:block;filter:drop-shadow(0 3px 8px rgba(10,30,80,.42))">
+          <path d="M12 0C5.4 0 0 5.4 0 12C0 21 12 33 12 33C12 33 24 21 24 12C24 5.4 18.6 0 12 0Z" fill="#1c4896"/>
+          <path d="M12 1C5.9 1 1 5.9 1 12C1 20.5 12 32 12 32C12 32 23 20.5 23 12C23 5.9 18.1 1 12 1Z" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+          <circle cx="12" cy="12" r="5.5" fill="#f5c300"/>
+        </svg>
+      </div>`,
       className: '',
       iconSize: [24, 33],
       iconAnchor: [12, 33],
-      popupAnchor: [0, -34]
+      popupAnchor: [0, -44]
     });
   }
 
@@ -1197,7 +1223,7 @@ function updateMap() {
       popContent = buildCityPopup(g.ps, g.display);
     }
     const mk = L.marker([g.lat, g.lon], {
-      icon: mkIcon(multi ? String(n) : '●'),
+      icon: multi ? mkIcon(String(n)) : mkIcon('●', g.ps[0].p.photo, g.ps[0].p.photoZoom, g.ps[0].p.photoPos),
       zIndexOffset: multi ? n * 10 : 0
     }).bindPopup(popContent, {maxWidth:320, maxHeight:400}).addTo(map);
 
