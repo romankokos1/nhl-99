@@ -702,7 +702,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 /* City label floating below marker */
 .mk-city-label {
   position:absolute; pointer-events:none; z-index:1001;
-  transform:translateX(-50%);
+  transform:translateX(-50%) translateY(6px);
   font-family:'Barlow Condensed',sans-serif;
   font-size:12px;font-weight:700;letter-spacing:.04em;
   color:var(--blue3);white-space:nowrap;
@@ -710,7 +710,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   padding:2px 9px;border-radius:8px;
   box-shadow:0 2px 8px rgba(10,30,80,.15);
   border:1px solid rgba(28,72,150,.12);
-  opacity:0;transition:opacity .15s;
+  opacity:0;transition:opacity .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
 }
 /* Modal fade + scale animation */
 .ovl { display: flex; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
@@ -1320,6 +1320,7 @@ function updateMap() {
         lbl.style.left = pt.x + 'px';
         lbl.style.top = (pt.y + 8) + 'px';
         lbl.style.opacity = '1';
+        lbl.style.transform = 'translateX(-50%) translateY(0)';
       }
     });
     mk.on('mouseout', function() {
@@ -1328,7 +1329,7 @@ function updateMap() {
       icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
       const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
       if (photo) { photo.style.opacity = '0'; photo.style.transform = 'translateX(-50%) scale(.7)'; }
-      document.getElementById('mkCityLabel').style.opacity = '0';
+      const lbl2 = document.getElementById('mkCityLabel'); lbl2.style.opacity = '0'; lbl2.style.transform = 'translateX(-50%) translateY(6px)';
     });
 
     mk.on('popupopen',  function() {
@@ -1684,13 +1685,8 @@ function render() {
           <span class="pc-city">${esc(p.city||'—')}</span>
           ${meta.map(m=>`<span>${esc(m)}</span>`).join('')}
         </div>
-      </div>
-      <div class="pc-acts">
-        <button class="ib" onclick="openEdit(${i})">✏️</button>
-        <button class="ib del" onclick="del(${i})">✕</button>
       </div>`;
     el.addEventListener('click', e=>{
-      if(e.target.closest('.pc-acts')) return;
       focusPlayer(i);
     });
     list.appendChild(el);
