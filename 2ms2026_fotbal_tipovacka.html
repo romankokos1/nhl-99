@@ -14,14 +14,14 @@
   /* FIFA WC 2026 official palette */
   --hero:    #1a56f0;   /* vivid FIFA blue */
   --hero2:   #1040c8;   /* darker blue */
-  --navy:    #0d1b3e;   /* dark card bg */
-  --navy2:   #0a1530;   /* deeper navy */
+  --navy:    #112244;   /* dark card bg */
+  --navy2:   #0d1a38;   /* deeper navy */
   --surface: rgba(255,255,255,.06);
   --surface2:rgba(255,255,255,.1);
-  --bd:      rgba(255,255,255,.12);
-  --bd2:     rgba(255,255,255,.22);
+  --bd:      rgba(255,255,255,.15);
+  --bd2:     rgba(255,255,255,.28);
   --text:    #ffffff;
-  --mut:     rgba(255,255,255,.5);
+  --mut:     rgba(255,255,255,.6);
   --orange:  #ff5c28;
   --orangel: rgba(255,92,40,.15);
   --gold:    #D4AF37;
@@ -29,7 +29,7 @@
   --greenl:  rgba(0,192,96,.15);
   --red:     #e81c3c;
   --redl:    rgba(232,28,60,.15);
-  --bg:      #0a1228;
+  --bg:      #0d1632;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{font-family:'Barlow Condensed',sans-serif;background:var(--bg);color:var(--text);
@@ -528,8 +528,19 @@ body{font-family:'Barlow Condensed',sans-serif;background:var(--bg);color:var(--
 
 <!-- INTRO -->
 <div id="si" class="on">
-  <img class="intro-logo" src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo" alt="FIFA World Cup 2026" onerror="this.style.display='none';document.getElementById('intro-fb').style.display='block'">
-  <div id="intro-fb" style="display:none;font-family:'Anton',sans-serif;font-size:3rem;color:#fff;margin-bottom:10px;">🏆</div>
+  <svg class="intro-logo" viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+    <text x="60" y="55" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="56" font-weight="900" fill="white" opacity=".18" letter-spacing="-2">26</text>
+    <text x="60" y="56" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="56" font-weight="900" fill="white" opacity=".09" letter-spacing="-2">26</text>
+    <!-- Trophy cup -->
+    <g transform="translate(60,28) scale(0.72)" fill="none">
+      <path d="M-14,-28 L14,-28 L14,8 Q14,22 0,26 Q-14,22 -14,8 Z" fill="#D4AF37" opacity="0.95"/>
+      <path d="M-14,-28 Q-26,-28 -26,-18 Q-26,-6 -14,2" stroke="#D4AF37" stroke-width="4" fill="none" opacity="0.9"/>
+      <path d="M14,-28 Q26,-28 26,-18 Q26,-6 14,2" stroke="#D4AF37" stroke-width="4" fill="none" opacity="0.9"/>
+      <rect x="-6" y="26" width="12" height="6" fill="#D4AF37" opacity="0.9"/>
+      <rect x="-10" y="32" width="20" height="3" fill="#D4AF37" opacity="0.9"/>
+    </g>
+    <text x="60" y="78" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="11" font-weight="900" fill="white" opacity="0.5" letter-spacing="4">FIFA WORLD CUP</text>
+  </svg>
   <div class="intro-title">MATCH<br><em>PREDICTOR</em></div>
   <div class="intro-hosts">
     <span class="intro-host-flag">🇺🇸</span>
@@ -1227,7 +1238,7 @@ function buildTicket(){
   let h='<div class="tk-sec">🇨🇿 Zápasy ČR</div><div class="tk-games">';
   CZ_OPPS.forEach((opp,i)=>{
     const g=S.games[i],has=g.cz!==null&&g.op!==null,win=has&&g.cz>g.op,lose=has&&g.cz<g.op;
-    h+=`<div class="tg-cell"><span class="tg-date">${CZ_DATES[i]}</span><span class="tg-flag">${TM[opp].f}</span>
+    h+=`<div class="tg-cell"><span class="tg-date">${CZ_DATES[i]}</span>${flagImg(opp,'sm')}
       <span class="tg-score ${!has?'tbd':win?'win':lose?'lose':''}">${has?g.cz+':'+g.op:'?'}</span></div>`;
   });
   h+='</div>';
@@ -1493,7 +1504,7 @@ function renderAdmGroups(){
     AR.groups[gk].forEach((code,i)=>{
       const tm=TM[code];
       const r=document.createElement('div');r.className='adm-rank-item';
-      r.innerHTML=`<span class="adm-rpos">${i+1}</span><span class="adm-rflag">${tm.f}</span>
+      r.innerHTML=`<span class="adm-rpos">${i+1}</span>${flagImg(code,"xs")}
         <span class="adm-rnm">${tm.n}</span>
         <div class="adm-rbtns">
           <button class="adm-rbtn" onclick="moveAR('${gk}',${i},-1)" ${i===0?'disabled':''}>▲</button>
@@ -1512,7 +1523,7 @@ function renderAdmThirds(){
     const code=AR.groups[gk][2],tm=TM[code],sel=AR.thirds.includes(gk);
     const chip=document.createElement('div');
     chip.style.cssText=`display:flex;align-items:center;gap:6px;padding:6px 9px;border:1.5px solid ${sel?'var(--green)':'var(--bd)'};border-radius:8px;cursor:pointer;background:${sel?'var(--greenl)':'var(--surface2)'};`;
-    chip.innerHTML=`<span style="font-size:.9rem">${sel?'✅':'⬜'}</span><span>${tm.f}</span><span style="font-size:.62rem;color:var(--mut)">3${gk}</span> <span style="font-size:.68rem;font-weight:600">${tm.n}</span>`;
+    chip.innerHTML=`<span style="font-size:.9rem">${sel?'✅':'⬜'}</span>${flagImg(code,"xs")}<span style="font-size:.62rem;color:var(--mut)">3${gk}</span><span style="font-size:.68rem;font-weight:600">${tm.n}</span>`;
     chip.onclick=()=>{const idx=AR.thirds.indexOf(gk);if(idx>=0)AR.thirds.splice(idx,1);else{if(AR.thirds.length>=8){showNf('⚠ Už 8');return;}AR.thirds.push(gk);}renderAdmThirds();renderAdmBracket();};
     grid.appendChild(chip);
   });
@@ -1536,7 +1547,7 @@ function renderAdmBracket(){
         if(!code){s.className='adm-po-slot';s.innerHTML='<span class="adm-po-tbd">— čeká —</span>';}
         else{const tm=TM[code],isW=w===code,isL=w&&w!==code;
           s.className='adm-po-slot'+(isW?' win':'')+(isL?' elim':'');
-          s.innerHTML=`<div class="adm-po-bar" style="background:${tm.col}"></div><span class="adm-po-flag">${tm.f}</span><span class="adm-po-nm">${tm.n}</span><span class="adm-po-ck">✓</span>`;
+          s.innerHTML=`<div class="adm-po-bar" style="background:${tm.col}"></div>${flagImg(code,"xs")}<span class="adm-po-nm">${tm.n}</span><span class="adm-po-ck">✓</span>`;
           s.onclick=()=>setARWinner(mid,slot);}
         card.appendChild(s);
       });
@@ -1623,8 +1634,8 @@ function scoreDetail(pick,real){
     const played=rw!=null&&phaseDone;
     const pts=(played&&pw&&rw===pw)?ptsByRound[rd]:0;
     rows.push({key:'m'+mid,sec:rd,label:matchLabel(mid),
-      pickVal:pw?TM[pw].f+TM[pw].n:'—',pickCol:pw?TM[pw].col:'',
-      realVal:rw?TM[rw].f+TM[rw].n:'?',realCol:rw?TM[rw].col:'',
+      pickVal:pw?TM[pw].n:'—',pickCode:pw||'',pickCol:pw&&TM[pw]?TM[pw].col:'',
+      realVal:rw?TM[rw].n:'?',realCode:rw||'',realCol:rw&&TM[rw]?TM[rw].col:'',
       pts,max:ptsByRound[rd],played});
   });
   // Awards
@@ -1872,7 +1883,7 @@ function renderLiveView(){
     const chip=document.createElement('div');
     chip.className='lv-gchip'+(win?' win':lose?' lose':draw?' draw':'');
     chip.innerHTML=`<span class="lv-gc-date">${CZ_DATES[i]}</span>
-      <span class="lv-gc-flag">${TM[opp].f}</span>
+      ${flagImg(opp,"sm")}
       <span class="lv-gc-score ${has?(win?'win':lose?'lose':'draw'):'tbd'}">${has?r.cz+':'+r.op:'—'}</span>`;
     strip.appendChild(chip);
   });
@@ -1917,9 +1928,11 @@ function renderLiveView(){
         secRows.forEach(r=>{
           const am=row.am[r.key]||0, tot=(r.pts||0)+am;
           const cls=!r.played?'pend':tot>0?'ok':'no';
+          const pflag=r.pickCode?flagImg(r.pickCode,'xs'):'';
+          const rflag=r.realCode?flagImg(r.realCode,'xs'):'';
           detailHtml+=`<div class="lv-det-row ${cls}">
             <span class="lv-det-q">${esc(r.label)}</span>
-            <span class="lv-det-pick" ${r.pickCol?'style="color:'+r.pickCol+'"':''}>${esc(r.pickVal)}</span>
+            <span class="lv-det-pick" style="display:flex;align-items:center;gap:3px;${r.pickCol?'color:'+r.pickCol:''}">${pflag}<span>${esc(r.pickVal)}</span></span>
             <span class="lv-det-pts ${tot===0?'zero':''}">${r.played?tot:'?'}</span>
           </div>`;
         });
