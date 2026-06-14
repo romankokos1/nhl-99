@@ -93,7 +93,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .btn-add{display:inline-flex;align-items:center;gap:4px;padding:6px 13px;background:var(--blue);color:#fff;border:none;border-radius:2px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:.15s}
 .btn-add:hover{background:var(--blue2)}
 
-.players{padding:.55rem .8rem;display:flex;flex-direction:column;gap:4px;flex:1}
+.players{padding:.55rem .8rem;display:flex;flex-direction:column;gap:4px;flex:1;overflow-y:auto;overflow-x:hidden}
 .empty-msg{text-align:center;padding:2.5rem 1rem;color:#8a9ab5;font-size:14px;line-height:1.9}
 .empty-msg .ico{font-size:2.4rem;margin-bottom:.5rem;opacity:.4;display:block}
 .empty-msg strong{color:var(--blue)}
@@ -830,7 +830,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
         Použij <strong>+ Přidat</strong> pro přidání hráče.
       </div>
     </div>
-    <button class="scroll-top" id="scrollTopBtn" onclick="document.querySelector('.lp').scrollTo({top:0,behavior:'smooth'})" title="Zpět nahoru">↑</button>
+    <button class="scroll-top" id="scrollTopBtn" onclick="document.querySelector('.players').scrollTo({top:0,behavior:'smooth'})" title="Zpět nahoru">↑</button>
   </div>
   <div class="rp">
     <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
@@ -1948,7 +1948,7 @@ function setHdrHeight() {
 setHdrHeight();
 
 // Scroll to top button
-document.querySelector('.lp')?.addEventListener('scroll', function() {
+document.querySelector('.players')?.addEventListener('scroll', function() {
   const btn = document.getElementById('scrollTopBtn');
   if (btn) btn.classList.toggle('visible', this.scrollTop > 300);
 });
