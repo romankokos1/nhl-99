@@ -1305,7 +1305,14 @@ function updateMap() {
       if (photo) { photo.style.opacity = '0'; photo.style.transform = 'translateX(-50%) scale(.7)'; }
     });
 
-    mk.on('popupopen', function() { this.closeTooltip(); });
+    mk.on('popupopen',  function() {
+      const el = this.getTooltip()?.getElement();
+      if (el) el.style.display = 'none';
+    });
+    mk.on('popupclose', function() {
+      const el = this.getTooltip()?.getElement();
+      if (el) el.style.display = '';
+    });
     g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
     mlayers.push(mk);
 
