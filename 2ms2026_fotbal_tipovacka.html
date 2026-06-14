@@ -385,6 +385,96 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
 .lb-pts{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.3rem;color:var(--green);flex-shrink:0;}
 .lb-detail{border-top:1px solid var(--bd);padding:12px 14px;background:var(--surface2);}
 .no-real{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:2px;color:var(--mut);text-align:center;padding:30px;}
+
+/* ══ LIVE VIEW ══ */
+.lv-ov{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;
+  background:linear-gradient(160deg,#071f0f 0%,#0a2351 100%);}
+.lv-ov.on{display:flex;}
+.lv-hdr{padding:14px 16px 10px;flex-shrink:0;background:rgba(0,0,0,.2);border-bottom:1px solid rgba(255,255,255,.08);}
+.lv-hdr-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.lv-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.05rem;
+  letter-spacing:4px;color:#fff;text-transform:uppercase;}
+.lv-badge{display:flex;align-items:center;gap:7px;}
+.lv-pulse{width:8px;height:8px;border-radius:50%;background:#4ade80;
+  box-shadow:0 0 10px rgba(74,222,128,.8);animation:lvpulse 1.5s infinite;}
+@keyframes lvpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.85);}}
+.lv-live-lbl{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.62rem;
+  letter-spacing:4px;color:#4ade80;text-transform:uppercase;}
+.lv-ts{font-family:'Barlow Condensed',sans-serif;font-size:.52rem;letter-spacing:2px;
+  color:rgba(255,255,255,.35);margin-top:3px;}
+/* ČR strip */
+.lv-games{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;flex-shrink:0;
+  background:rgba(0,0,0,.15);border-bottom:1px solid rgba(255,255,255,.06);}
+.lv-gchip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;
+  border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);
+  flex-shrink:0;min-width:60px;}
+.lv-gchip.win{border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.08);}
+.lv-gchip.lose{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.07);}
+.lv-gchip.draw{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.07);}
+.lv-gc-date{font-family:'Barlow Condensed',sans-serif;font-size:.48rem;letter-spacing:1px;
+  color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;}
+.lv-gc-flag{font-size:1.2rem;line-height:1;}
+.lv-gc-score{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:.9rem;
+  letter-spacing:.5px;}
+.lv-gc-score.win{color:#4ade80;}.lv-gc-score.lose{color:#f87171;}.lv-gc-score.draw{color:#fbbf24;}.lv-gc-score.tbd{color:rgba(255,255,255,.25);}
+/* Body */
+.lv-body{flex:1;overflow-y:auto;padding:16px 14px 40px;}
+.lv-inner{max-width:640px;margin:0 auto;}
+.lv-sec{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.62rem;
+  letter-spacing:5px;color:rgba(255,255,255,.35);text-transform:uppercase;
+  margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06);}
+/* Leaderboard cards */
+.lv-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:13px;padding:13px 15px;margin-bottom:7px;cursor:pointer;transition:all .15s;}
+.lv-card:hover,.lv-card.open{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);}
+.lv-card.r1{border-color:rgba(184,134,11,.5);background:rgba(184,134,11,.07);}
+.lv-card.r2{border-color:rgba(180,180,180,.4);}
+.lv-card.r3{border-color:rgba(205,127,50,.4);}
+.lv-card-top{display:flex;align-items:center;gap:10px;}
+.lv-rank{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.2rem;
+  width:30px;text-align:center;flex-shrink:0;}
+.lv-rank.r1{color:#fbbf24;}.lv-rank.r2{color:#aaa;}.lv-rank.r3{color:#cd7f32;}
+.lv-rank.rN{color:rgba(255,255,255,.3);font-size:.85rem;}
+.lv-info{flex:1;min-width:0;}
+.lv-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;
+  letter-spacing:1px;color:#fff;}
+.lv-group{font-family:'Barlow Condensed',sans-serif;font-size:.52rem;letter-spacing:2px;
+  color:rgba(255,255,255,.35);text-transform:uppercase;margin-top:1px;}
+.lv-bar-bg{height:4px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:5px;overflow:hidden;}
+.lv-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),#4ade80);transition:width .5s;}
+.lv-pts{text-align:right;flex-shrink:0;}
+.lv-pts-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.5rem;color:#4ade80;}
+.lv-pts-max{font-family:'Barlow Condensed',sans-serif;font-size:.48rem;letter-spacing:1px;
+  color:rgba(255,255,255,.3);margin-top:2px;}
+/* Detail inside card */
+.lv-detail{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);}
+.lv-det-sec{font-family:'Barlow Condensed',sans-serif;font-size:.5rem;letter-spacing:4px;
+  color:rgba(255,255,255,.3);text-transform:uppercase;margin:6px 0 4px;}
+.lv-det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:3px;}
+.lv-det-row{display:flex;align-items:center;gap:5px;padding:4px 7px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:6px;border-left:2px solid rgba(255,255,255,.1);}
+.lv-det-row.ok{border-left-color:#4ade80;}
+.lv-det-row.no{opacity:.45;}
+.lv-det-row.pend{border-left-color:rgba(251,191,36,.3);}
+.lv-det-q{font-family:'Barlow Condensed',sans-serif;font-size:.46rem;color:rgba(255,255,255,.3);
+  flex-shrink:0;min-width:42px;}
+.lv-det-pick{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;
+  color:rgba(255,255,255,.8);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lv-det-pts{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:800;
+  color:#4ade80;flex-shrink:0;}
+.lv-det-pts.zero{color:rgba(255,255,255,.2);font-weight:400;}
+/* Share live button */
+.btn-share-live{width:100%;padding:12px;background:rgba(10,125,60,.15);
+  border:2px solid var(--green);border-radius:10px;color:var(--green);
+  font-family:'Barlow Condensed',sans-serif;font-size:.95rem;letter-spacing:3px;
+  font-weight:800;cursor:pointer;transition:all .2s;margin-top:6px;text-transform:uppercase;}
+.btn-share-live:hover{background:rgba(10,125,60,.3);}
+.live-url-box{background:var(--surface2);border:1.5px solid var(--green);border-radius:8px;
+  padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.6rem;
+  color:var(--green);word-break:break-all;cursor:pointer;line-height:1.6;
+  user-select:all;margin-top:8px;display:none;}
+.live-url-box.show{display:block;}
 </style>
 </head>
 <body>
@@ -542,6 +632,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
   </div>
 </div>
 
+
+<!-- LIVE VIEW OVERLAY -->
+<div class="lv-ov" id="lvOv">
+  <div class="lv-hdr">
+    <div class="lv-hdr-top">
+      <div class="lv-title">⚽ MS ve fotbale 2026</div>
+      <div class="lv-badge"><div class="lv-pulse"></div><span class="lv-live-lbl">Průběžné výsledky</span></div>
+    </div>
+    <div class="lv-ts" id="lvTs"></div>
+  </div>
+  <div class="lv-games" id="lvGames"></div>
+  <div class="lv-body">
+    <div class="lv-inner">
+      <div class="lv-sec">🏆 Průběžné pořadí</div>
+      <div id="lvLb"></div>
+    </div>
+  </div>
+</div>
+
 <!-- RESULTS OVERLAY -->
 <div class="ov" id="ovResults">
   <div class="ov-hdr">
@@ -618,7 +727,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
             <div class="adm-sec">Ocenění</div>
             <div id="admAwards"></div>
             <button class="btn-save-real" onclick="admSave()">⚡ Uložit a přepočítat</button>
+            <button class="btn-share-live" onclick="genLiveUrl()">🔗 Sdílet průběžné výsledky</button>
+            <div class="live-url-box" id="liveUrlBox" onclick="cpLiveUrl()"></div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.52rem;color:var(--mut);text-align:center;margin-top:3px;display:none;" id="liveUrlHint">↑ klikni pro zkopírování</div>
             <button class="btn-tool btn-rebuild" onclick="exportPlachta()" style="border-color:var(--red);color:var(--red);background:var(--redl);">📋 Exportovat plachtu</button>
+            <button class="btn-tool btn-rebuild" onclick="generateShareImage()" style="border-color:#C89B3C;color:#C89B3C;background:rgba(200,155,60,.08);">🖼 Generovat share obrázek (PNG)</button>
             <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);">
               <div class="adm-sec" style="margin-top:0;">🔄 Automatické načtení výsledků z API</div>
               <div style="font-family:'DM Sans',sans-serif;font-size:.68rem;color:var(--mut);margin-bottom:8px;line-height:1.5;">
@@ -1089,7 +1202,12 @@ document.getElementById('startBtn').addEventListener('click',start);
 if(!localStorage.getItem('wc2026_api_token')){
   localStorage.setItem('wc2026_api_token','21aef47a-9010-493a-b04b-f1f679695292');
 }
-if(loadUrl()){updateHeaders();renderGames();scr('sg');}
+if(tryLoadLiveUrl()){
+  document.getElementById('lvOv').classList.add('on');
+  renderLiveView();
+} else if(loadUrl()){
+  updateHeaders();renderGames();scr('sg');
+}
 </script>
 <script>
 // ══════════════════════════════
@@ -1606,6 +1724,290 @@ async function fetchFromApi(){
   }finally{
     btn.textContent='🔄 Načíst výsledky z API'; btn.disabled=false;
   }
+}
+
+// ══════════════════════════════
+// LIVE VIEW — sdílení přes URL
+// ══════════════════════════════
+function genLiveUrl(){
+  const picks=rLoadPicks(),real=rLoadReal(),adj=rLoadAdj();
+  if(!real){showNf('⚠ Nejdřív ulož výsledky');return;}
+  if(!picks.length){showNf('⚠ Žádné tipy k sdílení');return;}
+  const payload={real,picks,adj,ts:new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})};
+  const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const url=location.href.split('#')[0]+'#lv='+encoded;
+  const box=document.getElementById('liveUrlBox');
+  box.textContent=url; box.classList.add('show');
+  document.getElementById('liveUrlHint').style.display='block';
+  navigator.clipboard.writeText(url).then(()=>showNf('✓ LIVE ODKAZ ZKOPÍROVÁN!')).catch(()=>{});
+}
+function cpLiveUrl(){
+  const url=document.getElementById('liveUrlBox').textContent;
+  navigator.clipboard.writeText(url).then(()=>showNf('✓ ZKOPÍROVÁNO!')).catch(()=>{});
+}
+
+// ── Render live view ──
+let lvData=null, lvOpenIdx=null;
+
+function tryLoadLiveUrl(){
+  const h=location.hash.slice(1); if(!h) return false;
+  const q=parseHash(h); const lv=q.lv; if(!lv) return false;
+  try{ lvData=JSON.parse(decodeURIComponent(escape(atob(lv)))); return true; }
+  catch(e){ return false; }
+}
+
+function renderLiveView(){
+  if(!lvData) return;
+  const {real,picks,adj,ts}=lvData;
+  document.getElementById('lvTs').textContent='Aktualizováno: '+ts;
+
+  // ČR games strip
+  const strip=document.getElementById('lvGames'); strip.innerHTML='';
+  CZ_OPPS.forEach((opp,i)=>{
+    const r=real.games&&real.games[i];
+    const has=r&&r.cz!==null&&r.op!==null;
+    const win=has&&r.cz>r.op, lose=has&&r.cz<r.op, draw=has&&r.cz===r.op;
+    const chip=document.createElement('div');
+    chip.className='lv-gchip'+(win?' win':lose?' lose':draw?' draw':'');
+    chip.innerHTML=`<span class="lv-gc-date">${CZ_DATES[i]}</span>
+      <span class="lv-gc-flag">${TM[opp].f}</span>
+      <span class="lv-gc-score ${has?(win?'win':lose?'lose':'draw'):'tbd'}">${has?r.cz+':'+r.op:'—'}</span>`;
+    strip.appendChild(chip);
+  });
+
+  // Score all picks
+  const scored=(picks||[]).map((p,idx)=>{
+    const rows=scoreDetail(p,real);
+    const am=adj&&adj[idx]?adj[idx]:{};
+    const total=totalFromDetail(rows,am);
+    // max possible = current + all unplayed at max
+    const maxPos=rows.reduce((s,r)=>s+(r.pts||0)+(am[r.key]||0)+(!r.played?r.max:0),0);
+    return{name:p.name,group:p.group||'',total,maxPos,rows,am,idx};
+  }).sort((a,b)=>b.total-a.total);
+
+  const maxTotal=Math.max(...scored.map(s=>s.maxPos),1);
+  const medals=['🥇','🥈','🥉'];
+  const lb=document.getElementById('lvLb'); lb.innerHTML='';
+
+  scored.forEach((row,rank)=>{
+    const isOpen=lvOpenIdx===row.idx;
+    const pct=Math.round((row.total/maxTotal)*100);
+    const card=document.createElement('div');
+    card.className='lv-card'+(rank<3?' r'+(rank+1):'')+(isOpen?' open':'');
+    card.onclick=()=>{lvOpenIdx=lvOpenIdx===row.idx?null:row.idx;renderLiveView();};
+
+    let detailHtml='';
+    if(isOpen){
+      const secOrder=['games','grp','R32','R16','QF','SF','FIN','aw'];
+      const secLabels={games:'Zápasy ČR',grp:'Skupiny',R32:'16finále',R16:'Osmifinále',QF:'Čtvrtfinále',SF:'Semifinále',FIN:'Finále',aw:'Ocenění'};
+      const bySec={};row.rows.forEach(r=>{(bySec[r.sec]=bySec[r.sec]||[]).push(r);});
+      detailHtml='<div class="lv-detail">';
+      secOrder.forEach(sk=>{
+        const secRows=bySec[sk]||[];
+        if(!secRows.length) return;
+        // collapse groups to single line
+        if(sk==='grp'){
+          const gpts=secRows.reduce((s,r)=>(s+(r.pts||0)+(row.am[r.key]||0)),0);
+          detailHtml+=`<div class="lv-det-sec">${secLabels[sk]}</div><div class="lv-det-grid"><div class="lv-det-row ${gpts>0?'ok':'pend'}"><span class="lv-det-q">Body</span><span class="lv-det-pick">ze skupinové fáze</span><span class="lv-det-pts ${gpts===0?'zero':''}">${gpts}</span></div></div>`;
+          return;
+        }
+        detailHtml+=`<div class="lv-det-sec">${secLabels[sk]}</div><div class="lv-det-grid">`;
+        secRows.forEach(r=>{
+          const am=row.am[r.key]||0, tot=(r.pts||0)+am;
+          const cls=!r.played?'pend':tot>0?'ok':'no';
+          detailHtml+=`<div class="lv-det-row ${cls}">
+            <span class="lv-det-q">${esc(r.label)}</span>
+            <span class="lv-det-pick" ${r.pickCol?'style="color:'+r.pickCol+'"':''}>${esc(r.pickVal)}</span>
+            <span class="lv-det-pts ${tot===0?'zero':''}">${r.played?tot:'?'}</span>
+          </div>`;
+        });
+        detailHtml+='</div>';
+      });
+      detailHtml+='</div>';
+    }
+
+    card.innerHTML=`<div class="lv-card-top">
+      <div class="lv-rank ${rank<3?'r'+(rank+1):'rN'}">${rank<3?medals[rank]:(rank+1)+'.'}</div>
+      <div class="lv-info">
+        <div class="lv-name">${esc(row.name)}</div>
+        ${row.group?`<div class="lv-group">${esc(row.group)}</div>`:''}
+        <div class="lv-bar-bg"><div class="lv-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="lv-pts">
+        <div class="lv-pts-num">${row.total}</div>
+        <div class="lv-pts-max">max ${row.maxPos}</div>
+      </div>
+    </div>${detailHtml}`;
+    lb.appendChild(card);
+  });
+}
+
+// ══════════════════════════════
+// SHARE IMAGE GENERATOR (PNG)
+// ══════════════════════════════
+function generateShareImage(){
+  const picks=rLoadPicks(), real=rLoadReal(), adj=rLoadAdj();
+  if(!real){showNf('⚠ Nejdřív ulož výsledky');return;}
+  if(!picks.length){showNf('⚠ Žádné tipy');return;}
+
+  // Score & sort
+  const scored=picks.map((p,i)=>{
+    const rows=scoreDetail(p,real);const am=adj[i]||{};
+    const total=totalFromDetail(rows,am);
+    const maxPos=rows.reduce((s,r)=>s+(r.pts||0)+(am[r.key]||0)+(!r.played?r.max:0),0);
+    return{name:p.name,group:p.group||'',total,maxPos};
+  }).sort((a,b)=>b.total-a.total);
+  const maxTotal=Math.max(...scored.map(s=>s.maxPos),1);
+
+  const S=1080, cv=document.createElement('canvas');
+  cv.width=S; cv.height=S;
+  const cx=cv.getContext('2d');
+
+  // ── BG ──
+  cx.fillStyle='#001233'; cx.fillRect(0,0,S,S);
+  // subtle radial glow top
+  const g=cx.createRadialGradient(540,-100,0,540,-100,700);
+  g.addColorStop(0,'rgba(10,125,60,.18)'); g.addColorStop(1,'transparent');
+  cx.fillStyle=g; cx.fillRect(0,0,S,S);
+
+  // ── CORNER ACCENTS ──
+  cx.fillStyle='#C89B3C';
+  [[0,0,80,3],[0,0,3,80],[S-80,0,80,3],[S-3,0,3,80],
+   [0,S-3,80,3],[0,S-80,3,80],[S-80,S-3,80,3],[S-3,S-80,3,80]]
+  .forEach(([x,y,w,h])=>{cx.fillRect(x,y,w,h);});
+
+  // ── HEADER ──
+  cx.font='bold 22px Arial';
+  cx.fillStyle='#C89B3C'; cx.letterSpacing='12px';
+  cx.textAlign='center'; cx.fillText('MS VE FOTBALE 2026',540,52);
+  cx.letterSpacing='0px';
+  cx.font='52px Arial'; cx.fillText('⚽',540,108);
+
+  // divider
+  cx.strokeStyle='rgba(200,155,60,.4)'; cx.lineWidth=1;
+  cx.beginPath(); cx.moveTo(80,130); cx.lineTo(1000,130); cx.stroke();
+
+  // sec label
+  cx.font='bold 13px Arial'; cx.letterSpacing='8px';
+  cx.fillStyle='rgba(200,155,60,.7)'; cx.textAlign='left';
+  cx.fillText('PRŮBĚŽNÉ POŘADÍ',80,158); cx.letterSpacing='0px';
+  cx.font='13px Arial'; cx.fillStyle='#4a6fa5'; cx.textAlign='right';
+  cx.fillText(new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),1000,158);
+
+  // ── ROWS ──
+  const medals=['🥇','🥈','🥉'];
+  const rankColors=['#C89B3C','#9ca3af','#cd7f32'];
+  const barColors=['#4ade80','#60a5fa','#60a5fa'];
+  const rowY0=175, rowH=82, rowGap=6;
+  const maxRows=Math.min(scored.length,7);
+
+  scored.slice(0,maxRows).forEach((row,i)=>{
+    const y=rowY0+i*(rowH+rowGap);
+    const isTop=i<3;
+
+    // card bg
+    cx.fillStyle=i===0?'rgba(74,222,128,.07)':'rgba(255,255,255,.035)';
+    roundRect(cx,80,y,920,rowH,12);
+
+    // left accent bar
+    cx.fillStyle=i<3?rankColors[i]:'rgba(255,255,255,.15)';
+    cx.fillRect(80,y,4,rowH);
+
+    // rank
+    cx.font=`bold 13px Arial`; cx.letterSpacing='4px';
+    cx.fillStyle=i<3?rankColors[i]:'rgba(255,255,255,.3)'; cx.textAlign='left';
+    cx.fillText(i<3?medals[i]:(i+1)+'.',108,y+42); cx.letterSpacing='0px';
+
+    // name
+    cx.font=`bold ${isTop?24:20}px Arial`;
+    cx.fillStyle=isTop?'#ffffff':'#94a3b8'; cx.textAlign='left';
+    cx.fillText(row.name,175,y+40);
+    // group
+    if(row.group){
+      cx.font='12px Arial'; cx.fillStyle='rgba(74,166,133,.6)';
+      cx.fillText(row.group.toUpperCase(),175,y+60);
+    }
+
+    // pts
+    cx.font=`bold ${isTop?36:28}px Arial`;
+    cx.fillStyle=i===0?'#C89B3C':isTop?'#e2e8f0':'#94a3b8'; cx.textAlign='right';
+    cx.fillText(row.total,980,y+46);
+    cx.font='11px Arial'; cx.fillStyle='#4a6fa5';
+    cx.fillText('max '+row.maxPos,980,y+64);
+
+    // progress bar
+    const bx=175, bw=600, by=y+rowH-14, bh=4;
+    cx.fillStyle='rgba(255,255,255,.08)'; roundRect(cx,bx,by,bw,bh,2);
+    const fill=Math.round((row.total/maxTotal)*bw);
+    cx.fillStyle=i<3?barColors[i]:'rgba(255,255,255,.18)'; roundRect(cx,bx,by,fill,bh,2);
+  });
+
+  const afterRows=rowY0+maxRows*(rowH+rowGap)+20;
+
+  // ── DIVIDER ──
+  cx.strokeStyle='rgba(30,58,95,1)'; cx.lineWidth=1;
+  cx.beginPath(); cx.moveTo(80,afterRows); cx.lineTo(1000,afterRows); cx.stroke();
+
+  // ── ČR GAMES ──
+  const gsecY=afterRows+14;
+  cx.font='bold 12px Arial'; cx.letterSpacing='7px';
+  cx.fillStyle='rgba(200,155,60,.65)'; cx.textAlign='left';
+  cx.fillText('ZÁPASY ČESKA',80,gsecY+14); cx.letterSpacing='0px';
+
+  const chipW=270, chipH=110, chipGap=20;
+  const chipY=gsecY+28;
+  const chipX=[80,80+chipW+chipGap,80+(chipW+chipGap)*2];
+  const czOpps=['KOR','RSA','MEX'], czFlags=['🇰🇷','🇿🇦','🇲🇽'];
+  const czDates=['11.6.','18.6.','24.6.'];
+
+  czOpps.forEach((opp,i)=>{
+    const r=real.games&&real.games[i];
+    const has=r&&r.cz!==null&&r.op!==null;
+    const win=has&&r.cz>r.op, lose=has&&r.cz<r.op, draw=has&&r.cz===r.op;
+    const accentCol=win?'#4ade80':lose?'#f87171':draw?'#fbbf24':'rgba(255,255,255,.15)';
+    const bgCol=win?'rgba(10,31,10,.9)':lose?'rgba(31,10,10,.7)':'rgba(255,255,255,.04)';
+
+    cx.fillStyle=bgCol; roundRect(cx,chipX[i],chipY,chipW,chipH,12);
+    // top accent
+    cx.fillStyle=accentCol; roundRect(cx,chipX[i],chipY,chipW,3,2);
+
+    cx.font='bold 11px Arial'; cx.letterSpacing='3px';
+    cx.fillStyle=has?accentCol:'rgba(255,255,255,.25)'; cx.textAlign='center';
+    const statusTxt=win?'VÝHRA':lose?'PROHRA':draw?'REMÍZA':'ČEKÁ';
+    cx.fillText(czDates[i]+' — '+statusTxt,chipX[i]+chipW/2,chipY+24); cx.letterSpacing='0px';
+
+    cx.font='28px Arial'; cx.fillText('🇨🇿 '+czFlags[i],chipX[i]+chipW/2,chipY+62);
+    cx.font='bold '+(has?30:22)+'px Arial';
+    cx.fillStyle=has?'#ffffff':'rgba(255,255,255,.2)';
+    cx.fillText(has?r.cz+' : '+r.op:'? : ?',chipX[i]+chipW/2,chipY+92);
+  });
+
+  // ── FOOTER ──
+  const footY=chipY+chipH+28;
+  cx.strokeStyle='rgba(30,58,95,1)'; cx.lineWidth=1;
+  cx.beginPath(); cx.moveTo(80,footY); cx.lineTo(1000,footY); cx.stroke();
+  cx.font='11px Arial'; cx.letterSpacing='4px';
+  cx.fillStyle='rgba(255,255,255,.15)'; cx.textAlign='center';
+  cx.fillText('TIPOVAČKA · ROMANKOKOS1.GITHUB.IO',540,footY+30); cx.letterSpacing='0px';
+  cx.font='26px Arial'; cx.fillText('🇺🇸  🇨🇦  🇲🇽',540,footY+65);
+
+  // ── DOWNLOAD ──
+  cv.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='ms2026_fotbal_standings.png';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    showNf('✓ OBRÁZEK STAŽEN!');
+  },'image/png');
+}
+
+function roundRect(cx,x,y,w,h,r){
+  cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);
+  cx.arcTo(x+w,y,x+w,y+r,r);cx.lineTo(x+w,y+h-r);
+  cx.arcTo(x+w,y+h,x+w-r,y+h,r);cx.lineTo(x+r,y+h);
+  cx.arcTo(x,y+h,x,y+h-r,r);cx.lineTo(x,y+r);
+  cx.arcTo(x,y,x+r,y,r);cx.closePath();cx.fill();
 }
 
 // ══════════════════════════════
