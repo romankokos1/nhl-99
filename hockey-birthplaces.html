@@ -1273,9 +1273,22 @@ function updateMap() {
     const el = mk.getElement();
     if (el) { el.style.animationDelay = `${markerIdx * 25}ms`; el.classList.add('mk-anim'); }
 
-    // hover events — reliable alternative to CSS :hover
-    mk.on('mouseover', function() { this.getElement()?.classList.add('mk-hovered'); });
-    mk.on('mouseout',  function() { this.getElement()?.classList.remove('mk-hovered'); });
+    // Reliable hover — direct JS manipulation of inner SVG + mk-hovered class for photos
+    const scale = multi ? 1.12 : 1.22;
+    mk.on('mouseover', function() {
+      const icon = this.getElement(); if (!icon) return;
+      icon.classList.add('mk-hovered');
+      icon.querySelectorAll('svg').forEach(s => {
+        s.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
+        s.style.transformOrigin = 'center bottom';
+        s.style.transform = `scale(${scale})`;
+      });
+    });
+    mk.on('mouseout', function() {
+      const icon = this.getElement(); if (!icon) return;
+      icon.classList.remove('mk-hovered');
+      icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
+    });
 
     // store marker reference for each player in this group
     g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
