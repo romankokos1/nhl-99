@@ -646,6 +646,9 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   to   { opacity: 1; filter: blur(0)   brightness(1); }
 }
 .mk-anim { animation: mkPop .35s ease both; }
+/* Marker hover */
+.leaflet-marker-icon { transition: transform .15s cubic-bezier(.34,1.56,.64,1); transform-origin: center bottom; cursor: pointer; }
+.leaflet-marker-icon:hover { transform: scale(1.2); }
 @keyframes mkPulse {
   0%   { transform: scale(1);   opacity: .6; }
   100% { transform: scale(2.4); opacity: 0;  }
