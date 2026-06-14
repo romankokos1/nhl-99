@@ -1357,7 +1357,7 @@ function updateMap() {
           ? `transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`
           : `object-position:${p.photoPos||'50% 50%'};`;
         return p.photo
-          ? `<div class="mk-strip-av"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`
+          ? `<div class="mk-strip-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`
           : `<div class="mk-strip-av">${ini}</div>`;
       }).join('');
       const restHtml = rest > 0 ? `<div class="mk-strip-av" style="background:#0f2f6a;color:#f5c300;font-size:9px">+${rest}</div>` : '';
@@ -1668,7 +1668,7 @@ function render() {
   sorted.forEach(({p,i})=>{
     const nm=fullName(p)||p.city;
     const thumb=p.photo
-      ?`<img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'">`
+      ?`<img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'">`
       :(p.surname||p.firstname)?initials(p):'🏒';
     const meta=[
       p.born?'🎂 '+p.born:'',
@@ -1755,7 +1755,7 @@ function buildSinglePopup(p, idx, cityDisplay) {
   const nm = fullName(p) || p.city;
   const ini = [p.firstname,p.surname].filter(Boolean).map(s=>s[0].toUpperCase()).join('').slice(0,2)||'?';
   const thumb = p.photo
-    ? `<div class="pop-thumb"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'"></div>`
+    ? `<div class="pop-thumb"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'"></div>`
     : `<div class="pop-thumb-ph">${ini}</div>`;
   const meta = [p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
   const display = cityDisplay || p.city || '';
@@ -1882,7 +1882,7 @@ function showPlayerDetail(idx) {
   const nm = fullName(p) || p.city;
   const ini = initials(p);
   const thumb = p.photo
-    ? `<div class="detail-photo" style="overflow:hidden;flex-shrink:0"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.parentElement.outerHTML='<div class=detail-photo-ph>${ini}</div>'"></div>`
+    ? `<div class="detail-photo" style="overflow:hidden;flex-shrink:0"><img src="${escA(p.photo)}" loading="eager" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.parentElement.outerHTML='<div class=detail-photo-ph>${ini}</div>'"></div>`
     : `<div class="detail-photo-ph">${ini}</div>`;
 
   const bornVal = [p.born ? esc(p.born) : null, p.city ? `<span style="color:#8a9ab5;font-size:13px;font-weight:400">(${esc(p.city)})</span>` : null].filter(Boolean).join(' ');
@@ -2285,7 +2285,7 @@ function onMobSearch(q) {
   el.innerHTML = res.length ? res.map(({p,i})=>{
     const ini = initials(p);
     const th = p.photo
-      ? `<img class="mob-sr-thumb" src="${escA(p.photo)}" onerror="this.outerHTML='<div class=mob-sr-ini>${ini}</div>'">`
+      ? `<img class="mob-sr-thumb" src="${escA(p.photo)}" loading="lazy" onerror="this.outerHTML='<div class=mob-sr-ini>${ini}</div>'">`
       : `<div class="mob-sr-ini">${ini}</div>`;
     return `<div class="mob-sr-row" onclick="closeMobSearch();focusPlayer(${i})">
       ${th}
