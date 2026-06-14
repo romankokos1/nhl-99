@@ -930,8 +930,8 @@ function initMap() {
   map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.05,14.45],9);
   const baseLayers = {
     '🗺 OpenStreetMap':      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}),
-    '⬜ Positron (světlý)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}),
-    '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}),
+    '⬜ Positron (světlý)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19,detectRetina:true}),
+    '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,detectRetina:true}),
   };
   baseLayers['🌍 Voyager (barevný)'].addTo(map);
   L.control.layers(baseLayers, {}, {position:'topright', collapsed:true}).addTo(map);
