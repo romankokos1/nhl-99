@@ -33,8 +33,6 @@
 <link rel="icon" type="image/svg+xml" href="https://hcmotor.cz/img/logo-var-1.svg">
 <link rel="shortcut icon" href="https://hcmotor.cz/img/logo-var-1.svg">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -879,13 +877,12 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
 <script>
 // ══════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════
 let players = [];
-let map, mcg = null, playerMarkers = [];
+let map, mlayers = [], playerMarkers = [];
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
 const STORAGE_KEY = 'hockey_v7';
@@ -1121,7 +1118,7 @@ function updateSliderUI() {
 }
 
 function updateMap() {
-  if (mcg) { map.removeLayer(mcg); mcg = null; }
+  mlayers.forEach(l=>map.removeLayer(l)); mlayers=[];
   playerMarkers = [];
   const fp = document.getElementById('filterPanel');
 
@@ -1132,46 +1129,42 @@ function updateMap() {
   const visible = getFilteredPlayers().filter(p=>p.lat&&p.lon);
   if (!visible.length) { updateStats(); return; }
 
-  mcg = L.markerClusterGroup({
-    maxClusterRadius: 50,
-    spiderfyOnMaxZoom: true,
-    showCoverageOnHover: false,
-    zoomToBoundsOnClick: false,
-    animate: true,
-    animateAddingMarkers: false,
-    iconCreateFunction: cluster => mkClusterIcon(cluster.getChildCount())
-  });
-
+  const groups = {};
   visible.forEach(p => {
+    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    if (!groups[key]) groups[key] = {lat:p.lat, lon:p.lon, display:p.city, ps:[]};
     const idx = players.indexOf(p);
-    const mk = L.marker([p.lat, p.lon], { icon: mkIcon('●') });
-    mk._playerIdx = idx;
-    mk.bindPopup(buildSinglePopup(p, idx, p.city), {maxWidth:320, maxHeight:400});
-    playerMarkers[idx] = mk;
-    mcg.addLayer(mk);
+    groups[key].ps.push({p, idx});
+    playerMarkers[idx] = null; // will be set below
   });
 
-  // Cluster click — same location → city popup, different → zoom
-  mcg.on('clusterclick', function(e) {
-    const children = e.layer.getAllChildMarkers();
-    const k0 = Math.round(children[0].getLatLng().lat*200)+','+Math.round(children[0].getLatLng().lng*200);
-    const sameLocation = children.every(m =>
-      (Math.round(m.getLatLng().lat*200)+','+Math.round(m.getLatLng().lng*200)) === k0
-    );
-    if (sameLocation) {
-      const list = children.map(m => ({ p: players[m._playerIdx], idx: m._playerIdx })).filter(x=>x.p);
-      const city = list[0]?.p?.city || '';
-      L.popup({maxWidth:320, maxHeight:400})
-        .setLatLng(e.layer.getLatLng())
-        .setContent(buildCityPopup(list, city))
-        .openOn(map);
+  Object.values(groups).forEach((g, markerIdx) => {
+    const n = g.ps.length, multi = n > 1;
+    let popContent;
+    if (!multi) {
+      const {p, idx} = g.ps[0];
+      popContent = buildSinglePopup(p, idx, g.display);
     } else {
-      e.layer.zoomToBounds({padding:[30,30]});
+      popContent = buildCityPopup(g.ps, g.display);
     }
+    const mk = L.marker([g.lat, g.lon], {
+      icon: mkIcon(multi ? String(n) : '●'),
+      zIndexOffset: multi ? n * 10 : 0
+    }).bindPopup(popContent, {maxWidth:320, maxHeight:400}).addTo(map);
+
+    // stagger animation
+    const el = mk.getElement();
+    if (el) { el.style.animationDelay = `${markerIdx * 25}ms`; el.classList.add('mk-anim'); }
+
+    // store marker reference for each player in this group
+    g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
+    mlayers.push(mk);
   });
 
-  map.addLayer(mcg);
-  if (visible.length === 1) map.setView([visible[0].lat, visible[0].lon], 10);
+  if (Object.keys(groups).length === 1) {
+    const g = Object.values(groups)[0];
+    map.setView([g.lat, g.lon], 10);
+  }
   updateStats();
 }
 
@@ -1616,17 +1609,15 @@ function focusPlayer(idx) {
   const card = document.querySelector(`.pc[data-idx="${idx}"]`);
   if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 
-  const marker = playerMarkers[idx];
-  if (!marker || !mcg) return;
-
   const delay = isMobile ? 400 : 0;
   setTimeout(() => {
-    mcg.zoomToShowLayer(marker, () => {
+    map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
+    setTimeout(() => {
       L.popup({maxWidth:320, maxHeight:400})
         .setLatLng([p.lat, p.lon])
         .setContent(buildSinglePopup(p, idx, p.city))
         .openOn(map);
-    });
+    }, 900);
   }, delay);
 }
 
