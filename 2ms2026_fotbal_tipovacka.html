@@ -1553,7 +1553,10 @@ async function fetchFromApi(){
       if(gamesRes.status===401){apiStatus('⚠ Neplatný token (401 Unauthorized)',false);return;}
       throw new Error('HTTP '+gamesRes.status);
     }
-    const games=await gamesRes.json();
+    const gamesRaw=await gamesRes.json();
+    // API may wrap array in {data:[...]}, {matches:[...]}, {games:[...]} or return array directly
+    const games=Array.isArray(gamesRaw)?gamesRaw:(gamesRaw.data||gamesRaw.matches||gamesRaw.games||gamesRaw.results||Object.values(gamesRaw).find(v=>Array.isArray(v))||[]);
+    if(!games.length){apiStatus('⚠ API nevrátilo žádné zápasy — raw: '+JSON.stringify(gamesRaw).slice(0,100),false);return;}
 
     // Fill CZE game scores
     let czeFilled=0;
@@ -1571,7 +1574,8 @@ async function fetchFromApi(){
     apiStatus('Načítám skupiny…',null);
     const grpsRes=await fetch(API_BASE+'/get/groups',{headers});
     if(!grpsRes.ok) throw new Error('groups HTTP '+grpsRes.status);
-    const grpsRaw=await grpsRes.json();
+    const grpsRaw2=await grpsRes.json();
+    const grpsRaw=Array.isArray(grpsRaw2)?grpsRaw2:(grpsRaw2.data||grpsRaw2.groups||grpsRaw2.results||Object.values(grpsRaw2).find(v=>Array.isArray(v))||[]);
 
     // Map to our group structure
     let grpsFilled=0;
