@@ -1575,27 +1575,39 @@ async function fetchFromApi(){
     const grpsRes=await fetch(API_BASE+'/get/groups',{headers});
     if(!grpsRes.ok) throw new Error('groups HTTP '+grpsRes.status);
     const grpsRaw2=await grpsRes.json();
+    // Show raw response in alert so we can see the structure
+    alert('[WC API] /get/groups odpověď:\n'+JSON.stringify(grpsRaw2).slice(0,500));
     const grpsRaw=Array.isArray(grpsRaw2)?grpsRaw2:(grpsRaw2.data||grpsRaw2.groups||grpsRaw2.results||Object.values(grpsRaw2).find(v=>Array.isArray(v))||[]);
-    // Debug: show first group raw structure
-    apiStatus('Debug skupiny: '+JSON.stringify(grpsRaw[0]||grpsRaw2).slice(0,200),null);
 
     // Map to our group structure
     let grpsFilled=0;
     GROUP_KEYS.forEach(gk=>{
-      const grpData=grpsRaw.find(x=>x.group===gk);
-      if(!grpData||!grpData.teams)return;
-      // Sort by pts desc, then gd desc, then gf desc
-      const sorted=[...grpData.teams].sort((a,b)=>{
-        const ptsDiff=parseInt(b.pts)-parseInt(a.pts);
+      // Try different field names for group identifier
+      const grpData=grpsRaw.find(x=>
+        x.group===gk || x.name===gk || x.group_name===gk ||
+        x.group===gk.toLowerCase() || x.name===('Group '+gk)
+      );
+      if(!grpData){console.log('[WC API] group not found:',gk);return;}
+      // Try different field names for teams array
+      const teamsArr=grpData.teams||grpData.standings||grpData.table||[];
+      if(!teamsArr.length){console.log('[WC API] no teams for group',gk,grpData);return;}
+      console.log('[WC API] group',gk,'teams[0]:', JSON.stringify(teamsArr[0]));
+      // Sort: pts desc → gd desc → gf desc
+      const sorted=[...teamsArr].sort((a,b)=>{
+        const ptsDiff=parseInt(b.pts||0)-parseInt(a.pts||0);
         if(ptsDiff!==0)return ptsDiff;
-        const gdDiff=parseInt(b.gd)-parseInt(a.gd);
+        const gdDiff=parseInt(b.gd||0)-parseInt(a.gd||0);
         if(gdDiff!==0)return gdDiff;
-        return parseInt(b.gf)-parseInt(a.gf);
+        return parseInt(b.gf||0)-parseInt(a.gf||0);
       });
-      // Only update if at least one team has played
-      if(sorted.some(t=>parseInt(t.mp)>0)){
-        const codes=sorted.map(t=>API_TM[String(t.team_id)]).filter(Boolean);
+      // Update only if at least one game played
+      const mp=sorted.reduce((s,t)=>s+parseInt(t.mp||t.played||0),0);
+      if(mp>0){
+        const codes=sorted.map(t=>API_TM[String(t.team_id||t.teamId||t.id)]).filter(Boolean);
+        console.log('[WC API] group',gk,'sorted codes:',codes,'mp total:',mp);
         if(codes.length===4){AR.groups[gk]=codes;grpsFilled++;}
+      } else {
+        console.log('[WC API] group',gk,'no games played yet, mp=',mp);
       }
     });
 
