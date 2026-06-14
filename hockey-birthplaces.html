@@ -1305,7 +1305,7 @@ function updateMap() {
       if (photo) { photo.style.opacity = '0'; photo.style.transform = 'translateX(-50%) scale(.7)'; }
     });
 
-    // store marker reference for each player in this group
+    mk.on('popupopen', function() { this.closeTooltip(); });
     g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
     mlayers.push(mk);
 
@@ -1313,8 +1313,9 @@ function updateMap() {
     if (multi) {
       const h = n >= 100 ? 36 : n >= 10 ? 30 : 26;
       const ptr = 7;
-      const withPh = g.ps.filter(({p}) => p.photo);
-      const items  = (withPh.length ? withPh : g.ps).slice(0, 3);
+      const shuffled = [...g.ps].sort(() => Math.random() - 0.5);
+      const withPh = shuffled.filter(({p}) => p.photo);
+      const items  = (withPh.length ? withPh : shuffled).slice(0, 3);
       const rest   = n - items.length;
       const avHtml = items.map(({p}) => {
         const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
@@ -1861,7 +1862,7 @@ function showPlayerDetail(idx) {
   else if (p.seasons) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`, true]);
   if (p.lat && p.lon) {
     const dist = haversineKm(48.9764, 14.4742, p.lat, p.lon);
-    items.push(['Vzdálenost od ČB', dist < 5 ? 'České Budějovice' : `${dist} km`, false]);
+    items.push(['Vzdálenost od ČB', dist < 5 ? 'České Budějovice' : `${dist} km`, true]);
   }
 
   const gridHtml = items.map(([lbl, val, full]) =>
@@ -2134,7 +2135,11 @@ function renderStats(ids) {
   function parseSR(r){if(!r)return 0;const m=r.match(/(\d{4})[–\-](\d{2,4})/);if(!m)return 0;const y1=parseInt(m[1]);const s=m[2];const y2=s.length<=2?Math.floor(y1/100)*100+parseInt(s):parseInt(s);return(y2<y1?y2+100:y2)-y1;}
   const topSeason   = [...players].filter(p=>p.seasons).sort((a,b)=>Number(b.seasons)-Number(a.seasons))[0];
   const longestRange= [...players].filter(p=>p.seasonsRange).sort((a,b)=>parseSR(b.seasonsRange)-parseSR(a.seasonsRange))[0];
-  // Records — just top scorer
+  // Records — top scorer + farthest from ČB
+  const farthest = [...players].filter(p=>p.lat&&p.lon)
+    .sort((a,b)=>haversineKm(48.9764,14.4742,b.lat,b.lon)-haversineKm(48.9764,14.4742,a.lat,a.lon))[0];
+  const farthestDist = farthest ? haversineKm(48.9764,14.4742,farthest.lat,farthest.lon) : 0;
+
   if (ids.records) document.getElementById(ids.records).innerHTML = `
     <div class="msp-rec">
       <span class="msp-rec-ico">🏒</span>
@@ -2143,6 +2148,14 @@ function renderStats(ids) {
         <span class="msp-rec-name">${topSeason?esc(fullName(topSeason)||topSeason.city):'—'}</span>
       </div>
       <span class="msp-rec-val">${topSeason?topSeason.seasons+' sez.':'—'}</span>
+    </div>
+    <div class="msp-rec">
+      <span class="msp-rec-ico">🌍</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejdál od ČB</span>
+        <span class="msp-rec-name">${farthest?esc(fullName(farthest)):'—'}${farthest?.city?` <span style="color:#8a9ab5;font-size:11px;font-weight:400">(${esc(farthest.city)})</span>`:''}</span>
+      </div>
+      <span class="msp-rec-val">${farthestDist?farthestDist+' km':'—'}</span>
     </div>`;
 
   // Captains section
