@@ -310,10 +310,12 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .msp-name-val{font-size:12px;font-weight:500;color:var(--blue3);line-height:1.35}
 .msp-name-row.current .msp-name-val{font-weight:700;color:var(--blue)}
 /* Captains grid */
-.msp-captain-grid{display:grid;grid-template-columns:1fr 1fr;gap:.2rem .5rem}
-.msp-cap-row{display:flex;align-items:baseline;gap:.6rem;padding:.3rem .5rem;border-radius:7px;transition:background .12s}
+.msp-captain-grid{column-count:2;column-gap:.75rem}
+.msp-cap-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-radius:7px;transition:background .12s;break-inside:avoid}
 .msp-cap-row:hover{background:rgba(28,72,150,.06)}
-.msp-cap-years{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--blue);width:82px;flex-shrink:0}
+.msp-cap-years{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--blue);width:68px;flex-shrink:0}
+.msp-cap-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid #d4dcea;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:800;color:var(--yellow)}
+.msp-cap-av img{width:100%;height:100%;object-fit:cover;display:block}
 .msp-cap-name{font-size:12px;font-weight:500;color:var(--blue3)}
 /* Captain badge */
 .detail-captain-badge{
@@ -2162,7 +2164,12 @@ function renderStats(ids) {
 
   // Captains
   const captains=players.filter(p=>p.captainYears).map(p=>{const m=(p.captainYears||'').match(/\d{4}/);return{p,startYear:m?parseInt(m[0]):9999};}).sort((a,b)=>a.startYear-b.startYear);
-  if (ids.captains&&captains.length) document.getElementById(ids.captains).innerHTML=`<div class="msp-captain-grid">${captains.map(({p})=>`<div class="msp-cap-row"><span class="msp-cap-years">${esc(p.captainYears)}</span><span class="msp-cap-name">${esc(fullName(p))}</span></div>`).join('')}</div>`;
+  if (ids.captains&&captains.length) document.getElementById(ids.captains).innerHTML=`<div class="msp-captain-grid">${captains.map(({p})=>{
+    const ini=[(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+    const photoStyle=p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`:`object-position:${p.photoPos||'50% 50%'};`;
+    const av=p.photo?`<div class="msp-cap-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`:`<div class="msp-cap-av">${ini}</div>`;
+    return `<div class="msp-cap-row">${av}<span class="msp-cap-years">${esc(p.captainYears)}</span><span class="msp-cap-name">${esc(fullName(p))}</span></div>`;
+  }).join('')}</div>`;
 }
 
 function renderMobStats() {
