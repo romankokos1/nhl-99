@@ -33,6 +33,8 @@
 <link rel="icon" type="image/svg+xml" href="https://hcmotor.cz/img/logo-var-1.svg">
 <link rel="shortcut icon" href="https://hcmotor.cz/img/logo-var-1.svg">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -877,12 +879,13 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
 <script>
 // ══════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════
 let players = [];
-let map, mlayers = [];
+let map, mcg = null, playerMarkers = [];
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
 const STORAGE_KEY = 'hockey_v7';
@@ -996,8 +999,36 @@ function mkIcon(label, color, sz, textColor) {
   });
 }
 
-// ══════════════════════════════════════════════════
-// FILTER STATE
+// Cluster icon — same visual style as multi-player badge
+function mkClusterIcon(n) {
+  const big = n >= 100, med = n >= 10;
+  const digits = String(n).length;
+  const w = big ? (digits >= 3 ? 52 : 44) : med ? 40 : 32;
+  const h = big ? 36 : med ? 30 : 26;
+  const fs = big ? 15 : med ? 14 : 13;
+  const ptr = 7;
+  const pulse = n >= 50;
+  const pulseHtml = pulse ? `<div style="position:absolute;inset:-8px;border-radius:50%;background:rgba(245,195,0,.25);animation:mkPulse 2s ease-out infinite;pointer-events:none"></div>` : '';
+  return L.divIcon({
+    html: `<div style="position:relative;width:${w}px;height:${h+ptr}px">
+      ${pulseHtml}
+      <svg width="${w}" height="${h+ptr}" viewBox="0 0 ${w} ${h+ptr}"
+        style="position:relative;filter:drop-shadow(0 ${big?5:3}px ${big?14:8}px rgba(10,30,80,${big?.50:.38}))">
+        <rect x="0" y="0" width="${w}" height="${h}" rx="${h/2}"
+          fill="#f5c300" stroke="${big?'#c89000':'#d4a800'}" stroke-width="${big?1.5:1}"/>
+        ${big?`<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="${(h-4)/2}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>`:''}
+        <text x="${w/2}" y="${h*0.70}" text-anchor="middle"
+          font-size="${fs}" font-weight="800" fill="#0f2f6a"
+          font-family="Barlow Condensed,sans-serif" letter-spacing="-0.3">${n}</text>
+        <polygon points="${w/2-6},${h} ${w/2+6},${h} ${w/2},${h+ptr}" fill="#f5c300"/>
+      </svg>
+    </div>`,
+    className: '',
+    iconSize: [w, h+ptr],
+    iconAnchor: [w/2, h+ptr],
+    popupAnchor: [0, -(h+ptr+4)]
+  });
+}
 // ══════════════════════════════════════════════════
 let filterMode = 'off';   // 'off' | 'born' | 'seasons'
 let filterMin  = 0;
@@ -1090,53 +1121,57 @@ function updateSliderUI() {
 }
 
 function updateMap() {
-  mlayers.forEach(l=>map.removeLayer(l)); mlayers=[];
+  if (mcg) { map.removeLayer(mcg); mcg = null; }
+  playerMarkers = [];
   const fp = document.getElementById('filterPanel');
 
   const allResolved = players.filter(p=>p.lat&&p.lon);
   fp.style.display = allResolved.length ? 'block' : 'none';
-  if (!allResolved.length) return;
+  if (!allResolved.length) { updateStats(); return; }
 
   const visible = getFilteredPlayers().filter(p=>p.lat&&p.lon);
   if (!visible.length) { updateStats(); return; }
 
-  const groups={};
-  visible.forEach(p=>{
-    const key=Math.round(p.lat*200)+','+Math.round(p.lon*200);
-    if (!groups[key]) groups[key]={lat:p.lat,lon:p.lon,display:p.display||p.city,ps:[]};
-    const idx=players.indexOf(p);
-    groups[key].ps.push({p, idx});
+  mcg = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: false,
+    animate: true,
+    animateAddingMarkers: false,
+    iconCreateFunction: cluster => mkClusterIcon(cluster.getChildCount())
   });
 
-  const lls=[];
-  Object.values(groups).forEach((g, markerIdx)=>{
-    lls.push([g.lat,g.lon]);
-    const n=g.ps.length, multi=n>1;
-    const color=multi?'#f5c300':'#1c4896';
-    const textColor=multi?'#0f2f6a':'#f5c300';
-    const sz=multi?(n>=50?36:n>=10?30:n>=2?25:22):20;
+  visible.forEach(p => {
+    const idx = players.indexOf(p);
+    const mk = L.marker([p.lat, p.lon], { icon: mkIcon('●') });
+    mk._playerIdx = idx;
+    mk.bindPopup(buildSinglePopup(p, idx, p.city), {maxWidth:320, maxHeight:400});
+    playerMarkers[idx] = mk;
+    mcg.addLayer(mk);
+  });
 
-    let popContent;
-    if (!multi) {
-      // Single player — full card, click → detail modal
-      const {p, idx}=g.ps[0];
-      popContent=buildSinglePopup(p, idx, g.display);
+  // Cluster click — same location → city popup, different → zoom
+  mcg.on('clusterclick', function(e) {
+    const children = e.layer.getAllChildMarkers();
+    const k0 = Math.round(children[0].getLatLng().lat*200)+','+Math.round(children[0].getLatLng().lng*200);
+    const sameLocation = children.every(m =>
+      (Math.round(m.getLatLng().lat*200)+','+Math.round(m.getLatLng().lng*200)) === k0
+    );
+    if (sameLocation) {
+      const list = children.map(m => ({ p: players[m._playerIdx], idx: m._playerIdx })).filter(x=>x.p);
+      const city = list[0]?.p?.city || '';
+      L.popup({maxWidth:320, maxHeight:400})
+        .setLatLng(e.layer.getLatLng())
+        .setContent(buildCityPopup(list, city))
+        .openOn(map);
     } else {
-      // Multi-player city — compact sortable list, click → detail
-      popContent=buildCityPopup(g.ps, g.display);
+      e.layer.zoomToBounds({padding:[30,30]});
     }
-
-    const mk=L.marker([g.lat,g.lon],{icon:mkIcon(multi?String(n):'●'), zIndexOffset: multi ? n*10 : 0})
-      .bindPopup(popContent,{maxWidth:320,maxHeight:400})
-      .addTo(map);
-    // stagger pop animation
-    const el = mk.getElement();
-    if (el) { el.style.animationDelay = `${markerIdx * 25}ms`; el.classList.add('mk-anim'); }
-    mlayers.push(mk);
   });
 
-  // Don't auto-zoom on full dataset — only zoom when showing single marker
-  if (lls.length===1) map.setView(lls[0],10);
+  map.addLayer(mcg);
+  if (visible.length === 1) map.setView([visible[0].lat, visible[0].lon], 10);
   updateStats();
 }
 
@@ -1573,7 +1608,6 @@ function focusPlayer(idx) {
   const p = players[idx];
   if (!p || !p.lat) return;
 
-  // On mobile: switch to mapa tab, then fly
   const isMobile = window.innerWidth <= 750;
   if (isMobile) mobTab('mapa');
 
@@ -1582,16 +1616,17 @@ function focusPlayer(idx) {
   const card = document.querySelector(`.pc[data-idx="${idx}"]`);
   if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 
-  // Fly map to location, then open a SINGLE-player popup (even at multi-player cities)
+  const marker = playerMarkers[idx];
+  if (!marker || !mcg) return;
+
   const delay = isMobile ? 400 : 0;
   setTimeout(() => {
-    map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
-    setTimeout(()=>{
+    mcg.zoomToShowLayer(marker, () => {
       L.popup({maxWidth:320, maxHeight:400})
         .setLatLng([p.lat, p.lon])
         .setContent(buildSinglePopup(p, idx, p.city))
         .openOn(map);
-    }, 900);
+    });
   }, delay);
 }
 
