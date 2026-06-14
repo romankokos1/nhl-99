@@ -314,7 +314,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .msp-cap-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-radius:7px;transition:background .12s;break-inside:avoid}
 .msp-cap-row:hover{background:rgba(28,72,150,.06)}
 .msp-cap-years{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--blue);width:68px;flex-shrink:0}
-.msp-cap-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid #d4dcea;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:800;color:var(--yellow)}
+.msp-cap-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid #d4dcea;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:800;color:var(--yellow);transform:translateZ(0);isolation:isolate}
 .msp-cap-av img{width:100%;height:100%;object-fit:cover;display:block}
 .msp-cap-name{font-size:12px;font-weight:500;color:var(--blue3)}
 /* Captain badge */
@@ -2100,7 +2100,7 @@ function renderStats(ids) {
   withC.forEach(p => { const o=classifyOrigin(p.lat,p.lon); oMap[o]=(oMap[o]||0)+1; });
   const origins = Object.entries(oMap).sort((a,b)=>b[1]-a[1]);
   const maxO = origins[0]?.[1]||1;
-  const SHOW = 5;
+  const SHOW = 2;
   if (ids.regionBars) {
     document.getElementById(ids.regionBars).innerHTML = origins.map(([o,n],i)=>`
       <div class="msp-bar-row" data-extra="${i>=SHOW?1:0}" style="${i>=SHOW?'display:none':''}">
@@ -2378,9 +2378,11 @@ window.addEventListener('load', () => {
       <div>
         <div class="msp-section-lbl">Rekordy</div>
         <div class="msp-rec-grid" id="statsRecords"></div>
-        <div class="msp-section-lbl" style="margin-top:.8rem">Kapitáni</div>
-        <div id="statsCaptains"></div>
       </div>
+    </div>
+    <div style="margin-top:1rem">
+      <div class="msp-section-lbl">Kapitáni klubu</div>
+      <div id="statsCaptains"></div>
     </div>
     <div class="stats-year-full">
       <div class="msp-section-lbl">Rok narození</div>
