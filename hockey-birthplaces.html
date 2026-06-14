@@ -695,6 +695,10 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .mk-strip-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
 /* Ensure wrapper doesn't clip the strip */
 .mk-multi-wrap { overflow: visible !important; }
+/* Leaflet photo tooltip */
+.mk-photo-tooltip { background:transparent!important; border:none!important; box-shadow:none!important; padding:0!important; }
+.mk-photo-tooltip::before { display:none!important; }
+.mk-tooltip-strip { display:flex; align-items:center; filter:drop-shadow(0 3px 10px rgba(10,30,80,.45)); }
 /* Modal fade + scale animation */
 .ovl { display: flex; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
 .ovl.on { pointer-events: all; opacity: 1; }
@@ -1304,6 +1308,26 @@ function updateMap() {
     // store marker reference for each player in this group
     g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
     mlayers.push(mk);
+
+    // Photo tooltip on hover
+    if (multi) {
+      const h = n >= 100 ? 36 : n >= 10 ? 30 : 26;
+      const ptr = 7;
+      const withPh = g.ps.filter(({p}) => p.photo);
+      const items  = (withPh.length ? withPh : g.ps).slice(0, 3);
+      const rest   = n - items.length;
+      const avHtml = items.map(({p}) => {
+        const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+        return p.photo
+          ? `<div class="mk-strip-av"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.textContent='${ini}'"></div>`
+          : `<div class="mk-strip-av">${ini}</div>`;
+      }).join('');
+      const restHtml = rest > 0 ? `<div class="mk-strip-av" style="background:#0f2f6a;color:#f5c300;font-size:9px">+${rest}</div>` : '';
+      mk.bindTooltip(
+        `<div class="mk-tooltip-strip">${avHtml}${restHtml}</div>`,
+        { permanent:false, direction:'top', offset:[0,-(h+ptr+6)], className:'mk-photo-tooltip', opacity:1 }
+      );
+    }
   });
 
   if (Object.keys(groups).length === 1) {
