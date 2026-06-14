@@ -654,7 +654,11 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   transition: transform .18s cubic-bezier(.34,1.56,.64,1);
   transform-origin: center bottom; display: block;
 }
-.leaflet-marker-icon.mk-hovered .mk-wrap > svg { transform: scale(1.22); }
+/* CSS :hover for scale — reliable, doesn't need JS */
+.leaflet-marker-icon:hover .mk-wrap > svg    { transform: scale(1.22); }
+.leaflet-marker-icon:hover .mk-multi-wrap > svg { transform: scale(1.12); }
+/* mk-hovered class for photo elements (set by Leaflet events) */
+.leaflet-marker-icon.mk-hovered .mk-wrap > svg    { transform: scale(1.22); }
 .leaflet-marker-icon.mk-hovered .mk-multi-wrap > svg { transform: scale(1.12); }
 /* Round photo bubble — single marker */
 .mk-photo-bubble {
