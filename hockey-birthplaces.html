@@ -310,7 +310,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .msp-name-val{font-size:12px;font-weight:500;color:var(--blue3);line-height:1.35}
 .msp-name-row.current .msp-name-val{font-weight:700;color:var(--blue)}
 /* Captains grid */
-.msp-captain-grid{display:flex;flex-direction:column;gap:.3rem}
+.msp-captain-grid{display:grid;grid-template-columns:1fr 1fr;gap:.2rem .5rem}
 .msp-cap-row{display:flex;align-items:baseline;gap:.6rem;padding:.3rem .5rem;border-radius:7px;transition:background .12s}
 .msp-cap-row:hover{background:rgba(28,72,150,.06)}
 .msp-cap-years{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--blue);width:82px;flex-shrink:0}
@@ -2118,6 +2118,9 @@ function renderStats(ids) {
 
   // Records
   function parseSR(r){if(!r)return 0;const m=r.match(/(\d{4})[–\-](\d{2,4})/);if(!m)return 0;const y1=parseInt(m[1]);const s=m[2];const y2=s.length<=2?Math.floor(y1/100)*100+parseInt(s):parseInt(s);return(y2<y1?y2+100:y2)-y1;}
+  const farthest = [...players].filter(p=>p.lat&&p.lon)
+    .sort((a,b)=>haversineKm(48.9764,14.4742,b.lat,b.lon)-haversineKm(48.9764,14.4742,a.lat,a.lon))[0];
+  const farthestDist = farthest ? haversineKm(48.9764,14.4742,farthest.lat,farthest.lon) : 0;
   const topSeason   = [...players].filter(p=>p.seasons).sort((a,b)=>Number(b.seasons)-Number(a.seasons))[0];
   const longestRange= [...players].filter(p=>p.seasonsRange).sort((a,b)=>parseSR(b.seasonsRange)-parseSR(a.seasonsRange))[0];
   if (ids.records) document.getElementById(ids.records).innerHTML = `
@@ -2130,20 +2133,12 @@ function renderStats(ids) {
       <span class="msp-rec-val">${topSeason?topSeason.seasons+' sez.':'—'}</span>
     </div>
     <div class="msp-rec">
-      <span class="msp-rec-ico">📅</span>
+      <span class="msp-rec-ico">🌍</span>
       <div class="msp-rec-main">
-        <span class="msp-rec-lbl">Nejdelší kariéra v Motoru</span>
-        <span class="msp-rec-name">${longestRange?esc(fullName(longestRange)||longestRange.city):'—'}</span>
+        <span class="msp-rec-lbl">Nejdál od ČB</span>
+        <span class="msp-rec-name">${farthest?esc(fullName(farthest)):'—'}${farthest?.city?` <span style="color:#8a9ab5;font-size:11px;font-weight:400">(${esc(farthest.city)})</span>`:''}</span>
       </div>
-      <span class="msp-rec-val">${longestRange?parseSR(longestRange.seasonsRange)+' let':'—'}</span>
-    </div>
-    <div class="msp-rec dim">
-      <span class="msp-rec-ico">🎂</span>
-      <div class="msp-rec-main">
-        <span class="msp-rec-lbl">Nejstarší hráč</span>
-        <span class="msp-rec-name">připraveno</span>
-      </div>
-      <span class="msp-rec-val">—</span>
+      <span class="msp-rec-val">${farthestDist?farthestDist+' km':'—'}</span>
     </div>`;
 
   // Year chart
@@ -2224,21 +2219,18 @@ function classifyOrigin(lat, lon) {
 }
 
 function buildYearChart(players) {
-  const ym = {};
-  players.forEach(p => {
-    if (!p.born) return;
-    const m = p.born.match(/\d{4}/);
-    if (!m) return;
-    const yr = parseInt(m[0]);
-    if (yr < 1920 || yr > 2015) return;
-    ym[yr] = (ym[yr]||0)+1;
+  const ym={},yNames={};
+  players.forEach(p=>{
+    if(!p.born)return;const m=p.born.match(/\d{4}/);if(!m)return;
+    const yr=parseInt(m[0]);if(yr<1920||yr>2015)return;
+    ym[yr]=(ym[yr]||0)+1;if(!yNames[yr])yNames[yr]=[];
+    yNames[yr].push(fullName(p)||p.city||'?');
   });
-  const yrs = Object.keys(ym).map(Number).sort((a,b)=>a-b);
-  if (yrs.length < 2) return '';
-  const minY = yrs[0], maxY = yrs[yrs.length-1];
-  const all = [], cnts = [];
-  for (let y = minY; y <= maxY; y++) { all.push(y); cnts.push(ym[y]||0); }
-  const maxC = Math.max(...cnts, 1);
+  const yrs=Object.keys(ym).map(Number).sort((a,b)=>a-b);
+  if(yrs.length<2)return '';
+  const minY=yrs[0],maxY=yrs[yrs.length-1],all=[],cnts=[];
+  for(let y=minY;y<=maxY;y++){all.push(y);cnts.push(ym[y]||0);}
+  const maxC=Math.max(...cnts,1);
   const W=300,H=72,pL=6,pR=6,pT=14,pB=18,cW=W-pL-pR,cH=H-pT-pB;
   const px=i=>pL+(i/(all.length-1))*cW;
   const py=v=>pT+cH-(v/maxC)*cH;
@@ -2249,255 +2241,16 @@ function buildYearChart(players) {
     const i=all.indexOf(y);
     return `<text x="${px(i).toFixed(1)}" y="${H-3}" font-size="8" text-anchor="middle" fill="#9aaac4">${y}</text>`;
   });
-  const peak=cnts.indexOf(maxC);
-  const dot=`<circle cx="${px(peak).toFixed(1)}" cy="${py(maxC).toFixed(1)}" r="3" fill="#1c4896"/>
-    <text x="${px(peak).toFixed(1)}" y="${(py(maxC)-6).toFixed(1)}" font-size="8" text-anchor="middle" fill="#1c4896" font-weight="700">${maxC}</text>`;
-  return `<svg class="msp-year-chart" viewBox="0 0 ${W} ${H}" style="width:100%;display:block">
-    <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1c4896" stop-opacity=".2"/>
-      <stop offset="100%" stop-color="#1c4896" stop-opacity=".02"/>
-    </linearGradient></defs>
-    <path d="${area}" fill="url(#ag)"/>
-    <path d="${line}" fill="none" stroke="#1c4896" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
-    ${xlabels.join('')}
-  </svg>`;
-}
-
-function toggleRegions(barsId, btnId) {
-  const bars = document.getElementById(barsId);
-  const btn  = document.getElementById(btnId);
-  if (!bars) return;
-  const exp = bars.classList.toggle('exp');
-  bars.querySelectorAll('[data-extra="1"]').forEach(r => r.style.display = exp ? 'flex' : 'none');
-  if (btn) btn.textContent = exp ? 'Zobrazit méně' : btn.dataset.label;
-}
-
-function renderStats(ids) {
-  // ids: { kpis, regionBars, showMore, records, yearChart }
-  if (!players.length) return;
-  const withC = players.filter(p => p.lat);
-  const citySet = new Set(withC.map(p => Math.round(p.lat*200)+','+Math.round(p.lon*200)));
-
-  // Club info card
-  const clubInfoHtml = `<div class="msp-club-info">
-    <div class="msp-club-row">
-      <span class="msp-club-key">Název klubu</span>
-      <span class="msp-club-val">Banes Motor České Budějovice</span>
-    </div>
-    <div class="msp-club-row">
-      <span class="msp-club-key">Datum založení</span>
-      <span class="msp-club-val">10. ledna 1928</span>
-    </div>
-    <div class="msp-club-row">
-      <span class="msp-club-key">Barvy klubu</span>
-      <span class="msp-club-val">
-        <span class="msp-club-colors">
-          <span class="msp-color-dot" style="background:#fff;border-color:#ccc" title="bílá"></span>
-          <span class="msp-color-dot" style="background:#c8102e" title="červená"></span>
-          <span class="msp-color-dot" style="background:#1c4896" title="modrá"></span>
-          <span class="msp-color-dot" style="background:#f5c300" title="žlutá"></span>
-          bílá, červená, modrá, žlutá
-        </span>
-      </span>
-    </div>
-  </div>`;
-  if (ids.clubInfo) document.getElementById(ids.clubInfo).innerHTML = clubInfoHtml;
-
-  // KPIs
-  if (ids.kpis) document.getElementById(ids.kpis).innerHTML = `
-    <div class="msp-kpi"><span class="msp-kpi-val">${players.length}</span><span class="msp-kpi-lbl">Hráčů</span></div>
-    <div class="msp-kpi"><span class="msp-kpi-val">${citySet.size}</span><span class="msp-kpi-lbl">Míst</span></div>
-    <div class="msp-kpi"><span class="msp-kpi-val">${withC.length}</span><span class="msp-kpi-lbl">Na mapě</span></div>`;
-
-  // Origins
-  const oMap = {};
-  withC.forEach(p => { const o=classifyOrigin(p.lat,p.lon); oMap[o]=(oMap[o]||0)+1; });
-  const origins = Object.entries(oMap).sort((a,b)=>b[1]-a[1]);
-  const maxO = origins[0]?.[1]||1;
-  const SHOW = 5;
-  if (ids.regionBars) {
-    document.getElementById(ids.regionBars).innerHTML = origins.map(([o,n],i)=>`
-      <div class="msp-bar-row" data-extra="${i>=SHOW?1:0}" style="${i>=SHOW?'display:none':''}">
-        <span class="msp-bar-city">${esc(o)}</span>
-        <div class="msp-bar-track"><div class="msp-bar-fill" style="width:${Math.round(n/maxO*100)}%"></div></div>
-        <span class="msp-bar-count">${n}</span>
-      </div>`).join('');
-  }
-  if (ids.showMore) {
-    const btn = document.getElementById(ids.showMore);
-    if (btn) {
-      btn.style.display = origins.length > SHOW ? '' : 'none';
-      btn.dataset.label = `Zobrazit vše (${origins.length})`;
-      btn.textContent   = `Zobrazit vše (${origins.length})`;
-    }
-  }
-
-  // Records
-  function parseSR(r){if(!r)return 0;const m=r.match(/(\d{4})[–\-](\d{2,4})/);if(!m)return 0;const y1=parseInt(m[1]);const s=m[2];const y2=s.length<=2?Math.floor(y1/100)*100+parseInt(s):parseInt(s);return(y2<y1?y2+100:y2)-y1;}
-  const topSeason   = [...players].filter(p=>p.seasons).sort((a,b)=>Number(b.seasons)-Number(a.seasons))[0];
-  const longestRange= [...players].filter(p=>p.seasonsRange).sort((a,b)=>parseSR(b.seasonsRange)-parseSR(a.seasonsRange))[0];
-  // Records — just top scorer
-  if (ids.records) document.getElementById(ids.records).innerHTML = `
-    <div class="msp-rec">
-      <span class="msp-rec-ico">🏒</span>
-      <div class="msp-rec-main">
-        <span class="msp-rec-lbl">Nejvíce sezón v Motoru</span>
-        <span class="msp-rec-name">${topSeason?esc(fullName(topSeason)||topSeason.city):'—'}</span>
-      </div>
-      <span class="msp-rec-val">${topSeason?topSeason.seasons+' sez.':'—'}</span>
-    </div>`;
-
-  // Captains section
-  const captains = players
-    .filter(p => p.captainYears)
-    .map(p => {
-      const m = (p.captainYears||'').match(/\d{4}/);
-      return { p, startYear: m ? parseInt(m[0]) : 9999 };
-    })
-    .sort((a,b) => a.startYear - b.startYear);
-
-  if (ids.captains && captains.length) {
-    document.getElementById(ids.captains).innerHTML = `
-      <div class="msp-captain-grid">${captains.map(({p})=>`
-        <div class="msp-cap-row">
-          <span class="msp-cap-years">${esc(p.captainYears)}</span>
-          <span class="msp-cap-name">${esc(fullName(p))}</span>
-        </div>`).join('')}
-      </div>`;
-  }
-
-  // Year chart
-  if (ids.yearChart) document.getElementById(ids.yearChart).innerHTML = buildYearChart(players);
-
-  // Club achievements
-  const ACHIEVEMENTS = [
-    ['🥇', 'Mistr republiky',        '1951'],
-    ['🥈', '2. místo',               '1981'],
-    ['🥉', '3. místo',               '1937, 1953, 1995, 2008, 2022'],
-    ['🏆', 'Vítěz poháru',           '1960, 2000'],
-    ['📊', 'Vítěz základní části',   '1988, 2008'],
-  ];
-  const NAMES = [
-    ['1928–1948', 'AC Stadion České Budějovice', false],
-    ['1948–1949', 'Sokol Stadion České Budějovice', false],
-    ['1949–1950', 'ZSJ Obchodní domy Stadion ČB', false],
-    ['1950–1952', 'ZSJ Sdružené komunální podniky JNV ČB', false],
-    ['1953–1957', 'DSO Slavoj České Budějovice', false],
-    ['1957–1965', 'TJ Slavoj České Budějovice', false],
-    ['1965–1992', 'TJ Motor České Budějovice', false],
-    ['1992–2006', 'HC České Budějovice', false],
-    ['2006–2013', 'HC Mountfield', false],
-    ['2013–2020', 'ČEZ Motor České Budějovice', false],
-    ['2020–2021', 'Madeta Motor České Budějovice', false],
-    ['2021–2023', 'HC Motor České Budějovice', false],
-    ['od 2023',   'Banes Motor České Budějovice', true],
-  ];
-  const achieveHtml = `<div class="msp-achieve">${ACHIEVEMENTS.map(([ico,lbl,yrs])=>`
-    <div class="msp-ach-row">
-      <span class="msp-ach-ico">${ico}</span>
-      <span class="msp-ach-lbl">${lbl}</span>
-      <span class="msp-ach-years">${yrs}</span>
-    </div>`).join('')}</div>`;
-  const namesHtml = `<div class="msp-names">${NAMES.map(([yrs,name,cur])=>`
-    <div class="msp-name-row${cur?' current':''}">
-      <span class="msp-name-years">${yrs}</span>
-      <span class="msp-name-val">${name}</span>
-    </div>`).join('')}</div>`;
-
-  if (ids.achieve) document.getElementById(ids.achieve).innerHTML = achieveHtml;
-  if (ids.names)   document.getElementById(ids.names).innerHTML   = namesHtml;
-}
-
-function renderMobStats() {
-  renderStats({ clubInfo:'mspClubInfo', kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', captains:'mspCaptains', yearChart:'mspYearChart', achieve:'mspAchieve', names:'mspNames' });
-}
-
-// ── DESKTOP STATS ─────────────────────────────────
-function openStatsDesktop() {
-  document.getElementById('statsOvl').classList.add('on');
-  renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', captains:'statsCaptains', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames' });
-}
-function closeStatsDesktop(e) {
-  if (e && e.target !== document.getElementById('statsOvl')) return;
-  document.getElementById('statsOvl').classList.remove('on');
-}
-
-// ── MOBILE SEARCH ─────────────────────────────────
-function openMobSearch() {
-  document.getElementById('mobSearchOvl').classList.add('on');
-  setTimeout(() => document.getElementById('mobSearchInput').focus(), 100);
-}
-function closeMobSearch() {
-  document.getElementById('mobSearchOvl').classList.remove('on');
-  document.getElementById('mobSearchInput').value = '';
-  document.getElementById('mobSearchResults').innerHTML = '';
-}
-function onMobSearch(q) {
-  const el = document.getElementById('mobSearchResults');
-  if (!q.trim()) { el.innerHTML = ''; return; }
-  const ql = q.toLowerCase();
-  const res = players.map((p,i)=>({p,i})).filter(({p})=>{
-    return (fullName(p)||'').toLowerCase().includes(ql) || (p.city||'').toLowerCase().includes(ql);
-  }).slice(0, 25);
-  el.innerHTML = res.length ? res.map(({p,i})=>{
-    const ini = initials(p);
-    const th = p.photo
-      ? `<img class="mob-sr-thumb" src="${escA(p.photo)}" onerror="this.outerHTML='<div class=mob-sr-ini>${ini}</div>'">`
-      : `<div class="mob-sr-ini">${ini}</div>`;
-    return `<div class="mob-sr-row" onclick="closeMobSearch();focusPlayer(${i})">
-      ${th}
-      <div class="mob-sr-info">
-        <div class="mob-sr-name">${esc(fullName(p)||p.city)}</div>
-        ${p.city?`<div class="mob-sr-city">${esc(p.city)}</div>`:''}
-      </div>
-      ${p.seasons?`<span class="mob-sr-meta">${p.seasons} sez.</span>`:''}
-    </div>`;
-  }).join('')
-  : `<div class="mob-sr-empty">Žádné výsledky pro „${esc(q)}"</div>`;
-}
-
-function buildYearChart(players) {
-  const yearMap = {};
-  players.forEach(p => {
-    if (!p.born) return;
-    const m = p.born.match(/\d{4}/);
-    if (!m) return;
-    const yr = parseInt(m[0]);
-    if (yr < 1920 || yr > 2015) return;
-    yearMap[yr] = (yearMap[yr]||0)+1;
-  });
-  const years = Object.keys(yearMap).map(Number).sort((a,b)=>a-b);
-  if (years.length < 2) return '';
-  const minY = years[0], maxY = years[years.length-1];
-  const all = [], counts = [];
-  for (let y = minY; y <= maxY; y++) { all.push(y); counts.push(yearMap[y]||0); }
-  const maxC = Math.max(...counts, 1);
-  const W = 300, H = 72, pL = 6, pR = 6, pT = 12, pB = 18;
-  const cW = W - pL - pR, cH = H - pT - pB;
-  const px = i => pL + (i / (all.length - 1)) * cW;
-  const py = v => pT + cH - (v / maxC) * cH;
-  const pts = all.map((_, i) => `${px(i).toFixed(1)},${py(counts[i]).toFixed(1)}`);
-  const line = 'M ' + pts.join(' L ');
-  const area = `M ${pL},${pT+cH} L ${pts.join(' L ')} L ${W-pR},${pT+cH} Z`;
-  const labels = all.filter(y => y % 10 === 0).map(y => {
-    const i = all.indexOf(y);
-    return `<text x="${px(i).toFixed(1)}" y="${H-4}" font-size="8" text-anchor="middle" fill="#9aaac4">${y}</text>`;
-  });
-  // Peak dots for max values
-  const peak = counts.indexOf(maxC);
-  const dot = `<circle cx="${px(peak).toFixed(1)}" cy="${py(maxC).toFixed(1)}" r="3" fill="var(--blue)"/>
-    <text x="${px(peak).toFixed(1)}" y="${(py(maxC)-6).toFixed(1)}" font-size="8" text-anchor="middle" fill="var(--blue)" font-weight="700">${maxC}</text>`;
-  return `<svg class="msp-year-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-    <defs>
-      <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#1c4896" stop-opacity=".22"/>
-        <stop offset="100%" stop-color="#1c4896" stop-opacity=".02"/>
-      </linearGradient>
-    </defs>
-    <path d="${area}" fill="url(#ag)"/>
-    <path d="${line}" fill="none" stroke="#1c4896" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
-    ${labels.join('')}${dot}
-  </svg>`;
+  const colW=cW/(all.length-1||1);
+  const cols=all.map((yr,i)=>{
+    if(!cnts[i])return '';
+    const cx=px(i).toFixed(1),cy=py(cnts[i]).toFixed(1);
+    const names=(yNames[yr]||[]);
+    const nameStr=names.slice(0,8).join(', ')+(names.length>8?` +${names.length-8} dalších`:'');
+    const hitX=(px(i)-colW/2).toFixed(1);
+    return `<g class="chart-col" onmouseenter="showYearTip(event)" onmouseleave="hideYearTip()"><rect x="${hitX}" y="${pT}" width="${colW.toFixed(1)}" height="${cH+pB}" fill="transparent" data-year="${yr}" data-count="${cnts[i]}" data-names="${nameStr.replace(/"/g,'&quot;')}" style="cursor:crosshair"/><line x1="${cx}" y1="${pT}" x2="${cx}" y2="${pT+cH}" stroke="#1c4896" stroke-width="1" stroke-dasharray="3 2" opacity="0" class="chart-vline" style="transition:opacity .12s;pointer-events:none"/><circle cx="${cx}" cy="${cy}" r="3.5" fill="#fff" stroke="#1c4896" stroke-width="2" opacity="0" class="chart-dot" style="transition:opacity .12s;pointer-events:none"/></g>`;
+  }).join('');
+  return `<svg class="msp-year-chart" viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c4896" stop-opacity=".2"/><stop offset="100%" stop-color="#1c4896" stop-opacity=".02"/></linearGradient></defs><path d="${area}" fill="url(#ag)"/><path d="${line}" fill="none" stroke="#1c4896" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>${xlabels.join('')}${cols}</svg>`;
 }
 
 window.addEventListener('load', () => {
