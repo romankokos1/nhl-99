@@ -75,8 +75,10 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 
 /* ── LAYOUT ─────────────────────────────────── */
 .app{display:flex;flex:1;min-height:0}
-.lp{width:420px;flex-shrink:0;overflow-y:auto;overflow-x:hidden;background:#fff;border-right:1px solid #d4dae8;display:flex;flex-direction:column;transition:width .3s cubic-bezier(.4,0,.2,1)}
+.lp{width:420px;flex-shrink:0;overflow:hidden;background:#fff;border-right:1px solid #d4dae8;display:flex;flex-direction:column;transition:width .38s cubic-bezier(.4,0,.2,1);will-change:width}
+.lp > *{transition:opacity .2s ease;opacity:1}
 .app.lp-hidden .lp{width:0;border-right:none}
+.app.lp-hidden .lp > *{opacity:0;pointer-events:none}
 .rp{position:relative;flex:1;min-width:0;min-height:0}
 #mapEl{position:absolute;inset:0}
 .btn-toggle-panel{position:absolute;top:50%;left:0;transform:translateY(-50%);z-index:2000;width:24px;height:64px;background:var(--yellow);border:2px solid var(--blue3);border-left:none;border-radius:0 8px 8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-size:20px;font-weight:900;box-shadow:4px 0 14px rgba(0,0,0,.45);transition:background .15s,box-shadow .15s}
@@ -1754,6 +1756,7 @@ function buildCareerTimeline(p) {
 
 function togglePanel() {
   const app = document.querySelector('.app');
+  const lp  = document.querySelector('.lp');
   const btn = document.getElementById('btnTogglePanel');
   const hidden = app.classList.toggle('lp-hidden');
   const mobile = window.innerWidth <= 750;
@@ -1763,7 +1766,8 @@ function togglePanel() {
     btn.innerHTML = hidden ? '&#8250;' : '&#8249;';
   }
   btn.title = hidden ? 'Zobrazit panel' : 'Skrýt panel';
-  setTimeout(() => map.invalidateSize(), 260);
+  // Invalidate only after transition finishes — avoids Leaflet jank during animation
+  lp.addEventListener('transitionend', () => map.invalidateSize(), { once: true });
 }
 
 // ── MOBILE NAV ─────────────────────────────────────
