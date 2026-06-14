@@ -1576,6 +1576,8 @@ async function fetchFromApi(){
     if(!grpsRes.ok) throw new Error('groups HTTP '+grpsRes.status);
     const grpsRaw2=await grpsRes.json();
     const grpsRaw=Array.isArray(grpsRaw2)?grpsRaw2:(grpsRaw2.data||grpsRaw2.groups||grpsRaw2.results||Object.values(grpsRaw2).find(v=>Array.isArray(v))||[]);
+    // Debug: show first group raw structure
+    apiStatus('Debug skupiny: '+JSON.stringify(grpsRaw[0]||grpsRaw2).slice(0,200),null);
 
     // Map to our group structure
     let grpsFilled=0;
