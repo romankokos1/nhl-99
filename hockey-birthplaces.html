@@ -720,7 +720,11 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   transition: transform .28s cubic-bezier(.34,1.2,.64,1), opacity .22s ease;
 }
 .ovl.on .modal { transform: scale(1) translateY(0); opacity: 1; }
-/* Fullscreen control */
+/* Premium zoom control */
+.leaflet-control-zoom { border:none!important; border-radius:12px!important; overflow:hidden; box-shadow:0 4px 16px rgba(15,40,100,.16)!important; }
+.leaflet-control-zoom a { width:36px!important; height:36px!important; line-height:36px!important; background:rgba(246,249,255,.96)!important; color:var(--blue)!important; font-size:18px!important; font-weight:300!important; border:none!important; border-bottom:1px solid rgba(28,72,150,.1)!important; transition:background .15s!important; }
+.leaflet-control-zoom a:last-child { border-bottom:none!important; }
+.leaflet-control-zoom a:hover { background:rgba(232,241,255,.98)!important; color:var(--blue3)!important; }
 .leaflet-fullscreen-btn {
   width:36px!important;height:36px!important;
   background:rgba(246,249,255,.96)!important;
@@ -1029,6 +1033,20 @@ function initMap() {
   baseLayers['🌍 Voyager (barevný)'].addTo(map);
   L.control.layers(baseLayers, {}, {position:'topright', collapsed:true}).addTo(map);
   L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
+  L.control.scale({position:'bottomright', imperial:false, maxWidth:120}).addTo(map);
+
+  // Distance circles from ČB
+  const CB = [48.9764, 14.4742];
+  const cStyle = {color:'#1c4896', weight:1.5, opacity:.45, fillOpacity:.03, fillColor:'#1c4896', dashArray:'6 4'};
+  const distCircles = L.layerGroup([
+    L.circle(CB, {...cStyle, radius:100000}).bindTooltip('100 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+    L.circle(CB, {...cStyle, radius:200000, opacity:.3}).bindTooltip('200 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+    L.circle(CB, {...cStyle, radius:500000, weight:1, opacity:.2}).bindTooltip('500 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+  ]);
+  L.control.layers(baseLayers, {'⭕ Vzdálenosti od ČB': distCircles}, {position:'topright', collapsed:true}).addTo(map);
+
+  // Set default popup options — keepInView globally
+  L.Popup.mergeOptions({keepInView: true});
 
   // Fullscreen control
   const FullscreenControl = L.Control.extend({
