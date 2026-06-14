@@ -649,6 +649,18 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 /* Marker hover */
 .leaflet-marker-icon { transition: transform .15s cubic-bezier(.34,1.56,.64,1); transform-origin: center bottom; cursor: pointer; }
 .leaflet-marker-icon:hover { transform: scale(1.2); }
+/* Fullscreen control */
+.leaflet-fullscreen-btn {
+  width:36px!important;height:36px!important;
+  background:rgba(246,249,255,.96)!important;
+  border:1.5px solid rgba(28,72,150,.18)!important;
+  border-radius:10px!important;
+  font-size:15px!important;cursor:pointer!important;
+  display:flex!important;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(15,40,100,.12)!important;
+  transition:background .15s!important;
+}
+.leaflet-fullscreen-btn:hover{background:rgba(232,241,255,.98)!important}
 @keyframes mkPulse {
   0%   { transform: scale(1);   opacity: .6; }
   100% { transform: scale(2.4); opacity: 0;  }
@@ -877,6 +889,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 <script>
 // ══════════════════════════════════════════════════
 // STATE
@@ -926,16 +939,52 @@ function loadPlayers(callback) {
 // ══════════════════════════════════════════════════
 // MAP
 // ══════════════════════════════════════════════════
+let heatLayer = null;
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
 function initMap() {
   map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.05,14.45],9);
   const baseLayers = {
     '🗺 OpenStreetMap':      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}),
-    '⬜ Positron (světlý)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19,detectRetina:true}),
-    '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,detectRetina:true}),
+    '⬜ Positron (světlý)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}),
+    '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}),
   };
   baseLayers['🌍 Voyager (barevný)'].addTo(map);
-  L.control.layers(baseLayers, {}, {position:'topright', collapsed:true}).addTo(map);
+
+  // Heatmap overlay
+  heatLayer = L.heatLayer([], {radius:28, blur:18, maxZoom:12, gradient:{0.3:'#1c4896',0.6:'#f5c300',1:'#c8102e'}});
+  heatLayer.on('add', () => {
+    const pts = players.filter(p=>p.lat&&p.lon).map(p=>[p.lat,p.lon,0.6]);
+    heatLayer.setLatLngs(pts);
+  });
+
+  L.control.layers(baseLayers, {'🔥 Heatmapa': heatLayer}, {position:'topright', collapsed:true}).addTo(map);
   L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
+
+  // Fullscreen control
+  const FullscreenControl = L.Control.extend({
+    onAdd() {
+      const btn = L.DomUtil.create('button','leaflet-fullscreen-btn');
+      btn.title = 'Celá obrazovka'; btn.innerHTML = '⛶';
+      L.DomEvent.on(btn, 'click', L.DomEvent.stop);
+      L.DomEvent.on(btn, 'click', () => {
+        const el = document.querySelector('.rp');
+        if (!document.fullscreenElement) { el.requestFullscreen(); btn.innerHTML = '✕'; }
+        else { document.exitFullscreen(); btn.innerHTML = '⛶'; }
+      });
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) btn.innerHTML = '⛶';
+      });
+      return btn;
+    }
+  });
+  new FullscreenControl({position:'topleft'}).addTo(map);
 }
 
 function mkIcon(label, color, sz, textColor) {
@@ -1690,6 +1739,10 @@ function showPlayerDetail(idx) {
   if (p.died) items.push(['Zemřel', esc(p.died) + (p.deathcity ? ` <span style="color:#8a9ab5;font-size:12px">(${esc(p.deathcity)})</span>` : ''), false]);
   if (p.seasonsRange) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasonsRange)}</span>${p.seasons ? `<span style="color:#8a9ab5;font-size:12px;font-weight:400"> ${esc(p.seasons)} sez.</span>` : ''}`, true]);
   else if (p.seasons) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`, true]);
+  if (p.lat && p.lon) {
+    const dist = haversineKm(48.9764, 14.4742, p.lat, p.lon);
+    items.push(['Vzdálenost od ČB', dist < 5 ? 'České Budějovice' : `${dist} km`, false]);
+  }
 
   const gridHtml = items.map(([lbl, val, full]) =>
     `<div class="detail-info-item${full ? ' full' : ''}">
