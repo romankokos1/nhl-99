@@ -699,6 +699,19 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .mk-photo-tooltip { background:transparent!important; border:none!important; box-shadow:none!important; padding:0!important; }
 .mk-photo-tooltip::before { display:none!important; }
 .mk-tooltip-strip { display:flex; align-items:center; filter:drop-shadow(0 3px 10px rgba(10,30,80,.45)); }
+/* City label floating below marker */
+.mk-city-label {
+  position:absolute; pointer-events:none; z-index:1001;
+  transform:translateX(-50%);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:.04em;
+  color:var(--blue3);white-space:nowrap;
+  background:rgba(255,255,255,.93);backdrop-filter:blur(6px);
+  padding:2px 9px;border-radius:8px;
+  box-shadow:0 2px 8px rgba(10,30,80,.15);
+  border:1px solid rgba(28,72,150,.12);
+  opacity:0;transition:opacity .15s;
+}
 /* Modal fade + scale animation */
 .ovl { display: flex; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
 .ovl.on { pointer-events: all; opacity: 1; }
@@ -822,6 +835,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   <div class="rp">
     <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
     <div id="mapEl"></div>
+    <div id="mkCityLabel" class="mk-city-label"></div>
     <!-- FILTR -->
     <div class="filter-panel" id="filterPanel" style="display:none">
       <div class="fp-modes">
@@ -1282,8 +1296,10 @@ function updateMap() {
     const el = mk.getElement();
     if (el) { el.style.animationDelay = `${markerIdx * 25}ms`; el.classList.add('mk-anim'); }
 
-    // Reliable hover — direct JS manipulation of inner SVG + photo elements
+    // Reliable hover — direct JS manipulation of inner SVG + photo elements + city label
     const scale = multi ? 1.12 : 1.22;
+    const cityName = g.display || '';
+    const glat = g.lat, glon = g.lon;
     mk.on('mouseover', function() {
       const icon = this.getElement(); if (!icon) return;
       icon.classList.add('mk-hovered');
@@ -1296,6 +1312,15 @@ function updateMap() {
       // Show photo bubble / strip
       const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
       if (photo) { photo.style.opacity = '1'; photo.style.transform = 'translateX(-50%) scale(1)'; }
+      // City label below marker
+      if (cityName) {
+        const lbl = document.getElementById('mkCityLabel');
+        const pt = map.latLngToContainerPoint([glat, glon]);
+        lbl.textContent = cityName;
+        lbl.style.left = pt.x + 'px';
+        lbl.style.top = (pt.y + 8) + 'px';
+        lbl.style.opacity = '1';
+      }
     });
     mk.on('mouseout', function() {
       const icon = this.getElement(); if (!icon) return;
@@ -1303,6 +1328,7 @@ function updateMap() {
       icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
       const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
       if (photo) { photo.style.opacity = '0'; photo.style.transform = 'translateX(-50%) scale(.7)'; }
+      document.getElementById('mkCityLabel').style.opacity = '0';
     });
 
     mk.on('popupopen',  function() {
@@ -1326,8 +1352,11 @@ function updateMap() {
       const rest   = n - items.length;
       const avHtml = items.map(({p}) => {
         const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+        const photoStyle = p.photoZoom && p.photoZoom > 1
+          ? `transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`
+          : `object-position:${p.photoPos||'50% 50%'};`;
         return p.photo
-          ? `<div class="mk-strip-av"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.textContent='${ini}'"></div>`
+          ? `<div class="mk-strip-av"><img src="${escA(p.photo)}" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`
           : `<div class="mk-strip-av">${ini}</div>`;
       }).join('');
       const restHtml = rest > 0 ? `<div class="mk-strip-av" style="background:#0f2f6a;color:#f5c300;font-size:9px">+${rest}</div>` : '';
