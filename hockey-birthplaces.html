@@ -1060,7 +1060,25 @@ function initMap() {
 
   // OSMBuildings — 3D budovy při přiblížení (zoom 15+)
   if (typeof OSMBuildings !== 'undefined') {
-    new OSMBuildings(map).load('https://data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');
+    const osmb = new OSMBuildings(map).load('https://data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');
+    // Custom arena footprint s výškou a klubovými barvami
+    osmb.set({
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: {
+          height: 24,
+          minHeight: 0,
+          color: '#1c3a6e',
+          roofColor: '#1c4896',
+          name: 'Budvar Arena'
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[14.4694,48.9692],[14.4728,48.9692],[14.4728,48.9719],[14.4694,48.9719],[14.4694,48.9692]]]
+        }
+      }]
+    });
   }
 
   // Budvar Arena marker
@@ -1070,7 +1088,7 @@ function initMap() {
     className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -22]
   });
   L.marker(ARENA, {icon: arenaIcon, zIndexOffset: 5000})
-    .bindPopup(`<div class="pop-hdr" style="border-radius:0">🏟 Budvar Arena</div><div style="padding:8px 14px 10px;font-size:12px;color:#4a5a7a;background:#fff">Domácí stánek HC Motor ČB<br><small style="color:#8a9ab5">48.9705°N 14.4711°E</small></div><div class="pop-actions"><span class="pop-act" onclick="map.flyTo([48.9705361,14.4711128],18,{duration:1.2})">🔍 Přiblížit ve 3D</span></div>`, {maxWidth:240})
+    .bindPopup(`<div class="pop-hdr" style="border-radius:0">🏟 Budvar Arena</div><div style="padding:8px 14px 10px;font-size:12px;color:#4a5a7a;background:#fff">Domácí stánek HC Motor ČB<br><small style="color:#8a9ab5">48.9705°N 14.4711°E</small></div><div class="pop-actions"><span class="pop-act" onclick="map.flyTo([48.9705361,14.4711128],18,{duration:1.5})">🔍 Zobrazit ve 3D</span></div>`, {maxWidth:240})
     .addTo(map);
   const FullscreenControl = L.Control.extend({
     onAdd() {
