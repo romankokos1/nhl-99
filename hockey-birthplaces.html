@@ -32,7 +32,7 @@
 <!-- Favicon -->
 <link rel="icon" type="image/svg+xml" href="https://hcmotor.cz/img/logo-var-1.svg">
 <link rel="shortcut icon" href="https://hcmotor.cz/img/logo-var-1.svg">
-<link href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css' rel='stylesheet'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -729,32 +729,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   transition: transform .28s cubic-bezier(.34,1.2,.64,1), opacity .22s ease;
 }
 .ovl.on .modal { transform: scale(1) translateY(0); opacity: 1; }
-
-/* MapLibre GL overrides */
-.maplibregl-popup { z-index:2100; }
-.maplibregl-popup-content { padding:0!important; border-radius:16px!important; overflow:hidden; box-shadow:0 12px 40px rgba(10,30,80,.28)!important; border:none!important; }
-.maplibregl-popup-tip { border-top-color:rgba(28,72,150,.08)!important; }
-.maplibregl-popup-close-button { display:none!important; }
-.maplibregl-popup-content .pop-hdr { border-radius:0!important; }
-.maplibregl-ctrl-group { border-radius:12px!important; overflow:hidden; box-shadow:0 4px 16px rgba(15,40,100,.16)!important; border:none!important; }
-.maplibregl-ctrl-group button { width:36px!important; height:36px!important; background:rgba(246,249,255,.96)!important; border:none!important; border-bottom:1px solid rgba(28,72,150,.1)!important; transition:background .15s!important; }
-.maplibregl-ctrl-group button:last-child { border-bottom:none!important; }
-.maplibregl-ctrl-group button:hover { background:rgba(232,241,255,.98)!important; }
-.maplibregl-ctrl-scale { background:rgba(246,249,255,.9)!important; border-color:rgba(28,72,150,.15)!important; font-family:'Barlow',sans-serif!important; font-size:10px!important; }
-/* Style switcher */
-.ml-style-ctrl { display:flex!important; flex-direction:column; }
-.ml-style-btn { font-size:14px!important; cursor:pointer!important; opacity:.6; }
-.ml-style-btn.active,.ml-style-btn:hover { opacity:1!important; background:rgba(232,241,255,.98)!important; }
-/* mk-container needs pointer-events */
-.mk-container { pointer-events:auto; }
-/* Photo strip float above multi marker */
-.mk-photo-strip-float {
-  position:absolute; bottom:calc(100% + 6px); left:50%;
-  transform:translateX(-50%) scale(.7); transform-origin:center bottom;
-  opacity:0; pointer-events:none;
-  transition:opacity .18s, transform .22s cubic-bezier(.34,1.56,.64,1);
-  z-index:999;
-}
 /* Premium zoom control */
 .leaflet-control-zoom { border:none!important; border-radius:12px!important; overflow:hidden; box-shadow:0 4px 16px rgba(15,40,100,.16)!important; }
 .leaflet-control-zoom a { width:36px!important; height:36px!important; line-height:36px!important; background:rgba(246,249,255,.96)!important; color:var(--blue)!important; font-size:18px!important; font-weight:300!important; border:none!important; border-bottom:1px solid rgba(28,72,150,.1)!important; transition:background .15s!important; }
@@ -999,13 +973,14 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 </div>
 
-<script src='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.osmbuildings.org/4.1.1/OSMBuildings-Leaflet.js"></script>
 <script>
 // ══════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════
 let players = [];
-let map, mlayers = [], playerMarkers = [], currentPopup = null;
+let map, mlayers = [], playerMarkers = [];
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
 const STORAGE_KEY = 'hockey_v7';
@@ -1059,140 +1034,197 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 }
 
 function initMap() {
-  map = new maplibregl.Map({
-    container: 'mapEl',
-    style: 'https://tiles.openfreemap.org/styles/liberty',
-    center: [14.45, 49.05],
-    zoom: 9,
-    attributionControl: false
-  });
-
-  map.addControl(new maplibregl.AttributionControl({compact:true}), 'bottom-right');
-  map.addControl(new maplibregl.ScaleControl({unit:'metric', maxWidth:120}), 'bottom-right');
-  map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'top-left');
-  map.addControl(new maplibregl.FullscreenControl({container: document.querySelector('.rp')}), 'top-left');
-
-  // Style switcher control
-  const StyleCtrl = {
-    onAdd(m) {
-      this._map = m;
-      const d = document.createElement('div');
-      d.className = 'maplibregl-ctrl maplibregl-ctrl-group ml-style-ctrl';
-      d.innerHTML = `<button class="ml-style-btn active" title="Liberty" onclick="setMapStyle('liberty')">🌍</button><button class="ml-style-btn" title="Positron" onclick="setMapStyle('positron')">⬜</button><button class="ml-style-btn" title="Bright" onclick="setMapStyle('bright')">🗺</button>`;
-      return d;
-    },
-    onRemove() {}
+  map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.05,14.45],9);
+  const baseLayers = {
+    '🗺 OpenStreetMap':      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}),
+    '⬜ Positron (světlý)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}),
+    '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}),
   };
-  map.addControl(StyleCtrl, 'top-right');
+  baseLayers['🌍 Voyager (barevný)'].addTo(map);
+  L.control.layers(baseLayers, {}, {position:'topright', collapsed:true}).addTo(map);
+  L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
+  L.control.scale({position:'bottomright', imperial:false, maxWidth:120}).addTo(map);
 
-  map.on('load', () => {
-    add3DBuildings();
+  // Distance circles from ČB
+  const CB = [48.9764, 14.4742];
+  const cStyle = {color:'#1c4896', weight:1.5, opacity:.45, fillOpacity:.03, fillColor:'#1c4896', dashArray:'6 4'};
+  const distCircles = L.layerGroup([
+    L.circle(CB, {...cStyle, radius:100000}).bindTooltip('100 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+    L.circle(CB, {...cStyle, radius:200000, opacity:.3}).bindTooltip('200 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+    L.circle(CB, {...cStyle, radius:500000, weight:1, opacity:.2}).bindTooltip('500 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+  ]);
+  L.control.layers(baseLayers, {'⭕ Vzdálenosti od ČB': distCircles}, {position:'topright', collapsed:true}).addTo(map);
 
-    // Auto pitch on zoom in
-    map.on('zoom', () => {
-      const z = map.getZoom();
-      if (z >= 16 && map.getPitch() < 30) map.easeTo({pitch:45, duration:600});
-      else if (z < 14 && map.getPitch() > 0) map.easeTo({pitch:0, duration:400});
+  // Set default popup options — keepInView globally
+  L.Popup.mergeOptions({keepInView: true});
+
+  // OSMBuildings — 3D budovy při přiblížení (zoom 15+)
+  if (typeof OSMBuildings !== 'undefined') {
+    const osmb = new OSMBuildings(map).load('https://data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');
+    // Custom arena footprint s výškou a klubovými barvami
+    osmb.set({
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: {
+          height: 24,
+          minHeight: 0,
+          color: '#1c3a6e',
+          roofColor: '#1c4896',
+          name: 'Budvar Arena'
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[14.4694,48.9692],[14.4728,48.9692],[14.4728,48.9719],[14.4694,48.9719],[14.4694,48.9692]]]
+        }
+      }]
     });
+  }
 
-    // Distance circles (ČB: 14.4742, 48.9764)
-    const CB = [14.4742, 48.9764];
-    [100, 200, 500].forEach((km, i) => {
-      const id = 'dist-circle-'+km;
-      const pts = Array.from({length:65}, (_,j) => {
-        const a = j*360/64*Math.PI/180;
-        const r = km*1000;
-        return [CB[0]+(r/(111320*Math.cos(CB[1]*Math.PI/180)))*Math.sin(a), CB[1]+(r/111320)*Math.cos(a)];
+  // Budvar Arena marker
+  const ARENA = [48.9705361, 14.4711128];
+  const arenaIcon = L.divIcon({
+    html: `<div class="arena-mk" title="Budvar Arena">🏟</div>`,
+    className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -22]
+  });
+  L.marker(ARENA, {icon: arenaIcon, zIndexOffset: 5000})
+    .bindPopup(`<div class="pop-hdr" style="border-radius:0">🏟 Budvar Arena</div><div style="padding:8px 14px 10px;font-size:12px;color:#4a5a7a;background:#fff">Domácí stánek HC Motor ČB<br><small style="color:#8a9ab5">48.9705°N 14.4711°E</small></div><div class="pop-actions"><span class="pop-act" onclick="map.flyTo([48.9705361,14.4711128],18,{duration:1.5})">🔍 Zobrazit ve 3D</span></div>`, {maxWidth:240})
+    .addTo(map);
+  const FullscreenControl = L.Control.extend({
+    onAdd() {
+      const btn = L.DomUtil.create('button','leaflet-fullscreen-btn');
+      btn.title = 'Celá obrazovka'; btn.innerHTML = '⛶';
+      L.DomEvent.on(btn, 'click', L.DomEvent.stop);
+      L.DomEvent.on(btn, 'click', () => {
+        const el = document.querySelector('.rp');
+        if (!document.fullscreenElement) { el.requestFullscreen(); btn.innerHTML = '✕'; }
+        else { document.exitFullscreen(); btn.innerHTML = '⛶'; }
       });
-      map.addSource(id, {type:'geojson', data:{type:'Feature', geometry:{type:'Polygon', coordinates:[pts]}}});
-      map.addLayer({id, type:'line', source:id, paint:{
-        'line-color':'#1c4896', 'line-width':1.5-i*0.4,
-        'line-opacity':0.45-i*0.1, 'line-dasharray':[6,4]
-      }});
-    });
-
-    // Budvar Arena marker
-    const arenaEl = document.createElement('div');
-    arenaEl.className = 'arena-mk';
-    arenaEl.innerHTML = '🏟';
-    arenaEl.title = 'Budvar Arena';
-    const arenaPopup = new maplibregl.Popup({closeButton:false, maxWidth:'240px', offset:[0,-20]})
-      .setHTML(`<div class="pop-hdr" style="border-radius:0">🏟 Budvar Arena</div><div style="padding:8px 14px 10px;font-size:12px;color:#4a5a7a;background:#fff">Domácí stánek HC Motor ČB<br><small style="color:#8a9ab5">48.9705°N 14.4711°E</small></div><div class="pop-actions"><span class="pop-act" onclick="map.flyTo({center:[14.4711128,48.9705361],zoom:18,pitch:60,duration:1500})">🔍 Zobrazit ve 3D</span></div>`);
-    new maplibregl.Marker({element:arenaEl, anchor:'bottom'})
-      .setLngLat([14.4711128, 48.9705361])
-      .setPopup(arenaPopup)
-      .addTo(map);
-
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) btn.innerHTML = '⛶';
       });
-
-  // Close popup on map click
-  map.on('click', () => { if (currentPopup) { currentPopup.remove(); currentPopup = null; } });
-}
-
-function add3DBuildings() {
-  try {
-    const layers = map.getStyle().layers;
-    const labelLayer = layers.find(l=>l.type==='symbol')?.id;
-    if (map.getLayer('3d-buildings')) map.removeLayer('3d-buildings');
-    map.addLayer({
-      id:'3d-buildings', source:'openmaptiles', 'source-layer':'building',
-      type:'fill-extrusion', minzoom:15,
-      paint:{
-        'fill-extrusion-color':['case',['has','colour'],['get','colour'],'#c8d0e0'],
-        'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],5],
-        'fill-extrusion-base':['coalesce',['get','render_min_height'],['get','min_height'],0],
-        'fill-extrusion-opacity':0.85
-      }
-    }, labelLayer);
-  } catch(e) { console.log('3D buildings:', e.message); }
-}
-
-function setMapStyle(name) {
-  const styles={liberty:'https://tiles.openfreemap.org/styles/liberty', positron:'https://tiles.openfreemap.org/styles/positron', bright:'https://tiles.openfreemap.org/styles/bright'};
-  map.setStyle(styles[name]||styles.liberty);
-  map.once('styledata', () => { add3DBuildings(); updateMap(); });
-  document.querySelectorAll('.ml-style-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelector(`.ml-style-btn[title="${name.charAt(0).toUpperCase()+name.slice(1)}"]`)?.classList.add('active');
+      return btn;
+    }
+  });
+  new FullscreenControl({position:'topleft'}).addTo(map);
 }
 
 function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
   const multi = label !== '●';
-  const n = multi ? parseInt(label)||0 : 0;
+  const n = multi ? parseInt(label) || 0 : 0;
 
   if (!multi) {
     const photo = photoOrPlayers;
     const photoStyle = photo
-      ? (photoZoom&&photoZoom>1
+      ? (photoZoom && photoZoom > 1
           ? `transform:scale(${photoZoom});transform-origin:${photoPos||'50% 50%'};`
           : `object-position:${photoPos||'50% 50%'};`)
       : '';
     const bubble = photo
-      ? `<div class="mk-photo-bubble"><img src="${photo.replace(/"/g,'&quot;')}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.style.display='none'"></div>`
+      ? `<div class="mk-photo-bubble"><img src="${photo.replace(/"/g,'&quot;')}" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}"></div>`
       : '';
-    return `<div class="mk-wrap">${bubble}<svg width="24" height="33" viewBox="0 0 24 33" style="display:block;filter:drop-shadow(0 3px 8px rgba(10,30,80,.42))"><path d="M12 0C5.4 0 0 5.4 0 12C0 21 12 33 12 33C12 33 24 21 24 12C24 5.4 18.6 0 12 0Z" fill="#1c4896"/><path d="M12 1C5.9 1 1 5.9 1 12C1 20.5 12 32 12 32C12 32 23 20.5 23 12C23 5.9 18.1 1 12 1Z" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/><circle cx="12" cy="12" r="5.5" fill="#f5c300"/></svg></div>`;
+    return L.divIcon({
+      html: `<div class="mk-wrap">
+        ${bubble}
+        <svg width="24" height="33" viewBox="0 0 24 33" style="display:block;filter:drop-shadow(0 3px 8px rgba(10,30,80,.42))">
+          <path d="M12 0C5.4 0 0 5.4 0 12C0 21 12 33 12 33C12 33 24 21 24 12C24 5.4 18.6 0 12 0Z" fill="#1c4896"/>
+          <path d="M12 1C5.9 1 1 5.9 1 12C1 20.5 12 32 12 32C12 32 23 20.5 23 12C23 5.9 18.1 1 12 1Z" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+          <circle cx="12" cy="12" r="5.5" fill="#f5c300"/>
+        </svg>
+      </div>`,
+      className: '',
+      iconSize: [24, 33],
+      iconAnchor: [12, 33],
+      popupAnchor: [0, -44]
+    });
   }
 
-  const big=n>=100, med=n>=10, digits=String(n).length;
-  const w=big?(digits>=3?52:44):med?40:32, h=big?36:med?30:26, fs=big?15:med?14:13, ptr=7;
-  const pulse=n>=50;
-  const pulseHtml=pulse?`<div style="position:absolute;inset:-8px;border-radius:50%;background:rgba(245,195,0,.25);animation:mkPulse 2s ease-out infinite;pointer-events:none"></div>`:'';
+  // Multi: size tiers
+  const big   = n >= 100;
+  const med   = n >= 10;
+  const digits = String(n).length;
+  const w = big ? (digits >= 3 ? 52 : 44) : med ? 40 : 32;
+  const h = big ? 36 : med ? 30 : 26;
+  const fs = big ? 15 : med ? 14 : 13;
+  const ptr = 7;
+  const pulse = n >= 50;
 
-  const ps=Array.isArray(photoOrPlayers)?photoOrPlayers:[];
-  const shuffled=[...ps].sort(()=>Math.random()-.5);
-  const withPh=shuffled.filter(({p})=>p.photo);
-  const shown=(withPh.length?withPh:shuffled).slice(0,3);
-  const restN=n-shown.length;
-  const avHtml=shown.map(({p})=>{
-    const ini=[(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
-    const ps2=p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`:`object-position:${p.photoPos||'50% 50%'};`;
-    return p.photo?`<div class="mk-strip-av"><img src="${p.photo.replace(/"/g,'&quot;')}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${ps2}" onerror="this.parentElement.textContent='${ini}'"></div>`:`<div class="mk-strip-av">${ini}</div>`;
+  // Photo strip — up to 3 avatars + rest count
+  const ps = Array.isArray(photoOrPlayers) ? photoOrPlayers : [];
+  const withPhoto = ps.filter(({p}) => p.photo);
+  const shown = (withPhoto.length > 0 ? withPhoto : ps).slice(0, 3);
+  const rest = n - shown.length;
+  const stripAvatars = shown.map(({p}) => {
+    const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+    return p.photo
+      ? `<div class="mk-strip-av"><img src="${p.photo.replace(/"/g,'&quot;')}" onerror="this.parentElement.innerHTML='${ini}'"></div>`
+      : `<div class="mk-strip-av">${ini}</div>`;
   }).join('');
-  const restBadge=restN>0?`<div class="mk-strip-av" style="background:#0f2f6a;color:#f5c300;font-size:9px">+${restN}</div>`:'';
-  const stripHtml=shown.length?`<div class="mk-photo-strip-float"><div class="mk-tooltip-strip">${avHtml}${restBadge}</div></div>`:'';
+  const restBadge = rest > 0 ? `<div class="mk-strip-av" style="background:#1c4896;color:#f5c300;font-size:9px">+${rest}</div>` : '';
+  const photoStrip = shown.length
+    ? `<div class="mk-photo-strip">${stripAvatars}${restBadge}</div>`
+    : '';
 
-  return `<div class="mk-multi-wrap" style="position:relative;width:${w}px;height:${h+ptr}px">${stripHtml}${pulseHtml}<svg width="${w}" height="${h+ptr}" viewBox="0 0 ${w} ${h+ptr}" style="position:relative;filter:drop-shadow(0 ${big?5:3}px ${big?14:8}px rgba(10,30,80,${big?.50:.38}))"><rect x="0" y="0" width="${w}" height="${h}" rx="${h/2}" fill="#f5c300" stroke="${big?'#c89000':'#d4a800'}" stroke-width="${big?1.5:1}"/>${big?`<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="${(h-4)/2}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>`:''}<text x="${w/2}" y="${h*.70}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="#0f2f6a" font-family="Barlow Condensed,sans-serif" letter-spacing="-0.3">${n}</text><polygon points="${w/2-6},${h} ${w/2+6},${h} ${w/2},${h+ptr}" fill="#f5c300"/></svg></div>`;
+  // Pulse ring wrapper (only for large clusters)
+  const pulseHtml = pulse ? `<div style="
+    position:absolute;inset:-8px;border-radius:50%;
+    background:rgba(245,195,0,.25);
+    animation:mkPulse 2s ease-out infinite;
+    pointer-events:none;
+  "></div>` : '';
+
+  return L.divIcon({
+    html: `<div style="position:relative;width:${w}px;height:${h+ptr}px">
+      ${pulseHtml}
+      <svg width="${w}" height="${h+ptr}" viewBox="0 0 ${w} ${h+ptr}"
+        style="position:relative;filter:drop-shadow(0 ${big?5:3}px ${big?14:8}px rgba(10,30,80,${big?.50:.38}))">
+        <rect x="0" y="0" width="${w}" height="${h}" rx="${h/2}"
+          fill="#f5c300" stroke="${big?'#c89000':'#d4a800'}" stroke-width="${big?1.5:1}"/>
+        ${big ? `<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="${(h-4)/2}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>` : ''}
+        <text x="${w/2}" y="${h*0.70}" text-anchor="middle"
+          font-size="${fs}" font-weight="800" fill="#0f2f6a"
+          font-family="Barlow Condensed,sans-serif" letter-spacing="-0.3">${n}</text>
+        <polygon points="${w/2-6},${h} ${w/2+6},${h} ${w/2},${h+ptr}" fill="#f5c300"/>
+      </svg>
+    </div>`,
+    className: '',
+    iconSize: [w, h+ptr],
+    iconAnchor: [w/2, h+ptr],
+    popupAnchor: [0, -(h+ptr+4)]
+  });
 }
 
+// Cluster icon — same visual style as multi-player badge
+function mkClusterIcon(n) {
+  const big = n >= 100, med = n >= 10;
+  const digits = String(n).length;
+  const w = big ? (digits >= 3 ? 52 : 44) : med ? 40 : 32;
+  const h = big ? 36 : med ? 30 : 26;
+  const fs = big ? 15 : med ? 14 : 13;
+  const ptr = 7;
+  const pulse = n >= 50;
+  const pulseHtml = pulse ? `<div style="position:absolute;inset:-8px;border-radius:50%;background:rgba(245,195,0,.25);animation:mkPulse 2s ease-out infinite;pointer-events:none"></div>` : '';
+  return L.divIcon({
+    html: `<div class="mk-multi-wrap" style="position:relative;width:${w}px;height:${h+ptr}px">
+      ${photoStrip}
+      ${pulseHtml}
+      <svg width="${w}" height="${h+ptr}" viewBox="0 0 ${w} ${h+ptr}"
+        style="position:relative;filter:drop-shadow(0 ${big?5:3}px ${big?14:8}px rgba(10,30,80,${big?.50:.38}))">
+        <rect x="0" y="0" width="${w}" height="${h}" rx="${h/2}"
+          fill="#f5c300" stroke="${big?'#c89000':'#d4a800'}" stroke-width="${big?1.5:1}"/>
+        ${big?`<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="${(h-4)/2}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>`:''}
+        <text x="${w/2}" y="${h*0.70}" text-anchor="middle"
+          font-size="${fs}" font-weight="800" fill="#0f2f6a"
+          font-family="Barlow Condensed,sans-serif" letter-spacing="-0.3">${n}</text>
+        <polygon points="${w/2-6},${h} ${w/2+6},${h} ${w/2},${h+ptr}" fill="#f5c300"/>
+      </svg>
+    </div>`,
+    className: '',
+    iconSize: [w, h+ptr],
+    iconAnchor: [w/2, h+ptr],
+    popupAnchor: [0, -(h+ptr+4)]
+  });
+}
 // ══════════════════════════════════════════════════
 let filterMode = 'off';   // 'off' | 'born' | 'seasons'
 let filterMin  = 0;
@@ -1285,87 +1317,119 @@ function updateSliderUI() {
 }
 
 function updateMap() {
-  mlayers.forEach(m=>m.remove()); mlayers=[];
-  if(currentPopup){currentPopup.remove();currentPopup=null;}
-  playerMarkers=[];
-  const fp=document.getElementById('filterPanel');
-  const allResolved=players.filter(p=>p.lat&&p.lon);
-  fp.style.display=allResolved.length?'block':'none';
-  if(!allResolved.length){updateStats();return;}
-  const visible=getFilteredPlayers().filter(p=>p.lat&&p.lon);
-  if(!visible.length){updateStats();return;}
+  mlayers.forEach(l=>map.removeLayer(l)); mlayers=[];
+  playerMarkers = [];
+  const fp = document.getElementById('filterPanel');
 
-  const groups={};
-  visible.forEach(p=>{
-    const key=Math.round(p.lat*200)+','+Math.round(p.lon*200);
-    if(!groups[key]) groups[key]={lat:p.lat,lon:p.lon,display:p.city,ps:[]};
-    const idx=players.indexOf(p);
-    groups[key].ps.push({p,idx});
-    playerMarkers[idx]=null;
+  const allResolved = players.filter(p=>p.lat&&p.lon);
+  fp.style.display = allResolved.length ? 'block' : 'none';
+  if (!allResolved.length) { updateStats(); return; }
+
+  const visible = getFilteredPlayers().filter(p=>p.lat&&p.lon);
+  if (!visible.length) { updateStats(); return; }
+
+  const groups = {};
+  visible.forEach(p => {
+    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    if (!groups[key]) groups[key] = {lat:p.lat, lon:p.lon, display:p.city, ps:[]};
+    const idx = players.indexOf(p);
+    groups[key].ps.push({p, idx});
+    playerMarkers[idx] = null; // will be set below
   });
 
-  Object.values(groups).forEach((g,markerIdx)=>{
-    const n=g.ps.length,multi=n>1;
+  Object.values(groups).forEach((g, markerIdx) => {
+    const n = g.ps.length, multi = n > 1;
+    let popContent;
+    if (!multi) {
+      const {p, idx} = g.ps[0];
+      popContent = buildSinglePopup(p, idx, g.display);
+    } else {
+      popContent = buildCityPopup(g.ps, g.display);
+    }
+    const mk = L.marker([g.lat, g.lon], {
+      icon: multi ? mkIcon(String(n), g.ps) : mkIcon('●', g.ps[0].p.photo, g.ps[0].p.photoZoom, g.ps[0].p.photoPos),
+      zIndexOffset: multi ? n * 10 : 0
+    }).bindPopup(popContent, {maxWidth:320, maxHeight:400}).addTo(map);
 
-    // Build element
-    const el=document.createElement('div');
-    el.className='mk-container';
-    el.style.animationDelay=`${markerIdx*25}ms`;
-    el.classList.add('mk-anim');
-    el.innerHTML=multi
-      ? mkIcon(String(n),g.ps)
-      : mkIcon('●',g.ps[0].p.photo,g.ps[0].p.photoZoom,g.ps[0].p.photoPos);
+    // stagger animation
+    const el = mk.getElement();
+    if (el) { el.style.animationDelay = `${markerIdx * 25}ms`; el.classList.add('mk-anim'); }
 
-    const mk=new maplibregl.Marker({element:el,anchor:'bottom'})
-      .setLngLat([g.lon,g.lat]).addTo(map);
-
-    // Hover
-    const scale=multi?1.12:1.22;
-    const cityName=g.display||'';
-    const glat=g.lat,glon=g.lon;
-    el.addEventListener('mouseenter',()=>{
-      el.classList.add('mk-hovered');
-      el.querySelectorAll('svg').forEach(s=>{s.style.transition='transform .18s cubic-bezier(.34,1.56,.64,1)';s.style.transformOrigin='center bottom';s.style.transform=`scale(${scale})`;});
-      const bubble=el.querySelector('.mk-photo-bubble');
-      if(bubble){bubble.style.opacity='1';bubble.style.transform='translateX(-50%) scale(1)';}
-      const strip=el.querySelector('.mk-photo-strip-float');
-      if(strip){strip.style.opacity='1';strip.style.transform='translateX(-50%) scale(1)';}
-      if(cityName){
-        const lbl=document.getElementById('mkCityLabel');
-        const pt=map.project([glon,glat]);
-        lbl.textContent=cityName;lbl.style.left=pt.x+'px';lbl.style.top=(pt.y+8)+'px';
-        lbl.style.opacity='1';lbl.style.transform='translateX(-50%) translateY(0)';
+    // Reliable hover — direct JS manipulation of inner SVG + photo elements + city label
+    const scale = multi ? 1.12 : 1.22;
+    const cityName = g.display || '';
+    const glat = g.lat, glon = g.lon;
+    mk.on('mouseover', function() {
+      const icon = this.getElement(); if (!icon) return;
+      icon.classList.add('mk-hovered');
+      // Scale SVG
+      icon.querySelectorAll('svg').forEach(s => {
+        s.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
+        s.style.transformOrigin = 'center bottom';
+        s.style.transform = `scale(${scale})`;
+      });
+      // Show photo bubble / strip
+      const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
+      if (photo) { photo.style.opacity = '1'; photo.style.transform = 'translateX(-50%) scale(1)'; }
+      // City label below marker
+      if (cityName) {
+        const lbl = document.getElementById('mkCityLabel');
+        const pt = map.latLngToContainerPoint([glat, glon]);
+        lbl.textContent = cityName;
+        lbl.style.left = pt.x + 'px';
+        lbl.style.top = (pt.y + 8) + 'px';
+        lbl.style.opacity = '1';
+        lbl.style.transform = 'translateX(-50%) translateY(0)';
       }
     });
-    el.addEventListener('mouseleave',()=>{
-      el.classList.remove('mk-hovered');
-      el.querySelectorAll('svg').forEach(s=>{s.style.transform='';});
-      const bubble=el.querySelector('.mk-photo-bubble');
-      if(bubble){bubble.style.opacity='0';bubble.style.transform='translateX(-50%) scale(.7)';}
-      const strip=el.querySelector('.mk-photo-strip-float');
-      if(strip){strip.style.opacity='0';strip.style.transform='translateX(-50%) scale(.7)';}
-      const lbl=document.getElementById('mkCityLabel');
-      lbl.style.opacity='0';lbl.style.transform='translateX(-50%) translateY(6px)';
+    mk.on('mouseout', function() {
+      const icon = this.getElement(); if (!icon) return;
+      icon.classList.remove('mk-hovered');
+      icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
+      const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
+      if (photo) { photo.style.opacity = '0'; photo.style.transform = 'translateX(-50%) scale(.7)'; }
+      const lbl2 = document.getElementById('mkCityLabel'); lbl2.style.opacity = '0'; lbl2.style.transform = 'translateX(-50%) translateY(6px)';
     });
 
-    // Click to open popup
-    el.addEventListener('click',e=>{
-      e.stopPropagation();
-      document.getElementById('mkCityLabel').style.opacity='0';
-      if(currentPopup){currentPopup.remove();currentPopup=null;}
-      const popContent=multi?buildCityPopup(g.ps,g.display):buildSinglePopup(g.ps[0].p,g.ps[0].idx,g.display);
-      currentPopup=new maplibregl.Popup({closeOnClick:false,maxWidth:'320px',offset:[0,-4],className:'ml-popup'})
-        .setLngLat([glon,glat]).setHTML(popContent).addTo(map);
-      currentPopup.on('close',()=>{currentPopup=null;});
+    mk.on('popupopen',  function() {
+      const el = this.getTooltip()?.getElement();
+      if (el) el.style.display = 'none';
     });
-
-    g.ps.forEach(({idx})=>{playerMarkers[idx]=mk;});
+    mk.on('popupclose', function() {
+      const el = this.getTooltip()?.getElement();
+      if (el) el.style.display = '';
+    });
+    g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
     mlayers.push(mk);
+
+    // Photo tooltip on hover
+    if (multi) {
+      const h = n >= 100 ? 36 : n >= 10 ? 30 : 26;
+      const ptr = 7;
+      const shuffled = [...g.ps].sort(() => Math.random() - 0.5);
+      const withPh = shuffled.filter(({p}) => p.photo);
+      const items  = (withPh.length ? withPh : shuffled).slice(0, 3);
+      const rest   = n - items.length;
+      const avHtml = items.map(({p}) => {
+        const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+        const photoStyle = p.photoZoom && p.photoZoom > 1
+          ? `transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`
+          : `object-position:${p.photoPos||'50% 50%'};`;
+        return p.photo
+          ? `<div class="mk-strip-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`
+          : `<div class="mk-strip-av">${ini}</div>`;
+      }).join('');
+      const restHtml = rest > 0 ? `<div class="mk-strip-av" style="background:#0f2f6a;color:#f5c300;font-size:9px">+${rest}</div>` : '';
+      mk.bindTooltip(
+        `<div class="mk-tooltip-strip">${avHtml}${restHtml}</div>`,
+        { permanent:false, direction:'top', offset:[0,-(h+ptr+6)], className:'mk-photo-tooltip', opacity:1 }
+      );
+    }
   });
 
-  if(Object.keys(groups).length===1){
-    const g=Object.values(groups)[0];
-    map.flyTo({center:[g.lon,g.lat],zoom:10});
+  if (Object.keys(groups).length === 1) {
+    const g = Object.values(groups)[0];
+    map.setView([g.lat, g.lon], 10);
   }
   updateStats();
 }
@@ -1781,7 +1845,7 @@ function showCityList(idx) {
 
   const delay = isMobile ? 400 : 0;
   setTimeout(() => {
-    map.flyTo({center:[p.lon,p.lat],zoom:11,duration:800});
+    map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
     setTimeout(() => {
       const content = samePlace.length === 1
         ? buildSinglePopup(p, idx, p.city)
@@ -1808,7 +1872,7 @@ function focusPlayer(idx) {
 
   const delay = isMobile ? 400 : 0;
   setTimeout(() => {
-    map.flyTo({center:[p.lon,p.lat],zoom:11,duration:800});
+    map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
     setTimeout(() => {
       L.popup({maxWidth:320, maxHeight:400})
         .setLatLng([p.lat, p.lon])
@@ -1872,7 +1936,7 @@ document.addEventListener('click',e=>{
 function showPlayerDetail(idx) {
   const p = players[idx];
   if (!p) return;
-  if(currentPopup){currentPopup.remove();currentPopup=null;}
+  map.closePopup();
 
   const nm = fullName(p) || p.city;
   const ini = initials(p);
@@ -1933,7 +1997,7 @@ loadPlayers(function() {
   load(); initMap(); render(); setTimeout(updateMap,300);
 });
   
-window.addEventListener('resize', () => { map.resize(); setHdrHeight(); });
+window.addEventListener('resize', () => { map.invalidateSize(); setHdrHeight(); });
 
 // Measure header height for mobile lp overlay positioning
 function setHdrHeight() {
@@ -1997,7 +2061,7 @@ function togglePanel() {
   }
   btn.title = hidden ? 'Zobrazit panel' : 'Skrýt panel';
   // Invalidate only after transition finishes — avoids Leaflet jank during animation
-  lp.addEventListener('transitionend', () => map.resize(), { once: true });
+  lp.addEventListener('transitionend', () => map.invalidateSize(), { once: true });
 }
 
 // ── MOBILE NAV ─────────────────────────────────────
@@ -2023,7 +2087,7 @@ function mobTab(tab) {
     stats.classList.remove('on');
     backdrop.style.display = 'none';
   }
-  setTimeout(() => map.resize(), 260);
+  setTimeout(() => map.invalidateSize(), 260);
 }
 function showYearTip(event) {
   const r = event.currentTarget.querySelector('rect');
@@ -2251,7 +2315,7 @@ function buildYearChart(players) {
 }
 
 window.addEventListener('load', () => {
-  map.resize();
+  map.invalidateSize();
   setHdrHeight();
   if (window.innerWidth <= 750) {
     document.querySelector('.app')?.classList.add('lp-hidden');
