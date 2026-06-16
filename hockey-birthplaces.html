@@ -1090,15 +1090,13 @@ function initMap() {
 }
 
 function init3DArena() {
-  // Půdorys arény — 8 rohů, souřadnice [lat, lon]
   const FOOTPRINT = [
     [48.9701,14.4704],[48.9700,14.4707],[48.9700,14.4715],
     [48.9701,14.4718],[48.9709,14.4718],[48.9710,14.4715],
     [48.9710,14.4707],[48.9709,14.4704]
   ];
-  const HEIGHT_M = 20; // výška haly v metrech
+  const HEIGHT_M = 20;
 
-  // Vytvoří canvas nad mapou
   const canvas = document.createElement('canvas');
   canvas.id = 'arena3d';
   canvas.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:450;';
@@ -1106,85 +1104,134 @@ function init3DArena() {
 
   function draw() {
     const mapEl = document.getElementById('mapEl');
-    canvas.width  = mapEl.offsetWidth;
+    canvas.width = mapEl.offsetWidth;
     canvas.height = mapEl.offsetHeight;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
     const zoom = map.getZoom();
-    if (zoom < 13) return; // příliš daleko — nekreslíme
+    if (zoom < 13) return;
 
-    // Výška budovy v pixelech při aktuálním zoomu
-    const mpp = (156543.03 * Math.cos(48.9705 * Math.PI / 180)) / Math.pow(2, zoom);
-    const hPx = Math.min(Math.round(HEIGHT_M / mpp), 200);
-    if (hPx < 2) return;
+    const mpp = (156543.03*Math.cos(48.9705*Math.PI/180))/Math.pow(2,zoom);
+    const hPx = Math.min(Math.round(HEIGHT_M/mpp), 200);
+    if (hPx < 3) return;
 
-    // Pixelové souřadnice půdorysu
-    const bot = FOOTPRINT.map(ll => map.latLngToContainerPoint(L.latLng(ll[0], ll[1])));
-    const top = bot.map(p => ({x: p.x, y: p.y - hPx}));
-    const n   = bot.length;
-    const cx  = bot.reduce((s,p)=>s+p.x,0)/n;
-    const cy  = bot.reduce((s,p)=>s+p.y,0)/n;
+    // Perspektivní náklon — pohled z JZ
+    const TILT_X = -0.28, TILT_Y = -0.08;
+    const bot = FOOTPRINT.map(ll => map.latLngToContainerPoint(L.latLng(ll[0],ll[1])));
+    const top = bot.map(p => ({x: p.x + hPx*TILT_X, y: p.y - hPx + hPx*TILT_Y}));
+    const n = bot.length;
+    const cx = bot.reduce((s,p)=>s+p.x,0)/n;
+    const cy = bot.reduce((s,p)=>s+p.y,0)/n;
+    const tcx = top.reduce((s,p)=>s+p.x,0)/n;
+    const tcy = top.reduce((s,p)=>s+p.y,0)/n;
 
-    // Stěny — kreslit od nejzadnějších k nejpřednějším (painter's algorithm)
-    const walls = [];
-    for (let i = 0; i < n; i++) {
-      const j = (i+1) % n;
-      const midY = (bot[i].y + bot[j].y) / 2;
-      const facing = midY - cy; // kladné = přední (jih), záporné = zadní (sever)
-      walls.push({i, j, facing});
-    }
-    walls.sort((a,b) => a.facing - b.facing); // zadní → přední
+    // Stěny — painter's algorithm (vzad → vpřed)
+    const walls = Array.from({length:n},(_,i)=>{
+      const j=(i+1)%n;
+      return {i,j,
+        facing:(bot[i].y+bot[j].y)/2-cy,
+        lateral:(bot[i].x+bot[j].x)/2-cx};
+    }).sort((a,b)=>a.facing-b.facing);
 
-    walls.forEach(({i, j, facing}) => {
-      const light = facing > 0 ? 1 : 0.6; // přední stěny světlejší
+    walls.forEach(({i,j,facing,lateral})=>{
+      const front=facing>0, left=lateral<0;
+      const path=[[bot[i].x,bot[i].y],[bot[j].x,bot[j].y],[top[j].x,top[j].y],[top[i].x,top[i].y]];
+
+      // Gradientová výplň stěny
+      const grd=ctx.createLinearGradient(0,bot[i].y,0,top[i].y);
+      if (front) {
+        grd.addColorStop(0,'rgba(55,75,115,0.88)');
+        grd.addColorStop(0.5,'rgba(70,95,145,0.82)');
+        grd.addColorStop(1,'rgba(45,65,110,0.78)');
+      } else if (left) {
+        grd.addColorStop(0,'rgba(35,52,90,0.88)');
+        grd.addColorStop(1,'rgba(28,45,82,0.78)');
+      } else {
+        grd.addColorStop(0,'rgba(18,30,62,0.88)');
+        grd.addColorStop(1,'rgba(14,25,55,0.78)');
+      }
+
       ctx.beginPath();
-      ctx.moveTo(bot[i].x, bot[i].y);
-      ctx.lineTo(bot[j].x, bot[j].y);
-      ctx.lineTo(top[j].x, top[j].y);
-      ctx.lineTo(top[i].x, top[i].y);
+      ctx.moveTo(path[0][0],path[0][1]);
+      path.slice(1).forEach(([x,y])=>ctx.lineTo(x,y));
       ctx.closePath();
-      ctx.fillStyle = facing > 0
-        ? `rgba(28,58,110,${0.82*light})`   // přední — tmavě modrá
-        : `rgba(12,28,60,${0.82*light})`;    // zadní — velmi tmavá
-      ctx.strokeStyle = 'rgba(0,15,50,0.5)';
-      ctx.lineWidth = 0.6;
-      ctx.fill();
-      ctx.stroke();
+      ctx.fillStyle=grd; ctx.fill();
+      ctx.strokeStyle='rgba(0,15,50,0.55)'; ctx.lineWidth=0.8; ctx.stroke();
+
+      // Pásy oken a vodorovné pruhy
+      if (hPx>18 && (front||left)) {
+        const rows=Math.max(2,Math.floor(hPx/10));
+        for (let r=1;r<=rows;r++) {
+          const t=r/(rows+1);
+          const x1=bot[i].x+(top[i].x-bot[i].x)*t, y1=bot[i].y+(top[i].y-bot[i].y)*t;
+          const x2=bot[j].x+(top[j].x-bot[j].x)*t, y2=bot[j].y+(top[j].y-bot[j].y)*t;
+          ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+          ctx.strokeStyle=front?'rgba(160,190,240,0.22)':'rgba(100,140,200,0.18)';
+          ctx.lineWidth=Math.max(1.2,hPx/rows*0.22); ctx.stroke();
+        }
+        // Parapet — tmavý pás na vrcholu stěny
+        const pp=hPx*0.1;
+        ctx.beginPath();
+        ctx.moveTo(top[i].x,top[i].y); ctx.lineTo(top[j].x,top[j].y);
+        ctx.lineTo(top[j].x,top[j].y+pp); ctx.lineTo(top[i].x,top[i].y+pp);
+        ctx.closePath();
+        ctx.fillStyle=front?'rgba(20,45,90,0.92)':'rgba(12,28,65,0.92)';
+        ctx.fill();
+        // Světlý pruh atiky
+        ctx.beginPath();
+        ctx.moveTo(top[i].x,top[i].y); ctx.lineTo(top[j].x,top[j].y);
+        ctx.strokeStyle=front?'rgba(200,220,255,0.35)':'rgba(140,170,220,0.2)';
+        ctx.lineWidth=1.2; ctx.stroke();
+      }
     });
 
-    // Střecha — modrá s průhledností aby byl vidět mapový podklad
+    // Střecha — radiální gradient (kupole efekt)
+    const rmax=Math.max(...top.map(p=>Math.hypot(p.x-tcx,p.y-tcy)));
+    const rGrd=ctx.createRadialGradient(tcx,tcy,0,tcx,tcy,rmax);
+    rGrd.addColorStop(0,'rgba(60,110,210,0.93)');
+    rGrd.addColorStop(0.5,'rgba(30,78,158,0.9)');
+    rGrd.addColorStop(1,'rgba(16,52,120,0.87)');
     ctx.beginPath();
-    ctx.moveTo(top[0].x, top[0].y);
-    for (let i = 1; i < n; i++) ctx.lineTo(top[i].x, top[i].y);
+    ctx.moveTo(top[0].x,top[0].y);
+    for(let i=1;i<n;i++) ctx.lineTo(top[i].x,top[i].y);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(28,72,150,0.88)';
-    ctx.strokeStyle = 'rgba(10,50,120,0.9)';
-    ctx.lineWidth = 1;
-    ctx.fill();
-    ctx.stroke();
+    ctx.fillStyle=rGrd; ctx.fill();
+    ctx.strokeStyle='rgba(8,35,95,0.75)'; ctx.lineWidth=1; ctx.stroke();
 
-    // Nápis BUDVAR ARENA na střeše
-    if (zoom >= 15) {
-      const tx = top.reduce((s,p)=>s+p.x,0)/n;
-      const ty = top.reduce((s,p)=>s+p.y,0)/n;
-      const fs = Math.max(8, Math.min(16, hPx * 0.55));
+    // Střešní žebra (strukturální linie)
+    if (hPx>12) {
+      [0.25,0.5,0.75].forEach(t=>{
+        ctx.beginPath();
+        top.forEach((p,i)=>{ const x=tcx+(p.x-tcx)*t, y=tcy+(p.y-tcy)*t; i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+        ctx.closePath();
+        ctx.strokeStyle=`rgba(90,145,235,${0.15+t*0.1})`; ctx.lineWidth=0.7; ctx.stroke();
+      });
+      // Radiální žebra od středu
+      if (hPx>30) {
+        top.forEach((p,i)=>{ if(i%2===0){
+          ctx.beginPath(); ctx.moveTo(tcx,tcy); ctx.lineTo(p.x,p.y);
+          ctx.strokeStyle='rgba(70,125,220,0.12)'; ctx.lineWidth=0.6; ctx.stroke();
+        }});
+      }
+    }
+
+    // Nápis BUDVAR ARENA
+    if (zoom>=15) {
+      const fs=Math.max(7,Math.min(14,hPx*0.48));
       ctx.save();
-      ctx.font = `800 ${fs}px 'Barlow Condensed', sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#f5c300';
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 3;
-      ctx.fillText('BUDVAR ARENA', tx, ty);
+      ctx.font=`800 ${fs}px 'Barlow Condensed',sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,0.8)'; ctx.shadowBlur=4;
+      ctx.fillStyle='#f5c300';
+      ctx.fillText('BUDVAR ARENA',tcx,tcy);
       ctx.restore();
     }
   }
 
-  map.on('move zoom moveend zoomend viewreset', draw);
-  // První vykreslení po načtení dlaždic
+  map.on('move zoom moveend zoomend viewreset',draw);
   map.whenReady(draw);
-  setTimeout(draw, 300);
+  setTimeout(draw,300);
 }
 
 function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
