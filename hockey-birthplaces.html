@@ -706,6 +706,12 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .mk-photo-tooltip { background:transparent!important; border:none!important; box-shadow:none!important; padding:0!important; }
 .mk-photo-tooltip::before { display:none!important; }
 .mk-tooltip-strip { display:flex; align-items:center; filter:drop-shadow(0 3px 10px rgba(10,30,80,.45)); }
+/* Arena popup */
+.arena-popup .leaflet-popup-content-wrapper { background:#0d1219; border:1px solid rgba(200,16,46,0.4); border-radius:4px; padding:0; overflow:hidden; }
+.arena-popup .leaflet-popup-content { margin:0; width:auto!important; }
+.arena-popup .leaflet-popup-tip { background:#0d1219; }
+.arena-popup .leaflet-popup-close-button { color:#5a7090!important; top:8px!important; right:8px!important; }
+.arena-popup .leaflet-popup-close-button:hover { color:#fff!important; }
 /* Arena marker */
 .arena-mk { width:38px;height:38px;border-radius:50%;background:var(--blue3);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:20px;border:2.5px solid #fff;box-shadow:0 4px 14px rgba(10,30,80,.45);cursor:pointer;transition:transform .15s }
 .arena-mk:hover { transform:scale(1.15) }
@@ -1057,15 +1063,31 @@ function initMap() {
   // Set default popup options — keepInView globally
   L.Popup.mergeOptions({keepInView: true});
 
-  // Budvar Arena marker
-  const ARENA = [48.9705361, 14.4711128];
+  // ── BUDVAR ARÉNA MARKER ───────────────────────────────────────────────────
+  const arenaLatLng = [48.97080, 14.47116];
   const arenaIcon = L.divIcon({
-    html: `<div class="arena-mk" title="Budvar Arena">🏟</div>`,
-    className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -22]
+    className: '',
+    html: `<div style="width:36px;height:36px;background:#C8102E;border:2.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.5);font-size:18px;line-height:1;">🏒</div>`,
+    iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -22],
   });
-  L.marker(ARENA, {icon: arenaIcon, zIndexOffset: 5000})
-    .bindPopup(`<div class="pop-hdr" style="border-radius:0">🏟 Budvar Arena</div><div style="padding:8px 14px 10px;font-size:12px;color:#4a5a7a;background:#fff">Domácí stánek HC Motor ČB<br><small style="color:#8a9ab5">Klikni pro 3D zobrazení</small></div><div class="pop-actions"><span class="pop-act" onclick="map.flyTo([48.9705361,14.4711128],17,{duration:1.2})">🔍 Zobrazit ve 3D</span></div>`, {maxWidth:240})
-    .addTo(map);
+  L.marker(arenaLatLng, {icon: arenaIcon, zIndexOffset: 5000})
+    .addTo(map)
+    .bindPopup(`
+      <div style="width:520px;font-family:'Barlow',Arial,sans-serif;padding:0;">
+        <div style="background:#0d1219;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+          <img src="https://hcmotor.cz/img/logo-var-1.svg" style="width:32px;height:32px;" alt="Motor">
+          <div>
+            <div style="color:#fff;font-weight:700;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase;">Budvar Aréna</div>
+            <div style="color:#5a7090;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;">Domácí stadion HC Motor České Budějovice</div>
+          </div>
+        </div>
+        <iframe src="budvar_arena_v4.html" width="520" height="340" style="display:block;border:none;" title="Budvar Aréna 3D model"></iframe>
+        <div style="background:#0d1219;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:#5a7090;font-size:.65rem;letter-spacing:.08em;">Otevřeno: 1946 · Kapacita: 6 421 · Nejstarší stadion v ČR</span>
+          <a href="budvar_arena_v4.html" target="_blank" style="color:#C8102E;font-size:.65rem;letter-spacing:.08em;text-decoration:none;text-transform:uppercase;font-weight:700;">⛶ Celá obrazovka</a>
+        </div>
+      </div>
+    `, {maxWidth: 540, className: 'arena-popup'});
 
   // Canvas 3D arena — kreslí se nad mapou, aktualizuje se při pohybu
   init3DArena();
