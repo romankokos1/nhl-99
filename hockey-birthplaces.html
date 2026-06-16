@@ -974,7 +974,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdn.osmbuildings.org/4.1.1/OSMBuildings-Leaflet.js"></script>
 <script>
 // ══════════════════════════════════════════════════
 // STATE
@@ -1058,24 +1057,6 @@ function initMap() {
   // Set default popup options — keepInView globally
   L.Popup.mergeOptions({keepInView: true});
 
-  // OSMBuildings — 3D budovy při přiblížení (zoom 15+)
-  if (typeof OSMBuildings !== 'undefined') {
-    const osmb = new OSMBuildings(map).load('https://data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');
-    // Budvar Arena — osmihranný půdorys ~100×100m, výška 20m
-    // střed 48.9705N 14.4711E; 1°lat=111320m, 1°lon≈73100m
-    osmb.set({
-      type: 'FeatureCollection',
-      features: [{
-        type: 'Feature',
-        properties: { height: 20, minHeight: 0, color: '#1c3a6e', roofColor: '#1c4896', name: 'Budvar Arena' },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[[14.4704,48.9701],[14.4707,48.9700],[14.4715,48.9700],[14.4718,48.9701],[14.4718,48.9709],[14.4715,48.9710],[14.4707,48.9710],[14.4704,48.9709],[14.4704,48.9701]]]
-        }
-      }]
-    });
-  }
-
   // Budvar Arena marker
   const ARENA = [48.9705361, 14.4711128];
   const arenaIcon = L.divIcon({
@@ -1085,6 +1066,10 @@ function initMap() {
   L.marker(ARENA, {icon: arenaIcon, zIndexOffset: 5000})
     .bindPopup(`<div class="pop-hdr" style="border-radius:0">🏟 Budvar Arena</div><div style="padding:8px 14px 10px;font-size:12px;color:#4a5a7a;background:#fff">Domácí stánek HC Motor ČB<br><small style="color:#8a9ab5">Klikni pro 3D zobrazení</small></div><div class="pop-actions"><span class="pop-act" onclick="map.flyTo([48.9705361,14.4711128],17,{duration:1.2})">🔍 Zobrazit ve 3D</span></div>`, {maxWidth:240})
     .addTo(map);
+
+  // Canvas 3D arena — kreslí se nad mapou, aktualizuje se při pohybu
+  init3DArena();
+
   const FullscreenControl = L.Control.extend({
     onAdd() {
       const btn = L.DomUtil.create('button','leaflet-fullscreen-btn');
@@ -1102,6 +1087,104 @@ function initMap() {
     }
   });
   new FullscreenControl({position:'topleft'}).addTo(map);
+}
+
+function init3DArena() {
+  // Půdorys arény — 8 rohů, souřadnice [lat, lon]
+  const FOOTPRINT = [
+    [48.9701,14.4704],[48.9700,14.4707],[48.9700,14.4715],
+    [48.9701,14.4718],[48.9709,14.4718],[48.9710,14.4715],
+    [48.9710,14.4707],[48.9709,14.4704]
+  ];
+  const HEIGHT_M = 20; // výška haly v metrech
+
+  // Vytvoří canvas nad mapou
+  const canvas = document.createElement('canvas');
+  canvas.id = 'arena3d';
+  canvas.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:450;';
+  document.getElementById('mapEl').appendChild(canvas);
+
+  function draw() {
+    const mapEl = document.getElementById('mapEl');
+    canvas.width  = mapEl.offsetWidth;
+    canvas.height = mapEl.offsetHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const zoom = map.getZoom();
+    if (zoom < 13) return; // příliš daleko — nekreslíme
+
+    // Výška budovy v pixelech při aktuálním zoomu
+    const mpp = (156543.03 * Math.cos(48.9705 * Math.PI / 180)) / Math.pow(2, zoom);
+    const hPx = Math.min(Math.round(HEIGHT_M / mpp), 200);
+    if (hPx < 2) return;
+
+    // Pixelové souřadnice půdorysu
+    const bot = FOOTPRINT.map(ll => map.latLngToContainerPoint(L.latLng(ll[0], ll[1])));
+    const top = bot.map(p => ({x: p.x, y: p.y - hPx}));
+    const n   = bot.length;
+    const cx  = bot.reduce((s,p)=>s+p.x,0)/n;
+    const cy  = bot.reduce((s,p)=>s+p.y,0)/n;
+
+    // Stěny — kreslit od nejzadnějších k nejpřednějším (painter's algorithm)
+    const walls = [];
+    for (let i = 0; i < n; i++) {
+      const j = (i+1) % n;
+      const midY = (bot[i].y + bot[j].y) / 2;
+      const facing = midY - cy; // kladné = přední (jih), záporné = zadní (sever)
+      walls.push({i, j, facing});
+    }
+    walls.sort((a,b) => a.facing - b.facing); // zadní → přední
+
+    walls.forEach(({i, j, facing}) => {
+      const light = facing > 0 ? 1 : 0.6; // přední stěny světlejší
+      ctx.beginPath();
+      ctx.moveTo(bot[i].x, bot[i].y);
+      ctx.lineTo(bot[j].x, bot[j].y);
+      ctx.lineTo(top[j].x, top[j].y);
+      ctx.lineTo(top[i].x, top[i].y);
+      ctx.closePath();
+      ctx.fillStyle = facing > 0
+        ? `rgba(28,58,110,${0.82*light})`   // přední — tmavě modrá
+        : `rgba(12,28,60,${0.82*light})`;    // zadní — velmi tmavá
+      ctx.strokeStyle = 'rgba(0,15,50,0.5)';
+      ctx.lineWidth = 0.6;
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Střecha — modrá s průhledností aby byl vidět mapový podklad
+    ctx.beginPath();
+    ctx.moveTo(top[0].x, top[0].y);
+    for (let i = 1; i < n; i++) ctx.lineTo(top[i].x, top[i].y);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(28,72,150,0.88)';
+    ctx.strokeStyle = 'rgba(10,50,120,0.9)';
+    ctx.lineWidth = 1;
+    ctx.fill();
+    ctx.stroke();
+
+    // Nápis BUDVAR ARENA na střeše
+    if (zoom >= 15) {
+      const tx = top.reduce((s,p)=>s+p.x,0)/n;
+      const ty = top.reduce((s,p)=>s+p.y,0)/n;
+      const fs = Math.max(8, Math.min(16, hPx * 0.55));
+      ctx.save();
+      ctx.font = `800 ${fs}px 'Barlow Condensed', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#f5c300';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 3;
+      ctx.fillText('BUDVAR ARENA', tx, ty);
+      ctx.restore();
+    }
+  }
+
+  map.on('move zoom moveend zoomend viewreset', draw);
+  // První vykreslení po načtení dlaždic
+  map.whenReady(draw);
+  setTimeout(draw, 300);
 }
 
 function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
