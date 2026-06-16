@@ -1061,21 +1061,16 @@ function initMap() {
   // OSMBuildings — 3D budovy při přiblížení (zoom 15+)
   if (typeof OSMBuildings !== 'undefined') {
     const osmb = new OSMBuildings(map).load('https://data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');
-    // Custom arena footprint s výškou a klubovými barvami
+    // Budvar Arena — osmihranný půdorys ~100×100m, výška 20m
+    // střed 48.9705N 14.4711E; 1°lat=111320m, 1°lon≈73100m
     osmb.set({
       type: 'FeatureCollection',
       features: [{
         type: 'Feature',
-        properties: {
-          height: 24,
-          minHeight: 0,
-          color: '#1c3a6e',
-          roofColor: '#1c4896',
-          name: 'Budvar Arena'
-        },
+        properties: { height: 20, minHeight: 0, color: '#1c3a6e', roofColor: '#1c4896', name: 'Budvar Arena' },
         geometry: {
           type: 'Polygon',
-          coordinates: [[[14.4694,48.9692],[14.4728,48.9692],[14.4728,48.9719],[14.4694,48.9719],[14.4694,48.9692]]]
+          coordinates: [[[14.4704,48.9701],[14.4707,48.9700],[14.4715,48.9700],[14.4718,48.9701],[14.4718,48.9709],[14.4715,48.9710],[14.4707,48.9710],[14.4704,48.9709],[14.4704,48.9701]]]
         }
       }]
     });
@@ -1088,7 +1083,7 @@ function initMap() {
     className: '', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -22]
   });
   L.marker(ARENA, {icon: arenaIcon, zIndexOffset: 5000})
-    .bindPopup(`<div class="pop-hdr" style="border-radius:0">🏟 Budvar Arena</div><div style="padding:8px 14px 10px;font-size:12px;color:#4a5a7a;background:#fff">Domácí stánek HC Motor ČB<br><small style="color:#8a9ab5">48.9705°N 14.4711°E</small></div><div class="pop-actions"><span class="pop-act" onclick="map.flyTo([48.9705361,14.4711128],18,{duration:1.5})">🔍 Zobrazit ve 3D</span></div>`, {maxWidth:240})
+    .bindPopup(`<div class="pop-hdr" style="border-radius:0">🏟 Budvar Arena</div><div style="padding:8px 14px 10px;font-size:12px;color:#4a5a7a;background:#fff">Domácí stánek HC Motor ČB<br><small style="color:#8a9ab5">Klikni pro 3D zobrazení</small></div><div class="pop-actions"><span class="pop-act" onclick="map.flyTo([48.9705361,14.4711128],17,{duration:1.2})">🔍 Zobrazit ve 3D</span></div>`, {maxWidth:240})
     .addTo(map);
   const FullscreenControl = L.Control.extend({
     onAdd() {
