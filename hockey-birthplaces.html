@@ -706,16 +706,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .mk-photo-tooltip { background:transparent!important; border:none!important; box-shadow:none!important; padding:0!important; }
 .mk-photo-tooltip::before { display:none!important; }
 .mk-tooltip-strip { display:flex; align-items:center; filter:drop-shadow(0 3px 10px rgba(10,30,80,.45)); }
-/* Arena 3D panel */
-#arena3d-panel{position:absolute;width:380px;height:265px;background:#0d1219;border:1px solid rgba(200,16,46,0.45);border-radius:6px;overflow:hidden;z-index:600;display:none;box-shadow:0 8px 32px rgba(0,0,0,.65);pointer-events:auto}
-#arena3d-panel canvas{display:block}
-.a3d-head{position:absolute;top:0;left:0;right:0;padding:7px 10px;background:rgba(13,18,25,.85);display:flex;align-items:center;justify-content:space-between;z-index:2;pointer-events:none}
-.a3d-title{color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.a3d-title span{color:#C8102E}
-.a3d-views{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px;z-index:3}
-.a3d-vbtn{background:rgba(10,16,26,.8);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.65);font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;cursor:pointer;border-radius:2px;transition:.2s}
-.a3d-vbtn:hover,.a3d-vbtn.active{border-color:#C8102E;color:#fff}
-.a3d-close{position:absolute;bottom:7px;right:8px;z-index:3;background:rgba(200,16,46,.7);border:none;color:#fff;font-size:11px;padding:3px 8px;border-radius:2px;cursor:pointer;letter-spacing:.05em}
-.a3d-close:hover{background:rgba(200,16,46,.9)}
 /* Arena popup */
 .arena-popup .leaflet-popup-content-wrapper { background:#0d1219; border:1px solid rgba(200,16,46,0.4); border-radius:4px; padding:0; overflow:hidden; }
 .arena-popup .leaflet-popup-content { margin:0; width:auto!important; }
@@ -862,15 +852,13 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
     <div id="mapEl"></div>
     <div id="mkCityLabel" class="mk-city-label"></div>
-    <div id="arena3d-panel">
-      <div class="a3d-head"><span class="a3d-title">Budvar <span>Aréna</span></span></div>
-      <div class="a3d-views">
+<div class="a3d-views">
         <button class="a3d-vbtn active" id="av-main" onclick="arenaSetView('main')">Vstup</button>
         <button class="a3d-vbtn" id="av-nw"   onclick="arenaSetView('nw')">SZ roh</button>
         <button class="a3d-vbtn" id="av-top"  onclick="arenaSetView('top')">Shora</button>
         <button class="a3d-vbtn" id="av-north" onclick="arenaSetView('north')">Sever</button>
       </div>
-      <button class="a3d-close" onclick="document.getElementById('arena3d-panel').style.display='none'">✕ Zavřít</button>
+
     </div>
     <!-- FILTR -->
     <div class="filter-panel" id="filterPanel" style="display:none">
@@ -1132,31 +1120,28 @@ function initMap() {
 
 function initArena3D() {
   if (typeof THREE === 'undefined') return;
-  const panel = document.getElementById('arena3d-panel');
-  const W = 380, H = 265;
 
-  // Renderer
-  const renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setSize(W, H);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const canvas = document.createElement('canvas');
+  canvas.id = 'arena3d-canvas';
+  canvas.style.cssText = 'position:absolute;z-index:420;pointer-events:auto;cursor:grab;';
+  document.getElementById('mapEl').appendChild(canvas);
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
-  panel.insertBefore(renderer.domElement, panel.firstChild);
+  renderer.setClearColor(0x000000, 0);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0d1219);
-  scene.fog = new THREE.FogExp2(0x0d1219, 0.006);
+  const camera = new THREE.PerspectiveCamera(44, 1, 0.1, 600);
 
-  const camera = new THREE.PerspectiveCamera(44, W/H, 0.1, 600);
-
-  // Lights
-  scene.add(new THREE.AmbientLight(0x8899bb, 0.55));
+  scene.add(new THREE.AmbientLight(0x8899bb, 0.6));
   const sun = new THREE.DirectionalLight(0xfff8e0, 1.5);
   sun.position.set(25,55,40); sun.castShadow=true;
-  sun.shadow.mapSize.set(2048,2048);
+  sun.shadow.mapSize.set(1024,1024);
   sun.shadow.camera.left=sun.shadow.camera.bottom=-80;
   sun.shadow.camera.right=sun.shadow.camera.top=80;
   sun.shadow.camera.far=220; sun.shadow.bias=-0.0005;
@@ -1174,12 +1159,12 @@ function initArena3D() {
     glass:new THREE.MeshLambertMaterial({color:0x3a6888,transparent:true,opacity:0.6}),
     glFrame:new THREE.MeshLambertMaterial({color:0x1e2c38}),
     pillar:new THREE.MeshLambertMaterial({color:0xe0e6ea}),
-    ground:new THREE.MeshLambertMaterial({color:0x141b24}),
-    asphalt:new THREE.MeshLambertMaterial({color:0x1a2230}),
+    shadow:new THREE.ShadowMaterial({opacity:0.18}),
     concrete:new THREE.MeshLambertMaterial({color:0xb0bcc5}),
     red:new THREE.MeshLambertMaterial({color:0xC8102E}),
     steel:new THREE.MeshLambertMaterial({color:0x8899aa}),
     lamel:new THREE.MeshLambertMaterial({color:0x5a6a78}),
+    darkG:new THREE.MeshLambertMaterial({color:0x253d20}),
   };
 
   function mesh(geo,mat,x=0,y=0,z=0,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
@@ -1187,16 +1172,17 @@ function initArena3D() {
   function cyl(rt,rb,h,seg,mat,x,y,z,rx=0,ry=0,rz=0){return mesh(new THREE.CylinderGeometry(rt,rb,h,seg,1,false),mat,x,y,z,rx,ry,rz);}
   function addGeo(verts,idx,mat){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));geo.setIndex(new THREE.BufferAttribute(new Uint16Array(idx),1));geo.computeVertexNormals();const m=new THREE.Mesh(geo,mat);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
 
+  // Shadow-only ground
+  const gnd=mesh(new THREE.PlaneGeometry(220,220),M.shadow,0,0,0,-Math.PI/2);gnd.receiveShadow=true;
+
   const HW=26,HD=36,HHn=16,HHj=10,avgH=(HHn+HHj)/2;
-  mesh(new THREE.PlaneGeometry(220,220),M.ground,0,0,0,-Math.PI/2);
-  box(42,0.06,30,M.asphalt,5,0.03,HD/2+12);box(35,0.08,4,M.concrete,5,0.04,HD/2+2);
   box(HW,avgH,HD,M.grey,0,avgH/2,0);
   {const ovN=2,ovS=9,ovW=1.5,ovE=1.5;
   addGeo([-HW/2-ovW,HHn+0.2,-HD/2-ovN,HW/2+ovE,HHn+0.2,-HD/2-ovN,HW/2+ovE,HHj-0.3,HD/2+ovS,-HW/2-ovW,HHj-0.3,HD/2+ovS],[0,2,1,0,3,2],M.roofTop);
   addGeo([-HW/2-ovW,HHj-0.35,HD/2+ovS,HW/2+ovE,HHj-0.35,HD/2+ovS,HW/2+ovE,HHj-0.05,HD/2,-HW/2-ovW,HHj-0.05,HD/2],[0,1,2,0,2,3],M.roofBot);
   addGeo([-HW/2-ovW,HHn+0.2,-HD/2-ovN,-HW/2-ovW,HHj-0.3,HD/2+ovS,-HW/2-ovW,HHj,HD/2,-HW/2-ovW,HHn,-HD/2],[0,1,3,1,2,3],M.roofTop);
   addGeo([HW/2+ovE,HHn+0.2,-HD/2-ovN,HW/2+ovE,HHj-0.3,HD/2+ovS,HW/2+ovE,HHj,HD/2,HW/2+ovE,HHn,-HD/2],[0,3,1,1,3,2],M.roofTop);}
-  for(let i=0;i<7;i++){const lz=HD/2+0.8+i*1.2,ly=HHj-0.1-i*0.04;box(HW+3.2,0.14,0.2,M.lamel,0,ly,lz);}
+  for(let i=0;i<7;i++)box(HW+3.2,0.14,0.2,M.lamel,0,HHj-0.1-i*0.04,HD/2+0.8+i*1.2);
   cyl(0.8,0.8,HW+3.5,14,M.roofEdge,0,HHj-0.45,HD/2+9,0,0,Math.PI/2);
   box(HW,HHn,0.3,M.white,0,HHn/2,-HD/2);
   for(let j=1;j<7;j++)box(HW+0.2,0.2,0.5,M.grey,0,j*(HHn/7),-HD/2-0.2);
@@ -1209,50 +1195,40 @@ function initArena3D() {
   for(let i=0;i<tSegs;i++){const a1=-Math.PI*0.15+i*(Math.PI*1.3/tSegs),a2=-Math.PI*0.15+(i+1)*(Math.PI*1.3/tSegs);const mx=TX+(Math.cos(a1)+Math.cos(a2))/2*(TR+0.1),mz=TZ+(Math.sin(a1)+Math.sin(a2))/2*(TR+0.1);const ang=Math.atan2(Math.cos(a2)-Math.cos(a1),Math.sin(a2)-Math.sin(a1));box(TR*Math.PI*1.3/tSegs+0.1,TH2,0.18,i%3===1?M.glFrame:M.glass,mx,TH1+TH2/2,mz,-ang);}
   cyl(TR+0.3,TR+0.3,0.45,32,M.white,TX,TH1+TH2+0.22,TZ);cyl(TR+0.2,TR+0.2,0.35,32,M.white,TX,0.18,TZ);cyl(TR+0.25,TR+0.25,0.3,32,M.grey,TX,TH1+0.15,TZ);
   box(TR*1.1,0.5,0.08,M.red,TX,TH1+TH2*0.25,TZ+TR+0.05);
-  const SX=8,SZ=HD/2+1;box(5.5,HHj,3,M.grey,SX,HHj/2,SZ);box(6.5,0.25,2.5,M.concrete,SX,TH1+0.1,SZ+0.5);box(6.5,0.25,2.5,M.concrete,SX,TH1+TH2+0.1,SZ+0.5);for(let s=0;s<6;s++)box(3,0.15,1,M.steel,SX+0.5,0.5+s*1.5,SZ+2.5+s*0.4);box(0.08,3.5,0.08,M.steel,SX-1.2,1.75,SZ+2.5);box(0.08,3.5,0.08,M.steel,SX+2.2,1.75,SZ+2.5);box(3.5,0.08,0.08,M.steel,SX+0.5,3.5,SZ+2.5);box(6.5,0.08,0.08,M.steel,SX,TH1+0.6,SZ+1.7);box(6.5,0.08,0.08,M.steel,SX,TH1+TH2+0.6,SZ+1.7);
+  const SX=8,SZ=HD/2+1;box(5.5,HHj,3,M.grey,SX,HHj/2,SZ);box(6.5,0.25,2.5,M.concrete,SX,TH1+0.1,SZ+0.5);box(6.5,0.25,2.5,M.concrete,SX,TH1+TH2+0.1,SZ+0.5);for(let s=0;s<6;s++)box(3,0.15,1,M.steel,SX+0.5,0.5+s*1.5,SZ+2.5+s*0.4);box(0.08,3.5,0.08,M.steel,SX-1.2,1.75,SZ+2.5);box(0.08,3.5,0.08,M.steel,SX+2.2,1.75,SZ+2.5);box(3.5,0.08,0.08,M.steel,SX+0.5,3.5,SZ+2.5);
   const cnR=4.5,cnX=-HW/2,cnZ=-HD/2,cnSegs=12;for(let i=0;i<cnSegs;i++){const a1=Math.PI+(i/cnSegs)*Math.PI*0.5,a2=Math.PI+((i+1)/cnSegs)*Math.PI*0.5;const mx=cnX+cnR*(Math.cos(a1)+Math.cos(a2))/2,mz=cnZ+cnR*(Math.sin(a1)+Math.sin(a2))/2;const ang=Math.atan2((Math.sin(a2)-Math.sin(a1)),(Math.cos(a2)-Math.cos(a1)));box(0.3,HHn,0.5,M.white,mx,HHn/2,mz,ang+Math.PI/2);box(0.2,HHn*0.35,0.35,M.glass,mx,HHn*0.78,mz,ang+Math.PI/2);}
-  const TrW=20,TrH=7.5,TrD=22;box(TrW,TrH,TrD,M.white,2,TrH/2,HD/2+TrD/2+2.5);addGeo([-TrW/2-0.5,TrH,HD/2+2.3,TrW/2+0.5,TrH,HD/2+2.3,-TrW/2-0.5,TrH+1.5,HD/2+TrD+2.8,TrW/2+0.5,TrH+1.5,HD/2+TrD+2.8],[0,2,1,1,2,3],M.roofTop);box(0.3,TrH,TrD,M.grey,2-TrW/2,TrH/2,HD/2+TrD/2+2.5);box(0.3,TrH,TrD,M.grey,2+TrW/2,TrH/2,HD/2+TrD/2+2.5);box(TrW,0.3,0.3,M.grey,2,TrH,HD/2+2.5);
+  const TrW=20,TrH=7.5,TrD=22;box(TrW,TrH,TrD,M.white,2,TrH/2,HD/2+TrD/2+2.5);addGeo([-TrW/2-0.5,TrH,HD/2+2.3,TrW/2+0.5,TrH,HD/2+2.3,-TrW/2-0.5,TrH+1.5,HD/2+TrD+2.8,TrW/2+0.5,TrH+1.5,HD/2+TrD+2.8],[0,2,1,1,2,3],M.roofTop);box(0.3,TrH,TrD,M.grey,2-TrW/2,TrH/2,HD/2+TrD/2+2.5);box(0.3,TrH,TrD,M.grey,2+TrW/2,TrH/2,HD/2+TrD/2+2.5);
   const GBx=HW/2+7;box(10,13,22,M.grey,GBx,6.5,0);for(let r=0;r<4;r++)for(let c=0;c<3;c++){box(2.2,2.5,0.15,M.glass,GBx-3.5+c*3.3,2+r*3,-8);box(2.2,2.5,0.15,M.glass,GBx-3.5+c*3.3,2+r*3,8);}box(0.15,13,22,M.glFrame,GBx-5.15,6.5,0);box(0.15,13,22,M.glFrame,GBx+5.15,6.5,0);
-  function tree(x,z,h=5,r=2){cyl(0.2,0.25,h*0.4,6,M.darkW,x,h*0.2,z);const c=new THREE.Mesh(new THREE.SphereGeometry(r,8,5),new THREE.MeshLambertMaterial({color:0x253d20}));c.position.set(x,h*0.52,z);c.castShadow=true;scene.add(c);}
-  tree(-22,4,5.5,2.2);tree(-24,-6,5,1.8);tree(-23,12,6,2.3);tree(-22,-18,4.5,1.6);tree(20,-26,4.5,1.7);tree(24,-22,5,1.9);tree(-16,28,4,1.5);tree(12,32,4.5,1.8);
-  function lamp(x,z){cyl(0.07,0.07,6,5,M.steel,x,3,z);const g=new THREE.Mesh(new THREE.SphereGeometry(0.22,6,4),new THREE.MeshLambertMaterial({color:0xffffcc,emissive:0xffff88,emissiveIntensity:0.4}));g.position.set(x,6.2,z);scene.add(g);}
-  lamp(18,16);lamp(18,4);lamp(26,10);lamp(26,-2);
-  scene.add(new THREE.GridHelper(160,50,0x1a2535,0x141c28));
+  function tree(x,z,h=5,r=2){cyl(0.2,0.25,h*0.4,6,M.darkW,x,h*0.2,z);const c=new THREE.Mesh(new THREE.SphereGeometry(r,8,5),M.darkG);c.position.set(x,h*0.52,z);c.castShadow=true;scene.add(c);}
+  tree(-22,4,5.5,2.2);tree(-24,-6,5,1.8);tree(-23,12,6,2.3);tree(-22,-18,4.5,1.6);tree(20,-26,4.5,1.7);tree(24,-22,5,1.9);
 
-  // Orbit controls
-  let drag=false,rclick=false,opx=0,opy=0;
-  let theta=1.9,phi=0.55,radius=88;
+  let drag=false,rclick=false,opx=0,opy=0,theta=1.9,phi=0.52,radius=88;
   const target=new THREE.Vector3(2,7,6);
   function updateCam(){camera.position.set(target.x+radius*Math.sin(phi)*Math.sin(theta),target.y+radius*Math.cos(phi),target.z+radius*Math.sin(phi)*Math.cos(theta));camera.lookAt(target);}
   updateCam();
-  renderer.domElement.addEventListener('mousedown',e=>{drag=true;rclick=e.button===2;opx=e.clientX;opy=e.clientY;e.stopPropagation();});
-  window.addEventListener('mouseup',()=>drag=false);
+  canvas.addEventListener('mousedown',e=>{drag=true;rclick=e.button===2;opx=e.clientX;opy=e.clientY;canvas.style.cursor='grabbing';e.stopPropagation();});
+  window.addEventListener('mouseup',()=>{drag=false;canvas.style.cursor='grab';});
   window.addEventListener('mousemove',e=>{if(!drag)return;const dx=e.clientX-opx,dy=e.clientY-opy;if(rclick){target.x-=dx*0.04*Math.cos(theta);target.z+=dx*0.04*Math.sin(theta);target.y+=dy*0.04;}else{theta-=dx*0.007;phi=Math.max(0.05,Math.min(Math.PI*0.47,phi+dy*0.005));}opx=e.clientX;opy=e.clientY;updateCam();});
-  renderer.domElement.addEventListener('wheel',e=>{e.stopPropagation();radius=Math.max(12,Math.min(170,radius+e.deltaY*0.07));updateCam();},{passive:true});
-  renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+  canvas.addEventListener('wheel',e=>{e.stopPropagation();radius=Math.max(20,Math.min(170,radius+e.deltaY*0.07));updateCam();},{passive:true});
+  canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
-  const aViews={main:{theta:1.9,phi:0.52,r:85,tx:2,ty:7,tz:8},nw:{theta:3.82,phi:0.48,r:75,tx:-5,ty:8,tz:-8},top:{theta:2.1,phi:0.07,r:95,tx:0,ty:0,tz:0},north:{theta:Math.PI,phi:0.5,r:80,tx:0,ty:8,tz:-10}};
-  window.arenaSetView = function(k){const v=aViews[k];theta=v.theta;phi=v.phi;radius=v.r;target.set(v.tx,v.ty,v.tz);updateCam();document.querySelectorAll('.a3d-vbtn').forEach(b=>b.classList.remove('active'));document.getElementById('av-'+k)?.classList.add('active');};
+  (function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);})();
 
-  // Animate
-  (function animate(){requestAnimationFrame(animate);if(panel.style.display!=='none')renderer.render(scene,camera);})();
-
-  // Pozicování panelu na souřadnicích arény
-  const ARENA_LL = L.latLng(48.97080, 14.47116);
-  function positionPanel() {
-    const pt = map.latLngToContainerPoint(ARENA_LL);
-    panel.style.left = (pt.x - W/2) + 'px';
-    panel.style.top  = (pt.y - H - 48) + 'px';
-    // Zobrazit/skrýt podle zoomu
-    const z = map.getZoom();
-    if (z >= 14 && map.getBounds().contains(ARENA_LL)) {
-      panel.style.display = 'block';
-    } else {
-      panel.style.display = 'none';
-    }
+  const ARENA_LL=L.latLng(48.97080,14.47116);
+  let lastW=0,lastH=0;
+  function positionAndSize(){
+    const zoom=map.getZoom();
+    if(zoom<13){canvas.style.display='none';return;}
+    canvas.style.display='block';
+    const W=Math.min(Math.max(140,Math.round(70*Math.pow(2,zoom-13))),600);
+    const H=Math.round(W*0.72);
+    if(W!==lastW||H!==lastH){renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix();lastW=W;lastH=H;}
+    const pt=map.latLngToContainerPoint(ARENA_LL);
+    canvas.style.left=(pt.x-W/2)+'px';
+    canvas.style.top=(pt.y-H*0.78)+'px';
   }
-  map.on('move zoom moveend zoomend', positionPanel);
-  positionPanel();
+  map.on('move zoom moveend zoomend',positionAndSize);
+  positionAndSize();
 }
 
 function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
