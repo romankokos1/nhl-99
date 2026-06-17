@@ -215,7 +215,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 
 /* ── FILTER PANEL – glassmorphism redesign ───── */
 .filter-panel{
-  position:absolute;bottom:16px;left:14px;z-index:400;
+  position:absolute;bottom:16px;left:14px;z-index:430;
   background:rgba(232,241,255,.90);
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   border:1px solid rgba(255,255,255,.72);
@@ -1123,8 +1123,8 @@ function initArena3D() {
 
   const canvas = document.createElement('canvas');
   canvas.id = 'arena3d-canvas';
-  canvas.style.cssText = 'position:absolute;z-index:420;pointer-events:auto;cursor:grab;';
-  document.getElementById('mapEl').appendChild(canvas);
+  canvas.style.cssText = 'position:absolute;z-index:420;pointer-events:auto;cursor:grab;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.35);';
+  document.querySelector('.rp').appendChild(canvas);
 
   const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
@@ -1134,6 +1134,8 @@ function initArena3D() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   renderer.setClearColor(0x000000, 0);
+  const AW=320, AH=230;
+  renderer.setSize(AW, AH);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(44, 1, 0.1, 600);
@@ -1215,17 +1217,17 @@ function initArena3D() {
   (function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);})();
 
   const ARENA_LL=L.latLng(48.97080,14.47116);
-  let lastW=0,lastH=0;
+  camera.aspect = AW/AH; camera.updateProjectionMatrix();
   function positionAndSize(){
     const zoom=map.getZoom();
     if(zoom<13){canvas.style.display='none';return;}
     canvas.style.display='block';
-    const W=Math.min(Math.max(140,Math.round(70*Math.pow(2,zoom-13))),600);
-    const H=Math.round(W*0.72);
-    if(W!==lastW||H!==lastH){renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix();lastW=W;lastH=H;}
     const pt=map.latLngToContainerPoint(ARENA_LL);
-    canvas.style.left=(pt.x-W/2)+'px';
-    canvas.style.top=(pt.y-H*0.78)+'px';
+    const mapEl=document.getElementById('mapEl');
+    const ml=mapEl.getBoundingClientRect().left - mapEl.closest('.rp').getBoundingClientRect().left;
+    const mt=mapEl.getBoundingClientRect().top  - mapEl.closest('.rp').getBoundingClientRect().top;
+    canvas.style.left=(ml+pt.x-AW/2)+'px';
+    canvas.style.top=(mt+pt.y-AH*0.78)+'px';
   }
   map.on('move zoom moveend zoomend',positionAndSize);
   positionAndSize();
