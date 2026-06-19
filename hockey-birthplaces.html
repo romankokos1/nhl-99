@@ -2250,7 +2250,7 @@ loadPlayers(function() {
 });
 loadRosters();
   
-window.addEventListener('resize', () => { map.invalidateSize(); setHdrHeight(); });
+window.addEventListener('resize', () => { if (map) map.invalidateSize(); setHdrHeight(); });
 
 // Measure header height for mobile lp overlay positioning
 function setHdrHeight() {
