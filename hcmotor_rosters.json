@@ -1,0 +1,4061 @@
+[
+  {
+    "season": "1927/28",
+    "year": 1927,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství jižních Čech",
+        "place": 1
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "F. Albrecht",
+      "Malík",
+      "Doležal",
+      "Zasadil",
+      "Ryneš",
+      "Trost",
+      "S. Aibl",
+      "Kotous",
+      "Toufar",
+      "Bouša",
+      "Dědič",
+      "Jos",
+      "Albrecht",
+      "Houfek",
+      "R. Albrecht",
+      "Kučera",
+      "Kolb",
+      "Valenta"
+    ]
+  },
+  {
+    "season": "1928/29",
+    "year": 1928,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství jižních Čech",
+        "place": 2
+      },
+      {
+        "name": "Mistrovství českého venkova",
+        "place": 4
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "F. Albrecht",
+      "Doležal",
+      "Zasadil",
+      "Ryneš",
+      "O. Aibl",
+      "Trost",
+      "Neumann",
+      "S. Aibl",
+      "Kotous",
+      "Toufar",
+      "Dědič",
+      "Jos",
+      "Albrecht",
+      "Houfek"
+    ]
+  },
+  {
+    "season": "1929/30",
+    "year": 1929,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství jižních Čech",
+        "place": 1
+      },
+      {
+        "name": "Mistrovství českého venkova",
+        "place": 1
+      },
+      {
+        "name": "Mistrovství Čech",
+        "place": 2
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "F. Albrecht",
+      "R. Konzal",
+      "Doležal",
+      "Zasadil",
+      "Ryneš",
+      "S. Aibl",
+      "Kotous",
+      "Toufar",
+      "Houfek"
+    ]
+  },
+  {
+    "season": "1930/31",
+    "year": 1930,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství jižních Čech",
+        "place": 2
+      },
+      {
+        "name": "Mistrovství českého venkova",
+        "place": 1
+      },
+      {
+        "name": "Mistrovství Československa",
+        "place": 2
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Konzal",
+      "F. Piloušek",
+      "Kučera",
+      "Krčín",
+      "Zasadil",
+      "Ryneš",
+      "S. Aibl",
+      "Kotous",
+      "Toufar",
+      "Houfek",
+      "O. Aibl"
+    ]
+  },
+  {
+    "season": "1931/32",
+    "year": 1931,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství Jihočeské župy",
+        "place": 3
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "F. Albrecht",
+      "F. Piloušek",
+      "Houfek",
+      "Zasadil",
+      "Ryneš",
+      "S. Aibl",
+      "Kotous",
+      "Toufar",
+      "O. Aibl",
+      "Špatný",
+      "Dědič",
+      "Krčín",
+      "Trost"
+    ]
+  },
+  {
+    "season": "1932/33",
+    "year": 1932,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství Jihočeské župy",
+        "place": 5
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "K. Dědič",
+      "Houfek",
+      "Zasadil",
+      "Ryneš",
+      "S. Aibl",
+      "Kotous",
+      "O. Aibl",
+      "Špatný",
+      "Krčín",
+      "Lejsek"
+    ]
+  },
+  {
+    "season": "1933/34",
+    "year": 1933,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství Jihočeské župy",
+        "place": 2
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "K. Dědič",
+      "Konzal",
+      "Sochůrek",
+      "Neumann",
+      "Kučera",
+      "Zasadil",
+      "Ryneš",
+      "S. Aibl",
+      "Kotous",
+      "Houfek",
+      "Cvach",
+      "Hára",
+      "Špatný",
+      "Fr. Mizera",
+      "Jos",
+      "Piloušek",
+      "Vojáček"
+    ]
+  },
+  {
+    "season": "1934/35",
+    "year": 1934,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství Jihočeské župy",
+        "place": 1
+      },
+      {
+        "name": "Mistrovství českého venkova",
+        "place": 1
+      },
+      {
+        "name": "Mistrovství Čech",
+        "place": 2
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Dědič",
+      "Stein",
+      "Ryneš",
+      "Zasadil",
+      "Neumann",
+      "Aibl",
+      "Kotous",
+      "Špatný",
+      "Piloušek",
+      "Houfek",
+      "Mizera",
+      "Hára"
+    ]
+  },
+  {
+    "season": "1935/36",
+    "year": 1935,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Jihozápadní divize",
+        "place": 1
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Dědič",
+      "Ryneš",
+      "Zasadil",
+      "Neumann",
+      "Vališ",
+      "Aibl",
+      "Kotous",
+      "Špatný",
+      "Cvach",
+      "Mizera",
+      "Hára",
+      "Piloušek",
+      "Vávra"
+    ]
+  },
+  {
+    "season": "1936/37",
+    "year": 1936,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Státní liga",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "Státní liga",
+    "tier": 1,
+    "players": [
+      "Dědič",
+      "Kučera",
+      "Ryneš",
+      "Zasadil",
+      "O. Aibl",
+      "Špatný",
+      "Kotouz",
+      "V. Aibl",
+      "Cvach",
+      "F. Mizera",
+      "Vávra",
+      "Č. Pícha"
+    ]
+  },
+  {
+    "season": "1937/38",
+    "year": 1937,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Státní liga: sk. B",
+        "place": 6
+      }
+    ],
+    "mainPlace": 6,
+    "mainLeague": "Státní liga: sk. B",
+    "tier": 1,
+    "players": [
+      "Černý",
+      "Zeman",
+      "S. Pícha",
+      "O. Aibl",
+      "Charypar",
+      "Ryneš",
+      "Zasadil",
+      "Kotous",
+      "F. Mizera",
+      "V. Aibl",
+      "Mothejl",
+      "Č. Pícha",
+      "S. Pícha",
+      "Vávra"
+    ]
+  },
+  {
+    "season": "1938/39",
+    "year": 1938,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství Jihočeské župy",
+        "place": 3
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Zeman",
+      "Houfek",
+      "Zasadil",
+      "Charypar",
+      "V. Aibl",
+      "Kotous",
+      "Vávra",
+      "St. Pícha",
+      "Mizera",
+      "Č. Pícha",
+      "Lenc",
+      "Mothejl"
+    ]
+  },
+  {
+    "season": "1939/40",
+    "year": 1939,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství Šumavské župy",
+        "place": 2
+      },
+      {
+        "name": "Přebor Šumavské župy",
+        "place": 3
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Šimeček",
+      "Houfek",
+      "Charypar",
+      "Zasadil",
+      "V. Aibl",
+      "Špatný",
+      "Vávra",
+      "St. Pícha",
+      "Č. Pícha",
+      "Mizera",
+      "Lenc",
+      "Kotous",
+      "Kakeš"
+    ]
+  },
+  {
+    "season": "1940/41",
+    "year": 1940,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Mistrovství Šumavské župy",
+        "place": 1
+      },
+      {
+        "name": "Svazový pohár",
+        "place": 1
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Vacek",
+      "Sl. Aibl",
+      "Charypar",
+      "St. Pícha",
+      "Mizera",
+      "Č. Pícha",
+      "Homolka",
+      "Kouba",
+      "Vávra",
+      "Lenc",
+      "Cvach",
+      "Macelis"
+    ]
+  },
+  {
+    "season": "1941/42",
+    "year": 1941,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Českomoravská liga",
+        "place": 5
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Vacek",
+      "Sl. Aibl",
+      "Charypar",
+      "St. Pícha",
+      "Mizera",
+      "Č. Pícha",
+      "Vávra",
+      "Homolka",
+      "Cvach",
+      "Lenc"
+    ]
+  },
+  {
+    "season": "1942/43",
+    "year": 1942,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Českomoravská liga",
+        "place": 5
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Vacek",
+      "Bonuš",
+      "Charypar",
+      "Sl. Aibl",
+      "Vl. Mizera",
+      "St. Pícha",
+      "Fr. Mizera",
+      "Č. Pícha",
+      "Homolka",
+      "Vávra",
+      "Macelis",
+      "Lenc"
+    ]
+  },
+  {
+    "season": "1943/44",
+    "year": 1943,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Českomoravská liga",
+        "place": 5
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Vacek",
+      "Dědič",
+      "Sl. Aibl",
+      "Charypar",
+      "Bonuš",
+      "Vl. Mizera",
+      "St. Pícha",
+      "Fr. Mizera",
+      "Č. Pícha",
+      "Homolka",
+      "Vávra",
+      "Macelis",
+      "Lenc"
+    ]
+  },
+  {
+    "season": "1944/45",
+    "year": 1944,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Zimní hry Šumavské župy: ČB okrsek A",
+        "place": 1
+      }
+    ],
+    "mainPlace": null,
+    "mainLeague": "",
+    "tier": 2,
+    "players": [
+      "Vacek",
+      "Sl. Aibl",
+      "Charypar",
+      "Bonuš",
+      "Vl. Mizera",
+      "Matoušek",
+      "St. Pícha",
+      "Fr. Mizera",
+      "Č. Pícha",
+      "Homolka",
+      "Vávra",
+      "Macelis",
+      "Lenc",
+      "Bílek"
+    ]
+  },
+  {
+    "season": "1945/46",
+    "year": 1945,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Státní liga: sk. A",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "Státní liga: sk. A",
+    "tier": 1,
+    "players": [
+      "Vacek",
+      "Sl. Aibl",
+      "Charypar",
+      "Schrabal",
+      "Chochola",
+      "Vl. Mizera",
+      "Matoušek",
+      "St. Pícha",
+      "Fr. Mizera",
+      "Č. Pícha",
+      "Homolka",
+      "Vávra",
+      "Macelis",
+      "Kalista",
+      "Bílek"
+    ]
+  },
+  {
+    "season": "1946/47",
+    "year": 1946,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Státní liga: sk. A",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "Státní liga: sk. A",
+    "tier": 1,
+    "players": [
+      "Vacek",
+      "Kroupa",
+      "Sl. Aibl",
+      "Charypar",
+      "Bonuš",
+      "Vacovský",
+      "Matoušek",
+      "St. Pícha",
+      "Seiml",
+      "Fr. Mizera",
+      "Č. Pícha",
+      "Kalista",
+      "Vávra",
+      "Macelis",
+      "Bílek",
+      "Oberleitner"
+    ]
+  },
+  {
+    "season": "1947/48",
+    "year": 1947,
+    "club": "AC Stadion ČB",
+    "comps": [
+      {
+        "name": "Státní liga: sk. B",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "Státní liga: sk. B",
+    "tier": 1,
+    "players": [
+      "Červený",
+      "Vacek",
+      "Kroupa",
+      "Sl. Aibl",
+      "Charypar",
+      "Vacovský",
+      "St. Pícha",
+      "V. Němec",
+      "Fr. Mizera",
+      "Č. Pícha",
+      "Vávra",
+      "Macelis",
+      "Bílek",
+      "Kalista",
+      "Bonuš",
+      "Oberleitner"
+    ]
+  },
+  {
+    "season": "1948/49",
+    "year": 1948,
+    "club": "Sokol Stadion ČB",
+    "comps": [
+      {
+        "name": "Státní liga",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "Státní liga",
+    "tier": 1,
+    "players": [
+      "Červený",
+      "Vacek",
+      "Sl. Aibl",
+      "Charypar",
+      "Vacovský",
+      "St. Pícha",
+      "V. Němec",
+      "Fr. Mizera",
+      "Vl. Mizera",
+      "Č. Pícha",
+      "Vávra",
+      "Macelis",
+      "Bílek",
+      "Oberleitner",
+      "Hlásek",
+      "Bruderhans"
+    ]
+  },
+  {
+    "season": "1949/50",
+    "year": 1949,
+    "club": "Sokol Stadion ČB / ZSJ OD Stadion ČB",
+    "comps": [
+      {
+        "name": "Celostátní mistrovská soutěž",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "Celostátní mistrovská soutěž",
+    "tier": 1,
+    "players": [
+      "Červený",
+      "Vacek",
+      "Charypar",
+      "Mottl",
+      "St. Pícha",
+      "Vacovský",
+      "Němec",
+      "Mizera",
+      "Č. Pícha",
+      "Vávra",
+      "Macelis",
+      "Bílek",
+      "Vl. Mizera",
+      "Oberleitner",
+      "Pešek"
+    ]
+  },
+  {
+    "season": "1950/51",
+    "year": 1950,
+    "club": "ZSJ SKP JNV ČB",
+    "comps": [
+      {
+        "name": "Celostátní mistrovská soutěž",
+        "place": 1
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "Celostátní mistrovská soutěž",
+    "tier": 1,
+    "players": [
+      "Kroupa",
+      "Kolouch",
+      "Vodička",
+      "Vacovský",
+      "Charypar",
+      "V. Mizera",
+      "S. Pícha",
+      "Lidral",
+      "V. Němec",
+      "F. Mizera",
+      "Č. Pícha",
+      "Pešek",
+      "Vávra",
+      "Bílek",
+      "Kalista",
+      "Oberleitner",
+      "Horák"
+    ]
+  },
+  {
+    "season": "1951/52",
+    "year": 1951,
+    "club": "ZSJ SKP JNV ČB",
+    "comps": [
+      {
+        "name": "Mistrovství republiky: sk. A",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "Mistrovství republiky: sk. A",
+    "tier": 1,
+    "players": [
+      "Kolouch",
+      "Vodička",
+      "Vacek",
+      "Španinger",
+      "Charypar",
+      "St. Pícha",
+      "Vacovský",
+      "Vl. Mizera",
+      "Němec",
+      "F. Mizera",
+      "Č. Pícha",
+      "Hajšman",
+      "Bílek",
+      "Pešek",
+      "Hönig"
+    ]
+  },
+  {
+    "season": "1952/53",
+    "year": 1952,
+    "club": "DSO Slavoj ČB",
+    "comps": [
+      {
+        "name": "Mistrovství republiky: skupina B",
+        "place": 1
+      },
+      {
+        "name": "Turnaj o přeborníka ČSR",
+        "place": 3
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "Mistrovství republiky: skupina B",
+    "tier": 1,
+    "players": [
+      "Vodička",
+      "Kolouch",
+      "Vacek",
+      "Pojdl",
+      "Vacovský",
+      "Španinger",
+      "Charypar",
+      "Lenc",
+      "V.Němec",
+      "F.Mizera",
+      "Č.Pícha",
+      "Hajšman",
+      "Bílek",
+      "Fiala",
+      "Pešek",
+      "Oberleitner",
+      "Buřič"
+    ]
+  },
+  {
+    "season": "1953/54",
+    "year": 1953,
+    "club": "DSO Slavoj ČB",
+    "comps": [
+      {
+        "name": "Přebor republiky: sk. B",
+        "place": 2
+      },
+      {
+        "name": "Finálový turnaj",
+        "place": 6
+      }
+    ],
+    "mainPlace": 2,
+    "mainLeague": "Přebor republiky: sk. B",
+    "tier": 1,
+    "players": [
+      "Červený",
+      "Kroupa",
+      "Španinger",
+      "Vacovský",
+      "Lenc",
+      "Č. Pícha",
+      "V. Němec",
+      "F. Mizera",
+      "Bílek",
+      "Hajšman",
+      "Fiala",
+      "Šůna",
+      "Buřič",
+      "Oberleitner"
+    ]
+  },
+  {
+    "season": "1954/55",
+    "year": 1954,
+    "club": "DSO Slavoj ČB",
+    "comps": [
+      {
+        "name": "Přebor republiky: sk. A",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "Přebor republiky: sk. A",
+    "tier": 1,
+    "players": [
+      "Červený",
+      "Kroupa",
+      "Španinger",
+      "Vacovský",
+      "Lenc",
+      "Č. Pícha",
+      "Kalista",
+      "V. Němec",
+      "F. Mizera",
+      "Bílek",
+      "Hajšman",
+      "Fiala",
+      "Šůna",
+      "Kaucký",
+      "Knotek",
+      "Hönig",
+      "Horák",
+      "Nedvěd",
+      "Paderta"
+    ]
+  },
+  {
+    "season": "1955/56",
+    "year": 1955,
+    "club": "DSO Slavoj ČB",
+    "comps": [
+      {
+        "name": "Přebor republiky: sk. B",
+        "place": 7
+      }
+    ],
+    "mainPlace": 7,
+    "mainLeague": "Přebor republiky: sk. B",
+    "tier": 1,
+    "players": [
+      "Červený",
+      "Kroupa",
+      "Španinger",
+      "Vacovský",
+      "Lenc",
+      "Č. Pícha",
+      "M. Homolka",
+      "V. Němec",
+      "F. Mizera",
+      "Bílek",
+      "Hajšman",
+      "Fiala",
+      "Kaucký",
+      "Hönig",
+      "Horák",
+      "Nedvěd",
+      "Paderta",
+      "Houdek"
+    ]
+  },
+  {
+    "season": "1956/57",
+    "year": 1956,
+    "club": "DSO Slavoj ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 8
+      }
+    ],
+    "mainPlace": 8,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Vodička",
+      "Kroupa",
+      "Španinger",
+      "Vacovský",
+      "Lenc",
+      "P. Turek",
+      "Bünter",
+      "Č. Pícha",
+      "Železník",
+      "F. Mizera",
+      "Bílek",
+      "Hajšman",
+      "Fiala",
+      "Buřič",
+      "Nedvěd",
+      "Paderta",
+      "Houdek",
+      "Haber"
+    ]
+  },
+  {
+    "season": "1957/58",
+    "year": 1957,
+    "club": "TJ Slavoj ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 10
+      }
+    ],
+    "mainPlace": 10,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Vodička",
+      "Kroupa",
+      "Španinger",
+      "Vacovský",
+      "Lenc",
+      "P. Turek",
+      "Bünter",
+      "Č. Pícha",
+      "Hajšman",
+      "Valta",
+      "Buřič",
+      "Paderta",
+      "Houdek",
+      "Fiala",
+      "Knotek",
+      "Haber",
+      "Šembera",
+      "Formánek",
+      "Železník",
+      "Maxa"
+    ]
+  },
+  {
+    "season": "1958/59",
+    "year": 1958,
+    "club": "TJ Slavoj ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 11
+      }
+    ],
+    "mainPlace": 11,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Vodička",
+      "Kroupa",
+      "Jirků",
+      "Turek",
+      "Španinger",
+      "Vacovský",
+      "Jan Šrámek",
+      "Pleticha",
+      "Buřič",
+      "Pejcha",
+      "Houdek",
+      "Hajšman",
+      "Kaucký",
+      "Železník",
+      "Valta",
+      "Knotek",
+      "Paderta",
+      "Fiala",
+      "Fleischmann",
+      "Rabetz",
+      "Varvařovský",
+      "Houfek",
+      "Formánek"
+    ]
+  },
+  {
+    "season": "1959/60",
+    "year": 1959,
+    "club": "TJ Slavoj ČB",
+    "comps": [
+      {
+        "name": "2. liga: sk. A",
+        "place": 1
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "2. liga: sk. A",
+    "tier": 2,
+    "players": [
+      "Vodička",
+      "Kroupa",
+      "Mordavský",
+      "Jirků",
+      "Turek",
+      "Španinger",
+      "Jan Šrámek",
+      "Bauer",
+      "Hajšman",
+      "Neumaeir",
+      "Kaucký",
+      "Hönig",
+      "Buřič",
+      "Houdek",
+      "Houfek",
+      "Paderta",
+      "Pejcha",
+      "Knotek",
+      "Pleticha",
+      "Fleischmann"
+    ]
+  },
+  {
+    "season": "1960/61",
+    "year": 1960,
+    "club": "TJ Slavoj ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 10
+      }
+    ],
+    "mainPlace": 10,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Vodička",
+      "Kroupa",
+      "Parýzek",
+      "Španinger",
+      "Bauer",
+      "Lidral",
+      "Jirků",
+      "Turek",
+      "R.Houfek",
+      "Pejcha",
+      "Nedvěd",
+      "Knotek",
+      "Houdek",
+      "Buřič",
+      "Cvach",
+      "F.Rob",
+      "Maxa",
+      "Hajšman",
+      "Kaucký",
+      "Hönig"
+    ]
+  },
+  {
+    "season": "1961/62",
+    "year": 1961,
+    "club": "TJ Slavoj ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 10
+      }
+    ],
+    "mainPlace": 10,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Vodička",
+      "Čada",
+      "Pejcha",
+      "Španinger",
+      "Turek",
+      "Jirků",
+      "R. Houfek",
+      "Cvach",
+      "Kaucký",
+      "Hönig",
+      "Hajšman",
+      "Buřič",
+      "Šembera",
+      "Maxa",
+      "F. Rob",
+      "Paderta",
+      "J. Houfek",
+      "Houdek",
+      "Knotek",
+      "Trhlín",
+      "S. Rob"
+    ]
+  },
+  {
+    "season": "1962/63",
+    "year": 1962,
+    "club": "TJ Slavoj ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 12
+      }
+    ],
+    "mainPlace": 12,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Vodička",
+      "Kössl",
+      "R. Parýzek",
+      "Jirků",
+      "R. Houfek",
+      "Španinger",
+      "Turek",
+      "Kačírek",
+      "Pejcha",
+      "Cagaš",
+      "Šrámek",
+      "Šembera",
+      "Hönig",
+      "Neumaier",
+      "Kaucký",
+      "Buřič",
+      "V. Vaněk",
+      "F. Rob",
+      "J. Beran",
+      "Maxa",
+      "Mucina",
+      "V. Parýzek",
+      "Pražák",
+      "J. Mareš",
+      "Knotek",
+      "Paderta"
+    ]
+  },
+  {
+    "season": "1963/64",
+    "year": 1963,
+    "club": "TJ Slavoj ČB",
+    "comps": [
+      {
+        "name": "2. liga: sk. A",
+        "place": 1
+      },
+      {
+        "name": "Kvalifikace o 1. ligu",
+        "place": 4
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "2. liga: sk. A",
+    "tier": 2,
+    "players": [
+      "Vodička",
+      "Kössl",
+      "Lovčí",
+      "Bauer",
+      "Šrámek",
+      "Jirků",
+      "B. Ťoupal",
+      "Španinger",
+      "Turek",
+      "Šembera",
+      "Hönig",
+      "Neumaier",
+      "Maxa",
+      "Fr. Rob",
+      "Houfek",
+      "Pártl",
+      "Buřič",
+      "Pražák",
+      "Vaněk",
+      "Vl. Mizera"
+    ]
+  },
+  {
+    "season": "1964/65",
+    "year": 1964,
+    "club": "TJ Slavoj ČB",
+    "comps": [
+      {
+        "name": "2. liga: sk. A",
+        "place": 2
+      }
+    ],
+    "mainPlace": 2,
+    "mainLeague": "2. liga: sk. A",
+    "tier": 2,
+    "players": [
+      "Čejka",
+      "Vodička",
+      "Lovčí",
+      "Bauer",
+      "J. Šrámek",
+      "Jirků",
+      "B. Ťoupal",
+      "Helmich",
+      "Vápeník",
+      "Maxa",
+      "Buřič",
+      "R. Houfek",
+      "V. Vaněk",
+      "Rabetz",
+      "Neumeier",
+      "J. Houfek",
+      "Podlaha",
+      "Pártl",
+      "F. Rob",
+      "Horčička",
+      "Hovora"
+    ]
+  },
+  {
+    "season": "1965/66",
+    "year": 1965,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "2. liga: sk. A",
+        "place": 2
+      }
+    ],
+    "mainPlace": 2,
+    "mainLeague": "2. liga: sk. A",
+    "tier": 2,
+    "players": [
+      "Čejka",
+      "Čada",
+      "Lovčí",
+      "J. Šrámek",
+      "B. Ťoupal",
+      "R. Houfek",
+      "Žlunka",
+      "Kačírek",
+      "Uhlíř",
+      "Hönig",
+      "P. Podlaha",
+      "Rabetz",
+      "J. Houfek",
+      "Maxa",
+      "F. Rob",
+      "J. Buřič",
+      "V. Buřič",
+      "V. Mařík",
+      "Hlach",
+      "V. Zeman",
+      "Knotek",
+      "Trhlín",
+      "Neumaier",
+      "V. Vaněk"
+    ]
+  },
+  {
+    "season": "1966/67",
+    "year": 1966,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "2. liga: sk. A",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "2. liga: sk. A",
+    "tier": 2,
+    "players": [
+      "Procházka",
+      "Vodička",
+      "Lovčí",
+      "Šrámek",
+      "Květoň",
+      "Houfek",
+      "Maxa",
+      "Ťoupal",
+      "Hlach",
+      "Mařík",
+      "Šembera",
+      "Urbanec",
+      "Houfek",
+      "Hönig",
+      "Neumaier",
+      "Vaněk",
+      "Pražák",
+      "Rabetz",
+      "Zahraj",
+      "Vl. Mizera",
+      "Buřič",
+      "Tušl"
+    ]
+  },
+  {
+    "season": "1967/68",
+    "year": 1967,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "2. liga: sk. A",
+        "place": 1
+      },
+      {
+        "name": "Kvalifikace o 1. ligu",
+        "place": 1
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "2. liga: sk. A",
+    "tier": 2,
+    "players": [
+      "Procházka",
+      "Kameš",
+      "Ťoupal",
+      "Květoň",
+      "Kuneš",
+      "Vápeník",
+      "Helmich",
+      "Vaněk",
+      "Pražák",
+      "St. Rob",
+      "Šembera",
+      "Hovora",
+      "Neumaier",
+      "Beran",
+      "Podlaha",
+      "Pártl",
+      "Edelmann",
+      "Klabouch",
+      "Bartoň"
+    ]
+  },
+  {
+    "season": "1968/69",
+    "year": 1968,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 10
+      }
+    ],
+    "mainPlace": 10,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Procházka",
+      "Dušek",
+      "Ťoupal",
+      "Kuneš",
+      "Vápeník",
+      "Berek",
+      "Helmich",
+      "J. Květoň",
+      "Pártl",
+      "Cvach",
+      "Šembera",
+      "Pražák",
+      "Hovora",
+      "Klabouch",
+      "Bartoň",
+      "Podlaha",
+      "Neumaier",
+      "Zeman",
+      "Rob",
+      "Vaněk",
+      "Beran"
+    ]
+  },
+  {
+    "season": "1969/70",
+    "year": 1969,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "ČNHL: sk. A",
+        "place": 1
+      },
+      {
+        "name": "Kvalifikace o 1. ligu",
+        "place": 1
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "ČNHL: sk. A",
+    "tier": 2,
+    "players": [
+      "Plánička",
+      "Dušek",
+      "Čermák",
+      "Vápeník",
+      "Ťoupal",
+      "Helmich",
+      "Květoň",
+      "Zeman",
+      "Dvořák",
+      "Šembera",
+      "Pražák",
+      "Pártl",
+      "Neumaier",
+      "Mařík",
+      "Papoušek",
+      "Podlaha",
+      "Klabouch",
+      "Rob",
+      "Pouzar",
+      "Hovora",
+      "Koberna",
+      "Samec"
+    ]
+  },
+  {
+    "season": "1970/71",
+    "year": 1970,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 9
+      }
+    ],
+    "mainPlace": 9,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Dušek",
+      "Plánička",
+      "Masopust",
+      "M. Dvořák",
+      "S. Bauer",
+      "Květoň",
+      "Hejda",
+      "Vápeník",
+      "Helmich",
+      "J. Zeman",
+      "Ťoupal",
+      "Mařík",
+      "Edelmann",
+      "Šembera",
+      "Pražák",
+      "F. Hovora",
+      "Podlaha",
+      "Pártl",
+      "Neumaier",
+      "Lidický",
+      "Pouzar",
+      "Papoušek",
+      "Rob"
+    ]
+  },
+  {
+    "season": "1971/72",
+    "year": 1971,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 6
+      }
+    ],
+    "mainPlace": 6,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Plánička",
+      "Dušek",
+      "M. Dvořák",
+      "Květoň",
+      "Masopust",
+      "Bauer",
+      "Vápeník",
+      "Ji. Šrámek",
+      "Vondráček",
+      "Šembera",
+      "Mařík",
+      "Edelmann",
+      "Pártl",
+      "Pražák",
+      "Pouzar",
+      "Hovora",
+      "Kolar",
+      "Neumaier",
+      "Hejda",
+      "Papoušek",
+      "Zeman",
+      "Vondrka"
+    ]
+  },
+  {
+    "season": "1972/73",
+    "year": 1972,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 10
+      },
+      {
+        "name": "Baráž o 1. ligu",
+        "place": 2
+      }
+    ],
+    "mainPlace": 10,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Plánička",
+      "Matějka",
+      "Reiner",
+      "Masopust",
+      "Květoň",
+      "Vápeník",
+      "Bauer",
+      "Joun",
+      "Vondráček",
+      "Ji. Šrámek",
+      "Kříž",
+      "Kočer",
+      "Neumaier",
+      "Kolar",
+      "Klabouch",
+      "Pártl",
+      "Pražák",
+      "Pouzar",
+      "Mařík",
+      "Hovora",
+      "Edelmann",
+      "Anderle",
+      "Šimánek",
+      "Vondrka",
+      "Ježek"
+    ]
+  },
+  {
+    "season": "1973/74",
+    "year": 1973,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 10
+      }
+    ],
+    "mainPlace": 10,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Plánička",
+      "Jágr",
+      "Reiner",
+      "Masopust",
+      "Bauer",
+      "Vondráček",
+      "Květoň",
+      "Ji. Šrámek",
+      "Vápeník",
+      "Joun",
+      "Davídek",
+      "Pártl",
+      "Pražák",
+      "Pouzar",
+      "Anderle",
+      "Kolar",
+      "Vopátek",
+      "Klabouch",
+      "Edelmann",
+      "Mařík",
+      "Šimánek",
+      "Kočer",
+      "Ježek"
+    ]
+  },
+  {
+    "season": "1974/75",
+    "year": 1974,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 7
+      }
+    ],
+    "mainPlace": 7,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Plánička",
+      "Jágr",
+      "Vondráček",
+      "Dvořák",
+      "Ji. Šrámek",
+      "Joun",
+      "Tikal",
+      "Květoň",
+      "Pouzar",
+      "Vopátek",
+      "Pražák",
+      "Edelmann",
+      "Kolar",
+      "Anderle",
+      "Klabouch",
+      "Pártl",
+      "Mařík",
+      "Král",
+      "Burda",
+      "Čech"
+    ]
+  },
+  {
+    "season": "1975/76",
+    "year": 1975,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 8
+      }
+    ],
+    "mainPlace": 8,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Jágr",
+      "Plánička",
+      "Vondráček",
+      "Ji. Šrámek",
+      "Dvořák",
+      "Květoň",
+      "Tikal",
+      "Hlach",
+      "Pouzar",
+      "Čech",
+      "Pražák",
+      "Anderle",
+      "Klabouch",
+      "Kolar",
+      "Vondrka",
+      "Mařík",
+      "Edelmann",
+      "Fedur",
+      "Pártl",
+      "Pařízek",
+      "Prospal"
+    ]
+  },
+  {
+    "season": "1976/77",
+    "year": 1976,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 5
+      }
+    ],
+    "mainPlace": 5,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Plánička",
+      "Bakus",
+      "Dvořák",
+      "Horešovský",
+      "Tikal",
+      "Květoň",
+      "Kočer",
+      "Hlach",
+      "Čech",
+      "Pražák",
+      "Pouzar",
+      "Anderle",
+      "Kolar",
+      "Klabouch",
+      "Lála",
+      "Mařík",
+      "Edelmann",
+      "Vondrka",
+      "Korbela",
+      "Caldr",
+      "Pařízek"
+    ]
+  },
+  {
+    "season": "1977/78",
+    "year": 1977,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 6
+      }
+    ],
+    "mainPlace": 6,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Plánička",
+      "Bakus",
+      "Doležel",
+      "Kočer",
+      "Dvořák",
+      "Novák",
+      "Květoň",
+      "Tikal",
+      "Horešovský",
+      "Jan Podlaha",
+      "Míšek",
+      "Čech",
+      "Pražák",
+      "Pouzar",
+      "Anderle",
+      "Kolar",
+      "Klabouch",
+      "Caldr",
+      "Mařík",
+      "Edelmann",
+      "N. Král",
+      "Vondrka",
+      "Korbela",
+      "Lála",
+      "Vopátek"
+    ]
+  },
+  {
+    "season": "1978/79",
+    "year": 1978,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 9
+      }
+    ],
+    "mainPlace": 9,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Plánička",
+      "Jágr",
+      "Kočer",
+      "Dvořák",
+      "Novák",
+      "Květoň",
+      "Vondráček",
+      "Joun",
+      "Ji. Šrámek",
+      "Míšek",
+      "Caldr",
+      "Mařík",
+      "Pouzar",
+      "Anderle",
+      "Kolar",
+      "Klabouch",
+      "Čech",
+      "Vondrka",
+      "Edelmann",
+      "Lála",
+      "Král",
+      "Liška",
+      "Hůlka"
+    ]
+  },
+  {
+    "season": "1979/80",
+    "year": 1979,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 8
+      }
+    ],
+    "mainPlace": 8,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Plánička",
+      "Jágr",
+      "Kočer",
+      "Dvořák",
+      "Novák",
+      "Květoň",
+      "Vondráček",
+      "Joun",
+      "Kolda",
+      "Suchánek",
+      "Lála",
+      "Mařík",
+      "Pouzar",
+      "Anderle",
+      "Kolar",
+      "Klabouch",
+      "Caldr",
+      "Král",
+      "Edelmann",
+      "Kobliška",
+      "Čech",
+      "M. Král",
+      "Vondrka",
+      "Liška",
+      "Korbela",
+      "R. Pařízek"
+    ]
+  },
+  {
+    "season": "1980/81",
+    "year": 1980,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 2
+      }
+    ],
+    "mainPlace": 2,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Gula",
+      "Plánička",
+      "Kočer",
+      "Dvořák",
+      "Kolda",
+      "Joun",
+      "Míšek",
+      "Jan Podlaha",
+      "Novák",
+      "Květoň",
+      "Caldr",
+      "Mec",
+      "Čech",
+      "Pouzar",
+      "N. Král",
+      "Tlačil",
+      "Korbela",
+      "Klabouch",
+      "Mařík",
+      "Hubáček",
+      "Anderle",
+      "Liška",
+      "K. Caldr",
+      "Božek"
+    ]
+  },
+  {
+    "season": "1981/82",
+    "year": 1981,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 6
+      }
+    ],
+    "mainPlace": 6,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Gula",
+      "Plánička",
+      "Kopačka",
+      "Kočer",
+      "Dvořák",
+      "Kolda",
+      "Joun",
+      "Beníšek",
+      "Novák Rákosník",
+      "Janeček",
+      "Korbela",
+      "Král",
+      "Pouzar",
+      "Caldr",
+      "Čech",
+      "Klabouch",
+      "Hubáček",
+      "Mec",
+      "Tlačil",
+      "Veselý",
+      "Hejna",
+      "Božek",
+      "K. Caldr",
+      "Dolejšek",
+      "Vaculík"
+    ]
+  },
+  {
+    "season": "1982/83",
+    "year": 1982,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Gula",
+      "Kurfürst",
+      "Beníšek",
+      "Joun",
+      "Kolda",
+      "Novák",
+      "Kočer",
+      "Suchánek",
+      "Janeček",
+      "Němec",
+      "M. Bláha",
+      "Božek",
+      "Caldr",
+      "Lála",
+      "Hejna",
+      "Klabouch",
+      "N. Král",
+      "Čech",
+      "Korbela",
+      "Tlačil",
+      "Pařízek",
+      "Dolejšek",
+      "Slach",
+      "J. Veselý",
+      "R. Ťoupal",
+      "Žižka",
+      "M. Král"
+    ]
+  },
+  {
+    "season": "1983/84",
+    "year": 1983,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 5
+      }
+    ],
+    "mainPlace": 5,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Gula",
+      "Bříza",
+      "Beníšek",
+      "Joun",
+      "Kočer",
+      "Kolda",
+      "Soudek",
+      "Novák",
+      "Podlaha",
+      "Suchánek",
+      "Tomeček",
+      "M. Bláha",
+      "Božek",
+      "Caldr",
+      "Čech",
+      "N. Král",
+      "Tlačil",
+      "Hejna",
+      "Lála",
+      "Dolejšek",
+      "Korbela",
+      "M. Král",
+      "knotek",
+      "Ťoupal",
+      "Liška",
+      "Ondrejec",
+      "Slach"
+    ]
+  },
+  {
+    "season": "1984/85",
+    "year": 1984,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 5
+      }
+    ],
+    "mainPlace": 5,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Gula",
+      "Bříza",
+      "Kolda",
+      "Beníšek",
+      "Suchánek",
+      "Soudek",
+      "Joun",
+      "Novák",
+      "Kočer",
+      "Podlaha",
+      "Lála",
+      "N. Král",
+      "Caldr",
+      "Korbela",
+      "Kolář",
+      "Hejna",
+      "Knotek",
+      "Ťoupal",
+      "Čech",
+      "Tlačil",
+      "M. Král",
+      "Daněk",
+      "Liška",
+      "Ondrejec",
+      "Slach"
+    ]
+  },
+  {
+    "season": "1985/86",
+    "year": 1985,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 9
+      },
+      {
+        "name": "Skupina o udržení",
+        "place": 4
+      }
+    ],
+    "mainPlace": 9,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Gula",
+      "Kopačka",
+      "Konzal",
+      "Beníšek",
+      "Janeček",
+      "Hnojna",
+      "Joun",
+      "Kolda",
+      "Novák",
+      "Suchánek",
+      "Hošek",
+      "Soudek",
+      "N. Král",
+      "Lála",
+      "Caldr",
+      "Čech",
+      "Hejna",
+      "Korbela",
+      "Talčil",
+      "Ťoupal",
+      "Knotek",
+      "Kolář",
+      "Ondrejec",
+      "Liška",
+      "Daněk",
+      "Liška",
+      "Beneš",
+      "Suk",
+      "Nevosad"
+    ]
+  },
+  {
+    "season": "1986/87",
+    "year": 1986,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 6
+      },
+      {
+        "name": "Play-off",
+        "place": 8
+      }
+    ],
+    "mainPlace": 8,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Gula",
+      "Konzal",
+      "Novák",
+      "Kolda",
+      "Suchánek",
+      "Soudek",
+      "Janeček",
+      "Tomeček",
+      "Kočer",
+      "Rákosník",
+      "Paleček",
+      "Kubíček",
+      "Lála",
+      "Knotek",
+      "Korbela",
+      "N. Král",
+      "Tlačil",
+      "Ťoupal",
+      "M. Bláha",
+      "Ondrejec",
+      "Hejna",
+      "Vaculík",
+      "Božek",
+      "Kolář",
+      "Paukner",
+      "Liška",
+      "Horák",
+      "Pýcha"
+    ]
+  },
+  {
+    "season": "1987/88",
+    "year": 1987,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 1
+      },
+      {
+        "name": "Play-off",
+        "place": 5
+      }
+    ],
+    "mainPlace": 5,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Bříza",
+      "Gula",
+      "Suchánek",
+      "Soudek",
+      "Kočer",
+      "Rákosník",
+      "Beníšek",
+      "Janeček",
+      "Novák",
+      "Paleček",
+      "Hodek",
+      "Modrý",
+      "Bahula",
+      "Hošek",
+      "Lála",
+      "Horák",
+      "Caldr",
+      "M. Bláha",
+      "J. Bláha",
+      "Božek",
+      "Kolář",
+      "Hejna",
+      "R. Ťoupal",
+      "Rob",
+      "Korbela",
+      "Tlačil",
+      "Pýcha",
+      "Tlačil",
+      "N. Král",
+      "Vošta",
+      "Hnilička"
+    ]
+  },
+  {
+    "season": "1988/89",
+    "year": 1988,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 7
+      },
+      {
+        "name": "Play-off",
+        "place": 6
+      }
+    ],
+    "mainPlace": 6,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Bříza",
+      "Konzal",
+      "Kolda",
+      "Suchánek",
+      "Dvořák",
+      "Beníšek",
+      "Janeček",
+      "Modrý",
+      "Hodek",
+      "Bahula",
+      "Hošek",
+      "Lála",
+      "R. Ťoupal",
+      "Caldr",
+      "Rob",
+      "Horák",
+      "Božek",
+      "Kolář",
+      "Hejna",
+      "Pýcha",
+      "M. Bláha",
+      "J. Bláha",
+      "Bělohlav",
+      "Mazanec"
+    ]
+  },
+  {
+    "season": "1989/90",
+    "year": 1989,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 9
+      },
+      {
+        "name": "Play-off",
+        "place": 9
+      }
+    ],
+    "mainPlace": 9,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Gula",
+      "Konzal",
+      "Beníšek",
+      "Kolda",
+      "Soudek",
+      "Suchánek",
+      "Janeček",
+      "Hodek",
+      "Kubíček",
+      "Modrý",
+      "Bahula",
+      "Šedý",
+      "Hošek",
+      "Paleček",
+      "Ťoupal",
+      "Jelínek",
+      "Pýcha",
+      "Rob",
+      "J. Bláha",
+      "M. Bláha",
+      "Božek",
+      "Hnilička",
+      "Mazanec",
+      "Kolář",
+      "Paukner",
+      "Brabec",
+      "Suk",
+      "Hyka",
+      "Turek"
+    ]
+  },
+  {
+    "season": "1990/91",
+    "year": 1990,
+    "club": "TJ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 14
+      }
+    ],
+    "mainPlace": 14,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Tóth",
+      "R. Turek",
+      "Soudek",
+      "Hnojna",
+      "Domin",
+      "Janeček",
+      "Hodek",
+      "Bahula",
+      "Hála",
+      "Lomský",
+      "Kubíček",
+      "Augusta",
+      "Smetana",
+      "K. Ťoupal",
+      "Miller",
+      "Jelínek",
+      "Vošta",
+      "J. Bláha",
+      "M. Bláha",
+      "Paukner",
+      "Brabec",
+      "Hnilička",
+      "Bednařík",
+      "Kolář",
+      "Hyka",
+      "F. Turek",
+      "Ševčík",
+      "Mazanec",
+      "Božek",
+      "Jan Šrámek ml",
+      "Horák",
+      "Bělohlav"
+    ]
+  },
+  {
+    "season": "1991/92",
+    "year": 1991,
+    "club": "HC Motor ČB",
+    "comps": [
+      {
+        "name": "1. ČNHL",
+        "place": 1
+      },
+      {
+        "name": "Kvalifikace o 1. ligu",
+        "place": 1
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "1. ČNHL",
+    "tier": 2,
+    "players": [
+      "Turek",
+      "Gula",
+      "Slávik",
+      "P. Bláha",
+      "Kubíček",
+      "Šedý",
+      "Modrý",
+      "Beníšek",
+      "Šára",
+      "Janeček",
+      "Smetana",
+      "Hála",
+      "K. Ťoupal",
+      "Rob",
+      "Horák",
+      "M. Bláha",
+      "Bělohlav",
+      "Hyka",
+      "Paukner",
+      "Šperger",
+      "J. Bláha",
+      "Vošta",
+      "Bednařík",
+      "Mazanec",
+      "Pýcha",
+      "Šrámek",
+      "Fousek"
+    ]
+  },
+  {
+    "season": "1992/93",
+    "year": 1992,
+    "club": "HC Motor ČB/HC ČB",
+    "comps": [
+      {
+        "name": "FHL",
+        "place": 5
+      },
+      {
+        "name": "Play-off",
+        "place": 9
+      }
+    ],
+    "mainPlace": 9,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Turek",
+      "Kondelík",
+      "Slavík",
+      "Bláha",
+      "St. Neckář",
+      "Kubíček",
+      "Augusta",
+      "Hodek",
+      "Mainer",
+      "Němeček",
+      "Pečínka",
+      "Beníšek",
+      "Rob",
+      "Horák",
+      "Pýcha",
+      "Bělohlav",
+      "Vošta",
+      "Paukner",
+      "M. Bláha",
+      "Bednařík",
+      "Hyka",
+      "Šperger",
+      "Ševčík",
+      "Brabec",
+      "Turek",
+      "Györi",
+      "Mazanec"
+    ]
+  },
+  {
+    "season": "1993/94",
+    "year": 1993,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Extraliga",
+        "place": 2
+      },
+      {
+        "name": "Play-off",
+        "place": 5
+      }
+    ],
+    "mainPlace": 5,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Turek",
+      "Špilar",
+      "Konzal",
+      "Mainer",
+      "Kubíček",
+      "Bláha",
+      "St. Neckář",
+      "Hodek",
+      "J. Němeček",
+      "Šedý",
+      "K. Ťoupal",
+      "Hála",
+      "Beníšek",
+      "Laukkanen",
+      "Rob",
+      "Horák",
+      "Pýcha",
+      "Bělohlav",
+      "R. Ťoupal",
+      "Božek",
+      "Brabec",
+      "Turek",
+      "Vošta",
+      "Györi",
+      "Caldr",
+      "Bláha",
+      "R. Dvořák",
+      "J. Podlaha",
+      "Lála",
+      "Hyka"
+    ]
+  },
+  {
+    "season": "1994/95",
+    "year": 1994,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Extraliga",
+        "place": 6
+      },
+      {
+        "name": "Play-off",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Turek",
+      "Slávik",
+      "Nedoma",
+      "Šedý",
+      "Kubíček",
+      "Mainer",
+      "Suchánek",
+      "Hodek",
+      "Zábranský",
+      "Modrý",
+      "Zíb",
+      "Hála",
+      "Vaněček",
+      "Rob",
+      "Horák",
+      "Turek",
+      "Györi",
+      "Bělohlav",
+      "Božek",
+      "Brabec",
+      "Pýcha",
+      "Vošta",
+      "Dvořák",
+      "Ševčík",
+      "Šperger",
+      "Sailer",
+      "Paukner",
+      "M. Horák",
+      "Král",
+      "Štrba",
+      "R. Ťoupal"
+    ]
+  },
+  {
+    "season": "1995/96",
+    "year": 1995,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Extraliga",
+        "place": 3
+      },
+      {
+        "name": "Play-off",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Svoboda",
+      "Gula",
+      "Slávik",
+      "Nedoma",
+      "Suchánek",
+      "Zábranský",
+      "Šedý",
+      "Soudek",
+      "Kubíček",
+      "Zíb",
+      "K. Ťoupal",
+      "Masák",
+      "Bělohlav",
+      "R. Ťoupal",
+      "Pýcha",
+      "Rob",
+      "Turek",
+      "Šperger",
+      "Vošta",
+      "Štrba",
+      "Györi",
+      "Božek",
+      "Brabec",
+      "Sailer",
+      "Živný",
+      "Šachl"
+    ]
+  },
+  {
+    "season": "1996/97",
+    "year": 1996,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Staropramen extraliga",
+        "place": 7
+      },
+      {
+        "name": "Play-off",
+        "place": 7
+      }
+    ],
+    "mainPlace": 7,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Svoboda",
+      "Slávik",
+      "Antipin",
+      "Nedoma",
+      "Suchánek",
+      "Martínek",
+      "K. Ťoupal",
+      "Soudek",
+      "Masák",
+      "Šedý",
+      "Zíb",
+      "Rob",
+      "R. Ťoupal",
+      "Pýcha",
+      "Györi",
+      "Horák",
+      "Vošta",
+      "Navrátil",
+      "F. Turek",
+      "Bělohlav",
+      "Ševčík",
+      "Barus",
+      "Sailer",
+      "Brabenec",
+      "Šachl"
+    ]
+  },
+  {
+    "season": "1997/98",
+    "year": 1997,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Staropramen extraliga",
+        "place": 10
+      }
+    ],
+    "mainPlace": 10,
+    "mainLeague": "Staropramen extraliga",
+    "tier": 1,
+    "players": [
+      "Svoboda",
+      "Slávik",
+      "Lukeš",
+      "Nedoma",
+      "Martínek",
+      "Soudek",
+      "K. Ťoupal",
+      "Suchánek",
+      "Zíb",
+      "Boháček",
+      "Sičák",
+      "Vaněček",
+      "Rob",
+      "R. Ťoupal",
+      "Pýcha",
+      "Györi",
+      "F. Turek",
+      "Sailer",
+      "Brabenec",
+      "Barus",
+      "Bruk",
+      "Král",
+      "Filipi",
+      "Šachl",
+      "Koudelka",
+      "Štrba",
+      "Šimánek",
+      "Vošta",
+      "Kotalík"
+    ]
+  },
+  {
+    "season": "1998/99",
+    "year": 1998,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Staropramen extraliga",
+        "place": 5
+      },
+      {
+        "name": "Play-off",
+        "place": 5
+      }
+    ],
+    "mainPlace": 5,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Svoboda",
+      "Mařík",
+      "Nedoma",
+      "K. Ťoupal",
+      "Suchánek",
+      "Čech",
+      "Sičák",
+      "Martínek",
+      "Klimeš",
+      "Kutlák",
+      "Zíb",
+      "Jindra",
+      "Štrba",
+      "R. Ťoupal",
+      "Barus",
+      "Kotalík",
+      "Turek",
+      "Sailer",
+      "Král",
+      "Filipi",
+      "Bartoš",
+      "Brabenec",
+      "Rob"
+    ]
+  },
+  {
+    "season": "1999/2000",
+    "year": 1999,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Český telecom extraliga",
+        "place": 6
+      },
+      {
+        "name": "Play-off",
+        "place": 7
+      }
+    ],
+    "mainPlace": 7,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Mařík",
+      "Čapek",
+      "Suchánek",
+      "Martínek",
+      "Nedoma",
+      "Čech",
+      "Jasečko",
+      "Jindra",
+      "Kutlák",
+      "Zíb",
+      "Babka",
+      "V. Benák",
+      "V. Král",
+      "F. Turek",
+      "Bartoš",
+      "Rob",
+      "Ťoupal",
+      "Brabenec",
+      "Sailer",
+      "Štrba",
+      "Filipi",
+      "Šimánek",
+      "V. Nedorost",
+      "Kotalík",
+      "D. Nedorost",
+      "Brož"
+    ]
+  },
+  {
+    "season": "2000/01",
+    "year": 2000,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Český telecom extraliga",
+        "place": 11
+      }
+    ],
+    "mainPlace": 11,
+    "mainLeague": "Český telecom extraliga",
+    "tier": 1,
+    "players": [
+      "Mařík",
+      "Čapek",
+      "Suchánek",
+      "Martínek",
+      "Benák",
+      "Zíb",
+      "Jasečko",
+      "Čierny",
+      "Jindra",
+      "Klimeš",
+      "Mojžíš",
+      "Kotaška",
+      "Rob",
+      "V. Nedorost",
+      "Bělohlav",
+      "Kotalík",
+      "F. Turek",
+      "Šimánek",
+      "Král",
+      "Filipi",
+      "Brabenec",
+      "Novotný",
+      "Brož",
+      "Vondrka",
+      "Štrba",
+      "Sailer",
+      "Michálek",
+      "Kořínek",
+      "Kostourek",
+      "Řehoř",
+      "Hřebejk"
+    ]
+  },
+  {
+    "season": "2001/02",
+    "year": 2001,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Český telecom extraliga",
+        "place": 12
+      }
+    ],
+    "mainPlace": 12,
+    "mainLeague": "Český telecom extraliga",
+    "tier": 1,
+    "players": [
+      "Mařík",
+      "Hudáček",
+      "Kučera",
+      "Suchánek",
+      "Nedoma",
+      "Jindra",
+      "Čierny",
+      "Vaněček",
+      "Zubíček",
+      "Krajíček",
+      "Kotaška",
+      "Hučko",
+      "Klimeš",
+      "Barinka",
+      "Chaloupka",
+      "Rob",
+      "Horák",
+      "Brabenec",
+      "Brož",
+      "Vondrka",
+      "Hřebejk",
+      "Sailer",
+      "Štrba",
+      "Šimánek",
+      "Michálek",
+      "Řehoř",
+      "Hlávka",
+      "Novotný",
+      "Bartoš",
+      "Kořínek",
+      "Lála",
+      "Mrázek",
+      "Žákovský",
+      "D. Nedorost"
+    ]
+  },
+  {
+    "season": "2002/03",
+    "year": 2002,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Český telecom extraliga",
+        "place": 6
+      },
+      {
+        "name": "Play-off",
+        "place": 6
+      }
+    ],
+    "mainPlace": 6,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Hudáček",
+      "Kučera",
+      "Suchánek",
+      "Jindra",
+      "Babka",
+      "Jasečko",
+      "Barinka",
+      "Kotaška",
+      "Nedoma",
+      "Gřegořek",
+      "Slavík",
+      "Gýna",
+      "Zb. Neckář",
+      "Svačina",
+      "Mucha",
+      "Vomela",
+      "Tupý",
+      "Štrba",
+      "Turek",
+      "Bartoš",
+      "Sailer",
+      "Michálek",
+      "Rob",
+      "Ondřej",
+      "Mrázek",
+      "Šimánek",
+      "Vondrka",
+      "Škoda",
+      "Hřebejk",
+      "Brož",
+      "St. Procházka",
+      "Míka",
+      "Štraub",
+      "Květoň",
+      "Řehoř",
+      "Kysela"
+    ]
+  },
+  {
+    "season": "2003/04",
+    "year": 2003,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Tipsport extraliga",
+        "place": 14
+      },
+      {
+        "name": "Baráž o extraligu",
+        "place": 2
+      }
+    ],
+    "mainPlace": 14,
+    "mainLeague": "Tipsport extraliga",
+    "tier": 1,
+    "players": [
+      "Kučera",
+      "Chábera",
+      "Hudáček",
+      "Mezin",
+      "Suchánek",
+      "Jindra",
+      "Babka",
+      "Jasečko",
+      "Gýna",
+      "Mucha",
+      "Kolda",
+      "Kotaška",
+      "Vomela",
+      "Ďurák",
+      "Jakeš",
+      "Čech",
+      "Zb. Neckář",
+      "Kočí",
+      "Macháček",
+      "Bartoš",
+      "Turek",
+      "Sailer",
+      "Rob",
+      "Štrba",
+      "Bělohlav",
+      "Šimánek",
+      "Kristek",
+      "Ondřej",
+      "Hřebejk",
+      "Škoda",
+      "D. Nedorost",
+      "Květoň",
+      "I. Rachůnek",
+      "Vondrka",
+      "Kaňkovský",
+      "Fadrný",
+      "Řehoř",
+      "Šulčík",
+      "Kostourek",
+      "Bacul",
+      "Mrázek",
+      "Gulaš",
+      "Mrkvička",
+      "Mertl",
+      "J. Hanzal"
+    ]
+  },
+  {
+    "season": "2004/05",
+    "year": 2004,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 1
+      },
+      {
+        "name": "Play-off",
+        "place": 1
+      },
+      {
+        "name": "Baráž o extraligu",
+        "place": 1
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Chábera",
+      "Turek",
+      "Kučera",
+      "Gýna",
+      "Mucha",
+      "Jindra",
+      "Krstev",
+      "Kolda",
+      "Kotaška",
+      "Martínek",
+      "Gřegořek",
+      "St. Neckář",
+      "Ference",
+      "Jančařík",
+      "Luža",
+      "Vomela",
+      "Macháček",
+      "K. Černý",
+      "Hřebejk",
+      "R. Dvořák",
+      "Prospal",
+      "Rob",
+      "Štrba",
+      "Brabenec",
+      "Sailer",
+      "Štraub",
+      "Bělohlav",
+      "Šimánek",
+      "Pletka",
+      "Kropáč",
+      "Květoň",
+      "Mertl",
+      "Vampola",
+      "Lála",
+      "Musil",
+      "Bartoš",
+      "Havelka",
+      "Hájek",
+      "Kalla",
+      "Fadrný",
+      "M. Hanzal",
+      "Kuchejda"
+    ]
+  },
+  {
+    "season": "2005/06",
+    "year": 2005,
+    "club": "HC ČB",
+    "comps": [
+      {
+        "name": "Tipsport extraliga",
+        "place": 8
+      },
+      {
+        "name": "Play-off",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Turek",
+      "Chábera",
+      "Kučera",
+      "Harant",
+      "Gřegořek",
+      "Kotaška",
+      "Kutlák",
+      "Posmyk",
+      "Mucha",
+      "Jindra",
+      "Vydarený",
+      "Vyhlídal",
+      "Macháček",
+      "Vomela",
+      "Šimánek",
+      "Hübl",
+      "Sailer",
+      "Hudec",
+      "Brabenc",
+      "Veselý",
+      "Bělohlav",
+      "Kopecký",
+      "Kotrla",
+      "Krátoška",
+      "M. Hanzal",
+      "Hřebejk",
+      "Vak",
+      "J. Hanzal",
+      "Květoň",
+      "Gulaš",
+      "Mertl",
+      "Havel",
+      "Matušík"
+    ]
+  },
+  {
+    "season": "2006/07",
+    "year": 2006,
+    "club": "HC Mountfield ČB",
+    "comps": [
+      {
+        "name": "O2 extraliga",
+        "place": 3
+      },
+      {
+        "name": "Play-off",
+        "place": 4
+      }
+    ],
+    "mainPlace": 4,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Turek",
+      "Chábera",
+      "Posmyk",
+      "Gřegořek",
+      "Mucha",
+      "Kutlák",
+      "Toman",
+      "Vydarený",
+      "Vágner",
+      "Macháček",
+      "Parýzek",
+      "Bolf",
+      "Výborný",
+      "Jindra",
+      "Hudec",
+      "V. Nedorost",
+      "Brabenec",
+      "Kotrla",
+      "Hübl",
+      "Brabenec",
+      "Sailer",
+      "Vak",
+      "Veselý",
+      "Šimánek",
+      "Květoň",
+      "Gulaš",
+      "Hřebejk",
+      "Mertl",
+      "J. Hanzal",
+      "Červený",
+      "Krajči",
+      "Stantien",
+      "Hašek",
+      "Matušík"
+    ]
+  },
+  {
+    "season": "2007/08",
+    "year": 2007,
+    "club": "HC Mountfield ČB",
+    "comps": [
+      {
+        "name": "O2 extraliga",
+        "place": 1
+      },
+      {
+        "name": "Play-off",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Turek",
+      "Chábera",
+      "Altrichter",
+      "Toman",
+      "Gřegořek",
+      "Sičák",
+      "Vydarený",
+      "Mucha",
+      "Frolo",
+      "F. Novák",
+      "Bolf",
+      "Macháček",
+      "Melichar",
+      "Hudec",
+      "Hübl",
+      "Brabenec",
+      "Kůrka",
+      "Šimánek",
+      "Sailer",
+      "Kotrla",
+      "Vak",
+      "Veselý",
+      "Hřebejk",
+      "Mertl",
+      "Květoň",
+      "Gulaš",
+      "Kuchejda",
+      "Mikulík",
+      "Horák"
+    ]
+  },
+  {
+    "season": "2008/09",
+    "year": 2008,
+    "club": "HC Mountfield ČB",
+    "comps": [
+      {
+        "name": "O2 extraliga",
+        "place": 11
+      },
+      {
+        "name": "Skupina o udržení",
+        "place": 1
+      }
+    ],
+    "mainPlace": 11,
+    "mainLeague": "O2 extraliga",
+    "tier": 1,
+    "players": [
+      "Turek",
+      "Kovář",
+      "Klestil",
+      "Horčička",
+      "Gřegořek",
+      "Vydarený",
+      "Toman",
+      "Frolo",
+      "Sičák",
+      "Poživil",
+      "Mucha",
+      "Jareš",
+      "Ptáček",
+      "Macháček",
+      "Posmyk",
+      "Dietz",
+      "Vráblík",
+      "Duda",
+      "Huml",
+      "Sailer",
+      "Kůrka",
+      "Šimánek",
+      "Veselý",
+      "Gulaš",
+      "Vak",
+      "Hudec",
+      "Hřebejk",
+      "Mertl",
+      "Květoň",
+      "Kuchejda",
+      "Horák",
+      "Bílek",
+      "Melichárek",
+      "Dragoun",
+      "Ferebauer",
+      "Rezek"
+    ]
+  },
+  {
+    "season": "2009/10",
+    "year": 2009,
+    "club": "HC Mountfield ČB",
+    "comps": [
+      {
+        "name": "O2 extraliga",
+        "place": 9
+      },
+      {
+        "name": "Play-off",
+        "place": 9
+      }
+    ],
+    "mainPlace": 9,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Turek",
+      "Kovář",
+      "Hrubec",
+      "Čech",
+      "Ptáček",
+      "Gřegořek",
+      "Poživil",
+      "Vydarený",
+      "Snopek",
+      "Melichar",
+      "Macháček",
+      "Jank",
+      "Kotaška",
+      "Tůma",
+      "St. Hudec",
+      "Gulaš",
+      "Vak",
+      "Hřebejk",
+      "M. Hudec",
+      "Mertl",
+      "Veselý",
+      "Micka",
+      "Šimánek",
+      "Sailer",
+      "Květoň",
+      "Mikeska",
+      "Kotrla",
+      "Melichárek",
+      "Kůrka",
+      "Huml",
+      "Červený",
+      "Rod",
+      "Tähtinen",
+      "Kuchejda",
+      "Pletka",
+      "Ježek",
+      "Kostourek",
+      "Štrba"
+    ]
+  },
+  {
+    "season": "2010/11",
+    "year": 2010,
+    "club": "HC Mountfield ČB",
+    "comps": [
+      {
+        "name": "O2 extraliga",
+        "place": 6
+      },
+      {
+        "name": "Play-off",
+        "place": 7
+      }
+    ],
+    "mainPlace": 7,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Kovář",
+      "Jágr",
+      "Hrubec",
+      "Snopek",
+      "Vydarený",
+      "Ptáček",
+      "Melichar",
+      "J. Novák",
+      "Šulc",
+      "Tůma",
+      "Jank",
+      "Kotaška",
+      "Kolarz",
+      "Vykoukal",
+      "Šimánek",
+      "Mikeska",
+      "Kuchejda",
+      "Gulaš",
+      "Langhammer",
+      "Květoň",
+      "Martynek",
+      "Kašpařík",
+      "Pletka",
+      "R. Pšurný",
+      "Mertl",
+      "Podlešák",
+      "Červený",
+      "M. Pšurný",
+      "Ježek",
+      "Burian",
+      "R. Heřman",
+      "Polodna",
+      "Ferebauer"
+    ]
+  },
+  {
+    "season": "2011/12",
+    "year": 2011,
+    "club": "HC Mountfield ČB",
+    "comps": [
+      {
+        "name": "Tipsport extraliga",
+        "place": 5
+      },
+      {
+        "name": "Play-off",
+        "place": 6
+      }
+    ],
+    "mainPlace": 6,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Kovář",
+      "Kantor",
+      "Ptáček",
+      "Kranjc",
+      "J. Novák",
+      "Vydarený",
+      "Kolarz",
+      "Mikuš",
+      "Němeček",
+      "Vráblík",
+      "M. Dvořák",
+      "Kříž",
+      "Gulaš",
+      "Langhammer",
+      "Květoň",
+      "Šimánek",
+      "Kašpařík",
+      "Martynek",
+      "Sailer",
+      "Mikeska",
+      "Podlešák",
+      "Kuchejda",
+      "Mertl",
+      "R. Pšurný",
+      "Červený",
+      "Polodna",
+      "Burian",
+      "Marek",
+      "Rousek",
+      "Kotalík",
+      "Horna",
+      "Švihálek"
+    ]
+  },
+  {
+    "season": "2012/13",
+    "year": 2012,
+    "club": "HC Mountfield ČB",
+    "comps": [
+      {
+        "name": "Tipsport extraliga",
+        "place": 8
+      },
+      {
+        "name": "Play-off",
+        "place": 9
+      }
+    ],
+    "mainPlace": 9,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Kovář",
+      "Kantor",
+      "Sáblík",
+      "Lakosil",
+      "Ptáček",
+      "Vydarený",
+      "Frühauf",
+      "Ference",
+      "Jank",
+      "Vráblík",
+      "Harant",
+      "Martínek",
+      "Toman",
+      "Prokop",
+      "Plášil",
+      "Makovský",
+      "Kříž",
+      "Dietz",
+      "Kolarz",
+      "Kotalík",
+      "Šimánek",
+      "Michálek",
+      "Prospal",
+      "Dej",
+      "Langhammer",
+      "Hanzal",
+      "Kohn",
+      "Květoň",
+      "Knotek",
+      "Mertl",
+      "Suja",
+      "Podlešák",
+      "Rousek",
+      "Červený",
+      "Kašpařík",
+      "Soudek",
+      "Švihálek",
+      "Rob",
+      "Turek",
+      "Škoda",
+      "Polodna",
+      "Luňák",
+      "Marek"
+    ]
+  },
+  {
+    "season": "2013/14",
+    "year": 2013,
+    "club": "ČEZ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 9
+      },
+      {
+        "name": "Skupina o udržení",
+        "place": 3
+      }
+    ],
+    "mainPlace": 9,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Kůdela",
+      "Halmoši",
+      "Chmelíř",
+      "Moravec",
+      "Vráblík",
+      "J. Novák",
+      "Posmyk",
+      "Kasík",
+      "Kříž",
+      "Prokop",
+      "Semrád",
+      "Kotaška",
+      "Platil",
+      "D. Růžička",
+      "Dom. Boháč",
+      "Bohunický",
+      "Pavlíček",
+      "Kotalík",
+      "Šachl",
+      "Kuchejda",
+      "Ondřej",
+      "Skuhravý",
+      "Rob",
+      "Vaniš",
+      "Melka",
+      "Bárta",
+      "Ferebauer",
+      "Šperger",
+      "R. Pšurný",
+      "Pajič",
+      "Dan. Boháč",
+      "Třetina",
+      "Přibyl",
+      "Prokeš",
+      "Pitule",
+      "Kňazev",
+      "Pašek",
+      "Švec",
+      "Eberle",
+      "Turek",
+      "Mavrojanidis"
+    ]
+  },
+  {
+    "season": "2014/15",
+    "year": 2014,
+    "club": "ČEZ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 2
+      },
+      {
+        "name": "Baráž o extraligu",
+        "place": 4
+      }
+    ],
+    "mainPlace": 2,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Bláha",
+      "Gába",
+      "Kůdela",
+      "Pechek",
+      "Chmelíř",
+      "Punčochář",
+      "Vráblík",
+      "Mucha",
+      "D. Růžička",
+      "Žovinec",
+      "Kříž",
+      "Suchánek",
+      "Semrád",
+      "Škopek",
+      "Bohunický",
+      "Parýzek",
+      "Kachyňa",
+      "Straka",
+      "Nouza",
+      "Heřman",
+      "Pajič",
+      "Rob",
+      "Kuchejda",
+      "Švihálek",
+      "Boháč",
+      "Prokeš",
+      "Vaniš",
+      "Marek",
+      "Švec",
+      "Přibyl",
+      "Bárta",
+      "Trummer",
+      "Pašek",
+      "Doktor"
+    ]
+  },
+  {
+    "season": "2015/16",
+    "year": 2015,
+    "club": "ČEZ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 3
+      },
+      {
+        "name": "Play-off",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Bláha",
+      "Gába",
+      "Kváča",
+      "Bohunický",
+      "Klinecký",
+      "Kolmann",
+      "Kříž",
+      "Mucha",
+      "Pýcha",
+      "Semrád",
+      "Suchánek",
+      "Tintěra",
+      "Vráblík",
+      "Zíb",
+      "Žovinec",
+      "Babka",
+      "Guman",
+      "Heřman",
+      "Chovan",
+      "Kuchejda",
+      "Květoň",
+      "Marek",
+      "Mikyska",
+      "Nouza",
+      "Pajič",
+      "Panáček",
+      "Prokeš",
+      "Přibyl",
+      "Rob",
+      "Sloboda",
+      "Straka",
+      "Škoda",
+      "Švihálek",
+      "Točík",
+      "Žálčík"
+    ]
+  },
+  {
+    "season": "2016/17",
+    "year": 2016,
+    "club": "ČEZ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 1
+      },
+      {
+        "name": "Baráž o extraligu",
+        "place": 4
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Bláha",
+      "Gába",
+      "Kváča",
+      "Fillman",
+      "Mazanec",
+      "Mucha",
+      "Novák F",
+      "Pavlin",
+      "Pýcha",
+      "Suchánek",
+      "Vráblík",
+      "Žovinec",
+      "Babka",
+      "Bárta",
+      "Čermák",
+      "Dostálek",
+      "Fronk",
+      "Guman",
+      "Heřman",
+      "Hřebejk",
+      "Chovan",
+      "Květoň",
+      "Nouza",
+      "Pajič",
+      "Rob",
+      "Škoda",
+      "Šulek",
+      "Vak",
+      "Vlček",
+      "Walker"
+    ]
+  },
+  {
+    "season": "2017/18",
+    "year": 2017,
+    "club": "ČEZ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 2
+      },
+      {
+        "name": "Play-off",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Bláha",
+      "Březina",
+      "Gába",
+      "Kváča",
+      "Čáp",
+      "Fillman",
+      "Kachyňa",
+      "Kučný",
+      "Kutlák",
+      "Marcel",
+      "Novák F",
+      "Pavlin",
+      "Pýcha",
+      "Vráblík",
+      "Bárta",
+      "Čermák",
+      "Doktor",
+      "Dostálek",
+      "Galamboš",
+      "Heřman",
+      "Jonák",
+      "Káník",
+      "Květoň",
+      "Mikyska",
+      "Nedorost",
+      "Nejezchleb",
+      "Novák M",
+      "Pajič",
+      "Rob",
+      "Šulek",
+      "Toman",
+      "Vampola",
+      "Vlček"
+    ]
+  },
+  {
+    "season": "2018/19",
+    "year": 2018,
+    "club": "ČEZ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 3
+      },
+      {
+        "name": "Play-off",
+        "place": 1
+      },
+      {
+        "name": "Baráž o extraligu",
+        "place": 4
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Dvořák",
+      "Kváča",
+      "Strmeň",
+      "Svoboda",
+      "Doktor V",
+      "Fillman",
+      "Jandus",
+      "Kachyňa",
+      "Kutlák",
+      "Pavlin",
+      "Plášil",
+      "Prospal nejml",
+      "Pýcha",
+      "Svach",
+      "Vydarený",
+      "Babka",
+      "Beránek",
+      "Bradley",
+      "Čermák",
+      "Dančišin",
+      "Doktor J",
+      "Doležal",
+      "Endál",
+      "Gilbert",
+      "Heřman",
+      "Hrubec",
+      "Karabáček",
+      "Novák M",
+      "Novák P",
+      "R. Přikryl",
+      "Šimánek",
+      "Vaculík"
+    ]
+  },
+  {
+    "season": "2019/20",
+    "year": 2019,
+    "club": "ČEZ Motor ČB",
+    "comps": [
+      {
+        "name": "1. liga",
+        "place": 1
+      },
+      {
+        "name": "Play-off",
+        "place": null
+      }
+    ],
+    "mainPlace": 1,
+    "mainLeague": "1. liga",
+    "tier": 1,
+    "players": [
+      "Klouček",
+      "Strmeň",
+      "Dvořák",
+      "Allen",
+      "Kachyňa",
+      "Lytvynov",
+      "Pavel",
+      "Plášil",
+      "Pýcha",
+      "Suchánek",
+      "Svach",
+      "Vydarený",
+      "Babka",
+      "Beránek",
+      "Doležal",
+      "Endál",
+      "Gilbert",
+      "Holec",
+      "Christov",
+      "Karabáček",
+      "Kloz",
+      "Michnáč",
+      "Novák M",
+      "Prokeš",
+      "R. Přikryl",
+      "Raška",
+      "Šimánek",
+      "Venkrbec",
+      "Veselý"
+    ]
+  },
+  {
+    "season": "2020/21",
+    "year": 2020,
+    "club": "MADETA Motor ČB",
+    "comps": [
+      {
+        "name": "extraliga",
+        "place": 14
+      }
+    ],
+    "mainPlace": 14,
+    "mainLeague": "extraliga",
+    "tier": 1,
+    "players": [
+      "Čiliak",
+      "Strmeň",
+      "Patera",
+      "Slováček",
+      "Allen",
+      "Lytvynov",
+      "Pavel",
+      "Plášil",
+      "Kubíček",
+      "Pýcha",
+      "Suchánek",
+      "Svach",
+      "Vydarený",
+      "Štencel",
+      "Roth",
+      "Beránek",
+      "Doležal",
+      "Gilbert",
+      "Holec",
+      "Christov",
+      "Karabáček",
+      "Michnáč",
+      "Novák M",
+      "Prokeš",
+      "R. Přikryl",
+      "Raška",
+      "Venkrbec",
+      "Voženílek",
+      "Forman",
+      "Jonák",
+      "Toman",
+      "Adamský",
+      "Alderson",
+      "Novák P",
+      "Bednář L",
+      "Ville"
+    ]
+  },
+  {
+    "season": "2021/22",
+    "year": 2021,
+    "club": "HC Motor ČB",
+    "comps": [
+      {
+        "name": "extraliga",
+        "place": 4
+      },
+      {
+        "name": "Play-off",
+        "place": 3
+      }
+    ],
+    "mainPlace": 3,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Hrachovina",
+      "Strmeň",
+      "Maleček",
+      "Bindulis",
+      "Bučko",
+      "Lytvynov",
+      "Percy",
+      "Piskáček",
+      "Remta",
+      "Šenkeřík",
+      "Štencel",
+      "Štich",
+      "Vráblík",
+      "Abdul",
+      "Beránek",
+      "Gulaš",
+      "Hanzl",
+      "Holec",
+      "Chlubna",
+      "Karabáček",
+      "Koláček",
+      "Masopust",
+      "Novotný",
+      "Ondráček",
+      "Pech",
+      "Pouzar",
+      "Toman",
+      "Valský",
+      "Vondrka",
+      "Voženílek"
+    ]
+  },
+  {
+    "season": "2022/23",
+    "year": 2022,
+    "club": "HC Motor ČB",
+    "comps": [
+      {
+        "name": "extraliga",
+        "place": 13
+      }
+    ],
+    "mainPlace": 13,
+    "mainLeague": "extraliga",
+    "tier": 1,
+    "players": [
+      "Hrachovina",
+      "Strmeň",
+      "Bindulis",
+      "Percy",
+      "Šenkeřík",
+      "Štencel",
+      "Vráblík",
+      "Hovorka",
+      "Kachyňa",
+      "Gazda",
+      "Plášil",
+      "Marcel",
+      "Šedivý",
+      "L. Doudera",
+      "Hail",
+      "Dzierkals",
+      "Gulaš",
+      "Hanzl",
+      "Strnad",
+      "Chlubna",
+      "Karabáček",
+      "Koláček",
+      "Čachotský",
+      "Novotný",
+      "Pech",
+      "Toman",
+      "Valský",
+      "Vondrka",
+      "Vopelka",
+      "F. Přikryl",
+      "Doležal",
+      "Tomeček",
+      "Drančák",
+      "Holec",
+      "Raška"
+    ]
+  },
+  {
+    "season": "2023/24",
+    "year": 2023,
+    "club": "Banes Motor ČB",
+    "comps": [
+      {
+        "name": "extraliga",
+        "place": 6
+      },
+      {
+        "name": "Play-off",
+        "place": 6
+      }
+    ],
+    "mainPlace": 6,
+    "mainLeague": "Play-off",
+    "tier": 1,
+    "players": [
+      "Hrachovina",
+      "Strmeň",
+      "M. Doudera",
+      "Štencel",
+      "Vráblík",
+      "Hovorka",
+      "Kachyňa",
+      "Pýcha",
+      "Gulaši",
+      "Štich",
+      "Krutil",
+      "Ordoš",
+      "Gulaš",
+      "Hanzl",
+      "Kondelík",
+      "Chlubna",
+      "Kubík",
+      "Koláček",
+      "Simon",
+      "Harris",
+      "Pech",
+      "Toman",
+      "Valský",
+      "Beránek",
+      "Vopelka",
+      "F. Přikryl",
+      "Kříž",
+      "Hoch"
+    ]
+  }
+]
