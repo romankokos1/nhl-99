@@ -928,7 +928,8 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 <!-- ══ ROSTER MODAL ══ -->
 <div class="ovl ovl-roster" id="rosterOvl" onclick="closeRosterOvl(event)">
   <div class="modal" style="padding:0;border-radius:16px;overflow:hidden;border:none">
-    <div class="roster-head">
+    <div class="roster-head" style="gap:14px">
+      <img id="rosterLogo" src="" alt="" style="height:40px;object-fit:contain;display:none;flex-shrink:0">
       <div>
         <div class="roster-season" id="rosterSeason"></div>
         <div class="roster-club" id="rosterClub"></div>
@@ -2447,7 +2448,13 @@ function renderStats(ids) {
 
   // Name history
   const NAMES=[['1928–1948','AC Stadion České Budějovice',false],['1948–1949','Sokol Stadion České Budějovice',false],['1949–1950','ZSJ Obchodní domy Stadion ČB',false],['1950–1952','ZSJ Sdružené komunální podniky JNV ČB',false],['1953–1957','DSO Slavoj České Budějovice',false],['1957–1965','TJ Slavoj České Budějovice',false],['1965–1992','TJ Motor České Budějovice',false],['1992–2006','HC České Budějovice',false],['2006–2013','HC Mountfield',false],['2013–2020','ČEZ Motor České Budějovice',false],['2020–2021','Madeta Motor České Budějovice',false],['2021–2023','HC Motor České Budějovice',false],['od 2023','Banes Motor České Budějovice',true]];
-  if (ids.names) document.getElementById(ids.names).innerHTML = `<div class="msp-names">${NAMES.map(([yrs,name,cur])=>`<div class="msp-name-row${cur?' current':''}"><span class="msp-name-years">${yrs}</span><span class="msp-name-val">${name}</span></div>`).join('')}</div>`;
+  const LOGOS_BY_NAME = {'AC Stadion':1928,'Banes Motor':2023};
+  if (ids.names) document.getElementById(ids.names).innerHTML = `<div class="msp-names">${NAMES.map(([yrs,name,cur])=>{
+    const nameKey = Object.keys(LOGOS_BY_NAME).find(k=>name.includes(k));
+    const logo = nameKey ? getLogoForYear(LOGOS_BY_NAME[nameKey]) : null;
+    const logoHtml = logo ? `<img src="${logo}" style="height:18px;object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'">` : '';
+    return `<div class="msp-name-row${cur?' current':''}"><span class="msp-name-years">${yrs}</span><span class="msp-name-val">${logoHtml}${name}</span></div>`;
+  }).join('')}</div>`;
 
   // Captains
   const captains=players.filter(p=>p.captainYears).map(p=>{const m=(p.captainYears||'').match(/\d{4}/);return{p,startYear:m?parseInt(m[0]):9999};}).sort((a,b)=>a.startYear-b.startYear);
@@ -2579,12 +2586,36 @@ window.addEventListener('load', () => {
   }
 });
 
+
+// ── HISTORICKÁ LOGA ───────────────────────────────────────────────────────
+const LOGOS = {
+  1928: 'https://nitter.net/pic/orig/media%2FCYWQmOBWsAED2QI.png', // AC Stadion ČB
+  // 1948: '',  // Sokol Stadion
+  // 1953: '',  // DSO Slavoj
+  // 1965: '',  // TJ Motor
+  // 1992: '',  // HC České Budějovice
+  // 2006: '',  // HC Mountfield
+  // 2013: '',  // ČEZ Motor
+  // 2020: '',  // Madeta Motor
+  // 2021: '',  // HC Motor
+  2023: 'https://hcmotor.cz/img/logo-var-1.svg',  // Banes Motor
+};
+
+function getLogoForYear(year) {
+  const keys = Object.keys(LOGOS).map(Number).sort((a,b)=>a-b);
+  let logo = null;
+  for (const k of keys) { if (year >= k) logo = LOGOS[k]; }
+  return logo;
+}
 // ── ROSTER FUNCTIONS ──────────────────────────────────────────────────────
 function openRosterOvl(seasonIdx) {
   const s = ROSTER_DATA[seasonIdx];
   if (!s) return;
   document.getElementById('rosterSeason').textContent = s.season;
   document.getElementById('rosterClub').textContent = s.club;
+  const rLogo = getLogoForYear(s.year);
+  const rLogoEl = document.getElementById('rosterLogo');
+  if (rLogoEl) { rLogoEl.src = rLogo||''; rLogoEl.style.display = rLogo?'block':'none'; }
   document.getElementById('rosterBadge').textContent = s.mainPlace ? s.mainPlace + '. místo' : '—';
   const compsText = s.comps.map(c => c.name + (c.place ? ' – ' + c.place + '. místo' : ' – nehráno')).join(' · ');
   const coachText = s.coachesFull ? '🎽 ' + s.coachesFull : '';
@@ -2642,7 +2673,9 @@ function buildPlacementChart() {
   return `<div class="placement-chart-wrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible">${bands}${grid1}${ylabels}${xlabels.join('')}${line}${dots}</svg><div style="font-size:9px;color:#9aaac4;text-align:center;margin-top:2px;letter-spacing:.05em">Klikni na bod → soupiska sezóny</div></div>`;
 }
 function showPlaceTip(event,sIdx){const s=ROSTER_DATA[sIdx];if(!s)return;let tip=document.getElementById('placeTip');if(!tip){tip=document.createElement('div');tip.id='placeTip';tip.className='pl-season-tip';document.body.appendChild(tip);}const comps=s.comps.map(c=>c.name+(c.place?` – ${c.place}. místo`:' – nehráno')).join('<br>');const coachTip = s.coachesFull ? `<div class="pl-tip-place">🎽 ${s.coachesFull}</div>` : '';
-  tip.innerHTML=`<div class="pl-tip-season">${s.season}</div><div class="pl-tip-comp">${s.club}</div><div class="pl-tip-place">${comps}</div>${coachTip}<div class="pl-tip-btn">📋 Soupiska</div>`;tip.style.left=event.clientX+'px';tip.style.top=(event.clientY-12)+'px';tip.style.opacity='1';}
+  const tLogo = getLogoForYear(s.year);
+  const tLogoHtml = tLogo ? `<img src="${tLogo}" style="height:22px;object-fit:contain;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'">` : '';
+  tip.innerHTML=`<div class="pl-tip-season">${s.season}</div><div class="pl-tip-comp">${tLogoHtml}${s.club}</div><div class="pl-tip-place">${comps}</div>${coachTip}<div class="pl-tip-btn">📋 Soupiska</div>`;tip.style.left=event.clientX+'px';tip.style.top=(event.clientY-12)+'px';tip.style.opacity='1';}
 function hidePlaceTip(){const t=document.getElementById('placeTip');if(t)t.style.opacity='0';}
 
 // ── DYNASTY ─────────────────────────────────────────────────────────────────
