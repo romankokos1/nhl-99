@@ -1851,8 +1851,16 @@ async function impConfirm() {
 // ══════════════════════════════════════════════════
 function isBirthdayToday(born) {
   if (!born) return false;
-  const today = new Date();
-  const d = today.getDate(), m = today.getMonth() + 1;
+  const params = new URLSearchParams(location.search);
+  const override = params.get('bday'); // testování: ?bday=15.2
+  let d, m;
+  if (override) {
+    const [od, om] = override.split('.');
+    d = parseInt(od); m = parseInt(om);
+  } else {
+    const today = new Date();
+    d = today.getDate(); m = today.getMonth() + 1;
+  }
   const match = born.match(/(\d{1,2})[.\s]+(\d{1,2})/);
   return match && parseInt(match[1]) === d && parseInt(match[2]) === m;
 }
