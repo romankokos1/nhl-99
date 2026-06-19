@@ -343,6 +343,18 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
 /* Scroll to top */
+/* Birthday section */
+.bday-section{padding:.5rem .8rem .3rem}
+.bday-header{display:flex;align-items:center;gap:6px;margin-bottom:.4rem}
+.bday-header span{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue3)}
+.bday-card{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(28,72,150,.07),rgba(245,195,0,.05));border:1px solid rgba(245,195,0,.28);border-radius:12px;padding:7px 10px;margin-bottom:5px;cursor:pointer;transition:background .15s}
+.bday-card:hover{background:linear-gradient(135deg,rgba(28,72,150,.13),rgba(245,195,0,.1))}
+.bday-av{width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(245,195,0,.5);background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--yellow);transform:translateZ(0);isolation:isolate}
+.bday-av img{width:100%;height:100%;object-fit:cover;display:block}
+.bday-info{flex:1;min-width:0}
+.bday-name{font-size:13px;font-weight:700;color:var(--blue3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bday-meta{font-size:11px;color:#8a9ab5;margin-top:1px}
+.bday-age{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--yellow);flex-shrink:0}
 .scroll-top{
   position:sticky;bottom:12px;
   display:flex;align-items:center;justify-content:center;
@@ -1835,10 +1847,41 @@ async function impConfirm() {
 // ══════════════════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════════════════
+function isBirthdayToday(born) {
+  if (!born) return false;
+  const today = new Date();
+  const d = today.getDate(), m = today.getMonth() + 1;
+  const match = born.match(/(\d{1,2})[.\s]+(\d{1,2})/);
+  return match && parseInt(match[1]) === d && parseInt(match[2]) === m;
+}
+
 function render() {
   const list=document.getElementById('playerList'),empty=document.getElementById('emptyMsg');
   Array.from(list.children).forEach(c=>{if(c!==empty)c.remove();});
   empty.style.display=players.length?'none':'block';
+
+  // ── Oslavenci dne ────────────────────────────────
+  const today = new Date();
+  const todayStr = `${today.getDate()}. ${today.getMonth()+1}.`;
+  const bdPlayers = players.map((p,i)=>({p,i})).filter(({p})=>isBirthdayToday(p.born));
+  if (bdPlayers.length) {
+    const sec = document.createElement('div');
+    sec.className = 'bday-section';
+    sec.innerHTML = `<div class="bday-header">🎂 <span>Dnes slaví · ${todayStr}</span></div>` +
+      bdPlayers.map(({p,i})=>{
+        const yr = p.born ? parseInt(p.born.match(/\d{4}/)?.[0]) : null;
+        const age = yr ? today.getFullYear() - yr : null;
+        const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+        const photoStyle = p.photoZoom&&p.photoZoom>1
+          ? `transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`
+          : `object-position:${p.photoPos||'50% 50%'};`;
+        const av = p.photo
+          ? `<div class="bday-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`
+          : `<div class="bday-av">${ini}</div>`;
+        return `<div class="bday-card" onclick="focusPlayer(${i})">${av}<div class="bday-info"><div class="bday-name">${esc(fullName(p)||p.city||'—')}</div><div class="bday-meta">${p.born||''} ${p.city?'· '+esc(p.city):''}</div></div>${age?`<div class="bday-age">${age}</div>`:''}</div>`;
+      }).join('');
+    list.insertBefore(sec, list.firstChild);
+  }
 
   // Sort
   const sorted = players.map((p,i)=>({p,i})).sort((a,b)=>{
