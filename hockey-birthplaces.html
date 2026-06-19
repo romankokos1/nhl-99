@@ -1089,7 +1089,7 @@ function loadRosters() {
       console.log('Rosters loaded:', data.length, 'seasons');
       // Re-render stats pokud jsou právě otevřené
       if (document.getElementById('statsOvl')?.classList.contains('on')) {
-        renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty' });
+        renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', coaches:'statsCoaches' });
       }
       if (document.getElementById('mob-stats-panel')?.style.display === 'block') {
         renderMobStats();
@@ -2453,6 +2453,7 @@ function renderStats(ids) {
   const captains=players.filter(p=>p.captainYears).map(p=>{const m=(p.captainYears||'').match(/\d{4}/);return{p,startYear:m?parseInt(m[0]):9999};}).sort((a,b)=>a.startYear-b.startYear);
   if (ids.placementChart) document.getElementById(ids.placementChart).innerHTML = buildPlacementChart();
   if (ids.dynasty) document.getElementById(ids.dynasty).innerHTML = buildDynastySection();
+  if (ids.coaches) document.getElementById(ids.coaches).innerHTML = buildCoachesSection();
   if (ids.captains&&captains.length) document.getElementById(ids.captains).innerHTML=`<div class="msp-captain-grid">${captains.map(({p})=>{
     const ini=[(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
     const photoStyle=p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`:`object-position:${p.photoPos||'50% 50%'};`;
@@ -2462,13 +2463,13 @@ function renderStats(ids) {
 }
 
 function renderMobStats() {
-  renderStats({ clubInfo:'mspClubInfo', kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart', achieve:'mspAchieve', names:'mspNames', captains:'mspCaptains', placementChart:'mspPlacementChart', dynasty:'mspDynasty' });
+  renderStats({ clubInfo:'mspClubInfo', kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart', achieve:'mspAchieve', names:'mspNames', captains:'mspCaptains', placementChart:'mspPlacementChart', dynasty:'mspDynasty', coaches:'mspCoaches' });
 }
 
 // ── DESKTOP STATS ─────────────────────────────────
 function openStatsDesktop() {
   document.getElementById('statsOvl').classList.add('on');
-  renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty' });
+  renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', coaches:'statsCoaches' });
 }
 function closeStatsDesktop(e) {
   if (e && e.target !== document.getElementById('statsOvl')) return;
@@ -2585,7 +2586,9 @@ function openRosterOvl(seasonIdx) {
   document.getElementById('rosterSeason').textContent = s.season;
   document.getElementById('rosterClub').textContent = s.club;
   document.getElementById('rosterBadge').textContent = s.mainPlace ? s.mainPlace + '. místo' : '—';
-  document.getElementById('rosterComps').textContent = s.comps.map(c => c.name + (c.place ? ' – ' + c.place + '. místo' : ' – nehráno')).join(' · ');
+  const compsText = s.comps.map(c => c.name + (c.place ? ' – ' + c.place + '. místo' : ' – nehráno')).join(' · ');
+  const coachText = s.coachesFull ? '🎽 ' + s.coachesFull : '';
+  document.getElementById('rosterComps').innerHTML = [compsText, coachText].filter(Boolean).map(t=>`<span>${t}</span>`).join('<br>');
   const grid = document.getElementById('rosterGrid');
   grid.innerHTML = '';
   const byName = {};
@@ -2638,7 +2641,8 @@ function buildPlacementChart() {
   const grid1=`<line x1="${pL}" y1="${py(1).toFixed(1)}" x2="${W-pR}" y2="${py(1).toFixed(1)}" stroke="rgba(245,195,0,.3)" stroke-width="1" stroke-dasharray="3 2"/>`;
   return `<div class="placement-chart-wrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible">${bands}${grid1}${ylabels}${xlabels.join('')}${line}${dots}</svg><div style="font-size:9px;color:#9aaac4;text-align:center;margin-top:2px;letter-spacing:.05em">Klikni na bod → soupiska sezóny</div></div>`;
 }
-function showPlaceTip(event,sIdx){const s=ROSTER_DATA[sIdx];if(!s)return;let tip=document.getElementById('placeTip');if(!tip){tip=document.createElement('div');tip.id='placeTip';tip.className='pl-season-tip';document.body.appendChild(tip);}const comps=s.comps.map(c=>c.name+(c.place?` – ${c.place}. místo`:' – nehráno')).join('<br>');tip.innerHTML=`<div class="pl-tip-season">${s.season}</div><div class="pl-tip-comp">${s.club}</div><div class="pl-tip-place">${comps}</div><div class="pl-tip-btn">📋 Soupiska</div>`;tip.style.left=event.clientX+'px';tip.style.top=(event.clientY-12)+'px';tip.style.opacity='1';}
+function showPlaceTip(event,sIdx){const s=ROSTER_DATA[sIdx];if(!s)return;let tip=document.getElementById('placeTip');if(!tip){tip=document.createElement('div');tip.id='placeTip';tip.className='pl-season-tip';document.body.appendChild(tip);}const comps=s.comps.map(c=>c.name+(c.place?` – ${c.place}. místo`:' – nehráno')).join('<br>');const coachTip = s.coachesFull ? `<div class="pl-tip-place">🎽 ${s.coachesFull}</div>` : '';
+  tip.innerHTML=`<div class="pl-tip-season">${s.season}</div><div class="pl-tip-comp">${s.club}</div><div class="pl-tip-place">${comps}</div>${coachTip}<div class="pl-tip-btn">📋 Soupiska</div>`;tip.style.left=event.clientX+'px';tip.style.top=(event.clientY-12)+'px';tip.style.opacity='1';}
 function hidePlaceTip(){const t=document.getElementById('placeTip');if(t)t.style.opacity='0';}
 
 // ── DYNASTY ─────────────────────────────────────────────────────────────────
@@ -2652,6 +2656,18 @@ function buildDynastySection(){
 }
 
 // ── TEAMMATES ───────────────────────────────────────────────────────────────
+
+function buildCoachesSection(){
+  if(!ROSTER_DATA) return '';
+  // Deduplicate by period
+  const seen=new Set(), rows=[];
+  ROSTER_DATA.forEach(s=>{
+    if(!s.coachesPeriod||seen.has(s.coachesPeriod)) return;
+    seen.add(s.coachesPeriod);
+    rows.push({period:s.coachesPeriod, coaches:s.coaches, full:s.coachesFull});
+  });
+  return `<div style="padding:.2rem 0">${rows.map(r=>`<div class="dynasty-row"><span class="dynasty-name" style="font-size:12px;min-width:72px">${esc(r.period)}</span><span style="font-size:12px;color:var(--blue3);flex:1">${esc(r.full)}</span></div>`).join('')}</div>`;
+}
 function buildTeammatesSection(player){
   if (!ROSTER_DATA) return '';
   const surname=(player.surname||'').toLowerCase().trim();
@@ -2705,6 +2721,8 @@ function buildTeammatesSection(player){
     <div id="mspPlacementChart"></div>
     <div class="msp-section-lbl" style="margin-top:.8rem">Rodinné dynastie</div>
     <div id="mspDynasty"></div>
+    <div class="msp-section-lbl" style="margin-top:.8rem">Trenéři klubu</div>
+    <div id="mspCoaches"></div>
     <div class="msp-section-lbl" style="margin-top:1.1rem">Největší úspěchy</div>
     <div id="mspAchieve"></div>
     <div class="msp-section-lbl" style="margin-top:1.1rem">Historie názvu klubu</div>
@@ -2769,6 +2787,8 @@ function buildTeammatesSection(player){
       <div id="statsPlacementChart"></div>
       <div class="msp-section-lbl" style="margin-top:.8rem">Rodinné dynastie</div>
       <div id="statsDynasty"></div>
+      <div class="msp-section-lbl" style="margin-top:.8rem">Trenéři klubu</div>
+      <div id="statsCoaches"></div>
     </div>
     <div class="stats-year-full">
       <div class="msp-section-lbl">Rok narození</div>
