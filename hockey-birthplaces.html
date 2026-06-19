@@ -355,6 +355,8 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .bday-name{font-size:13px;font-weight:700;color:var(--blue3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bday-meta{font-size:11px;color:#8a9ab5;margin-top:1px}
 .bday-age{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--yellow);flex-shrink:0}
+.bday-died{opacity:.55;border-color:rgba(140,150,170,.25);background:linear-gradient(135deg,rgba(80,90,110,.06),rgba(100,110,130,.04))}
+.bday-died .bday-age{color:#8a9ab5}
 .scroll-top{
   position:sticky;bottom:12px;
   display:flex;align-items:center;justify-content:center;
@@ -1878,7 +1880,7 @@ function render() {
         const av = p.photo
           ? `<div class="bday-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`
           : `<div class="bday-av">${ini}</div>`;
-        return `<div class="bday-card" onclick="focusPlayer(${i})">${av}<div class="bday-info"><div class="bday-name">${esc(fullName(p)||p.city||'—')}</div><div class="bday-meta">${p.born||''} ${p.city?'· '+esc(p.city):''}</div></div>${age?`<div class="bday-age">${age}</div>`:''}</div>`;
+        return `<div class="bday-card${p.died?' bday-died':''}" onclick="focusPlayer(${i})">${av}<div class="bday-info"><div class="bday-name">${p.died?'✝ ':''}${esc(fullName(p)||p.city||'—')}</div><div class="bday-meta">${p.born||''} ${p.city?'· '+esc(p.city):''}</div></div>${age?`<div class="bday-age">${age}</div>`:''}</div>`;
       }).join('');
     list.insertBefore(sec, list.firstChild);
   }
