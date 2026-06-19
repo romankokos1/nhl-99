@@ -1082,19 +1082,20 @@ const DETECT_RX = {
 const DATA_URL = 'hcmotor_players.json';
 
 function loadRosters() {
-  fetch('hcmotor_rosters.json?v=' + Date.now())
-    .then(r => r.json())
+  fetch('hcmotor_rosters.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(data => {
       ROSTER_DATA = data;
-      // Re-render stats pokud jsou otevřené
+      console.log('Rosters loaded:', data.length, 'seasons');
+      // Re-render stats pokud jsou právě otevřené
       if (document.getElementById('statsOvl')?.classList.contains('on')) {
         renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty' });
       }
-      if (document.getElementById('mob-stats-panel')?.classList.contains('on')) {
+      if (document.getElementById('mob-stats-panel')?.style.display === 'block') {
         renderMobStats();
       }
     })
-    .catch(e => console.warn('hcmotor_rosters.json:', e));
+    .catch(e => console.error('hcmotor_rosters.json chyba:', e));
 }
 
 function loadPlayers(callback) {
@@ -2247,6 +2248,7 @@ function closeDetailOvl(e) {
 loadPlayers(function() {
   load(); initMap(); render(); setTimeout(updateMap,300);
 });
+loadRosters();
   
 window.addEventListener('resize', () => { map.invalidateSize(); setHdrHeight(); });
 
