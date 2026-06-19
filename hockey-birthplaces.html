@@ -1051,6 +1051,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 // ══════════════════════════════════════════════════
 let players = [];
 let map, mlayers = [], playerMarkers = [];
+let ROSTER_DATA = null;
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
 const STORAGE_KEY = 'hockey_v7';
@@ -1083,8 +1084,17 @@ const DATA_URL = 'hcmotor_players.json';
 function loadRosters() {
   fetch('hcmotor_rosters.json?v=' + Date.now())
     .then(r => r.json())
-    .then(data => { window.ROSTER_DATA = data; })
-    .catch(e => console.warn('hcmotor_rosters.json nenalezen:', e));
+    .then(data => {
+      ROSTER_DATA = data;
+      // Re-render stats pokud jsou otevřené
+      if (document.getElementById('statsOvl')?.classList.contains('on')) {
+        renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty' });
+      }
+      if (document.getElementById('mob-stats-panel')?.classList.contains('on')) {
+        renderMobStats();
+      }
+    })
+    .catch(e => console.warn('hcmotor_rosters.json:', e));
 }
 
 function loadPlayers(callback) {
@@ -2600,7 +2610,7 @@ function closeRosterOvl(e) { if(e&&e.target!==document.getElementById('rosterOvl
 
 // ── PLACEMENT CHART ────────────────────────────────────────────────────────
 function buildPlacementChart() {
-  if (!window.ROSTER_DATA) return '';
+  if (!ROSTER_DATA) return '';
   const W=300,H=90,pL=28,pR=8,pT=10,pB=22,cW=W-pL-pR,cH=H-pT-pB;
   const pts=ROSTER_DATA.filter(s=>s.mainPlace).map(s=>({s,yr:s.year,pl:s.mainPlace,tier:s.tier}));
   if(!pts.length) return '';
@@ -2631,7 +2641,7 @@ function hidePlaceTip(){const t=document.getElementById('placeTip');if(t)t.style
 
 // ── DYNASTY ─────────────────────────────────────────────────────────────────
 function buildDynastySection(){
-  if (!window.ROSTER_DATA) return '';
+  if (!ROSTER_DATA) return '';
   const sc={};
   ROSTER_DATA.forEach(s=>{const seen=new Set();s.players.forEach(name=>{const parts=name.trim().split(/\s+/);const sur=parts[parts.length-1];if(sur.length<3||seen.has(sur))return;seen.add(sur);sc[sur]=(sc[sur]||0)+1;});});
   const d=Object.entries(sc).filter(([,c])=>c>=8).sort((a,b)=>b[1]-a[1]).slice(0,15);
@@ -2641,7 +2651,7 @@ function buildDynastySection(){
 
 // ── TEAMMATES ───────────────────────────────────────────────────────────────
 function buildTeammatesSection(player){
-  if (!window.ROSTER_DATA) return '';
+  if (!ROSTER_DATA) return '';
   const surname=(player.surname||'').toLowerCase().trim();
   if(!surname) return '';
   const mySeasons=ROSTER_DATA.filter(s=>s.players.some(name=>name.toLowerCase().includes(surname)));
