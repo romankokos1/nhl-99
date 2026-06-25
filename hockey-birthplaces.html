@@ -379,6 +379,29 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .teammates-list{display:flex;flex-wrap:wrap;gap:5px}
 .teammate-chip{font-size:11px;color:var(--blue3);background:#f0f4fb;border:1px solid #dde6f5;border-radius:20px;padding:2px 9px;cursor:pointer;transition:background .12s}
 .teammate-chip:hover{background:#dde6f5}
+
+/* DB City labels layer */
+.db-label { pointer-events:none; }
+.db-label-inner {
+  white-space:nowrap;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px; font-weight:700; letter-spacing:.04em;
+  color:#1c2e4a;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(4px);
+  border:1px solid rgba(28,72,150,.18);
+  border-radius:20px;
+  padding:2px 8px;
+  box-shadow:0 1px 4px rgba(10,30,80,.12);
+  display:inline-flex; align-items:center; gap:5px;
+}
+.db-label-count {
+  background:var(--blue);
+  color:#fff;
+  font-size:9px; font-weight:800;
+  border-radius:10px;
+  padding:1px 5px;
+}
 /* Birthday section */
 .bday-section{padding:.5rem .8rem .3rem}
 .bday-header{display:flex;align-items:center;gap:6px;margin-bottom:.4rem}
@@ -1012,6 +1035,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 let players = [];
 let map, mlayers = [], playerMarkers = [];
 let ROSTER_DATA = null;
+let labelLayer = null;
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
 const STORAGE_KEY = 'hockey_v7';
@@ -1101,7 +1125,14 @@ function initMap() {
     L.circle(CB, {...cStyle, radius:200000, opacity:.3}).bindTooltip('200 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
     L.circle(CB, {...cStyle, radius:500000, weight:1, opacity:.2}).bindTooltip('500 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
   ]);
-  L.control.layers(baseLayers, {'⭕ Vzdálenosti od ČB': distCircles}, {position:'topright', collapsed:true}).addTo(map);
+  // Label layer — popisky z databáze
+  labelLayer = L.layerGroup();
+  L.control.layers(baseLayers, {
+    '⭕ Vzdálenosti od ČB': distCircles,
+    '🏷 Popisky z databáze': labelLayer
+  }, {position:'topright', collapsed:true}).addTo(map);
+  // Aktualizuj labely když se vrstva zapne
+  map.on('overlayadd', e => { if (e.name.includes('Popisky')) updateLabelLayer(); });
 
   // Set default popup options — keepInView globally
   L.Popup.mergeOptions({keepInView: true});
@@ -1487,6 +1518,29 @@ function updateSliderUI() {
     lo===rangeMin && hi===rangeMax
       ? 'Zobrazeni všichni hráči'
       : `Zobrazeno ${visible} z ${total} hráčů`;
+}
+
+function updateLabelLayer() {
+  if (!labelLayer || !map.hasLayer(labelLayer)) return;
+  labelLayer.clearLayers();
+  const visible = getFilteredPlayers().filter(p => p.lat && p.lon);
+
+  // Group by location
+  const groups = {};
+  visible.forEach(p => {
+    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    if (!groups[key]) groups[key] = {lat:p.lat, lon:p.lon, city:p.city, count:0};
+    groups[key].count++;
+  });
+
+  Object.values(groups).forEach(g => {
+    const icon = L.divIcon({
+      html: `<div class="db-label-inner">${esc(g.city||'?')}${g.count>1?`<span class="db-label-count">${g.count}</span>`:''}</div>`,
+      className: 'db-label',
+      iconAnchor: [0, -6]
+    });
+    L.marker([g.lat, g.lon], {icon, interactive:false}).addTo(labelLayer);
+  });
 }
 
 function updateMap() {
