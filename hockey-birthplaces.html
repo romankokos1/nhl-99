@@ -1590,12 +1590,18 @@ function updateMap() {
     mk.on('mouseover', function() {
       const icon = this.getElement(); if (!icon) return;
       icon.classList.add('mk-hovered');
-      // Scale SVG
-      icon.querySelectorAll('svg').forEach(s => {
-        s.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
-        s.style.transformOrigin = 'center bottom';
-        s.style.transform = `scale(${scale})`;
-      });
+      // Scale — SVG pro single pin, wrapper div pro multi bubble
+      if (multi) {
+        icon.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
+        icon.style.transformOrigin = 'center center';
+        icon.style.transform = `scale(${scale})`;
+      } else {
+        icon.querySelectorAll('svg').forEach(s => {
+          s.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
+          s.style.transformOrigin = 'center bottom';
+          s.style.transform = `scale(${scale})`;
+        });
+      }
       // Show photo bubble / strip
       const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
       if (photo) { photo.style.opacity = '1'; photo.style.transform = 'translateX(-50%) scale(1)'; }
@@ -1613,7 +1619,11 @@ function updateMap() {
     mk.on('mouseout', function() {
       const icon = this.getElement(); if (!icon) return;
       icon.classList.remove('mk-hovered');
-      icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
+      if (multi) {
+        icon.style.transform = '';
+      } else {
+        icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
+      }
       const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
       if (photo) { photo.style.opacity = '0'; photo.style.transform = 'translateX(-50%) scale(.7)'; }
       const lbl2 = document.getElementById('mkCityLabel'); lbl2.style.opacity = '0'; lbl2.style.transform = 'translateX(-50%) translateY(6px)';
@@ -1631,30 +1641,6 @@ function updateMap() {
     });
     g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
     mlayers.push(mk);
-
-    // Photo tooltip on hover
-    if (multi) {
-      const h = n >= 100 ? 36 : n >= 10 ? 30 : 26;
-      const ptr = 7;
-      const shuffled = [...g.ps].sort(() => Math.random() - 0.5);
-      const withPh = shuffled.filter(({p}) => p.photo);
-      const items  = (withPh.length ? withPh : shuffled).slice(0, 3);
-      const rest   = n - items.length;
-      const avHtml = items.map(({p}) => {
-        const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
-        const photoStyle = p.photoZoom && p.photoZoom > 1
-          ? `transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`
-          : `object-position:${p.photoPos||'50% 50%'};`;
-        return p.photo
-          ? `<div class="mk-strip-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`
-          : `<div class="mk-strip-av">${ini}</div>`;
-      }).join('');
-      const restHtml = rest > 0 ? `<div class="mk-strip-av" style="background:#0f2f6a;color:#f5c300;font-size:9px">+${rest}</div>` : '';
-      mk.bindTooltip(
-        `<div class="mk-tooltip-strip">${avHtml}${restHtml}</div>`,
-        { permanent:false, direction:'top', offset:[0,-(h+ptr+6)], className:'mk-photo-tooltip', opacity:1 }
-      );
-    }
   });
 
   if (Object.keys(groups).length === 1) {
