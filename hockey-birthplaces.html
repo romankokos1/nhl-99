@@ -1003,22 +1003,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 </div>
 
-<!-- ══════════════════════════════════════
-  IMPORT MODAL
-══════════════════════════════════════ -->
-<div class="ovl" id="importOvl" onclick="closeImportOvl(event)">
-<div class="modal imp-modal">
-  <button class="modal-close" onclick="closeImportOvl()">✕</button>
-  <h3>⬆️ Hromadný import</h3>
-
-  <div class="imp-step on" id="impStep1">
-    <textarea class="imp-textarea" id="impPaste"
-      placeholder="Vlož data z tabulky (Excel, Google Sheets…)&#10;&#10;Příklad:&#10;Jágr&#9;Jaromír&#9;Kladno&#9;15.2.1972&#9;&#9;23&#10;Hašek&#9;Dominik&#9;Pardubice&#9;29.1.1965&#9;&#9;16"></textarea>
-    <div class="imp-hint">
-      Podporované formáty: <strong>záložky</strong> (kopie z Excelu/Sheets), <strong>středníky</strong> nebo <strong>čárky</strong>.<br>
-      Doporučené pořadí sloupců: <code>Příjmení</code> <code>Jméno</code> <code>Rodné město</code> <code>Narozen</code> <code>Zemřel</code> <code>Sezóny</code><br>
-      Záhlaví je nepovinné (rozpoznám automaticky). Přiřazení sloupců lze upravit v dalším kroku.
-    </div>
     <div class="form-btns" style="margin-top:1rem">
       <span class="spacer"></span>
       <button class="btn-s" onclick="closeImportOvl()">Zrušit</button>
@@ -1608,6 +1592,8 @@ function updateMap() {
     mk.on('popupopen',  function() {
       const el = this.getTooltip()?.getElement();
       if (el) el.style.display = 'none';
+      const lbl = document.getElementById('mkCityLabel');
+      if (lbl) { lbl.style.opacity='0'; lbl.style.transform='translateX(-50%) translateY(6px)'; }
     });
     mk.on('popupclose', function() {
       const el = this.getTooltip()?.getElement();
@@ -2079,7 +2065,8 @@ function buildCityPopup(list, display) {
   const rows = sorted.map(({p,idx})=>{
     const yr=p.born?p.born.slice(-4):'';
     const s=p.seasons||'';
-    return `<div class="pop-row" onclick="showPlayerDetail(${idx})" title="Zobrazit detail hráče"><span class="pop-rname">${esc(fullName(p))}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
+    const capBadge = p.captainYears ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#f5c300;color:#0f2f6a;font-size:8px;font-weight:900;margin-left:4px;flex-shrink:0">C</span>' : '';
+    return `<div class="pop-row" onclick="showPlayerDetail(${idx})" title="Zobrazit detail hráče"><span class="pop-rname">${esc(fullName(p))}${capBadge}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
   }).join('');
   return `<div class="pop-hdr"><span>📍 ${esc(display)}</span><span class="pop-badge">${list.length} hráčů</span></div><div class="pop-list">${rows}</div>`;
 }
@@ -2448,7 +2435,7 @@ function renderStats(ids) {
 
   // Name history
   const NAMES=[['1928–1948','AC Stadion České Budějovice',false],['1948–1949','Sokol Stadion České Budějovice',false],['1949–1950','ZSJ Obchodní domy Stadion ČB',false],['1950–1952','ZSJ Sdružené komunální podniky JNV ČB',false],['1953–1957','DSO Slavoj České Budějovice',false],['1957–1965','TJ Slavoj České Budějovice',false],['1965–1992','TJ Motor České Budějovice',false],['1992–2006','HC České Budějovice',false],['2006–2013','HC Mountfield',false],['2013–2020','ČEZ Motor České Budějovice',false],['2020–2021','Madeta Motor České Budějovice',false],['2021–2023','HC Motor České Budějovice',false],['od 2023','Banes Motor České Budějovice',true]];
-  const LOGOS_BY_NAME = {'AC Stadion':1928,'HC České Budějovice':1992,'HC ČB':1992,'ČEZ Motor':2013,'Madeta Motor':2020,'HC Motor':2021,'Banes Motor':2023};
+  const LOGOS_BY_NAME = {'AC Stadion':1928,'TJ Motor':1965,'TJ Slavoj':1965,'HC České Budějovice':1992,'HC ČB':1992,'ČEZ Motor':2013,'Madeta Motor':2020,'HC Motor':2021,'Banes Motor':2023};
   if (ids.names) document.getElementById(ids.names).innerHTML = `<div class="msp-names">${NAMES.map(([yrs,name,cur])=>{
     const nameKey = Object.keys(LOGOS_BY_NAME).find(k=>name.includes(k));
     const logo = nameKey ? getLogoForYear(LOGOS_BY_NAME[nameKey]) : null;
@@ -2592,7 +2579,7 @@ const LOGOS = {
   1928: 'https://nitter.net/pic/orig/media%2FCYWQmOBWsAED2QI.png', // AC Stadion ČB
   // 1948: '',  // Sokol Stadion
   // 1953: '',  // DSO Slavoj
-  // 1965: '',  // TJ Motor
+  1965: 'http://www.ski-motor.cz/assets/images/logo-150x134.jpg',  // TJ Motor ČB
   1992: 'https://www.mountfieldhk.cz/znaky/94ceb.png',  // HC České Budějovice
   // 2006: '',  // HC Mountfield
   2013: 'https://hcmotor.cz/img/logo-var-1.svg',  // ČEZ Motor ČB
