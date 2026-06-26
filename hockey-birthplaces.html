@@ -1330,18 +1330,28 @@ function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
       ? `<div class="mk-photo-bubble"><img src="${photo.replace(/"/g,'&quot;')}" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}"></div>`
       : '';
     return L.divIcon({
-      html: `<div class="mk-wrap">
-        ${bubble}
-        <svg width="24" height="33" viewBox="0 0 24 33" style="display:block;filter:drop-shadow(0 3px 8px rgba(10,30,80,.42))">
-          <path d="M12 0C5.4 0 0 5.4 0 12C0 21 12 33 12 33C12 33 24 21 24 12C24 5.4 18.6 0 12 0Z" fill="#1c4896"/>
-          <path d="M12 1C5.9 1 1 5.9 1 12C1 20.5 12 32 12 32C12 32 23 20.5 23 12C23 5.9 18.1 1 12 1Z" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
-          <circle cx="12" cy="12" r="5.5" fill="#f5c300"/>
-        </svg>
-      </div>`,
+      html: `<div class="mk-wrap">${bubble}<svg width="28" height="40" viewBox="0 0 28 40" style="display:block;filter:drop-shadow(0 3px 10px rgba(10,30,80,.45));overflow:visible">
+        <defs>
+          <linearGradient id="pinG" x1="0" y1="0" x2="0.3" y2="1">
+            <stop offset="0%" stop-color="#3a6ed8"/>
+            <stop offset="100%" stop-color="#0b1f52"/>
+          </linearGradient>
+          <linearGradient id="pinGH" x1="0" y1="0" x2="0.3" y2="1">
+            <stop offset="0%" stop-color="#ffd84d"/>
+            <stop offset="100%" stop-color="#c88000"/>
+          </linearGradient>
+        </defs>
+        <path class="mk-pin-body" d="M14 0C6.3 0 0 6.3 0 14C0 24.5 14 40 14 40C14 40 28 24.5 28 14C28 6.3 21.7 0 14 0Z" fill="url(#pinG)" style="transition:fill .22s ease"/>
+        <path d="M14 1.5C7.1 1.5 1.5 7.1 1.5 14C1.5 24 14 38 14 38C14 38 26.5 24 26.5 14C26.5 7.1 20.9 1.5 14 1.5Z" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+        <path d="M6 3.5 Q4 8 4 13 Q4 8 9 5 Z" fill="rgba(255,255,255,.18)"/>
+        <circle class="mk-pin-dot" cx="14" cy="14" r="6.5" fill="#f5c300" style="transition:fill .22s ease"/>
+        <circle cx="14" cy="14" r="6.5" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+        <circle cx="12" cy="12" r="2.2" fill="rgba(255,255,255,.38)"/>
+      </svg></div>`,
       className: '',
-      iconSize: [24, 33],
-      iconAnchor: [12, 33],
-      popupAnchor: [0, -44]
+      iconSize: [28, 40],
+      iconAnchor: [14, 40],
+      popupAnchor: [0, -50]
     });
   }
 
@@ -1597,7 +1607,6 @@ function updateMap() {
       const icon = this.getElement(); if (!icon) return;
       icon.classList.add('mk-hovered');
       if (multi) {
-        // Scale child wrapper, NOT icon (icon má Leaflet's translate3d!)
         const wrap = icon.querySelector('.mk-multi-wrap');
         if (wrap) {
           wrap.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
@@ -1610,6 +1619,11 @@ function updateMap() {
           s.style.transformOrigin = 'center bottom';
           s.style.transform = `scale(${scale})`;
         });
+        // Pin přebarví na žlutou
+        const body = icon.querySelector('.mk-pin-body');
+        const dot  = icon.querySelector('.mk-pin-dot');
+        if (body) body.style.fill = 'url(#pinGH)';
+        if (dot)  dot.style.fill  = '#0f2f6a';
       }
       // Show photo bubble / strip
       const bubble=icon.querySelector('.mk-photo-bubble');
@@ -1635,6 +1649,10 @@ function updateMap() {
         if (wrap) wrap.style.transform = '';
       } else {
         icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
+        const body = icon.querySelector('.mk-pin-body');
+        const dot  = icon.querySelector('.mk-pin-dot');
+        if (body) body.style.fill = 'url(#pinG)';
+        if (dot)  dot.style.fill  = '#f5c300';
       }
       const bubble2=icon.querySelector('.mk-photo-bubble');
       if(bubble2){bubble2.style.opacity='0';bubble2.style.transform='translateX(-50%) scale(.7)';}
