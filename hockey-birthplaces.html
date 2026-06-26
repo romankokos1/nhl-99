@@ -380,6 +380,8 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .teammate-chip{font-size:11px;color:var(--blue3);background:#f0f4fb;border:1px solid #dde6f5;border-radius:20px;padding:2px 9px;cursor:pointer;transition:background .12s}
 .teammate-chip:hover{background:#dde6f5}
 
+/* Photo strip float above multi marker */
+.mk-photo-strip-float{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) scale(.7);transform-origin:center bottom;opacity:0;pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.56,.64,1);z-index:999;}
 /* DB City labels layer */
 .db-label { pointer-events:none; }
 .db-label-inner {
@@ -1590,11 +1592,14 @@ function updateMap() {
     mk.on('mouseover', function() {
       const icon = this.getElement(); if (!icon) return;
       icon.classList.add('mk-hovered');
-      // Scale — SVG pro single pin, wrapper div pro multi bubble
       if (multi) {
-        icon.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
-        icon.style.transformOrigin = 'center center';
-        icon.style.transform = `scale(${scale})`;
+        // Scale child wrapper, NOT icon (icon má Leaflet's translate3d!)
+        const wrap = icon.querySelector('.mk-multi-wrap');
+        if (wrap) {
+          wrap.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
+          wrap.style.transformOrigin = 'center center';
+          wrap.style.transform = `scale(${scale})`;
+        }
       } else {
         icon.querySelectorAll('svg').forEach(s => {
           s.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
@@ -1603,8 +1608,10 @@ function updateMap() {
         });
       }
       // Show photo bubble / strip
-      const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
-      if (photo) { photo.style.opacity = '1'; photo.style.transform = 'translateX(-50%) scale(1)'; }
+      const bubble=icon.querySelector('.mk-photo-bubble');
+      if(bubble){bubble.style.opacity='1';bubble.style.transform='translateX(-50%) scale(1)';}
+      const strip=icon.querySelector('.mk-photo-strip-float');
+      if(strip){strip.style.opacity='1';strip.style.transform='translateX(-50%) scale(1)';}
       // City label below marker
       if (cityName) {
         const lbl = document.getElementById('mkCityLabel');
@@ -1620,12 +1627,15 @@ function updateMap() {
       const icon = this.getElement(); if (!icon) return;
       icon.classList.remove('mk-hovered');
       if (multi) {
-        icon.style.transform = '';
+        const wrap = icon.querySelector('.mk-multi-wrap');
+        if (wrap) wrap.style.transform = '';
       } else {
         icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
       }
-      const photo = icon.querySelector('.mk-photo-bubble, .mk-photo-strip');
-      if (photo) { photo.style.opacity = '0'; photo.style.transform = 'translateX(-50%) scale(.7)'; }
+      const bubble2=icon.querySelector('.mk-photo-bubble');
+      if(bubble2){bubble2.style.opacity='0';bubble2.style.transform='translateX(-50%) scale(.7)';}
+      const strip2=icon.querySelector('.mk-photo-strip-float');
+      if(strip2){strip2.style.opacity='0';strip2.style.transform='translateX(-50%) scale(.7)';}
       const lbl2 = document.getElementById('mkCityLabel'); lbl2.style.opacity = '0'; lbl2.style.transform = 'translateX(-50%) translateY(6px)';
     });
 
