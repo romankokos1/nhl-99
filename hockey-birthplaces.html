@@ -1629,7 +1629,7 @@ function updateMap() {
         const pt = map.latLngToContainerPoint([glat, glon]);
         lbl.textContent = cityName;
         lbl.style.left = pt.x + 'px';
-        lbl.style.top = (pt.y + (multi ? W/2 + 10 : 8)) + 'px';
+        lbl.style.top = (pt.y + (multi ? 56 : 8)) + 'px';
         lbl.style.opacity = '1';
         lbl.style.transform = 'translateX(-50%) translateY(0)';
       }
