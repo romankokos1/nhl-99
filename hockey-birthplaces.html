@@ -1381,13 +1381,7 @@ function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
   return L.divIcon({
     html: `<div class="mk-multi-wrap" style="position:relative;width:${W}px;height:${W}px">
       ${photoStrip}
-      <!-- Outer ring — žlutá klubová barva -->
-      <div style="position:absolute;inset:0;border-radius:50%;
-        background:rgba(245,195,0,.15);
-        border:2px solid rgba(245,195,0,.7);
-        box-shadow:0 2px 8px rgba(10,30,80,.2)">
-      </div>
-      <!-- Inner circle — tmavě modrá s odleskem -->
+      <!-- Circle — tmavě modrá s odleskem -->
       <div style="position:absolute;
         top:${(W-inner)/2}px;left:${(W-inner)/2}px;
         width:${inner}px;height:${inner}px;
@@ -1610,10 +1604,9 @@ function updateMap() {
         // Inverze barev — žluté pozadí, tmavé číslo
         const inner = icon.querySelector('.mk-bubble-inner');
         const num   = icon.querySelector('.mk-bubble-num');
-        const ring  = icon.querySelector('.mk-bubble-ring');
         if (inner) { inner.style.transition='background .22s'; inner.style.background='radial-gradient(circle at 38% 35%,#ffd84d,#c88000)'; }
         if (num)   { num.style.transition='color .22s'; num.style.color='#0f2f6a'; }
-        if (ring)  { ring.style.transition='border-color .22s,background .22s'; ring.style.borderColor='rgba(28,72,150,.5)'; ring.style.background='rgba(28,72,150,.1)'; }
+
       } else {
         icon.querySelectorAll('svg').forEach(s => {
           s.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
@@ -1650,10 +1643,9 @@ function updateMap() {
         if (wrap) wrap.style.transform = '';
         const inner = icon.querySelector('.mk-bubble-inner');
         const num   = icon.querySelector('.mk-bubble-num');
-        const ring  = icon.querySelector('.mk-bubble-ring');
         if (inner) inner.style.background='radial-gradient(circle at 38% 35%,#3a6ed8,#1c4896)';
         if (num)   num.style.color='#fff';
-        if (ring)  { ring.style.borderColor='rgba(245,195,0,.7)'; ring.style.background='rgba(245,195,0,.15)'; }
+
       } else {
         icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
         const body = icon.querySelector('.mk-pin-body');
