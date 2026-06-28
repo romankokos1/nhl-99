@@ -1421,11 +1421,19 @@ function initAR(){
   }
   if(!AR.phases)AR.phases={groups:false,r32:false,r16:false,qf:false,sf:false,fin:false};
   if(!AR.thirds)AR.thirds=[];if(!AR.winners)AR.winners={};if(!AR.aw)AR.aw=['','','',''];
+  if(!AR.thirdOverride)AR.thirdOverride={};
 }
 // AR bracket resolution (mirrors main, but uses AR.groups/thirds/winners)
 function arBuildThirdAssign(){
   const sel=[...AR.thirds].sort();const assign={};let i=0;
-  R32_DEF.forEach((mt,idx)=>{if(mt.bot.t==='3'){assign[idx]=sel[i]?AR.groups[sel[i]][2]:null;i++;}});
+  R32_DEF.forEach((mt,idx)=>{
+    if(mt.bot.t==='3'){
+      // Manual override takes priority over automatic key
+      if(AR.thirdOverride&&AR.thirdOverride[idx]){assign[idx]=AR.thirdOverride[idx];}
+      else{assign[idx]=sel[i]?AR.groups[sel[i]][2]:null;}
+      i++;
+    }
+  });
   return assign;
 }
 function arSlotTeam(ref,ta,idx){
@@ -1551,9 +1559,44 @@ function renderAdmBracket(){
           s.onclick=()=>setARWinner(mid,slot);}
         card.appendChild(s);
       });
+      // If this R32 match has a third-place slot, add an override dropdown
+      if(rk==='R32'&&def.bot.t==='3'){
+        const idx=R32_DEF.findIndex(x=>x.m===mid);
+        const ta=arBuildThirdAssign();
+        const current=ta[idx];
+        const thirdTeams=[...AR.thirds].sort().map(gk=>AR.groups[gk][2]);
+        const sel=document.createElement('div');
+        sel.style.cssText='padding:5px 10px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:6px;';
+        let opts='<option value="">— auto —</option>';
+        thirdTeams.forEach(tc=>{
+          opts+=`<option value="${tc}" ${current===tc?'selected':''}>${TM[tc].n}</option>`;
+        });
+        sel.innerHTML=`<span style="font-family:'Barlow Condensed',sans-serif;font-size:.55rem;letter-spacing:1px;color:var(--mut);text-transform:uppercase;">3. místo:</span>
+          <select onchange="setThirdOverride(${idx},this.value)" style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:6px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.72rem;padding:3px 6px;outline:none;">${opts}</select>`;
+        card.appendChild(sel);
+      }
       el.appendChild(card);
     });
   });
+}
+function setThirdOverride(idx,code){
+  if(!AR.thirdOverride)AR.thirdOverride={};
+  if(code===''){delete AR.thirdOverride[idx];}
+  else{
+    // If this team was already assigned elsewhere via override, swap them
+    const existingIdx=Object.keys(AR.thirdOverride).find(k=>AR.thirdOverride[k]===code&&k!=idx);
+    if(existingIdx!==undefined){
+      // swap: give the old slot whatever was here before
+      const ta=arBuildThirdAssign();
+      AR.thirdOverride[existingIdx]=ta[idx]||AR.thirdOverride[idx]||null;
+      if(!AR.thirdOverride[existingIdx])delete AR.thirdOverride[existingIdx];
+    }
+    AR.thirdOverride[idx]=code;
+  }
+  // Reset downstream winners since bracket teams changed
+  AR.winners={};
+  renderAdmBracket();
+  showNf('✓ Třetí místo přehozeno');
 }
 function setARWinner(mid,slot){
   const ow=arMatchWinner(mid);AR.winners[mid]=slot;
@@ -1588,8 +1631,8 @@ function normS(s){return(s||'').toLowerCase().trim().normalize('NFD').replace(/[
 function gameRes(g){if(!g||g.cz===null||g.op===null)return null;if(g.cz>g.op)return'W';if(g.cz<g.op)return'L';return'D';}
 
 // Resolve winners for a pick's bracket OR real bracket
-function resolveBracket(src){ // src = {groups, thirds, winners}
-  function thirdAssign(){const sel=[...src.thirds].sort();const a={};let i=0;R32_DEF.forEach((mt,idx)=>{if(mt.bot.t==='3'){a[idx]=sel[i]?src.groups[sel[i]][2]:null;i++;}});return a;}
+function resolveBracket(src){ // src = {groups, thirds, winners, thirdOverride?}
+  function thirdAssign(){const sel=[...src.thirds].sort();const a={};let i=0;R32_DEF.forEach((mt,idx)=>{if(mt.bot.t==='3'){if(src.thirdOverride&&src.thirdOverride[idx]){a[idx]=src.thirdOverride[idx];}else{a[idx]=sel[i]?src.groups[sel[i]][2]:null;}i++;}});return a;}
   const ta=thirdAssign();
   function slot(ref,idx){if(ref.t==='1')return src.groups[ref.g][0];if(ref.t==='2')return src.groups[ref.g][1];if(ref.t==='3')return ta[idx]||null;return null;}
   function mTeams(mid){const def=MATCH_BY_ID[mid];if(ROUND_OF[mid]==='R32'){const idx=R32_DEF.findIndex(x=>x.m===mid);return[slot(def.top,idx),slot(def.bot,idx)];}return[mWin(def.top),mWin(def.bot)];}
