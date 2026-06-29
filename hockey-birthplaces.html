@@ -1116,7 +1116,6 @@ function initMap() {
     '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}),
   };
   baseLayers['🌍 Voyager (barevný)'].addTo(map);
-  L.control.layers(baseLayers, {}, {position:'topright', collapsed:true}).addTo(map);
   L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
   L.control.scale({position:'bottomright', imperial:false, maxWidth:120}).addTo(map);
 
@@ -1130,7 +1129,7 @@ function initMap() {
   ]);
   // Label layer — popisky z databáze
   labelLayer = L.layerGroup();
-  arenaLayer.addTo(map);
+  arenaLayer = L.layerGroup().addTo(map);
   L.control.layers(baseLayers, {
     '⭕ Vzdálenosti od ČB': distCircles,
     '🏟 Stadion Budvar Aréna': arenaLayer,
@@ -1161,7 +1160,6 @@ function initMap() {
     html: `<div style="width:36px;height:36px;background:#C8102E;border:2.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.5);font-size:18px;line-height:1;">🏒</div>`,
     iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -22],
   });
-  arenaLayer = L.layerGroup();
   L.marker(arenaLatLng, {icon: arenaIcon, zIndexOffset: 5000})
     .addTo(arenaLayer)
     .bindPopup(`
