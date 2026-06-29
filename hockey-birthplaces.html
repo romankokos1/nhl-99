@@ -1317,7 +1317,7 @@ function initArena3D() {
   camera.aspect = AW/AH; camera.updateProjectionMatrix();
   function positionAndSize(){
     const zoom=map.getZoom();
-    if(zoom<13){canvas.style.display='none';return;}
+    if(zoom<13 || !map.hasLayer(arenaLayer)){canvas.style.display='none';return;}
     canvas.style.display='block';
     const pt=map.latLngToContainerPoint(ARENA_LL);
     const mapEl=document.getElementById('mapEl');
