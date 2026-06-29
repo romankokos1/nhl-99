@@ -1129,7 +1129,7 @@ function initMap() {
   ]);
   // Label layer — popisky z databáze
   labelLayer = L.layerGroup();
-  arenaLayer = L.layerGroup().addTo(map);
+  arenaLayer = L.layerGroup();
   L.control.layers(baseLayers, {
     '⭕ Vzdálenosti od ČB': distCircles,
     '🏟 Stadion Budvar Aréna': arenaLayer,
@@ -1219,6 +1219,7 @@ function initArena3D() {
 
   const canvas = document.createElement('canvas');
   canvas.id = 'arena3d-canvas';
+  canvas.style.display = 'none';
   canvas.style.cssText = 'position:absolute;z-index:420;pointer-events:auto;cursor:grab;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.35);';
   document.querySelector('.rp').appendChild(canvas);
 
