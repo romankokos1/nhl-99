@@ -1038,6 +1038,7 @@ let players = [];
 let map, mlayers = [], playerMarkers = [];
 let ROSTER_DATA = null;
 let labelLayer = null;
+let arenaLayer = null;
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
 const STORAGE_KEY = 'hockey_v7';
@@ -1129,12 +1130,26 @@ function initMap() {
   ]);
   // Label layer — popisky z databáze
   labelLayer = L.layerGroup();
+  arenaLayer.addTo(map);
   L.control.layers(baseLayers, {
     '⭕ Vzdálenosti od ČB': distCircles,
+    '🏟 Stadion Budvar Aréna': arenaLayer,
     '🏷 Popisky z databáze': labelLayer
   }, {position:'topright', collapsed:true}).addTo(map);
   // Aktualizuj labely když se vrstva zapne
-  map.on('overlayadd', e => { if (e.name.includes('Popisky')) updateLabelLayer(); });
+  map.on('overlayadd', e => {
+    if (e.name.includes('Popisky')) updateLabelLayer();
+    if (e.name.includes('Stadion')) {
+      const c = document.getElementById('arena3d-canvas');
+      if (c) c.style.display = '';
+    }
+  });
+  map.on('overlayremove', e => {
+    if (e.name.includes('Stadion')) {
+      const c = document.getElementById('arena3d-canvas');
+      if (c) c.style.display = 'none';
+    }
+  });
 
   // Set default popup options — keepInView globally
   L.Popup.mergeOptions({keepInView: true});
@@ -1146,8 +1161,9 @@ function initMap() {
     html: `<div style="width:36px;height:36px;background:#C8102E;border:2.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.5);font-size:18px;line-height:1;">🏒</div>`,
     iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -22],
   });
+  arenaLayer = L.layerGroup();
   L.marker(arenaLatLng, {icon: arenaIcon, zIndexOffset: 5000})
-    .addTo(map)
+    .addTo(arenaLayer)
     .bindPopup(`
       <div style="width:340px;font-family:'Barlow',Arial,sans-serif;background:#0d1219;border-radius:16px;overflow:hidden;padding:0;">
         <iframe src="budvar_arena_v4.html" width="340" height="200"
