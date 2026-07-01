@@ -2876,7 +2876,7 @@ function renderStats(ids) {
 
   // Name history
   const NAMES=[['1928–1948','AC Stadion České Budějovice',false],['1948–1949','Sokol Stadion České Budějovice',false],['1949–1950','ZSJ Obchodní domy Stadion ČB',false],['1950–1952','ZSJ Sdružené komunální podniky JNV ČB',false],['1953–1957','DSO Slavoj České Budějovice',false],['1957–1965','TJ Slavoj České Budějovice',false],['1965–1992','TJ Motor České Budějovice',false],['1992–2006','HC České Budějovice',false],['2006–2013','HC Mountfield',false],['2013–2020','ČEZ Motor České Budějovice',false],['2020–2021','Madeta Motor České Budějovice',false],['2021–2023','HC Motor České Budějovice',false],['od 2023','Banes Motor České Budějovice',true]];
-  const LOGOS_BY_NAME = {'AC Stadion':1928,'SKP':1950,'Slavoj':1953,'TJ Motor':1965,'HC České Budějovice':1992,'HC ČB':1992,'ČEZ Motor':2013,'Madeta Motor':2020,'HC Motor':2021,'Banes Motor':2023};
+  const LOGOS_BY_NAME = {'AC Stadion':1928,'Sdružené':1950,'Slavoj':1953,'TJ Motor':1965,'HC České Budějovice':1992,'HC ČB':1992,'ČEZ Motor':2013,'Madeta Motor':2020,'HC Motor':2021,'Banes Motor':2023};
   if (ids.names) document.getElementById(ids.names).innerHTML = `<div class="msp-names">${NAMES.map(([yrs,name,cur])=>{
     const nameKey = Object.keys(LOGOS_BY_NAME).find(k=>name.includes(k));
     const logo = nameKey ? getLogoForYear(LOGOS_BY_NAME[nameKey]) : null;
@@ -3019,10 +3019,9 @@ window.addEventListener('load', () => {
 const LOGOS = {
   1928: 'https://nitter.net/pic/orig/media%2FCYWQmOBWsAED2QI.png', // AC Stadion ČB
   // 1948: '',  // Sokol Stadion
-  // 1953: '',  // DSO Slavoj
   1950: 'https://fanshop.hcmotor.cz/min.php?file=files/product/1/18/889/image.jpg',  // ZSJ SKP JNV ČB
   1953: 'https://fanshop.hcmotor.cz/min.php?file=files/product/1/18/887/image.jpg',  // DSO/TJ Slavoj ČB
-  1965: 'http://www.ski-motor.cz/assets/images/logo-150x134.jpg',  // TJ Motor ČB
+  1965: 'https://images.weserv.nl/?url=www.ski-motor.cz/assets/images/logo-150x134.jpg',  // TJ Motor ČB (proxováno kvůli http)
   1992: 'https://www.mountfieldhk.cz/znaky/94ceb.png',  // HC České Budějovice
   // 2006: '',  // HC Mountfield
   2013: 'https://hcmotor.cz/img/logo-var-1.svg',  // ČEZ Motor ČB
