@@ -381,7 +381,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 @media(max-width:750px){.hist-ovl{bottom:86px;padding:10px 16px;min-width:230px}.hist-year{font-size:38px}.hist-club{font-size:13px}}
 
 /* ── GLOBE INTRO ── */
-#introOvl{position:fixed;inset:0;z-index:6000;background:#060c1f;display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity .6s ease}
+#introOvl{position:fixed;inset:0;z-index:6000;background:#060c1f;display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity 1s ease}
 #introOvl.fade{opacity:0;pointer-events:none}
 #introOvl canvas{position:absolute;inset:0;width:100%;height:100%}
 .intro-title{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);text-align:center;pointer-events:none}
@@ -1707,8 +1707,10 @@ function updateMap() {
         window._activeTouchMarker = null;
       }
     });
-    // Roky příchodu hráčů — pro přehrávání historie
-    mk._startYears = g.ps.map(({p}) => { const r = parseSeasonRangeYears(p); return r ? r.start : 1927; }).sort((a,b)=>a-b);
+    // Roky příchodu hráčů — pro přehrávání historie (null = rok neznámý → objeví se až na konci)
+    mk._startYears = g.ps.map(({p}) => { const r = parseSeasonRangeYears(p); return r ? r.start : null; })
+      .filter(y => y !== null).sort((a,b)=>a-b);
+    mk._totalCount = g.ps.length;
     mk._isMulti = multi;
     g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
     mlayers.push(mk);
@@ -2120,11 +2122,11 @@ function runGlobeIntro() {
   const startX = targetX * 0.25;
   globe.rotation.set(startX, startY, 0);
 
-  const DUR = 4300, FADE_AT = 3700;
+  const DUR = 8000, FADE_AT = 7300;   // 8 s — filmový průběh
   const t0 = performance.now();
   let done = false, raf = null;
 
-  const ease = t => t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;  // easeInOutQuad
+  const ease = t => t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;  // easeInOutCubic — jemný start i dojezd
 
   function finish() {
     if (done) return;
@@ -2135,21 +2137,24 @@ function runGlobeIntro() {
       renderer.dispose();
       ovl.remove();
       if (map) map.invalidateSize();
-    }, 650);
+    }, 1050);
   }
   ovl.querySelector('.intro-skip').addEventListener('click', finish);
 
   function frame(now) {
     if (done) return;
     const raw = Math.min((now - t0) / DUR, 1);
-    const t = ease(raw);
-    globe.rotation.y = startY + (targetY - startY) * t;
-    globe.rotation.x = startX + (targetX - startX) * t;
-    // Zoom v druhé polovině
-    const zt = Math.max(0, (raw - 0.45) / 0.55);
-    camera.position.z = 3.1 - ease(zt) * 1.65;   // 3.1 → 1.45
+    // Rotace: prvních 70 % času (s vlastním easingem)
+    const rt = ease(Math.min(raw / 0.70, 1));
+    globe.rotation.y = startY + (targetY - startY) * rt;
+    globe.rotation.x = startX + (targetX - startX) * rt;
+    // Pomalý stálý drift navíc, ať koule nikdy nestojí
+    globe.rotation.y += Math.sin(now / 4000) * 0.004;
+    // Zoom: od 55 % do konce — pozvolný nájezd kamery
+    const zt = Math.max(0, (raw - 0.55) / 0.45);
+    camera.position.z = 3.2 - ease(zt) * 1.7;   // 3.2 → 1.5
     // Puls ČB bodu
-    const s = 1 + 0.5 * Math.sin(now / 180);
+    const s = 1 + 0.5 * Math.sin(now / 200);
     cbDot.scale.set(s, s, s);
     renderer.render(scene, camera);
     if (raw >= FADE_AT / DUR && !ovl.classList.contains('fade')) ovl.classList.add('fade');
@@ -2250,6 +2255,7 @@ function playHistory() {
         }
       });
       document.getElementById('histCount').textContent = totalPlayers + ' hráčů';
+      // (hráči bez datace se objeví po skončení animace)
 
       if (t < 1) {
         _histRAF = requestAnimationFrame(tick);
@@ -2280,9 +2286,9 @@ function stopHistory() {
     el.style.transition = '';
     el.style.opacity = '';
     el.style.pointerEvents = '';
-    if (mk._isMulti && mk._startYears) {
+    if (mk._isMulti && mk._totalCount) {
       const num = el.querySelector('.mk-bubble-num');
-      if (num) num.textContent = mk._startYears.length;
+      if (num) num.textContent = mk._totalCount;
     }
     mk._shown = mk._lastCount = undefined;
   });
