@@ -1039,6 +1039,7 @@ let map, mlayers = [], playerMarkers = [];
 let ROSTER_DATA = null;
 let labelLayer = null;
 let arenaLayer = null;
+const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 let cityTimer = null;
 let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
 const STORAGE_KEY = 'hockey_v7';
@@ -1605,8 +1606,8 @@ function updateMap() {
     const scale = multi ? 1.12 : 1.06;
     const cityName = g.display || '';
     const glat = g.lat, glon = g.lon;
-    mk.on('mouseover', function() {
-      const icon = this.getElement(); if (!icon) return;
+
+    function applyHoverIn(icon) {
       icon.classList.add('mk-hovered');
       if (multi) {
         const wrap = icon.querySelector('.mk-multi-wrap');
@@ -1615,30 +1616,25 @@ function updateMap() {
           wrap.style.transformOrigin = 'center center';
           wrap.style.transform = `scale(${scale})`;
         }
-        // Inverze barev — žluté pozadí, tmavé číslo
         const inner = icon.querySelector('.mk-bubble-inner');
         const num   = icon.querySelector('.mk-bubble-num');
         if (inner) { inner.style.transition='background .22s'; inner.style.background='radial-gradient(circle at 38% 35%,#ffd84d,#c88000)'; }
         if (num)   { num.style.transition='color .22s'; num.style.color='#0f2f6a'; }
-
       } else {
         icon.querySelectorAll('svg').forEach(s => {
           s.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
           s.style.transformOrigin = 'center bottom';
           s.style.transform = `scale(${scale})`;
         });
-        // Pin přebarví na žlutou
         const body = icon.querySelector('.mk-pin-body');
         const dot  = icon.querySelector('.mk-pin-dot');
         if (body) body.style.fill = 'url(#pinGH)';
         if (dot)  dot.style.fill  = '#0f2f6a';
       }
-      // Show photo bubble / strip
       const bubble=icon.querySelector('.mk-photo-bubble');
       if(bubble){bubble.style.opacity='1';bubble.style.transform='translateX(-50%) scale(1)';}
       const strip=icon.querySelector('.mk-photo-strip-float');
       if(strip){strip.style.opacity='1';strip.style.transform='translateX(-50%) scale(1)';}
-      // City label below marker
       if (cityName) {
         const lbl = document.getElementById('mkCityLabel');
         const pt = map.latLngToContainerPoint([glat, glon]);
@@ -1648,9 +1644,9 @@ function updateMap() {
         lbl.style.opacity = '1';
         lbl.style.transform = 'translateX(-50%) translateY(0)';
       }
-    });
-    mk.on('mouseout', function() {
-      const icon = this.getElement(); if (!icon) return;
+    }
+
+    function applyHoverOut(icon) {
       icon.classList.remove('mk-hovered');
       if (multi) {
         const wrap = icon.querySelector('.mk-multi-wrap');
@@ -1659,7 +1655,6 @@ function updateMap() {
         const num   = icon.querySelector('.mk-bubble-num');
         if (inner) inner.style.background='radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a)';
         if (num)   num.style.color='#f5c300';
-
       } else {
         icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
         const body = icon.querySelector('.mk-pin-body');
@@ -1672,7 +1667,23 @@ function updateMap() {
       const strip2=icon.querySelector('.mk-photo-strip-float');
       if(strip2){strip2.style.opacity='0';strip2.style.transform='translateX(-50%) scale(.7)';}
       const lbl2 = document.getElementById('mkCityLabel'); lbl2.style.opacity = '0'; lbl2.style.transform = 'translateX(-50%) translateY(6px)';
-    });
+    }
+
+    if (IS_TOUCH) {
+      // Mobil: tap aktivuje vizuál a otevře popup zároveň; reset při zavření/přepnutí
+      mk.on('click', function() {
+        if (window._activeTouchMarker && window._activeTouchMarker !== mk) {
+          const prevIcon = window._activeTouchMarker.getElement();
+          if (prevIcon) applyHoverOut(prevIcon);
+        }
+        const icon = this.getElement(); if (!icon) return;
+        applyHoverIn(icon);
+        window._activeTouchMarker = mk;
+      });
+    } else {
+      mk.on('mouseover', function() { const icon = this.getElement(); if (icon) applyHoverIn(icon); });
+      mk.on('mouseout',  function() { const icon = this.getElement(); if (icon) applyHoverOut(icon); });
+    }
 
     mk.on('popupopen',  function() {
       const el = this.getTooltip()?.getElement();
@@ -1683,6 +1694,11 @@ function updateMap() {
     mk.on('popupclose', function() {
       const el = this.getTooltip()?.getElement();
       if (el) el.style.display = '';
+      if (IS_TOUCH && window._activeTouchMarker === mk) {
+        const icon = this.getElement();
+        if (icon) applyHoverOut(icon);
+        window._activeTouchMarker = null;
+      }
     });
     g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
     mlayers.push(mk);
