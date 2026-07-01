@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -12,14 +12,16 @@
 <meta name="description" content="Interaktivní mapa míst narození všech hráčů, kteří kdy nastoupili za HC Motor České Budějovice. Přes 640 hráčů z celého světa od roku 1928.">
 <meta name="author" content="HC Motor České Budějovice">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://hcmotor.cz">
+<link rel="canonical" href="https://romankokos1.github.io/nhl-99/hockey-birthplaces.html">
 
 <!-- Open Graph (Facebook, LinkedIn, sdílení) -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Místa narození hráčů Motoru ČB">
 <meta property="og:description" content="Přes 640 hráčů na jedné mapě — odkud přicházeli hokejisté HC Motor České Budějovice od roku 1928 do dnes.">
-<meta property="og:image" content="https://hcmotor.cz/img/logo-var-1.svg">
-<meta property="og:url" content="https://hcmotor.cz">
+<meta property="og:image" content="https://romankokos1.github.io/nhl-99/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://romankokos1.github.io/nhl-99/hockey-birthplaces.html">
 <meta property="og:site_name" content="HC Motor České Budějovice">
 <meta property="og:locale" content="cs_CZ">
 
@@ -27,7 +29,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Místa narození hráčů Motoru ČB">
 <meta name="twitter:description" content="Přes 640 hráčů na jedné mapě — odkud přicházeli hokejisté HC Motor České Budějovice od roku 1928 do dnes.">
-<meta name="twitter:image" content="https://hcmotor.cz/img/logo-var-1.svg">
+<meta name="twitter:image" content="https://romankokos1.github.io/nhl-99/og-image.png">
 
 <!-- Favicon -->
 <link rel="icon" type="image/svg+xml" href="https://hcmotor.cz/img/logo-var-1.svg">
@@ -124,16 +126,9 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .modal-close:hover{color:var(--red)}
 
 /* ── FIELDS ──────────────────────────────────── */
-.field{margin-bottom:11px}
-.field label{display:block;font-size:10px;font-weight:700;color:#8a9ab5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
-.field input{width:100%;padding:8px 11px;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:14px;color:var(--blue3);background:#fff;outline:none;transition:.12s}
-.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(28,72,150,.1)}
-.field input::placeholder{color:#b0bdd0}
-.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 
 /* ── PHOTO FIELD ─────────────────────────────── */
-.photo-row{display:flex;gap:12px;align-items:flex-start}
 .photo-prev{width:54px;height:54px;border-radius:2px;background:#f0f2f5;border:1px solid #c4cedc;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
 .photo-prev img{width:100%;height:100%;object-fit:cover}
 .photo-inputs{flex:1;display:flex;flex-direction:column;gap:6px}
@@ -142,49 +137,25 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .file-btn input{display:none}
 
 /* ── AUTOCOMPLETE ────────────────────────────── */
-.ac-wrap{position:relative}
-.ac-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #c4cedc;border-radius:3px;box-shadow:var(--sh2);z-index:600;overflow:hidden;display:none;max-height:230px;overflow-y:auto}
-.ac-drop.on{display:block}
 .ac-it{padding:8px 12px;cursor:pointer;border-bottom:1px solid #edf0f5}
 .ac-it:last-child{border-bottom:none}
 .ac-it:hover,.ac-it.hl{background:#eef1f9}
 .ac-nm{font-size:13px;font-weight:600;color:var(--blue3)}
 .ac-sb{font-size:11px;color:#8a9ab5;margin-top:1px}
 .ac-msg{padding:10px 12px;font-size:13px;color:#8a9ab5}
-.city-badge{display:none;align-items:center;gap:6px;margin-top:5px;padding:4px 10px;border-radius:2px;background:rgba(28,72,150,.08);border:1px solid rgba(28,72,150,.25);color:var(--blue);font-size:12px}
-.city-badge.show{display:inline-flex}
-.cb-clr{cursor:pointer;opacity:.5;font-size:16px;line-height:1;padding:0 2px}
-.cb-clr:hover{opacity:1}
 
 /* ── FORM BUTTONS ────────────────────────────── */
-.form-btns{display:flex;gap:8px;margin-top:1.25rem;align-items:center;flex-wrap:wrap}
-.form-btns .spacer{flex:1}
-.btn-p{padding:9px 22px;background:var(--blue);color:#fff;border:none;border-radius:2px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:.15s}
-.btn-p:hover{background:var(--blue2)}
-.btn-p:disabled{opacity:.4;cursor:not-allowed}
-.btn-s{padding:9px 15px;background:transparent;color:#8a9ab5;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.12s}
-.btn-s:hover{color:var(--blue3);border-color:#8a9ab5}
-.btn-danger{padding:8px 14px;background:transparent;color:var(--red);border:1px solid rgba(204,31,31,.3);border-radius:2px;font-family:'Barlow',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.12s}
-.btn-danger:hover{background:rgba(204,31,31,.07)}
+.form-btns .btn-p:disabled{opacity:.4;cursor:not-allowed}
 
 /* ── IMPORT MODAL ────────────────────────────── */
 .imp-modal{width:720px}
-.imp-step{display:none}
-.imp-step.on{display:block}
 .imp-textarea{width:100%;height:130px;padding:10px;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:13px;color:var(--blue3);background:#f5f7fb;resize:vertical;outline:none;transition:.12s}
 .imp-textarea:focus{border-color:var(--blue)}
 .imp-textarea::placeholder{color:#b0bdd0}
 .imp-hint{font-size:12px;color:#8a9ab5;margin-top:7px;line-height:1.7}
 .imp-hint code{background:#eef1f9;padding:1px 5px;border-radius:2px;font-size:11px;font-family:monospace;color:var(--blue)}
-.col-map-wrap{overflow-x:auto;margin-top:10px;border-radius:3px;overflow:hidden;border:1px solid #c4cedc}
-.col-map-table{border-collapse:collapse;width:100%;font-size:13px}
-.col-map-table th{background:var(--blue);color:#fff;padding:7px 10px;text-align:left;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.05em}
-.col-map-table th .col-hint{font-size:10px;color:rgba(255,255,255,.55);font-weight:400;display:block;margin-bottom:3px;text-transform:none;letter-spacing:0}
 .col-map-table th select{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:2px;color:#fff;font-family:'Barlow',sans-serif;font-size:12px;padding:3px 7px;cursor:pointer;outline:none;width:100%}
 .col-map-table th select option{color:var(--blue3);background:#fff}
-.col-map-table td{padding:5px 10px;border-bottom:1px solid #edf0f5;color:#8a9ab5;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:12px}
-.col-map-table tr:nth-child(even) td{background:#f5f7fb}
-.imp-summary{margin-top:9px;padding:8px 12px;background:#eef1f9;border-radius:3px;border-left:3px solid var(--yellow);font-size:13px;color:#5a7090}
 .imp-summary strong{color:var(--blue)}
 
 /* ── MAP LEGEND ──────────────────────────────── */
@@ -993,65 +964,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     <div class="roster-grid" id="rosterGrid"></div>
   </div>
 </div>
-<!-- ══════════════════════════════════════
-  EDIT / ADD MODAL
-══════════════════════════════════════ -->
-<div class="ovl" id="editOvl" onclick="closeEditOvl(event)">
-<div class="modal">
-  <button class="modal-close" onclick="closeEditOvl()">✕</button>
-  <h3 id="editTitle">Přidat hráče</h3>
-  <input type="hidden" id="editIdx" value="-1">
-
-  <div class="fg2">
-    <div class="field"><label>Příjmení</label><input type="text" id="fSurname" placeholder="Jágr"></div>
-    <div class="field"><label>Jméno</label><input type="text" id="fFirstname" placeholder="Jaromír"></div>
-  </div>
-
-  <div class="fg2">
-    <div class="field"><label>Narozen</label><input type="text" id="fBorn" placeholder="15. 2. 1972"></div>
-    <div class="field"><label>Zemřel</label><input type="text" id="fDied" placeholder="—"></div>
-  </div>
-  <div class="field"><label>Místo úmrtí</label><input type="text" id="fDeathcity" placeholder="Město"></div>
-  <div class="fg2">
-    <div class="field"><label>Rozmezí sezón</label><input type="text" id="fSeasonsRange" placeholder="př. 2021-22"></div>
-    <div class="field"><label>Počet sezón</label><input type="text" id="fSeasons" placeholder="23"></div>
-  </div>
-
-  <div class="field">
-    <label>Rodné město</label>
-    <div class="ac-wrap">
-      <input type="text" id="fCity" placeholder="Začni psát…" autocomplete="off"
-        oninput="cityInput()" onkeydown="cityKey(event)">
-      <div class="ac-drop" id="acCity"></div>
-    </div>
-    <div class="city-badge" id="cityBadge">
-      <span id="cityBadgeText"></span>
-      <span class="cb-clr" onclick="clearCity()">×</span>
-    </div>
-  </div>
-
-  <div class="field">
-    <label>Fotografie</label>
-    <div class="photo-row">
-      <div class="photo-prev" id="photoPreview">🏒</div>
-      <div class="photo-inputs">
-        <input type="text" id="fPhotoUrl" placeholder="URL fotografie (https://…)" oninput="previewUrl()">
-        <label class="file-btn">
-          📂 Nahrát ze souboru
-          <input type="file" accept="image/*" onchange="loadFile(event)">
-        </label>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-btns">
-    <button class="btn-danger" id="btnDelete" onclick="deleteFromEdit()" style="display:none">Smazat</button>
-    <span class="spacer"></span>
-    <button class="btn-s" onclick="closeEditOvl()">Zrušit</button>
-    <button class="btn-p" onclick="savePlayer()">Uložit</button>
-  </div>
-</div>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1072,8 +984,6 @@ function zoomScaleFor(zoom) {
   return 1;
 }
 let cityTimer = null;
-let pendingLat = null, pendingLon = null, pendingDisplay = null, pendingPhoto = null;
-const STORAGE_KEY = 'hockey_v7';
 
 // Import state
 let impRows = [], impColMap = [], impHasHeader = false;
@@ -1105,7 +1015,6 @@ function loadRosters() {
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(data => {
       ROSTER_DATA = data;
-      console.log('Rosters loaded:', data.length, 'seasons');
       // Re-render stats pokud jsou právě otevřené
       if (document.getElementById('statsOvl')?.classList.contains('on')) {
         renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', coaches:'statsCoaches' });
@@ -1141,7 +1050,9 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 }
 
 function initMap() {
-  map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([49.05,14.45],9);
+  map = L.map('mapEl',{zoomControl:true,attributionControl:true}).setView([49.05,14.45],9);
+  map.attributionControl.setPrefix(false);
+  map.attributionControl.addAttribution('© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>');
   map.on('zoomend', () => {
     const zs = zoomScaleFor(map.getZoom());
     document.querySelectorAll('.mk-wrap, .mk-multi-wrap').forEach(wrapEl => {
@@ -1252,7 +1163,14 @@ function initMap() {
   new FullscreenControl({position:'topleft'}).addTo(map);
 
   // Three.js 3D model arény — zobrazí se přímo v mapě od zoom 14
-  map.whenReady(() => setTimeout(initArena3D, 200));
+  // Lazy init — 3D aréna se inicializuje až při prvním zapnutí vrstvy (šetří GPU/baterii)
+  let _arenaInited = false;
+  map.on('overlayadd', e => {
+    if (e.name.includes('Stadion') && !_arenaInited) {
+      _arenaInited = true;
+      setTimeout(initArena3D, 50);
+    }
+  });
 }
 
 
@@ -1353,7 +1271,10 @@ function initArena3D() {
   canvas.addEventListener('wheel',e=>{e.stopPropagation();radius=Math.max(20,Math.min(170,radius+e.deltaY*0.07));updateCam();},{passive:true});
   canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
-  (function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);})();
+  (function animate(){
+    requestAnimationFrame(animate);
+    if (canvas.style.display !== 'none') renderer.render(scene,camera);
+  })();
 
   const ARENA_LL=L.latLng(48.97080,14.47116);
   camera.aspect = AW/AH; camera.updateProjectionMatrix();
@@ -1460,36 +1381,6 @@ function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
 }
 
 // Cluster icon — same visual style as multi-player badge
-function mkClusterIcon(n) {
-  const big = n >= 100, med = n >= 10;
-  const digits = String(n).length;
-  const w = big ? (digits >= 3 ? 52 : 44) : med ? 40 : 32;
-  const h = big ? 36 : med ? 30 : 26;
-  const fs = big ? 15 : med ? 14 : 13;
-  const ptr = 7;
-  const pulse = n >= 50;
-  const pulseHtml = pulse ? `<div style="position:absolute;inset:-8px;border-radius:50%;background:rgba(245,195,0,.25);animation:mkPulse 2s ease-out infinite;pointer-events:none"></div>` : '';
-  return L.divIcon({
-    html: `<div class="mk-multi-wrap" style="position:relative;width:${w}px;height:${h+ptr}px">
-      ${photoStrip}
-      ${pulseHtml}
-      <svg width="${w}" height="${h+ptr}" viewBox="0 0 ${w} ${h+ptr}"
-        style="position:relative;filter:drop-shadow(0 ${big?5:3}px ${big?14:8}px rgba(10,30,80,${big?.50:.38}))">
-        <rect x="0" y="0" width="${w}" height="${h}" rx="${h/2}"
-          fill="#f5c300" stroke="${big?'#c89000':'#d4a800'}" stroke-width="${big?1.5:1}"/>
-        ${big?`<rect x="2" y="2" width="${w-4}" height="${h-4}" rx="${(h-4)/2}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>`:''}
-        <text x="${w/2}" y="${h*0.70}" text-anchor="middle"
-          font-size="${fs}" font-weight="800" fill="#0f2f6a"
-          font-family="Barlow Condensed,sans-serif" letter-spacing="-0.3">${n}</text>
-        <polygon points="${w/2-6},${h} ${w/2+6},${h} ${w/2},${h+ptr}" fill="#f5c300"/>
-      </svg>
-    </div>`,
-    className: '',
-    iconSize: [w, h+ptr],
-    iconAnchor: [w/2, h+ptr],
-    popupAnchor: [0, -(h+ptr+4)]
-  });
-}
 // ══════════════════════════════════════════════════
 let filterMode = 'off';   // 'off' | 'born' | 'seasons'
 let filterMin  = 0;
@@ -1568,14 +1459,16 @@ function setFilter(mode) {
   updateMap();
 }
 
+let _sliderT = null;
 function onSlider() {
   const sMin = document.getElementById('sliderMin');
   const sMax = document.getElementById('sliderMax');
   let lo = parseInt(sMin.value), hi = parseInt(sMax.value);
   if (lo > hi) { if (document.activeElement===sMin) sMin.value=lo=hi; else sMax.value=hi=lo; }
   filterMin = lo; filterMax = hi;
-  updateSliderUI();
-  updateMap();
+  updateSliderUI();               // label okamžitě (levné)
+  clearTimeout(_sliderT);         // přestavba mapy debounced (drahé)
+  _sliderT = setTimeout(updateMap, 110);
 }
 
 function updateSliderUI() {
@@ -1784,279 +1677,13 @@ function updateMap() {
     const g = Object.values(groups)[0];
     map.setView([g.lat, g.lon], 10);
   }
+  updateLabelLayer();
   updateStats();
-}
-
-// ══════════════════════════════════════════════════
-// NOMINATIM
-// ══════════════════════════════════════════════════
-async function searchNominatim(q) {
-  const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=7&addressdetails=1&q=${encodeURIComponent(q)}`,{headers:{'Accept-Language':'cs,sk,en'}});
-  return r.json();
-}
-
-function cityInput() {
-  clearTimeout(cityTimer);
-  const q=document.getElementById('fCity').value.trim();
-  if (q.length<2){closeAc();return;}
-  if (pendingLat!==null){pendingLat=pendingLon=pendingDisplay=null;document.getElementById('cityBadge').classList.remove('show');}
-  document.getElementById('acCity').innerHTML='<div class="ac-msg">🔍 Hledám…</div>';
-  document.getElementById('acCity').classList.add('on');
-  cityTimer=setTimeout(async()=>{
-    try{showCityOptions(await searchNominatim(q));}catch(e){closeAc();}
-  },380);
-}
-
-function showCityOptions(results) {
-  const drop=document.getElementById('acCity');
-  if (!results.length){drop.innerHTML='<div class="ac-msg">Žádné výsledky.</div>';return;}
-  drop.innerHTML=results.map(r=>{
-    const a=r.address;
-    const city=a.city||a.town||a.village||a.municipality||r.display_name.split(',')[0];
-    const region=[a.county||a.state_district,a.state,a.country].filter(Boolean).slice(0,2).join(', ');
-    const disp=[city,a.state,a.country].filter(Boolean).slice(0,2).join(', ');
-    return `<div class="ac-it" data-lat="${r.lat}" data-lon="${r.lon}" data-city="${esc(city)}" data-disp="${esc(disp)}">
-      <div class="ac-nm">${esc(city)}</div><div class="ac-sb">${esc(region)}</div></div>`;
-  }).join('');
-  drop.classList.add('on');
-  drop.querySelectorAll('.ac-it').forEach(el=>{
-    el.addEventListener('mousedown',e=>{e.preventDefault();pickCity(el);});
-    el.addEventListener('touchend', e=>{e.preventDefault();pickCity(el);});
-  });
-}
-
-function pickCity(el) {
-  pendingLat=parseFloat(el.dataset.lat);
-  pendingLon=parseFloat(el.dataset.lon);
-  pendingDisplay=el.dataset.disp;
-  document.getElementById('fCity').value=el.dataset.city;
-  document.getElementById('cityBadgeText').textContent=pendingDisplay;
-  document.getElementById('cityBadge').classList.add('show');
-  closeAc();
-}
-
-function clearCity() {
-  pendingLat=pendingLon=pendingDisplay=null;
-  document.getElementById('fCity').value='';
-  document.getElementById('cityBadge').classList.remove('show');
-  document.getElementById('fCity').focus();
-}
-
-function cityKey(e) {
-  const drop=document.getElementById('acCity');
-  if (!drop.classList.contains('on')) return;
-  const items=drop.querySelectorAll('.ac-it'),hl=drop.querySelector('.ac-it.hl');
-  if (e.key==='ArrowDown'){e.preventDefault();const n=hl?hl.nextElementSibling||items[0]:items[0];hl?.classList.remove('hl');n?.classList.add('hl');}
-  if (e.key==='ArrowUp') {e.preventDefault();const n=hl?hl.previousElementSibling||items[items.length-1]:items[items.length-1];hl?.classList.remove('hl');n?.classList.add('hl');}
-  if (e.key==='Enter'&&hl){e.preventDefault();pickCity(hl);}
-  if (e.key==='Escape') closeAc();
-}
-function closeAc(){document.getElementById('acCity').classList.remove('on');}
-
-// ══════════════════════════════════════════════════
-// PHOTO
-// ══════════════════════════════════════════════════
-function previewUrl() {
-  const url=document.getElementById('fPhotoUrl').value.trim();
-  pendingPhoto=url||null;
-  setPhotoPreview(url||null);
-}
-function loadFile(e) {
-  const f=e.target.files[0]; if(!f)return;
-  const rd=new FileReader();
-  rd.onload=ev=>{pendingPhoto=ev.target.result;document.getElementById('fPhotoUrl').value='';setPhotoPreview(ev.target.result);};
-  rd.readAsDataURL(f);
-}
-function setPhotoPreview(src) {
-  const el=document.getElementById('photoPreview');
-  el.innerHTML=src?`<img src="${escA(src)}" onerror="this.parentElement.innerHTML='🏒'">`:'🏒';
 }
 
 // ══════════════════════════════════════════════════
 // EDIT MODAL
 // ══════════════════════════════════════════════════
-function openEdit(idx) {
-  pendingLat=pendingLon=pendingDisplay=pendingPhoto=null;
-  document.getElementById('cityBadge').classList.remove('show');
-  document.getElementById('editIdx').value=(idx!==undefined)?idx:-1;
-  document.getElementById('btnDelete').style.display=(idx!==undefined)?'':'none';
-
-  if (idx!==undefined) {
-    const p=players[idx];
-    document.getElementById('editTitle').textContent='Upravit hráče';
-    document.getElementById('fSurname').value=p.surname||'';
-    document.getElementById('fFirstname').value=p.firstname||'';
-    document.getElementById('fCity').value=p.city||'';
-    document.getElementById('fBorn').value=p.born||'';
-    document.getElementById('fDied').value=p.died||'';
-    document.getElementById('fSeasons').value=p.seasons||'';
-    document.getElementById('fSeasonsRange').value=p.seasonsRange||'';
-    document.getElementById('fDeathcity').value=p.deathcity||'';
-    document.getElementById('fPhotoUrl').value=(p.photo&&!p.photo.startsWith('data:'))?p.photo:'';
-    if (p.lat){pendingLat=p.lat;pendingLon=p.lon;pendingDisplay=p.display||p.city;document.getElementById('cityBadgeText').textContent=pendingDisplay;document.getElementById('cityBadge').classList.add('show');}
-    pendingPhoto=p.photo||null;
-    setPhotoPreview(p.photo||null);
-  } else {
-    document.getElementById('editTitle').textContent='Přidat hráče';
-    ['fSurname','fFirstname','fCity','fBorn','fDied','fDeathcity','fSeasons','fSeasonsRange','fPhotoUrl'].forEach(id=>document.getElementById(id).value='');
-    setPhotoPreview(null);
-  }
-
-  document.getElementById('editOvl').classList.add('on');
-  setTimeout(()=>document.getElementById('fSurname').focus(),120);
-}
-
-function closeEditOvl(e) {
-  if (e&&e.target!==document.getElementById('editOvl')) return;
-  document.getElementById('editOvl').classList.remove('on'); closeAc();
-}
-
-function deleteFromEdit() {
-  const idx=parseInt(document.getElementById('editIdx').value); if(idx<0)return;
-  if (!confirm(`Smazat hráče "${fullName(players[idx])||players[idx].city}"?`)) return;
-  players.splice(idx,1); save(); render(); updateMap();
-  document.getElementById('editOvl').classList.remove('on');
-}
-
-function savePlayer() {
-  const surname=v('fSurname'), firstname=v('fFirstname'), city=v('fCity');
-  if (!surname&&!firstname){document.getElementById('fSurname').focus();return;}
-  if (!city){document.getElementById('fCity').focus();return;}
-  const idx=parseInt(document.getElementById('editIdx').value);
-  const player={surname,firstname,city,lat:pendingLat,lon:pendingLon,display:pendingDisplay||city,
-    born:v('fBorn'),died:v('fDied'),deathcity:v('fDeathcity'),seasons:v('fSeasons'),seasonsRange:v('fSeasonsRange'),photo:pendingPhoto||''};
-  if (idx>=0) players[idx]=player; else players.push(player);
-  save(); render(); updateMap();
-  document.getElementById('editOvl').classList.remove('on'); closeAc();
-  if (!player.lat) geocodeFallback(idx>=0?idx:players.length-1);
-}
-
-async function geocodeFallback(idx) {
-  const p=players[idx]; if(!p||p.lat) return;
-  try {
-    const res=await searchNominatim(p.city);
-    if (res[0]){
-      const a=res[0].address, city=a.city||a.town||a.village||p.city;
-      players[idx].lat=parseFloat(res[0].lat);
-      players[idx].lon=parseFloat(res[0].lon);
-      players[idx].display=[city,a.state,a.country].filter(Boolean).slice(0,2).join(', ');
-      save(); render(); updateMap();
-    }
-  }catch(e){}
-}
-
-// ══════════════════════════════════════════════════
-// IMPORT
-// ══════════════════════════════════════════════════
-function openImport() {
-  document.getElementById('impPaste').value='';
-  document.getElementById('impStep1').classList.add('on');
-  document.getElementById('impStep2').classList.remove('on');
-  document.getElementById('importOvl').classList.add('on');
-}
-function closeImportOvl(e) {
-  if (e&&e.target!==document.getElementById('importOvl')) return;
-  document.getElementById('importOvl').classList.remove('on');
-}
-
-function impParse() {
-  const raw=document.getElementById('impPaste').value.trim();
-  if (!raw){alert('Vlož nejprve data.');return;}
-  const sep=raw.includes('\t')?'\t':(raw.includes(';')?';':',');
-  const lines=raw.split(/\r?\n/).filter(l=>l.trim());
-  const rows=lines.map(l=>l.split(sep).map(c=>c.trim()));
-
-  // Detect header: first row has recognizable field names AND no date-like content
-  const firstHasKeyword=rows[0].some(c=>Object.values(DETECT_RX).some(rx=>rx.test(c)));
-  const firstHasDate   =rows[0].some(c=>/\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}/.test(c)||/^\d{4}$/.test(c));
-  impHasHeader=firstHasKeyword&&!firstHasDate;
-
-  const headerRow=impHasHeader?rows[0]:null;
-  impRows=impHasHeader?rows.slice(1):rows;
-  const nCols=Math.max(...rows.map(r=>r.length));
-  impColMap=Array(nCols).fill('');
-
-  if (headerRow) {
-    headerRow.forEach((h,i)=>{
-      for (const [key,rx] of Object.entries(DETECT_RX)){if(rx.test(h.trim())){impColMap[i]=key;break;}}
-    });
-  } else {
-    ['surname','firstname','city','born','died','seasons'].forEach((k,i)=>{if(i<nCols)impColMap[i]=k;});
-  }
-
-  buildColTable(headerRow,nCols);
-  document.getElementById('impStep1').classList.remove('on');
-  document.getElementById('impStep2').classList.add('on');
-  impUpdateSummary();
-}
-
-function buildColTable(headerRow, nCols) {
-  const preview=impRows.slice(0,4);
-  const table=document.getElementById('colMapTable');
-  const thCells=Array.from({length:nCols},(_,i)=>{
-    const opts=FIELD_OPTS.map(f=>`<option value="${f.key}"${impColMap[i]===f.key?' selected':''}>${f.label}</option>`).join('');
-    const hint=esc(headerRow?headerRow[i]:'Sloupec '+(i+1));
-    return `<th><span class="col-hint">${hint}</span><select onchange="impColMap[${i}]=this.value;impUpdateSummary()">${opts}</select></th>`;
-  }).join('');
-  const bodyRows=preview.map(row=>`<tr>${Array.from({length:nCols},(_,i)=>`<td>${esc(row[i]||'')}</td>`).join('')}</tr>`).join('');
-  table.innerHTML=`<tr>${thCells}</tr>${bodyRows}`;
-}
-
-function impUpdateSummary() {
-  const hasCity=impColMap.includes('city');
-  const n=impRows.filter(r=>r.some(c=>c.trim())).length;
-  document.getElementById('impSummary').innerHTML=
-    `Připraveno: <strong>${n} hráčů</strong>${!hasCity?' · ⚠️ Sloupec <em>Rodné město</em> není přiřazen — hráči nebudou zobrazeni na mapě':''}`;
-}
-
-function impBack() {
-  document.getElementById('impStep2').classList.remove('on');
-  document.getElementById('impStep1').classList.add('on');
-}
-
-async function impConfirm() {
-  const btn=document.getElementById('impConfirmBtn');
-  btn.textContent='Importuji…'; btn.disabled=true;
-  const gc=k=>{const i=impColMap.indexOf(k);return i>=0?(impRows[0]&&impRows[0][i]!==undefined)?true:false:false;};
-  const gv=(row,k)=>{const i=impColMap.indexOf(k);return i>=0?(row[i]||'').trim():'';};
-
-  const newPlayers=impRows
-    .filter(row=>row.some(c=>c.trim()))
-    .map(row=>({
-      surname:  gv(row,'surname'),  firstname:gv(row,'firstname'),
-      city:     gv(row,'city'),     born:     gv(row,'born'),
-      died:     gv(row,'died'),     seasons:  gv(row,'seasons'),
-      lat:null, lon:null, display:'', photo:''
-    }))
-    .filter(p=>p.city||(p.surname||p.firstname));
-
-  players.push(...newPlayers);
-  save(); render();
-  document.getElementById('importOvl').classList.remove('on');
-  btn.textContent='Importovat'; btn.disabled=false;
-
-  // Geocode unique cities only once, then share coords across all players from same city
-  const start=players.length-newPlayers.length;
-  const cityCache={};
-  const toGeocode=[...new Set(newPlayers.filter(p=>p.city&&!p.lat).map(p=>p.city))];
-  for (const city of toGeocode) {
-    try {
-      const res=await searchNominatim(city);
-      if (res[0]) {
-        const a=res[0].address, cn=a.city||a.town||a.village||city;
-        cityCache[city]={lat:parseFloat(res[0].lat),lon:parseFloat(res[0].lon),display:[cn,a.state,a.country].filter(Boolean).slice(0,2).join(', ')};
-      }
-    } catch(e){}
-    await new Promise(r=>setTimeout(r,1100)); // Nominatim: max 1 req/s
-  }
-  // Apply cached coords to all matching players
-  for (let i=start;i<players.length;i++) {
-    const c=cityCache[players[i].city];
-    if (c&&!players[i].lat){players[i].lat=c.lat;players[i].lon=c.lon;players[i].display=c.display;}
-  }
-  save(); render(); updateMap();
-}
-
 // ══════════════════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════════════════
@@ -2145,14 +1772,6 @@ function render() {
   updateStats();
 }
 
-function del(idx) {
-  if (!confirm(`Smazat "${fullName(players[idx])||players[idx].city}"?`)) return;
-  players.splice(idx,1); save(); render(); updateMap();
-}
-function clearAll() {
-  if (!confirm('Vymazat vše a obnovit ukázková data?')) return;
-  players=SAMPLES.map(s=>({...s})); save(); render(); updateMap();
-}
 // ── SEARCH / FILTER ───────────────────────────────
 let searchQuery = '';
 let sortMode = 'name';
@@ -2286,42 +1905,14 @@ function updateStats() {
 // ══════════════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════════════
-function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(players));}catch(e){}}
 function load(){
-  // JSON je autoritativní zdroj — localStorage slouží jen pro dočasné lokální úpravy
-  // Pokud localStorage obsahuje data, použij je jen pokud jsou novější (více hráčů)
   players = SAMPLES.map(function(s){ return Object.assign({},s); });
-  try {
-    var r = localStorage.getItem(STORAGE_KEY);
-    if (r) {
-      var stored = JSON.parse(r);
-      var arr = Array.isArray(stored) ? stored : (stored.players || []);
-      // Použij localStorage jen pokud má VÍCE hráčů než JSON (lokálně přidaní)
-      if (arr.length > SAMPLES.length) {
-        var sampleNames = {};
-        SAMPLES.forEach(function(s) {
-          var k = ((s.firstname||'')+' '+(s.surname||'')).toLowerCase().trim();
-          sampleNames[k] = true;
-        });
-        arr.forEach(function(p) {
-          var k = ((p.firstname||'')+' '+(p.surname||'')).toLowerCase().trim();
-          if (!sampleNames[k]) players.push(p);
-        });
-      }
-    }
-  } catch(e) {}
-  save();
 }
-function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escA(s){return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function fullName(p){return [p.surname,p.firstname].filter(Boolean).join(' ');}
 function initials(p){return [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';}
 
-document.addEventListener('click',e=>{
-  const d=document.getElementById('acCity'),i=document.getElementById('fCity');
-  if (d&&!d.contains(e.target)&&e.target!==i) closeAc();
-});
 
 // ══════════════════════════════════════════════════
 // PLAYER DETAIL MODAL (from multi-city popup)
@@ -2370,6 +1961,7 @@ function showPlayerDetail(idx) {
     </div>
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
     ${buildCareerTimeline(p)}
+    ${buildTeammatesSection(p)}
     <div class="detail-card-footer">
       <button class="detail-back" onclick="showCityList(${idx})">← Zobrazit v seznamu</button>
       <button class="detail-back" onclick="sharePlayer(${idx})" title="Zkopírovat odkaz na hráče">🔗 Sdílet</button>
@@ -2680,6 +2272,23 @@ loadPlayers(function() {
 loadRosters();
   
 window.addEventListener('resize', () => { if (map) map.invalidateSize(); setHdrHeight(); });
+
+// Escape zavírá otevřené modaly (v pořadí podle vrstvení)
+window.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const modals = ['cardOvl','rosterOvl','detailOvl','statsOvl'];
+  for (const id of modals) {
+    const el = document.getElementById(id);
+    if (el && el.classList.contains('on')) {
+      el.classList.remove('on');
+      if (id === 'detailOvl') { try { const u=new URL(window.location); u.searchParams.delete('player'); history.replaceState(null,'',u); } catch(_){} }
+      return;
+    }
+  }
+  // Mobilní stats panel
+  const msp = document.getElementById('mobStatsPanel');
+  if (msp && msp.classList.contains('on')) mobTab('mapa');
+});
 
 // Measure header height for mobile lp overlay positioning
 function setHdrHeight() {
