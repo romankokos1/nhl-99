@@ -382,6 +382,16 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 
 /* Photo strip float above multi marker */
 .mk-photo-strip-float{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) scale(.7);transform-origin:center bottom;opacity:0;pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.56,.64,1);z-index:999;}
+/* Player card overlay */
+.card-ovl-inner{background:#fff;border-radius:16px;overflow:hidden;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.card-ovl-inner canvas{width:100%;display:block;background:#0f2f6a}
+.card-ovl-actions{display:flex;gap:8px;padding:14px}
+.card-ovl-actions button{flex:1;padding:10px;border-radius:8px;font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;border:none;transition:.15s}
+.card-btn-download{background:var(--blue);color:#fff}
+.card-btn-download:hover{background:#153a78}
+.card-btn-share{background:var(--yellow);color:#0f2f6a}
+.card-btn-share:hover{background:#e0b100}
+.card-btn-close{background:#eef2f8;color:#6a7a9a;flex:0 0 44px !important}
 /* DB City labels layer */
 .db-label { pointer-events:none; }
 .db-label-inner {
@@ -954,6 +964,18 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 </div>
 
 <!-- ══ ROSTER MODAL ══ -->
+<!-- ══ PLAYER CARD (vizitka) ══ -->
+<div class="ovl" id="cardOvl" onclick="closeCardOvl(event)">
+  <div class="card-ovl-inner">
+    <canvas id="cardCanvas" width="1080" height="1350"></canvas>
+    <div class="card-ovl-actions">
+      <button class="card-btn-close" onclick="closeCardOvl()">✕</button>
+      <button class="card-btn-download" onclick="downloadPlayerCard()">⬇ Stáhnout</button>
+      <button class="card-btn-share" onclick="sharePlayerCard()">📤 Sdílet</button>
+    </div>
+  </div>
+</div>
+
 <div class="ovl ovl-roster" id="rosterOvl" onclick="closeRosterOvl(event)">
   <div class="modal" style="padding:0;border-radius:16px;overflow:hidden;border:none">
     <div class="roster-head" style="gap:14px">
@@ -2351,6 +2373,7 @@ function showPlayerDetail(idx) {
     <div class="detail-card-footer">
       <button class="detail-back" onclick="showCityList(${idx})">← Zobrazit v seznamu</button>
       <button class="detail-back" onclick="sharePlayer(${idx})" title="Zkopírovat odkaz na hráče">🔗 Sdílet</button>
+      <button class="detail-back" onclick="openPlayerCard(${idx})" title="Grafická vizitka hráče">🎴 Vizitka</button>
       <button class="detail-close-btn" onclick="closeDetailOvl()">✕</button>
     </div>`;
 
@@ -2361,6 +2384,200 @@ function showPlayerDetail(idx) {
     url.searchParams.set('player', idx);
     history.replaceState(null, '', url);
   } catch(e) {}
+}
+
+// ── PLAYER CARD (grafická vizitka) ─────────────────────────────────────────
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function loadImg(src, cors) {
+  return new Promise((resolve) => {
+    if (!src) { resolve(null); return; }
+    const img = new Image();
+    if (cors) img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+    setTimeout(() => resolve(null), 5000);
+  });
+}
+
+async function drawPlayerCard(idx) {
+  const p = players[idx];
+  const canvas = document.getElementById('cardCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  await document.fonts.load('800 90px "Barlow Condensed"');
+  await document.fonts.load('700 34px "Barlow Condensed"');
+  await document.fonts.load('600 26px "Barlow"');
+  await document.fonts.load('700 24px "Barlow"');
+
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#1e3a8a');
+  bg.addColorStop(0.55, '#14275e');
+  bg.addColorStop(1, '#0a1638');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.globalAlpha = 0.10;
+  ctx.fillStyle = '#f5c300';
+  ctx.fillRect(0, 0, W, 14);
+  ctx.globalAlpha = 0.06;
+  ctx.fillRect(0, 14, W, 8);
+  ctx.restore();
+
+  const r = parseSeasonRangeYears(p);
+  const logoYear = r ? r.start : new Date().getFullYear();
+  const logoUrl = (typeof getLogoForYear === 'function') ? getLogoForYear(logoYear) : null;
+  let logoImg = null;
+  if (logoUrl) logoImg = await loadImg(logoUrl, true);
+  if (logoImg) {
+    const lw = 76, lh = 76 * (logoImg.height/logoImg.width || 1);
+    ctx.drawImage(logoImg, 56, 56, lw, Math.min(lh, 76));
+  }
+  ctx.textAlign = 'right';
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.font = '700 24px "Barlow", sans-serif';
+  ctx.fillText('HC MOTOR', W-56, 78);
+  ctx.font = '600 20px "Barlow", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.38)';
+  ctx.fillText('ČESKÉ BUDĚJOVICE', W-56, 104);
+
+  const cx = W/2, cy = 400, rad = 220;
+  let photoImg = p.photo ? await loadImg(p.photo, true) : null;
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, rad+14, 0, Math.PI*2);
+  ctx.fillStyle = '#f5c300';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, rad+6, 0, Math.PI*2);
+  ctx.fillStyle = '#0a1638';
+  ctx.fill();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, rad, 0, Math.PI*2);
+  ctx.clip();
+  if (photoImg) {
+    const scale = Math.max((rad*2)/photoImg.width, (rad*2)/photoImg.height);
+    const iw = photoImg.width*scale, ih = photoImg.height*scale;
+    ctx.drawImage(photoImg, cx-iw/2, cy-ih/2, iw, ih);
+  } else {
+    ctx.fillStyle = '#2855a8';
+    ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
+    ctx.fillStyle = '#f5c300';
+    ctx.font = '900 150px "Barlow Condensed", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase() || '?';
+    ctx.fillText(ini, cx, cy+14);
+    ctx.textBaseline = 'alphabetic';
+  }
+  ctx.restore();
+
+  const nm = (typeof fullName === 'function' ? fullName(p) : `${p.firstname||''} ${p.surname||''}`).trim() || p.city || '';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fff';
+  let nameSize = 84;
+  ctx.font = `800 ${nameSize}px "Barlow Condensed", sans-serif`;
+  while (ctx.measureText(nm.toUpperCase()).width > W-140 && nameSize > 44) {
+    nameSize -= 4;
+    ctx.font = `800 ${nameSize}px "Barlow Condensed", sans-serif`;
+  }
+  ctx.fillText(nm.toUpperCase(), cx, 730);
+
+  let infoY = 790;
+  if (p.captainYears) {
+    ctx.font = '700 26px "Barlow", sans-serif';
+    const capText = `⭐ KAPITÁN · ${p.captainYears}`;
+    const tw = ctx.measureText(capText).width + 40;
+    roundRectPath(ctx, cx-tw/2, infoY, tw, 44, 22);
+    ctx.fillStyle = '#f5c300';
+    ctx.fill();
+    ctx.fillStyle = '#0a1638';
+    ctx.fillText(capText, cx, infoY+30);
+    infoY += 74;
+  }
+
+  ctx.font = '600 30px "Barlow", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.85)';
+  const bornLine = [p.born, p.city].filter(Boolean).join(' · ');
+  if (bornLine) { ctx.fillText(bornLine, cx, infoY+36); infoY += 60; }
+
+  ctx.strokeStyle = 'rgba(245,195,0,.35)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx-100, infoY+20);
+  ctx.lineTo(cx+100, infoY+20);
+  ctx.stroke();
+  infoY += 60;
+
+  const seasonsLabel = p.seasonsRange || (p.seasons ? `${p.seasons} sezón` : '');
+  if (seasonsLabel) {
+    ctx.font = '800 54px "Barlow Condensed", sans-serif';
+    ctx.fillStyle = '#f5c300';
+    ctx.fillText(seasonsLabel, cx, infoY+50);
+    infoY += 66;
+    if (p.seasons && p.seasonsRange) {
+      ctx.font = '600 24px "Barlow", sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,.5)';
+      ctx.fillText(`${p.seasons} sezón v klubu`, cx, infoY+30);
+      infoY += 50;
+    }
+  }
+
+  ctx.font = '600 22px "Barlow", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.35)';
+  ctx.fillText('MÍSTA NAROZENÍ HRÁČŮ · romankokos1.github.io/nhl-99', cx, H-48);
+}
+
+function openPlayerCard(idx) {
+  document.getElementById('cardOvl').classList.add('on');
+  window._cardIdx = idx;
+  drawPlayerCard(idx);
+}
+
+function closeCardOvl(e) {
+  if (e && e.target !== document.getElementById('cardOvl')) return;
+  document.getElementById('cardOvl').classList.remove('on');
+}
+
+function downloadPlayerCard() {
+  const canvas = document.getElementById('cardCanvas');
+  const p = players[window._cardIdx];
+  const nm = (typeof fullName === 'function' ? fullName(p) : (p.surname || 'hrac')).replace(/\s+/g,'_');
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `vizitka_${nm}.png`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+  }, 'image/png');
+}
+
+function sharePlayerCard() {
+  const canvas = document.getElementById('cardCanvas');
+  canvas.toBlob(async blob => {
+    const p = players[window._cardIdx];
+    const nm = (typeof fullName === 'function' ? fullName(p) : '').trim();
+    const file = new File([blob], 'vizitka.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+      try { await navigator.share({ files:[file], title: nm, text: `${nm} — HC Motor České Budějovice` }); }
+      catch(e) {}
+    } else {
+      downloadPlayerCard();
+    }
+  }, 'image/png');
 }
 
 function sharePlayer(idx) {
