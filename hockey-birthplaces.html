@@ -363,6 +363,35 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .card-btn-share{background:var(--yellow);color:#0f2f6a}
 .card-btn-share:hover{background:#e0b100}
 .card-btn-close{background:#eef2f8;color:#6a7a9a;flex:0 0 44px !important}
+
+/* ── PŘEHRÁVÁNÍ HISTORIE ── */
+.hist-ovl{position:absolute;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:1200;
+  background:rgba(10,22,56,.93);backdrop-filter:blur(8px);border:1px solid rgba(245,195,0,.35);
+  border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:4px;
+  box-shadow:0 10px 40px rgba(0,0,0,.45);opacity:0;transition:opacity .3s,transform .3s;min-width:280px}
+.hist-ovl.on{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
+.hist-year{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:800;color:#fff;line-height:1;letter-spacing:.02em}
+.hist-club{display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--yellow);letter-spacing:.05em;min-height:26px}
+.hist-club img{height:24px;object-fit:contain}
+.hist-count{font-size:12px;color:#9db0d6;font-weight:600}
+.hist-bar{width:100%;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin-top:6px;overflow:hidden}
+.hist-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--yellow));border-radius:2px}
+.hist-stop{position:absolute;top:8px;right:10px;background:none;border:none;color:#7d90bb;font-size:15px;cursor:pointer;padding:2px 5px}
+.hist-stop:hover{color:#fff}
+@media(max-width:750px){.hist-ovl{bottom:86px;padding:10px 16px;min-width:230px}.hist-year{font-size:38px}.hist-club{font-size:13px}}
+
+/* ── GLOBE INTRO ── */
+#introOvl{position:fixed;inset:0;z-index:6000;background:#060c1f;display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity .6s ease}
+#introOvl.fade{opacity:0;pointer-events:none}
+#introOvl canvas{position:absolute;inset:0;width:100%;height:100%}
+.intro-title{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);text-align:center;pointer-events:none}
+.intro-title .it1{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.22em;color:var(--yellow);text-transform:uppercase}
+.intro-title .it2{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:800;letter-spacing:.06em;color:#fff;margin-top:2px}
+.intro-skip{position:absolute;right:22px;bottom:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
+  color:#c7d2ea;border-radius:20px;padding:7px 16px;font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;
+  letter-spacing:.05em;cursor:pointer;transition:.15s}
+.intro-skip:hover{background:rgba(255,255,255,.16);color:#fff}
+/* ── PŘEHRÁVÁNÍ HISTORIE END ── */
 /* DB City labels layer */
 .db-label { pointer-events:none; }
 .db-label-inner {
@@ -864,8 +893,10 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     </div>
     <div class="hdr-right">
       <div class="hdr-stats" id="hdrStats"></div>
+      <button class="hbtn-stats" onclick="playHistory()" title="Přehrát 100 let historie na mapě">▶ Historie</button>
       <button class="hbtn-stats" onclick="randomPlayer()" title="Náhodný hráč">🎲 Náhodný hráč</button>
       <button class="hbtn-stats" onclick="openStatsDesktop()">📊 Statistiky</button>
+      <button class="mob-search-btn" onclick="playHistory()" aria-label="Přehrát historii" title="Přehrát historii" style="font-size:15px">▶</button>
       <button class="mob-search-btn" onclick="randomPlayer()" aria-label="Náhodný hráč" title="Náhodný hráč" style="font-size:16px">🎲</button>
       <button class="mob-search-btn" onclick="openMobSearch()" aria-label="Hledat">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -910,6 +941,13 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
     <div id="mapEl"></div>
     <div id="mkCityLabel" class="mk-city-label"></div>
+    <div class="hist-ovl" id="histOvl">
+      <button class="hist-stop" onclick="stopHistory()" title="Zastavit">✕</button>
+      <div class="hist-year" id="histYear">1927</div>
+      <div class="hist-club" id="histClub"></div>
+      <div class="hist-count" id="histCount"></div>
+      <div class="hist-bar"><div class="hist-bar-fill" id="histBarFill"></div></div>
+    </div>
     <!-- FILTR -->
     <div class="filter-panel" id="filterPanel" style="display:none">
       <div class="fp-modes">
@@ -1669,6 +1707,9 @@ function updateMap() {
         window._activeTouchMarker = null;
       }
     });
+    // Roky příchodu hráčů — pro přehrávání historie
+    mk._startYears = g.ps.map(({p}) => { const r = parseSeasonRangeYears(p); return r ? r.start : 1927; }).sort((a,b)=>a-b);
+    mk._isMulti = multi;
     g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
     mlayers.push(mk);
   });
@@ -1978,6 +2019,276 @@ function showPlayerDetail(idx) {
   } catch(e) {}
 }
 
+
+
+// ══════════════════════════════════════════════════
+// GLOBE INTRO — rodiště hráčů na zeměkouli → zoom na ČB
+// ══════════════════════════════════════════════════
+function runGlobeIntro() {
+  // Kdy intro NEpouštět:
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('intro') === '0') return;
+  if (params.get('player') !== null) return;           // sdílený odkaz → rovnou na hráče
+  if (typeof THREE === 'undefined') return;            // CDN nedostupné
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  try {
+    if (params.get('intro') !== '1' && sessionStorage.getItem('introSeen')) return;
+    sessionStorage.setItem('introSeen', '1');
+  } catch(e) {}
+
+  const CB_LAT = 48.9764, CB_LON = 14.4742;
+  const R = 1;
+
+  // Overlay
+  const ovl = document.createElement('div');
+  ovl.id = 'introOvl';
+  ovl.innerHTML = `
+    <div class="intro-title">
+      <div class="it1">HC Motor České Budějovice</div>
+      <div class="it2">MÍSTA NAROZENÍ HRÁČŮ</div>
+    </div>
+    <button class="intro-skip">Přeskočit ✕</button>`;
+  document.body.appendChild(ovl);
+
+  const canvas = document.createElement('canvas');
+  ovl.insertBefore(canvas, ovl.firstChild);
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  function sizeIt(){ renderer.setPixelRatio(DPR); renderer.setSize(window.innerWidth, window.innerHeight, false); }
+  sizeIt();
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 3.1);
+
+  scene.add(new THREE.AmbientLight(0x334477, 1.1));
+  const key = new THREE.DirectionalLight(0x8fb0ff, 1.0); key.position.set(2.5, 1.5, 2); scene.add(key);
+
+  const globe = new THREE.Group();
+  scene.add(globe);
+
+  // Koule — tmavě modrá
+  globe.add(new THREE.Mesh(
+    new THREE.SphereGeometry(R, 48, 32),
+    new THREE.MeshPhongMaterial({color:0x14275e, shininess:18, specular:0x223a6e})
+  ));
+  // Poledníková síť
+  globe.add(new THREE.LineSegments(
+    new THREE.WireframeGeometry(new THREE.SphereGeometry(R*1.002, 20, 12)),
+    new THREE.LineBasicMaterial({color:0x2855a8, transparent:true, opacity:0.28})
+  ));
+  // Rim glow — větší koule zevnitř
+  globe.add(new THREE.Mesh(
+    new THREE.SphereGeometry(R*1.05, 48, 32),
+    new THREE.MeshBasicMaterial({color:0x1c4896, side:THREE.BackSide, transparent:true, opacity:0.30})
+  ));
+
+  // lat/lon → 3D
+  function ll2xyz(lat, lon, r) {
+    const phi = (90 - lat) * Math.PI / 180;
+    const theta = (lon + 180) * Math.PI / 180;
+    return [ -r*Math.sin(phi)*Math.cos(theta), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(theta) ];
+  }
+
+  // Zlaté body — rodiště všech hráčů
+  const coords = players.filter(p => p.lat && p.lon);
+  const pos = new Float32Array(coords.length * 3);
+  coords.forEach((p, i) => {
+    const [x,y,z] = ll2xyz(p.lat, p.lon, R*1.012);
+    pos[i*3]=x; pos[i*3+1]=y; pos[i*3+2]=z;
+  });
+  const dotsGeo = new THREE.BufferGeometry();
+  dotsGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  globe.add(new THREE.Points(dotsGeo, new THREE.PointsMaterial({
+    color:0xf5c300, size:0.016, sizeAttenuation:true, transparent:true, opacity:0.95
+  })));
+
+  // ČB — pulsující zvýrazněný bod
+  const cbPos = ll2xyz(CB_LAT, CB_LON, R*1.015);
+  const cbDot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.022, 12, 8),
+    new THREE.MeshBasicMaterial({color:0xffd84d})
+  );
+  cbDot.position.set(...cbPos);
+  globe.add(cbDot);
+
+  // Cílová rotace — ČB čelem ke kameře
+  const targetY = (-90 - CB_LON) * Math.PI / 180;
+  const targetX = CB_LAT * Math.PI / 180;
+  const startY = targetY - 2.4;   // příletový oblouk přes Atlantik
+  const startX = targetX * 0.25;
+  globe.rotation.set(startX, startY, 0);
+
+  const DUR = 4300, FADE_AT = 3700;
+  const t0 = performance.now();
+  let done = false, raf = null;
+
+  const ease = t => t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;  // easeInOutQuad
+
+  function finish() {
+    if (done) return;
+    done = true;
+    if (raf) cancelAnimationFrame(raf);
+    ovl.classList.add('fade');
+    setTimeout(() => {
+      renderer.dispose();
+      ovl.remove();
+      if (map) map.invalidateSize();
+    }, 650);
+  }
+  ovl.querySelector('.intro-skip').addEventListener('click', finish);
+
+  function frame(now) {
+    if (done) return;
+    const raw = Math.min((now - t0) / DUR, 1);
+    const t = ease(raw);
+    globe.rotation.y = startY + (targetY - startY) * t;
+    globe.rotation.x = startX + (targetX - startX) * t;
+    // Zoom v druhé polovině
+    const zt = Math.max(0, (raw - 0.45) / 0.55);
+    camera.position.z = 3.1 - ease(zt) * 1.65;   // 3.1 → 1.45
+    // Puls ČB bodu
+    const s = 1 + 0.5 * Math.sin(now / 180);
+    cbDot.scale.set(s, s, s);
+    renderer.render(scene, camera);
+    if (raw >= FADE_AT / DUR && !ovl.classList.contains('fade')) ovl.classList.add('fade');
+    if (raw < 1) raf = requestAnimationFrame(frame);
+    else setTimeout(finish, 100);
+  }
+  raf = requestAnimationFrame(frame);
+  window.addEventListener('resize', sizeIt);
+}
+
+// ══════════════════════════════════════════════════
+// PŘEHRÁVÁNÍ HISTORIE — 100 let na mapě
+// ══════════════════════════════════════════════════
+const ERA_NAMES = [[1928,'AC Stadion ČB'],[1948,'Sokol Stadion ČB'],[1949,'ZSJ OD Stadion ČB'],
+  [1950,'ZSJ SKP JNV ČB'],[1953,'DSO Slavoj ČB'],[1957,'TJ Slavoj ČB'],[1965,'TJ Motor ČB'],
+  [1992,'HC České Budějovice'],[2006,'HC Mountfield'],[2013,'ČEZ Motor ČB'],
+  [2020,'Madeta Motor ČB'],[2021,'HC Motor ČB'],[2023,'Banes Motor ČB']];
+function eraNameFor(year){let n=ERA_NAMES[0][1];for(const[y,name]of ERA_NAMES){if(year>=y)n=name;}return n;}
+
+let _histRAF = null, _histPlaying = false;
+const HIST_START = 1927, HIST_END = 2026, HIST_DUR = 22000; // 22 s
+
+function playHistory() {
+  if (_histPlaying) return;
+  // Reset filtrů na "Vše", ať hrajeme s kompletní mapou
+  if (filterMode !== 'off') setFilter('off');
+  map.closePopup();
+  document.getElementById('detailOvl')?.classList.remove('on');
+
+  // Markery musí existovat — updateMap je synchronní, ale dej DOM čas
+  setTimeout(() => {
+    _histPlaying = true;
+    // Schovej všechny markery
+    mlayers.forEach(mk => {
+      const el = mk.getElement && mk.getElement();
+      if (!el || !mk._startYears) return;
+      el.style.transition = 'none';
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+      mk._shown = false;
+      mk._lastCount = 0;
+    });
+    // Skryj i popisky vrstvy, ať nepředbíhají
+    if (labelLayer && map.hasLayer(labelLayer)) labelLayer.clearLayers();
+
+    const ovl = document.getElementById('histOvl');
+    ovl.classList.add('on');
+
+    const t0 = performance.now();
+    let lastYearShown = 0;
+
+    function tick(now) {
+      const t = Math.min((now - t0) / HIST_DUR, 1);
+      // ease-in-out lehce: lineární roky čtou líp — necháme lineární
+      const year = HIST_START + t * (HIST_END - HIST_START);
+      const yearInt = Math.floor(year);
+
+      if (yearInt !== lastYearShown) {
+        lastYearShown = yearInt;
+        document.getElementById('histYear').textContent = yearInt;
+        const logo = getLogoForYear(yearInt);
+        document.getElementById('histClub').innerHTML =
+          (logo ? `<img src="${logo}" onerror="this.style.display='none'">` : '') + eraNameFor(yearInt);
+      }
+      document.getElementById('histBarFill').style.width = (t*100).toFixed(1) + '%';
+
+      // Odhal markery + aktualizuj čísla
+      let totalPlayers = 0;
+      mlayers.forEach(mk => {
+        if (!mk._startYears) return;
+        const cnt = countLE(mk._startYears, year);
+        totalPlayers += cnt;
+        if (cnt > 0 && !mk._shown) {
+          mk._shown = true;
+          const el = mk.getElement();
+          if (el) {
+            el.style.transition = 'opacity .45s ease';
+            el.style.opacity = '1';
+            el.style.pointerEvents = '';
+            // pop efekt na wrapperu
+            const wrap = el.querySelector('.mk-wrap, .mk-multi-wrap');
+            if (wrap) {
+              const zs = parseFloat(wrap.dataset.zscale || '1');
+              wrap.style.transition = 'none';
+              wrap.style.transform = `scale(${zs*0.2})`;
+              requestAnimationFrame(() => {
+                wrap.style.transition = 'transform .5s cubic-bezier(.34,1.56,.64,1)';
+                wrap.style.transform = `scale(${zs})`;
+              });
+            }
+          }
+        }
+        if (mk._isMulti && cnt !== mk._lastCount && cnt > 0) {
+          mk._lastCount = cnt;
+          const el = mk.getElement();
+          const num = el && el.querySelector('.mk-bubble-num');
+          if (num) num.textContent = cnt;
+        }
+      });
+      document.getElementById('histCount').textContent = totalPlayers + ' hráčů';
+
+      if (t < 1) {
+        _histRAF = requestAnimationFrame(tick);
+      } else {
+        setTimeout(stopHistory, 1600); // nech finální stav chvíli viset
+      }
+    }
+    _histRAF = requestAnimationFrame(tick);
+  }, 80);
+}
+
+function countLE(sortedArr, x) {
+  // počet prvků <= x (pole je malé, lineárně stačí)
+  let c = 0;
+  for (let i = 0; i < sortedArr.length; i++) { if (sortedArr[i] <= x) c++; else break; }
+  return c;
+}
+
+function stopHistory() {
+  if (_histRAF) cancelAnimationFrame(_histRAF);
+  _histRAF = null;
+  _histPlaying = false;
+  document.getElementById('histOvl').classList.remove('on');
+  // Vše viditelné, čísla finální
+  mlayers.forEach(mk => {
+    const el = mk.getElement && mk.getElement();
+    if (!el) return;
+    el.style.transition = '';
+    el.style.opacity = '';
+    el.style.pointerEvents = '';
+    if (mk._isMulti && mk._startYears) {
+      const num = el.querySelector('.mk-bubble-num');
+      if (num) num.textContent = mk._startYears.length;
+    }
+    mk._shown = mk._lastCount = undefined;
+  });
+  updateLabelLayer();
+}
+
 // ── PLAYER CARD (grafická vizitka) ─────────────────────────────────────────
 function roundRectPath(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -2263,6 +2574,7 @@ function closeDetailOvl(e) {
 // ══════════════════════════════════════════════════
 loadPlayers(function() {
   load(); initMap(); render(); setTimeout(updateMap,300);
+  runGlobeIntro();
   // Otevři hráče z URL (?player=idx) pro sdílené odkazy
   const urlParams = new URLSearchParams(window.location.search);
   const sharedIdx = urlParams.get('player');
@@ -2278,6 +2590,7 @@ window.addEventListener('resize', () => { if (map) map.invalidateSize(); setHdrH
 // Escape zavírá otevřené modaly (v pořadí podle vrstvení)
 window.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  if (_histPlaying) { stopHistory(); return; }
   const modals = ['cardOvl','rosterOvl','detailOvl','statsOvl'];
   for (const id of modals) {
     const el = document.getElementById(id);
