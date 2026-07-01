@@ -1600,7 +1600,7 @@ function updateMap() {
 
     // stagger animation
     const el = mk.getElement();
-    if (el) { el.style.animationDelay = `${markerIdx * 25}ms`; el.classList.add('mk-anim'); }
+    if (el) { el.style.animationDelay = `${Math.min(markerIdx * 6, 450)}ms`; el.classList.add('mk-anim'); }
 
     // Reliable hover — direct JS manipulation of inner SVG + photo elements + city label
     const scale = multi ? 1.12 : 1.06;
@@ -1631,11 +1631,14 @@ function updateMap() {
         if (body) body.style.fill = 'url(#pinGH)';
         if (dot)  dot.style.fill  = '#0f2f6a';
       }
-      const bubble=icon.querySelector('.mk-photo-bubble');
-      if(bubble){bubble.style.opacity='1';bubble.style.transform='translateX(-50%) scale(1)';}
-      const strip=icon.querySelector('.mk-photo-strip-float');
-      if(strip){strip.style.opacity='1';strip.style.transform='translateX(-50%) scale(1)';}
-      if (cityName) {
+      // Foto bublina/strip — jen na desktopu (na mobilu je redundantní k popupu)
+      if (!IS_TOUCH) {
+        const bubble=icon.querySelector('.mk-photo-bubble');
+        if(bubble){bubble.style.opacity='1';bubble.style.transform='translateX(-50%) scale(1)';}
+        const strip=icon.querySelector('.mk-photo-strip-float');
+        if(strip){strip.style.opacity='1';strip.style.transform='translateX(-50%) scale(1)';}
+      }
+      if (cityName && !IS_TOUCH) {
         const lbl = document.getElementById('mkCityLabel');
         const pt = map.latLngToContainerPoint([glat, glon]);
         lbl.textContent = cityName;
