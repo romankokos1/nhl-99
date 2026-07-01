@@ -2431,6 +2431,38 @@ function loadImg(src, cors) {
   });
 }
 
+function parsePhotoPos(pos) {
+  const parts = (pos || '50% 50%').split(/\s+/).map(s => parseFloat(s));
+  return { x: isFinite(parts[0]) ? parts[0] : 50, y: isFinite(parts[1]) ? parts[1] : 50 };
+}
+
+// Replikuje CSS object-fit:cover + object-position (+ volitelně transform:scale kolem photoPos)
+// stejně jako se fotky ořezávají jinde v mapě (photo_position_picker.html)
+function drawCoverImage(ctx, img, cx0, cy0, dw, dh, zoom, posStr) {
+  const iw = img.width, ih = img.height;
+  const coverScale = Math.max(dw/iw, dh/ih);
+  const scaledW = iw*coverScale, scaledH = ih*coverScale;
+  const pos = parsePhotoPos(posStr);
+  if (zoom && zoom > 1) {
+    // Bez zoomu je object-position vždy střed; extra zoom se aplikuje kolem photoPos kotvy
+    const offsetX = (dw - scaledW) * 0.5;
+    const offsetY = (dh - scaledH) * 0.5;
+    const drawX = cx0 + offsetX, drawY = cy0 + offsetY;
+    const anchorX = cx0 + dw*(pos.x/100);
+    const anchorY = cy0 + dh*(pos.y/100);
+    ctx.save();
+    ctx.translate(anchorX, anchorY);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-anchorX, -anchorY);
+    ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+    ctx.restore();
+  } else {
+    const offsetX = (dw - scaledW) * (pos.x/100);
+    const offsetY = (dh - scaledH) * (pos.y/100);
+    ctx.drawImage(img, cx0+offsetX, cy0+offsetY, scaledW, scaledH);
+  }
+}
+
 async function drawPlayerCard(idx) {
   const p = players[idx];
   const canvas = document.getElementById('cardCanvas');
@@ -2491,9 +2523,7 @@ async function drawPlayerCard(idx) {
   ctx.arc(cx, cy, rad, 0, Math.PI*2);
   ctx.clip();
   if (photoImg) {
-    const scale = Math.max((rad*2)/photoImg.width, (rad*2)/photoImg.height);
-    const iw = photoImg.width*scale, ih = photoImg.height*scale;
-    ctx.drawImage(photoImg, cx-iw/2, cy-ih/2, iw, ih);
+    drawCoverImage(ctx, photoImg, cx-rad, cy-rad, rad*2, rad*2, p.photoZoom, p.photoPos);
   } else {
     ctx.fillStyle = '#2855a8';
     ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
