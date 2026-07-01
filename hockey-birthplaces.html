@@ -2397,15 +2397,37 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+function corsProxyUrl(url) {
+  if (!url) return url;
+  try {
+    const u = new URL(url, window.location.href);
+    if (u.protocol === 'data:') return url;
+    return `https://images.weserv.nl/?url=${encodeURIComponent(u.host + u.pathname + u.search)}`;
+  } catch(e) { return url; }
+}
+
 function loadImg(src, cors) {
   return new Promise((resolve) => {
     if (!src) { resolve(null); return; }
+    const finalSrc = cors ? corsProxyUrl(src) : src;
     const img = new Image();
     if (cors) img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-    setTimeout(() => resolve(null), 5000);
+    img.onerror = () => {
+      // Fallback — zkus přímo bez proxy (nemuselo by fungovat pro export, ale aspoň se něco zobrazí)
+      if (cors && finalSrc !== src) {
+        const img2 = new Image();
+        img2.crossOrigin = 'anonymous';
+        img2.onload = () => resolve(img2);
+        img2.onerror = () => resolve(null);
+        img2.src = src;
+        setTimeout(() => resolve(null), 4000);
+      } else {
+        resolve(null);
+      }
+    };
+    img.src = finalSrc;
+    setTimeout(() => resolve(null), 6000);
   });
 }
 
