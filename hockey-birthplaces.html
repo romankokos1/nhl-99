@@ -337,6 +337,8 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .roster-player.linked:hover{background:#e8f0fd}
 .roster-player .rp-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:var(--yellow);transform:translateZ(0);isolation:isolate}
 .roster-player .rp-av img{width:100%;height:100%;object-fit:cover;display:block}
+.roster-eralink{display:inline-block;margin-top:6px;background:var(--blue);color:#fff;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:.15s}
+.roster-eralink:hover{background:#153a78}
 /* Dynasty section */
 .dynasty-row{display:flex;align-items:center;gap:10px;padding:.35rem 0;border-bottom:1px solid #f0f4fb}
 .dynasty-row:last-child{border-bottom:none}
@@ -347,6 +349,8 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 
 /* Photo strip float above multi marker */
 .mk-photo-strip-float{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) scale(.7);transform-origin:center bottom;opacity:0;pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.56,.64,1);z-index:999;}
+.pop-cardbtn{padding:9px 14px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--blue);background:#f4f7fd;border-top:1px solid #e4eaf5;cursor:pointer;transition:.15s;border-radius:0 0 12px 12px}
+.pop-cardbtn:hover{background:#e8f0fd}
 /* Player card overlay */
 .card-ovl-inner{background:#fff;border-radius:16px;overflow:hidden;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .card-ovl-inner canvas{width:100%;display:block;background:#0f2f6a}
@@ -730,6 +734,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .sort-btn:hover { border-color: #1c4896; color: #1c4896; }
 .sort-btn.active { background: #1c4896; color: #f5c300; border-color: #1c4896; font-weight: 700; }
 .sort-btn.sort-cap.active { background: var(--yellow); color: var(--blue3); border-color: #c8a800; }
+.sort-btn.sort-cur.active { background: var(--blue3); color: #fff; border-color: var(--blue3); }
 
 
 /* ── MARKER POP ANIMATION ──────────────────────── */
@@ -919,8 +924,10 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
         <button class="sort-btn active" id="sortName" onclick="setSort('name')">A–Z</button>
         <button class="sort-btn" id="sortSeasons" onclick="setSort('seasons')">Sezóny ↓</button>
         <button class="sort-btn" id="sortBorn" onclick="setSort('born')">Rok nar.</button>
+        <button class="sort-btn" id="sortDist" onclick="setSort('dist')">Vzdálenost ↓</button>
         <span style="color:#d4dae8;padding:0 2px">|</span>
         <button class="sort-btn sort-cap" id="filterCaptain" onclick="toggleCaptainFilter()">C Kapitáni</button>
+        <button class="sort-btn sort-cur" id="filterCurrent" onclick="toggleCurrentFilter()">⛸ Současný kádr</button>
       </div>
       <div class="search-bar">
         <span class="search-icon">🔍</span>
@@ -941,6 +948,16 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
     <div id="mapEl"></div>
     <div id="mkCityLabel" class="mk-city-label"></div>
+    <div id="eraLegend" style="display:none;position:absolute;left:10px;bottom:26px;z-index:1100;background:rgba(255,255,255,.93);backdrop-filter:blur(6px);border:1px solid #dde6f5;border-radius:10px;padding:8px 12px;font-size:10px;color:#3a4a6a;box-shadow:0 3px 14px rgba(10,30,80,.15)">
+      <div style="font-weight:800;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.05em;margin-bottom:4px">PŘÍCHOD PRVNÍHO HRÁČE</div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c9a15a;margin-right:5px;vertical-align:-1px"></i>do 1949</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8a9bb0;margin-right:5px;vertical-align:-1px"></i>50.–60. léta</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3a6ed8;margin-right:5px;vertical-align:-1px"></i>70.–80. léta</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#279e8e;margin-right:5px;vertical-align:-1px"></i>90.–00. léta</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f5c300;margin-right:5px;vertical-align:-1px"></i>2010+</span>
+      </div>
+    </div>
     <div class="hist-ovl" id="histOvl">
       <button class="hist-stop" onclick="stopHistory()" title="Zastavit">✕</button>
       <div class="hist-year" id="histYear">1927</div>
@@ -1016,6 +1033,10 @@ let labelLayer = null;
 let arenaLayer = null;
 let arcsLayer = null;
 let _arcRenderer = null;
+let eraColorsLayer = null;
+let eraColorsOn = false;
+function eraColorFor(y){ if(y<1950)return '#c9a15a'; if(y<1970)return '#8a9bb0'; if(y<1990)return '#3a6ed8'; if(y<2010)return '#279e8e'; return '#f5c300'; }
+function eraNumColor(c){ return (c==='#3a6ed8'||c==='#279e8e') ? '#fff' : '#0f2f6a'; }
 const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 function zoomScaleFor(zoom) {
   if (zoom <= 7) return 0.58;
@@ -1057,7 +1078,7 @@ function loadRosters() {
       ROSTER_DATA = data;
       // Re-render stats pokud jsou právě otevřené
       if (document.getElementById('statsOvl')?.classList.contains('on')) {
-        renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', coaches:'statsCoaches' });
+        renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', distDecades:'statsDistDecades', coaches:'statsCoaches' });
       }
       if (document.getElementById('mob-stats-panel')?.style.display === 'block') {
         renderMobStats();
@@ -1124,23 +1145,27 @@ function initMap() {
   labelLayer = L.layerGroup();
   arenaLayer = L.layerGroup();
   arcsLayer = L.layerGroup();
+  eraColorsLayer = L.layerGroup();   // jen přepínač, nemá vlastní obsah
   _arcRenderer = L.svg({padding: 0.6});
   L.control.layers(baseLayers, {
     '⭕ Vzdálenosti od ČB': distCircles,
     '🏟 Stadion Budvar Aréna': arenaLayer,
     '🏒 Cesty do Budějovic': arcsLayer,
+    '🎨 Barvy podle éry': eraColorsLayer,
     '🏷 Popisky z databáze': labelLayer
   }, {position:'topright', collapsed:true}).addTo(map);
   // Aktualizuj labely když se vrstva zapne
   map.on('overlayadd', e => {
     if (e.name.includes('Popisky')) updateLabelLayer();
     if (e.name.includes('Cesty')) updateArcsLayer(true);
+    if (e.name.includes('Barvy')) { eraColorsOn = true; updateMap(); document.getElementById('eraLegend').style.display = 'block'; }
     if (e.name.includes('Stadion')) {
       const c = document.getElementById('arena3d-canvas');
       if (c) c.style.display = '';
     }
   });
   map.on('overlayremove', e => {
+    if (e.name.includes('Barvy')) { eraColorsOn = false; updateMap(); document.getElementById('eraLegend').style.display = 'none'; }
     if (e.name.includes('Stadion')) {
       const c = document.getElementById('arena3d-canvas');
       if (c) c.style.display = 'none';
@@ -1337,7 +1362,7 @@ function initArena3D() {
   positionAndSize();
 }
 
-function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
+function mkIcon(label, photoOrPlayers, photoZoom, photoPos, eraColor) {
   const multi = label !== '●';
   const n = multi ? parseInt(label) || 0 : 0;
 
@@ -1363,10 +1388,10 @@ function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
             <stop offset="100%" stop-color="#c88000"/>
           </linearGradient>
         </defs>
-        <path class="mk-pin-body" d="M14 0C6.3 0 0 6.3 0 14C0 24.5 14 40 14 40C14 40 28 24.5 28 14C28 6.3 21.7 0 14 0Z" fill="url(#pinG)" style="transition:fill .22s ease"/>
+        <path class="mk-pin-body" d="M14 0C6.3 0 0 6.3 0 14C0 24.5 14 40 14 40C14 40 28 24.5 28 14C28 6.3 21.7 0 14 0Z" fill="${eraColor || 'url(#pinG)'}" data-basefill="${eraColor || 'url(#pinG)'}" style="transition:fill .22s ease"/>
         <path d="M14 1.5C7.1 1.5 1.5 7.1 1.5 14C1.5 24 14 38 14 38C14 38 26.5 24 26.5 14C26.5 7.1 20.9 1.5 14 1.5Z" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
         <path d="M6 3.5 Q4 8 4 13 Q4 8 9 5 Z" fill="rgba(255,255,255,.18)"/>
-        <circle class="mk-pin-dot" cx="14" cy="14" r="6.5" fill="#f5c300" style="transition:fill .22s ease"/>
+        <circle class="mk-pin-dot" cx="14" cy="14" r="6.5" fill="${eraColor ? eraNumColor(eraColor) : '#f5c300'}" data-basedot="${eraColor ? eraNumColor(eraColor) : '#f5c300'}" style="transition:fill .22s ease"/>
         <circle cx="14" cy="14" r="6.5" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
         <circle cx="12" cy="12" r="2.2" fill="rgba(255,255,255,.38)"/>
       </svg></div>`,
@@ -1404,17 +1429,17 @@ function mkIcon(label, photoOrPlayers, photoZoom, photoPos) {
     html: `<div class="mk-multi-wrap" style="position:relative;width:${W}px;height:${W}px">
       ${photoStrip}
       <!-- Circle — tmavě modrá s odleskem -->
-      <div class="mk-bubble-inner" style="position:absolute;
+      <div class="mk-bubble-inner" data-basebg="${eraColor ? `radial-gradient(circle at 35% 30%,${eraColor},${eraColor})` : 'radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a)'}" style="position:absolute;
         top:${(W-inner)/2}px;left:${(W-inner)/2}px;
         width:${inner}px;height:${inner}px;
         border-radius:50%;
-        background:radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a);
+        background:${eraColor ? eraColor : 'radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a)'};
         box-shadow:0 2px 10px rgba(10,30,80,.5);
         display:flex;align-items:center;justify-content:center;
         overflow:hidden;transition:background .22s ease">
         <div style="position:absolute;top:-30%;left:-10%;width:120%;height:55%;
           background:rgba(255,255,255,.12);border-radius:50%;pointer-events:none"></div>
-        <span class="mk-bubble-num" style="position:relative;font-family:'Barlow Condensed',sans-serif;font-size:${fs}px;font-weight:900;color:#f5c300;letter-spacing:-.5px;line-height:1;transition:color .22s ease">${n}</span>
+        <span class="mk-bubble-num" data-basenum="${eraColor ? eraNumColor(eraColor) : '#f5c300'}" style="position:relative;font-family:'Barlow Condensed',sans-serif;font-size:${fs}px;font-weight:900;color:${eraColor ? eraNumColor(eraColor) : '#f5c300'};letter-spacing:-.5px;line-height:1;transition:color .22s ease">${n}</span>
       </div>
     </div>`,
     className: '',
@@ -1451,15 +1476,18 @@ function parseSeasonRangeYears(p) {
 }
 
 function getFilteredPlayers() {
-  if (filterMode === 'off') return players;
+  let base = players;
+  if (currentFilter) base = base.filter(isCurrentPlayer);
+  if (captainFilter) base = base.filter(p => !!p.captainYears);
+  if (filterMode === 'off') return base;
   if (filterMode === 'era') {
-    return players.filter(p => {
+    return base.filter(p => {
       const r = parseSeasonRangeYears(p);
       if (!r) return false;
       return r.end >= filterMin && r.start <= filterMax;
     });
   }
-  return players.filter(p => {
+  return base.filter(p => {
     const val = filterMode === 'born'
       ? parseBornYear(p.born)
       : parseSeasonsNum(p.seasons);
@@ -1591,7 +1619,14 @@ function updateMap() {
       popContent = buildCityPopup(g.ps, g.display);
     }
     const mk = L.marker([g.lat, g.lon], {
-      icon: multi ? mkIcon(String(n), g.ps) : mkIcon('●', g.ps[0].p.photo, g.ps[0].p.photoZoom, g.ps[0].p.photoPos),
+      icon: (() => {
+        let ec = null;
+        if (eraColorsOn) {
+          const ys = g.ps.map(({p}) => { const r = parseSeasonRangeYears(p); return r ? r.start : null; }).filter(y => y !== null);
+          if (ys.length) ec = eraColorFor(Math.min(...ys));
+        }
+        return multi ? mkIcon(String(n), g.ps, null, null, ec) : mkIcon('●', g.ps[0].p.photo, g.ps[0].p.photoZoom, g.ps[0].p.photoPos, ec);
+      })(),
       zIndexOffset: multi ? n * 10 : 0
     }).bindPopup(popContent, {maxWidth:320, maxHeight:400}).addTo(map);
 
@@ -1666,14 +1701,14 @@ function updateMap() {
         if (wrap) { const zs = parseFloat(wrap.dataset.zscale || '1'); wrap.style.transform = `scale(${zs})`; }
         const inner = icon.querySelector('.mk-bubble-inner');
         const num   = icon.querySelector('.mk-bubble-num');
-        if (inner) inner.style.background='radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a)';
-        if (num)   num.style.color='#f5c300';
+        if (inner) inner.style.background = inner.dataset.basebg || 'radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a)';
+        if (num)   num.style.color = num.dataset.basenum || '#f5c300';
       } else {
         icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
         const body = icon.querySelector('.mk-pin-body');
         const dot  = icon.querySelector('.mk-pin-dot');
-        if (body) body.style.fill = 'url(#pinG)';
-        if (dot)  dot.style.fill  = '#f5c300';
+        if (body) body.style.fill = body.dataset.basefill || 'url(#pinG)';
+        if (dot)  dot.style.fill  = dot.dataset.basedot || '#f5c300';
       }
       const bubble2=icon.querySelector('.mk-photo-bubble');
       if(bubble2){bubble2.style.opacity='0';bubble2.style.transform='translateX(-50%) scale(.7)';}
@@ -1784,6 +1819,11 @@ function render() {
   // Sort
   const sorted = players.map((p,i)=>({p,i})).sort((a,b)=>{
     if (sortMode === 'seasons') return parseSeasonsCount(b.p.seasons) - parseSeasonsCount(a.p.seasons);
+    if (sortMode === 'dist') {
+      const da = a.p.lat ? (a.p._dist ??= haversineKm(48.9764,14.4742,a.p.lat,a.p.lon)) : -1;
+      const db = b.p.lat ? (b.p._dist ??= haversineKm(48.9764,14.4742,b.p.lat,b.p.lon)) : -1;
+      return db - da;
+    }
     if (sortMode === 'born') {
       const ya = a.p.born ? parseInt(a.p.born.slice(-4)) : 9999;
       const yb = b.p.born ? parseInt(b.p.born.slice(-4)) : 9999;
@@ -1829,6 +1869,17 @@ function norm(s) {
 let searchQuery = '';
 let sortMode = 'name';
 let captainFilter = false;
+let currentFilter = false;
+const CURRENT_YEAR_MIN = 2025;   // hráč je "současný", pokud jeho rozsah sezón sahá aspoň sem
+function isCurrentPlayer(p) {
+  const r = parseSeasonRangeYears(p);
+  return !!r && r.end >= CURRENT_YEAR_MIN;
+}
+function toggleCurrentFilter() {
+  currentFilter = !currentFilter;
+  document.getElementById('filterCurrent').classList.toggle('active', currentFilter);
+  render(); updateMap();
+}
 
 function toggleCaptainFilter() {
   captainFilter = !captainFilter;
@@ -1838,8 +1889,9 @@ function toggleCaptainFilter() {
 
 function setSort(mode) {
   sortMode = mode;
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(mode === 'name' ? 'sortName' : mode === 'seasons' ? 'sortSeasons' : 'sortBorn').classList.add('active');
+  document.querySelectorAll('.sort-btn:not(.sort-cap):not(.sort-cur)').forEach(b => b.classList.remove('active'));
+  const btnId = {name:'sortName', seasons:'sortSeasons', born:'sortBorn', dist:'sortDist'}[mode];
+  document.getElementById(btnId)?.classList.add('active');
   render();
 }
 
@@ -1859,13 +1911,13 @@ function filterList() {
     const p = players[idx];
     if (!p) return;
     const name = norm(fullName(p));
-    const match = (!q || name.includes(q)) && (!captainFilter || !!p.captainYears);
+    const match = (!q || name.includes(q)) && (!captainFilter || !!p.captainYears) && (!currentFilter || isCurrentPlayer(p));
     card.style.display = match ? '' : 'none';
     if (match) visible++;
     card.classList.toggle('pc-highlight', match && q.length > 0);
   });
   document.getElementById('listTitle').textContent =
-    captainFilter ? `Kapitáni (${visible})` : q ? `Hráči (${visible})` : 'Hráči';
+    currentFilter ? `Současný kádr (${visible})` : captainFilter ? `Kapitáni (${visible})` : q ? `Hráči (${visible})` : 'Hráči';
 }
 
 function clearSearch() {
@@ -1893,7 +1945,9 @@ function buildCityPopup(list, display) {
     const capBadge = p.captainYears ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#f5c300;color:#0f2f6a;font-size:8px;font-weight:900;margin-left:4px;flex-shrink:0">C</span>' : '';
     return `<div class="pop-row" onclick="showPlayerDetail(${idx})" title="Zobrazit detail hráče"><span class="pop-rname">${esc(fullName(p))}${capBadge}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
   }).join('');
-  return `<div class="pop-hdr"><span>📍 ${esc(display)}</span><span class="pop-badge">${list.length} hráčů</span></div><div class="pop-list">${rows}</div>`;
+  const idxCsv = sorted.map(({idx}) => idx).join(',');
+  const cardBtn = `<div class="pop-cardbtn" onclick="event.stopPropagation();openCityCard([${idxCsv}])">🎴 Vizitka města</div>`;
+  return `<div class="pop-hdr"><span>📍 ${esc(display)}</span><span class="pop-badge">${list.length} hráčů</span></div><div class="pop-list">${rows}</div>${cardBtn}`;
 }
 
 // Open popup with ALL players from the player's birthplace
@@ -2673,9 +2727,155 @@ async function drawPlayerCard(idx) {
   ctx.fillText('MÍSTA NAROZENÍ HRÁČŮ · romankokos1.github.io/nhl-99', cx, H-48);
 }
 
+
+// ── VIZITKA MĚSTA ───────────────────────────────────────────────────────────
+async function drawCityCard(idxArr) {
+  const list = idxArr.map(i => players[i]).filter(Boolean);
+  if (!list.length) return;
+  const city = list[0].city || '';
+  const canvas = document.getElementById('cardCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  await document.fonts.load('800 90px "Barlow Condensed"');
+  await document.fonts.load('600 26px "Barlow"');
+
+  // Pozadí
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#1e3a8a'); bg.addColorStop(0.55, '#14275e'); bg.addColorStop(1, '#0a1638');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.globalAlpha = 0.10; ctx.fillStyle = '#f5c300'; ctx.fillRect(0, 0, W, 14); ctx.restore();
+
+  // Hlavička
+  const logoImg = await loadImg(getLogoForYear(2026), true);
+  if (logoImg) ctx.drawImage(logoImg, 56, 52, 72, Math.min(72 * (logoImg.height/logoImg.width || 1), 72));
+  ctx.textAlign = 'right';
+  ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '700 24px "Barlow", sans-serif';
+  ctx.fillText('HC MOTOR', W-56, 76);
+  ctx.fillStyle = 'rgba(255,255,255,.38)'; ctx.font = '600 20px "Barlow", sans-serif';
+  ctx.fillText('ČESKÉ BUDĚJOVICE', W-56, 102);
+
+  // Titulek — město
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fff';
+  let ts = 96;
+  ctx.font = `800 ${ts}px "Barlow Condensed", sans-serif`;
+  while (ctx.measureText(city.toUpperCase()).width > W-140 && ts > 44) {
+    ts -= 4; ctx.font = `800 ${ts}px "Barlow Condensed", sans-serif`;
+  }
+  ctx.fillText(city.toUpperCase(), W/2, 220);
+
+  ctx.font = '700 32px "Barlow Condensed", sans-serif';
+  ctx.fillStyle = '#f5c300';
+  ctx.fillText(`RODÁCI V MOTORU · ${list.length} ${list.length===1?'HRÁČ':list.length<5?'HRÁČI':'HRÁČŮ'}`, W/2, 272);
+
+  const km = list[0].lat ? Math.round(haversineKm(48.9764, 14.4742, list[0].lat, list[0].lon)) : null;
+  if (km !== null && km > 2) {
+    ctx.font = '600 25px "Barlow", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.6)';
+    ctx.fillText(`${km} km od Českých Budějovic`, W/2, 314);
+  }
+
+  // Výběr hráčů: s fotkou první, pak podle počtu sezón
+  const shown = [...list].sort((a, b) => {
+    if (!!b.photo - !!a.photo) return !!b.photo - !!a.photo;
+    return (parseInt(b.seasons)||0) - (parseInt(a.seasons)||0);
+  });
+  const MAX = 9;
+  const tiles = shown.slice(0, Math.min(shown.length, MAX));
+  const rest = list.length - tiles.length;
+
+  // Mřížka 3 sloupce
+  const cols = tiles.length <= 3 ? tiles.length : 3;
+  const rows = Math.ceil((tiles.length + (rest > 0 ? 1 : 0)) / 3);
+  const cellW = 300, rad = 100;
+  const gridW = cols * cellW;
+  const x0 = (W - gridW) / 2 + cellW/2;
+  const y0 = 430;
+  const rowH = 300;
+
+  const imgs = await Promise.all(tiles.map(p => p.photo ? loadImg(p.photo, true) : Promise.resolve(null)));
+
+  function drawTile(cx, cy, p, img) {
+    // žlutý prstenec
+    ctx.beginPath(); ctx.arc(cx, cy, rad+7, 0, Math.PI*2); ctx.fillStyle = '#f5c300'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, rad+3, 0, Math.PI*2); ctx.fillStyle = '#0a1638'; ctx.fill();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2); ctx.clip();
+    if (img) {
+      drawCoverImage(ctx, img, cx-rad, cy-rad, rad*2, rad*2, p.photoZoom, p.photoPos);
+    } else {
+      ctx.fillStyle = '#2855a8'; ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
+      ctx.fillStyle = '#f5c300'; ctx.font = '900 72px "Barlow Condensed", sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase() || '?';
+      ctx.fillText(ini, cx, cy+6);
+      ctx.textBaseline = 'alphabetic';
+    }
+    ctx.restore();
+    // jméno pod kruhem
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    let nm = (typeof fullName === 'function' ? fullName(p) : p.surname || '').trim();
+    let fs2 = 30;
+    ctx.font = `700 ${fs2}px "Barlow Condensed", sans-serif`;
+    while (ctx.measureText(nm).width > cellW - 30 && fs2 > 18) {
+      fs2 -= 2; ctx.font = `700 ${fs2}px "Barlow Condensed", sans-serif`;
+    }
+    ctx.fillText(nm, cx, cy + rad + 42);
+    if (p.seasonsRange) {
+      ctx.font = '600 19px "Barlow", sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,.5)';
+      ctx.fillText(p.seasonsRange, cx, cy + rad + 70);
+    }
+  }
+
+  tiles.forEach((p, i) => {
+    const col = i % 3, row = Math.floor(i / 3);
+    const rowCols = Math.min(tiles.length + (rest>0?1:0) - row*3, 3);
+    const rx0 = (W - rowCols*cellW) / 2 + cellW/2;
+    drawTile(rx0 + col*cellW, y0 + row*rowH, p, imgs[i]);
+  });
+
+  // "+N" dlaždice
+  if (rest > 0) {
+    const i = tiles.length;
+    const col = i % 3, row = Math.floor(i / 3);
+    const rowCols = Math.min(tiles.length + 1 - row*3, 3);
+    const rx0 = (W - rowCols*cellW) / 2 + cellW/2;
+    const cx = rx0 + col*cellW, cy = y0 + row*rowH;
+    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(245,195,0,.5)'; ctx.lineWidth = 3;
+    ctx.setLineDash([10, 8]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#f5c300'; ctx.font = '800 56px "Barlow Condensed", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('+' + rest, cx, cy + 4);
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = '600 19px "Barlow", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.5)';
+    ctx.fillText('dalších hráčů', cx, cy + rad + 42);
+  }
+
+  // Footer
+  ctx.font = '600 22px "Barlow", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.35)';
+  ctx.textAlign = 'center';
+  ctx.fillText('MÍSTA NAROZENÍ HRÁČŮ · romankokos1.github.io/nhl-99', W/2, H-48);
+}
+
+function openCityCard(idxArr) {
+  map.closePopup();
+  document.getElementById('cardOvl').classList.add('on');
+  window._cardIdx = null;
+  window._cardName = (players[idxArr[0]]?.city) || 'mesto';
+  drawCityCard(idxArr);
+}
+
 function openPlayerCard(idx) {
   document.getElementById('cardOvl').classList.add('on');
   window._cardIdx = idx;
+  window._cardName = null;
   drawPlayerCard(idx);
 }
 
@@ -2686,8 +2886,9 @@ function closeCardOvl(e) {
 
 function downloadPlayerCard() {
   const canvas = document.getElementById('cardCanvas');
-  const p = players[window._cardIdx];
-  const nm = (typeof fullName === 'function' ? fullName(p) : (p.surname || 'hrac')).replace(/\s+/g,'_');
+  const nm = (window._cardIdx != null
+    ? (typeof fullName === 'function' ? fullName(players[window._cardIdx]) : players[window._cardIdx].surname || 'hrac')
+    : (window._cardName || 'vizitka')).replace(/\s+/g,'_');
   canvas.toBlob(blob => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2700,8 +2901,9 @@ function downloadPlayerCard() {
 function sharePlayerCard() {
   const canvas = document.getElementById('cardCanvas');
   canvas.toBlob(async blob => {
-    const p = players[window._cardIdx];
-    const nm = (typeof fullName === 'function' ? fullName(p) : '').trim();
+    const nm = (window._cardIdx != null
+      ? (typeof fullName === 'function' ? fullName(players[window._cardIdx]) : '')
+      : (window._cardName || '')).trim();
     const file = new File([blob], 'vizitka.png', { type: 'image/png' });
     if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
       try { await navigator.share({ files:[file], title: nm, text: `${nm} — HC Motor České Budějovice` }); }
@@ -2993,6 +3195,7 @@ function renderStats(ids) {
   const captains=players.filter(p=>p.captainYears).map(p=>{const m=(p.captainYears||'').match(/\d{4}/);return{p,startYear:m?parseInt(m[0]):9999};}).sort((a,b)=>a.startYear-b.startYear);
   if (ids.placementChart) document.getElementById(ids.placementChart).innerHTML = buildPlacementChart();
   if (ids.dynasty) document.getElementById(ids.dynasty).innerHTML = buildDynastySection();
+  if (ids.distDecades) document.getElementById(ids.distDecades).innerHTML = buildDistDecadesSection();
   if (ids.coaches) document.getElementById(ids.coaches).innerHTML = buildCoachesSection();
   if (ids.captains&&captains.length) document.getElementById(ids.captains).innerHTML=`<div class="msp-captain-grid">${captains.map(({p})=>{
     const ini=[(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
@@ -3003,13 +3206,13 @@ function renderStats(ids) {
 }
 
 function renderMobStats() {
-  renderStats({ clubInfo:'mspClubInfo', kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart', achieve:'mspAchieve', names:'mspNames', captains:'mspCaptains', placementChart:'mspPlacementChart', dynasty:'mspDynasty', coaches:'mspCoaches' });
+  renderStats({ clubInfo:'mspClubInfo', kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart', achieve:'mspAchieve', names:'mspNames', captains:'mspCaptains', placementChart:'mspPlacementChart', dynasty:'mspDynasty', distDecades:'mspDistDecades', coaches:'mspCoaches' });
 }
 
 // ── DESKTOP STATS ─────────────────────────────────
 function openStatsDesktop() {
   document.getElementById('statsOvl').classList.add('on');
-  renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', coaches:'statsCoaches' });
+  renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', distDecades:'statsDistDecades', coaches:'statsCoaches' });
 }
 function closeStatsDesktop(e) {
   if (e && e.target !== document.getElementById('statsOvl')) return;
@@ -3153,7 +3356,8 @@ function openRosterOvl(seasonIdx) {
   document.getElementById('rosterBadge').textContent = s.mainPlace ? s.mainPlace + '. místo' : '—';
   const compsText = s.comps.map(c => c.name + (c.place ? ' – ' + c.place + '. místo' : ' – nehráno')).join(' · ');
   const coachText = s.coachesFull ? '🎽 ' + s.coachesFull : '';
-  document.getElementById('rosterComps').innerHTML = [compsText, coachText].filter(Boolean).map(t=>`<span>${t}</span>`).join('<br>');
+  const eraLink = `<span class="roster-eralink" onclick="showEraOnMap(${s.year})">🗺 Zobrazit tuto éru na mapě</span>`;
+  document.getElementById('rosterComps').innerHTML = [compsText, coachText].filter(Boolean).map(t=>`<span>${t}</span>`).join('<br>') + '<br>' + eraLink;
   const grid = document.getElementById('rosterGrid');
   grid.innerHTML = '';
   const byName = {};
@@ -3176,6 +3380,20 @@ function openRosterOvl(seasonIdx) {
   });
   document.getElementById('rosterOvl').classList.add('on');
 }
+
+function showEraOnMap(year) {
+  closeRosterOvl();
+  document.getElementById('statsOvl')?.classList.remove('on');
+  if (window.innerWidth <= 750 && typeof mobTab === 'function') mobTab('mapa');
+  setFilter('era');                          // připraví slidery na plný rozsah
+  const sMin = document.getElementById('sliderMin');
+  const sMax = document.getElementById('sliderMax');
+  sMin.value = year; sMax.value = year;
+  filterMin = year; filterMax = year;
+  updateSliderUI();
+  updateMap();
+}
+
 function closeRosterOvl(e) { if(e&&e.target!==document.getElementById('rosterOvl'))return; document.getElementById('rosterOvl').classList.remove('on'); }
 
 // ── PLACEMENT CHART ────────────────────────────────────────────────────────
@@ -3211,6 +3429,46 @@ function showPlaceTip(event,sIdx){const s=ROSTER_DATA[sIdx];if(!s)return;let tip
   const tLogoHtml = tLogo ? `<img src="${tLogo}" style="height:22px;object-fit:contain;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'">` : '';
   tip.innerHTML=`<div class="pl-tip-season">${s.season}</div><div class="pl-tip-comp">${tLogoHtml}${s.club}</div><div class="pl-tip-place">${comps}</div>${coachTip}<div class="pl-tip-btn">📋 Soupiska</div>`;tip.style.left=event.clientX+'px';tip.style.top=(event.clientY-12)+'px';tip.style.opacity='1';}
 function hidePlaceTip(){const t=document.getElementById('placeTip');if(t)t.style.opacity='0';}
+
+
+// ── EXPANZE KLUBU — průměrná vzdálenost rodiště podle dekády příchodu ──
+function buildDistDecadesSection() {
+  const buckets = [
+    {label:'do 1939', from:1900, to:1939},
+    {label:'40. léta', from:1940, to:1949},
+    {label:'50. léta', from:1950, to:1959},
+    {label:'60. léta', from:1960, to:1969},
+    {label:'70. léta', from:1970, to:1979},
+    {label:'80. léta', from:1980, to:1989},
+    {label:'90. léta', from:1990, to:1999},
+    {label:'2000–09', from:2000, to:2009},
+    {label:'2010–19', from:2010, to:2019},
+    {label:'2020+',   from:2020, to:2099},
+  ];
+  const rows = [];
+  buckets.forEach(b => {
+    const ds = [];
+    players.forEach(p => {
+      if (!p.lat || !p.lon) return;
+      const r = parseSeasonRangeYears(p);
+      if (!r || r.start < b.from || r.start > b.to) return;
+      ds.push(p._dist ??= haversineKm(48.9764, 14.4742, p.lat, p.lon));
+    });
+    if (ds.length >= 2) {
+      rows.push({label: b.label, avg: ds.reduce((a,x)=>a+x,0) / ds.length, n: ds.length});
+    }
+  });
+  if (!rows.length) return '';
+  const mx = Math.max(...rows.map(r => r.avg));
+  return `<div style="padding:.2rem 0">
+    <div style="font-size:10px;color:#8a9ab5;margin-bottom:.4rem">Průměrná vzdálenost rodiště hráčů, kteří v dané dekádě přišli do klubu</div>
+    ${rows.map(r => `<div class="dynasty-row">
+      <span class="dynasty-name" style="min-width:64px;font-size:13px">${r.label}</span>
+      <div class="dynasty-bar-wrap"><div class="dynasty-bar" style="width:${Math.max(Math.round(r.avg/mx*100),3)}%"></div></div>
+      <span class="dynasty-seasons" style="min-width:88px">Ø ${Math.round(r.avg)} km <span style="opacity:.6">(${r.n})</span></span>
+    </div>`).join('')}
+  </div>`;
+}
 
 // ── DYNASTY ─────────────────────────────────────────────────────────────────
 function buildDynastySection(){
@@ -3273,6 +3531,8 @@ function buildCoachesSection(){
     <div id="mspPlacementChart"></div>
     <div class="msp-section-lbl" style="margin-top:.8rem">Rodinné dynastie</div>
     <div id="mspDynasty"></div>
+    <div class="msp-section-lbl" style="margin-top:.8rem">Expanze klubu</div>
+    <div id="mspDistDecades"></div>
     <div class="msp-section-lbl" style="margin-top:.8rem">Trenéři klubu</div>
     <div id="mspCoaches"></div>
     <div class="msp-section-lbl" style="margin-top:1.1rem">Největší úspěchy</div>
@@ -3339,6 +3599,8 @@ function buildCoachesSection(){
       <div id="statsPlacementChart"></div>
       <div class="msp-section-lbl" style="margin-top:.8rem">Rodinné dynastie</div>
       <div id="statsDynasty"></div>
+      <div class="msp-section-lbl" style="margin-top:.8rem">Expanze klubu</div>
+      <div id="statsDistDecades"></div>
       <div class="msp-section-lbl" style="margin-top:.8rem">Trenéři klubu</div>
       <div id="statsCoaches"></div>
     </div>
