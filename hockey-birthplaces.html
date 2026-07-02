@@ -364,6 +364,12 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .card-btn-share:hover{background:#e0b100}
 .card-btn-close{background:#eef2f8;color:#6a7a9a;flex:0 0 44px !important}
 
+/* Detail swipe navigace */
+#detailContent{transition:transform .18s ease,opacity .18s ease}
+#detailContent.slide-out-l{transform:translateX(-36px);opacity:0}
+#detailContent.slide-out-r{transform:translateX(36px);opacity:0}
+#detailContent.slide-prep-l{transition:none;transform:translateX(36px);opacity:0}
+#detailContent.slide-prep-r{transition:none;transform:translateX(-36px);opacity:0}
 /* ── PŘEHRÁVÁNÍ HISTORIE ── */
 .hist-ovl{position:absolute;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:1200;
   background:rgba(10,22,56,.93);backdrop-filter:blur(8px);border:1px solid rgba(245,195,0,.35);
@@ -1014,6 +1020,8 @@ let map, mlayers = [], playerMarkers = [];
 let ROSTER_DATA = null;
 let labelLayer = null;
 let arenaLayer = null;
+let arcsLayer = null;
+let _arcRenderer = null;
 const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 function zoomScaleFor(zoom) {
   if (zoom <= 7) return 0.58;
@@ -1121,14 +1129,18 @@ function initMap() {
   // Label layer — popisky z databáze
   labelLayer = L.layerGroup();
   arenaLayer = L.layerGroup();
+  arcsLayer = L.layerGroup();
+  _arcRenderer = L.svg({padding: 0.6});
   L.control.layers(baseLayers, {
     '⭕ Vzdálenosti od ČB': distCircles,
     '🏟 Stadion Budvar Aréna': arenaLayer,
+    '🏒 Cesty do Budějovic': arcsLayer,
     '🏷 Popisky z databáze': labelLayer
   }, {position:'topright', collapsed:true}).addTo(map);
   // Aktualizuj labely když se vrstva zapne
   map.on('overlayadd', e => {
     if (e.name.includes('Popisky')) updateLabelLayer();
+    if (e.name.includes('Cesty')) updateArcsLayer(true);
     if (e.name.includes('Stadion')) {
       const c = document.getElementById('arena3d-canvas');
       if (c) c.style.display = '';
@@ -1721,6 +1733,7 @@ function updateMap() {
     map.setView([g.lat, g.lon], 10);
   }
   updateLabelLayer();
+  updateArcsLayer(false);
   updateStats();
 }
 
@@ -1816,6 +1829,9 @@ function render() {
 }
 
 // ── SEARCH / FILTER ───────────────────────────────
+function norm(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 let searchQuery = '';
 let sortMode = 'name';
 let captainFilter = false;
@@ -1839,7 +1855,7 @@ function parseSeasonsCount(s) {
 }
 
 function filterList() {
-  const q = document.getElementById('playerSearch').value.trim().toLowerCase();
+  const q = norm(document.getElementById('playerSearch').value.trim());
   searchQuery = q;
   document.getElementById('searchClear').style.display = q ? '' : 'none';
   const cards = document.querySelectorAll('#playerList .pc');
@@ -1848,7 +1864,7 @@ function filterList() {
     const idx = parseInt(card.dataset.idx);
     const p = players[idx];
     if (!p) return;
-    const name = (fullName(p)||'').toLowerCase();
+    const name = norm(fullName(p));
     const match = (!q || name.includes(q)) && (!captainFilter || !!p.captainYears);
     card.style.display = match ? '' : 'none';
     if (match) visible++;
@@ -1994,6 +2010,7 @@ function showPlayerDetail(idx) {
     ? `<div class="detail-captain-badge">Kapitán · ${esc(p.captainYears)}</div>`
     : '';
 
+  window._detailIdx = idx;
   document.getElementById('detailContent').innerHTML = `
     <div class="detail-card-header">
       ${thumb}
@@ -2189,6 +2206,82 @@ function runGlobeIntro() {
   window.addEventListener('resize', sizeIt);
 }
 
+
+// ══════════════════════════════════════════════════
+// OBLOUKY — cesty z rodišť do Budvar arény
+// ══════════════════════════════════════════════════
+const ARENA_LL = [48.97080, 14.47116];
+
+function buildArcPoints(fromLat, fromLon) {
+  const [tLat, tLon] = ARENA_LL;
+  const dLat = tLat - fromLat, dLon = tLon - fromLon;
+  const dist = Math.sqrt(dLat*dLat + dLon*dLon);
+  // Kontrolní bod — střed + kolmý offset (křivost roste se vzdáleností)
+  const mLat = (fromLat + tLat) / 2, mLon = (fromLon + tLon) / 2;
+  const k = dist * 0.18;
+  const cLat = mLat + (-dLon / (dist || 1)) * k;
+  const cLon = mLon + ( dLat / (dist || 1)) * k;
+  const pts = [];
+  const N = 26;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, u = 1 - t;
+    pts.push([
+      u*u*fromLat + 2*u*t*cLat + t*t*tLat,
+      u*u*fromLon + 2*u*t*cLon + t*t*tLon
+    ]);
+  }
+  return pts;
+}
+
+function updateArcsLayer(animate) {
+  if (!arcsLayer || !map.hasLayer(arcsLayer)) return;
+  arcsLayer.clearLayers();
+  const visible = getFilteredPlayers().filter(p => p.lat && p.lon);
+  // Skupiny míst (stejný klíč jako updateMap)
+  const groups = {};
+  visible.forEach(p => {
+    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    if (!groups[key]) groups[key] = {lat:p.lat, lon:p.lon, count:0};
+    groups[key].count++;
+  });
+  const arcs = [];
+  Object.values(groups).forEach(g => {
+    const dLat = g.lat - ARENA_LL[0], dLon = g.lon - ARENA_LL[1];
+    const dist = Math.sqrt(dLat*dLat + dLon*dLon);
+    if (dist < 0.05) return; // samotné ČB — bez oblouku
+    const line = L.polyline(buildArcPoints(g.lat, g.lon), {
+      renderer: _arcRenderer,
+      color: '#f5c300',
+      weight: Math.min(1 + g.count * 0.12, 2.6),
+      opacity: 0.45,
+      interactive: false
+    });
+    line._arcDist = dist;
+    line.addTo(arcsLayer);
+    arcs.push(line);
+  });
+  if (animate) animateArcs(arcs);
+}
+
+function animateArcs(arcs) {
+  // Seřaď od nejbližších — vlna se šíří ven z Budějovic
+  arcs.sort((a, b) => a._arcDist - b._arcDist);
+  requestAnimationFrame(() => {
+    arcs.forEach((line, i) => {
+      const path = line._path;
+      if (!path) return;
+      let len;
+      try { len = path.getTotalLength(); } catch(e) { return; }
+      path.style.transition = 'none';
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len;
+      path.getBoundingClientRect(); // reflow
+      path.style.transition = `stroke-dashoffset .7s ease ${Math.min(i * 14, 2200)}ms`;
+      path.style.strokeDashoffset = '0';
+    });
+  });
+}
+
 // ══════════════════════════════════════════════════
 // PŘEHRÁVÁNÍ HISTORIE — 100 let na mapě
 // ══════════════════════════════════════════════════
@@ -2284,7 +2377,12 @@ function playHistory() {
       if (t < 1) {
         _histRAF = requestAnimationFrame(tick);
       } else {
-        setTimeout(stopHistory, 1600); // nech finální stav chvíli viset
+        // FINÁLE — všechny cesty vedou do Budějovic
+        window._arcsWereOn = map.hasLayer(arcsLayer);
+        if (!window._arcsWereOn) map.addLayer(arcsLayer);
+        updateArcsLayer(true);
+        document.getElementById('histClub').innerHTML = '🏒 Všechny cesty vedou do Budějovic';
+        setTimeout(stopHistory, 4200);
       }
     }
     _histRAF = requestAnimationFrame(tick);
@@ -2317,7 +2415,61 @@ function stopHistory() {
     mk._shown = mk._lastCount = undefined;
   });
   updateLabelLayer();
+  // Dočasné finálové oblouky pryč (nech jen pokud si vrstvu zapnul uživatel)
+  if (window._arcsWereOn === false && arcsLayer && map.hasLayer(arcsLayer)) {
+    map.removeLayer(arcsLayer);
+  }
+  window._arcsWereOn = undefined;
 }
+
+
+// ══════════════════════════════════════════════════
+// DETAIL — navigace další/předchozí (swipe + šipky)
+// ══════════════════════════════════════════════════
+function detailListOrder() {
+  const order = Array.from(document.querySelectorAll('#playerList .pc'))
+    .map(c => parseInt(c.dataset.idx)).filter(n => !isNaN(n));
+  return order.length ? order : players.map((_, i) => i);
+}
+
+function navigateDetail(dir) {
+  if (window._detailIdx === undefined) return;
+  const order = detailListOrder();
+  let pos = order.indexOf(window._detailIdx);
+  if (pos === -1) pos = 0;
+  const next = order[(pos + dir + order.length) % order.length];
+  const dc = document.getElementById('detailContent');
+  // slide ven → vyměnit obsah → slide dovnitř z opačné strany
+  dc.classList.add(dir > 0 ? 'slide-out-l' : 'slide-out-r');
+  setTimeout(() => {
+    showPlayerDetail(next);
+    dc.classList.remove('slide-out-l', 'slide-out-r');
+    dc.classList.add(dir > 0 ? 'slide-prep-l' : 'slide-prep-r');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      dc.classList.remove('slide-prep-l', 'slide-prep-r');
+    }));
+  }, 160);
+}
+
+// Swipe na dotykových zařízeních
+(function initDetailSwipe() {
+  const ovl = document.getElementById('detailOvl');
+  if (!ovl) return;
+  let sx = 0, sy = 0, tracking = false;
+  ovl.addEventListener('touchstart', e => {
+    if (!ovl.classList.contains('on')) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+  }, {passive: true});
+  ovl.addEventListener('touchend', e => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy)) {
+      navigateDetail(dx < 0 ? 1 : -1);
+    }
+  }, {passive: true});
+})();
 
 // ── PLAYER CARD (grafická vizitka) ─────────────────────────────────────────
 function roundRectPath(ctx, x, y, w, h, r) {
@@ -2619,6 +2771,12 @@ window.addEventListener('resize', () => { if (map) map.invalidateSize(); setHdrH
 
 // Escape zavírá otevřené modaly (v pořadí podle vrstvení)
 window.addEventListener('keydown', e => {
+  // ←/→ listování v otevřeném detailu hráče
+  if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+      document.getElementById('detailOvl')?.classList.contains('on')) {
+    navigateDetail(e.key === 'ArrowRight' ? 1 : -1);
+    return;
+  }
   if (e.key !== 'Escape') return;
   if (_histPlaying) { stopHistory(); return; }
   const modals = ['cardOvl','rosterOvl','detailOvl','statsOvl'];
@@ -2878,9 +3036,9 @@ function closeMobSearch() {
 function onMobSearch(q) {
   const el = document.getElementById('mobSearchResults');
   if (!q.trim()) { el.innerHTML = ''; return; }
-  const ql = q.toLowerCase();
+  const ql = norm(q);
   const res = players.map((p,i)=>({p,i})).filter(({p})=>{
-    return (fullName(p)||'').toLowerCase().includes(ql) || (p.city||'').toLowerCase().includes(ql);
+    return norm(fullName(p)).includes(ql) || norm(p.city).includes(ql);
   }).slice(0, 25);
   el.innerHTML = res.length ? res.map(({p,i})=>{
     const ini = initials(p);
