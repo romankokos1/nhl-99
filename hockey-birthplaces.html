@@ -344,12 +344,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .dynasty-bar-wrap{flex:1;background:#eef2fb;border-radius:4px;height:7px;overflow:hidden}
 .dynasty-bar{height:7px;background:linear-gradient(90deg,var(--blue),#4a7ad4);border-radius:4px;transition:width .6s ease}
 .dynasty-seasons{font-size:10px;color:#8a9ab5;font-weight:700;min-width:60px;text-align:right}
-/* Teammates section in detail */
-.teammates-section{border-top:1px solid #e8eef8;margin-top:1rem;padding-top:.8rem}
-.teammates-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--blue3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.5rem}
-.teammates-list{display:flex;flex-wrap:wrap;gap:5px}
-.teammate-chip{font-size:11px;color:var(--blue3);background:#f0f4fb;border:1px solid #dde6f5;border-radius:20px;padding:2px 9px;cursor:pointer;transition:background .12s}
-.teammate-chip:hover{background:#dde6f5}
 
 /* Photo strip float above multi marker */
 .mk-photo-strip-float{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) scale(.7);transform-origin:center bottom;opacity:0;pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.56,.64,1);z-index:999;}
@@ -2021,7 +2015,6 @@ function showPlayerDetail(idx) {
     </div>
     ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
     ${buildCareerTimeline(p)}
-    ${buildTeammatesSection(p)}
     <div class="detail-card-footer">
       <button class="detail-back" onclick="showCityList(${idx})">← Zobrazit v seznamu</button>
       <button class="detail-back" onclick="sharePlayer(${idx})" title="Zkopírovat odkaz na hráče">🔗 Sdílet</button>
@@ -3229,7 +3222,6 @@ function buildDynastySection(){
   return `<div style="padding:.2rem 0">${d.map(([name,cnt])=>`<div class="dynasty-row"><span class="dynasty-name">${esc(name)}</span><div class="dynasty-bar-wrap"><div class="dynasty-bar" style="width:${Math.round(cnt/mx*100)}%"></div></div><span class="dynasty-seasons">${cnt} sez.</span></div>`).join('')}</div>`;
 }
 
-// ── TEAMMATES ───────────────────────────────────────────────────────────────
 
 function buildCoachesSection(){
   if(!ROSTER_DATA) return '';
@@ -3241,20 +3233,6 @@ function buildCoachesSection(){
     rows.push({period:s.coachesPeriod, coaches:s.coaches, full:s.coachesFull});
   });
   return `<div style="column-count:2;column-gap:.75rem;padding:.2rem 0">${rows.map(r=>`<div style="break-inside:avoid;padding:.25rem 0;border-bottom:1px solid #f0f4fb;display:flex;flex-direction:column"><span style="font-size:9px;font-weight:700;color:var(--blue);letter-spacing:.04em">${esc(r.period)}</span><span style="font-size:11px;color:var(--blue3);line-height:1.3">${esc(r.full)}</span></div>`).join('')}</div>`;
-}
-function buildTeammatesSection(player){
-  if (!ROSTER_DATA) return '';
-  const surname=(player.surname||'').toLowerCase().trim();
-  if(!surname) return '';
-  const mySeasons=ROSTER_DATA.filter(s=>s.players.some(name=>name.toLowerCase().includes(surname)));
-  if(!mySeasons.length) return '';
-  const tmCount={};
-  mySeasons.forEach(s=>s.players.forEach(name=>{const parts=name.trim().split(/\s+/);const sur=parts[parts.length-1].toLowerCase();if(sur!==surname&&sur.length>2)tmCount[name]=(tmCount[name]||0)+1;}));
-  const topTm=Object.entries(tmCount).sort((a,b)=>b[1]-a[1]).slice(0,24);
-  if(!topTm.length) return '';
-  const byName={};players.forEach((p,idx)=>{const s=(p.surname||'').toLowerCase();if(s){if(!byName[s])byName[s]=[];byName[s].push({p,idx});}});
-  const chips=topTm.map(([name,cnt])=>{const parts=name.trim().split(/\s+/);const sur=parts[parts.length-1].toLowerCase();const m=byName[sur];const onclick=m&&m.length===1?`onclick="closeDetailOvl();setTimeout(()=>focusPlayer(${m[0].idx}),200)"`:'';const style=m&&m.length===1?'':'opacity:.7';return `<span class="teammate-chip" title="${cnt}× spolu" ${onclick} style="${style}">${esc(name)}</span>`;}).join('');
-  return `<div class="teammates-section"><div class="teammates-title">Hráli spolu (${mySeasons.length} sez.)</div><div class="teammates-list">${chips}</div></div>`;
 }
 </script>
 <!-- ══════════════════════════════════════
