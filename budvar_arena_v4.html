@@ -34,6 +34,7 @@
 </div>
 <div id="hint">Táhni: otáčení · Kolečko: zoom · Pravé tlač: posun</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="gltf-loader.js"></script>
 <script>
 // ── RENDERER ──────────────────────────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({antialias:true});
@@ -368,6 +369,61 @@ window.addEventListener('resize',()=>{
   camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
 });
+
+// ── KROK 1: DIAGNOSTIKA GLB (opt-in, ?debug=glb) ────────────────────────────
+// Nic z tohoto bloku se nespustí ani nezobrazí, pokud v URL není ?debug=glb.
+// Procedurální model výše zůstává 100% beze změny a je jediné, co se
+// za normálních okolností vykresluje.
+if (new URLSearchParams(location.search).get('debug') === 'glb') {
+  console.log('%c[GLB diagnostika] Načítám budvar_arena.glb…', 'color:#f5c300;font-weight:bold');
+  const t0 = performance.now();
+  new THREE.GLTFLoader().load(
+    'budvar_arena.glb',
+    (gltf) => {
+      const ms = Math.round(performance.now() - t0);
+      console.log(`%c[GLB diagnostika] Načteno za ${ms} ms`, 'color:#4caf50;font-weight:bold');
+
+      // 1) Seznam uzlů — ověří konvenci LOD0_/LOD1_/LOD2_ + Roof/Facade/Glass/Entrance/Stands
+      const meshNames = [];
+      let triCount = 0;
+      gltf.scene.traverse(obj => {
+        if (obj.isMesh) {
+          meshNames.push(obj.name);
+          const geo = obj.geometry;
+          if (geo && geo.index) triCount += geo.index.count / 3;
+          else if (geo && geo.attributes.position) triCount += geo.attributes.position.count / 3;
+        }
+      });
+      console.log('[GLB diagnostika] Meshe (' + meshNames.length + '):', meshNames);
+      console.log('[GLB diagnostika] Celkem trojúhelníků: ~' + Math.round(triCount));
+
+      // 2) Bounding box — reálné měřítko modelu vs. procedurální scéna (HW=26, HD=36, avgH=13)
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const size = new THREE.Vector3(); box.getSize(size);
+      const center = new THREE.Vector3(); box.getCenter(center);
+      console.log('[GLB diagnostika] Rozměry (Š×V×H):', size.x.toFixed(2), '×', size.y.toFixed(2), '×', size.z.toFixed(2));
+      console.log('[GLB diagnostika] Střed bounding boxu:', center.x.toFixed(2), center.y.toFixed(2), center.z.toFixed(2));
+      console.log('[GLB diagnostika] Pro srovnání — procedurální hala: Š=26, V≈13, H=36');
+      console.log('%c[GLB diagnostika] Poměr měřítka (Š): ' + (26 / size.x).toFixed(3) + '×', 'color:#f5c300');
+
+      // 3) Vlož model do scény VEDLE procedurální budovy (posunutý stranou),
+      //    ať je vizuálně vidět, ale nic nepřekrývá ani neruší stávající model.
+      gltf.scene.position.x += 70;
+      scene.add(gltf.scene);
+      console.log('%c[GLB diagnostika] Model přidán do scény (posunut o +70 na ose X, aby nepřekrýval procedurální halu)', 'color:#4caf50');
+    },
+    (progress) => {
+      if (progress.lengthComputable) {
+        const pct = Math.round(progress.loaded / progress.total * 100);
+        console.log('[GLB diagnostika] Stahování: ' + pct + '%');
+      }
+    },
+    (err) => {
+      console.error('[GLB diagnostika] Chyba načtení budvar_arena.glb:', err);
+      console.error('[GLB diagnostika] Zkontroluj, že budvar_arena.glb leží ve stejné složce jako tato stránka.');
+    }
+  );
+}
 </script>
 </body>
 </html>
