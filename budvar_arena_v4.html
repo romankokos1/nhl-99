@@ -95,7 +95,7 @@ function mesh(geo,mat,x=0,y=0,z=0,rx=0,ry=0,rz=0){
   const m=new THREE.Mesh(geo,mat);
   m.position.set(x,y,z); m.rotation.set(rx,ry,rz);
   m.castShadow=true; m.receiveShadow=true;
-  scene.add(m); return m;
+  targetGroup.add(m); return m;
 }
 function box(w,h,d,mat,x,y,z,ry=0){
   return mesh(new THREE.BoxGeometry(w,h,d),mat,x,y,z,0,ry,0);
@@ -112,8 +112,14 @@ function addGeo(verts,idx,mat){
   geo.setIndex(new THREE.BufferAttribute(new Uint16Array(idx),1));
   geo.computeVertexNormals();
   const m=new THREE.Mesh(geo,mat); m.castShadow=true; m.receiveShadow=true;
-  scene.add(m); return m;
+  targetGroup.add(m); return m;
 }
+
+// targetGroup určuje, kam nově vytvořené meshe (mesh()/box()/cyl()/addGeo())
+// přibývají. Ground/stromy/lampy jdou přímo do scény (jako doteď).
+// Budova jde do vlastní skupiny 'buildingGroup', kterou lze celou schovat
+// najednou, pokud se úspěšně načte GLB náhrada.
+let targetGroup = scene;
 
 // ── ROZMĚRY ───────────────────────────────────────────────────────────────
 // Hlavní hala: orientace S-J
@@ -128,6 +134,10 @@ box(42,0.06,30,M.asphalt, 5,0.03, HD/2+12); // parkoviště jih
 box(35,0.08,4, M.concrete,5,0.04, HD/2+2);  // chodník
 
 // ── HLAVNÍ HALA — tělo ───────────────────────────────────────────────────
+const buildingGroup = new THREE.Group();
+scene.add(buildingGroup);
+targetGroup = buildingGroup;   // od teď až po konec budovy jde vše sem
+
 box(HW, avgH, HD, M.grey, 0, avgH/2, 0);
 
 // ── ŠIKMÁ STŘECHA ─────────────────────────────────────────────────────────
@@ -295,6 +305,7 @@ box(0.15,13,22,M.glFrame, GBx-5.15,6.5,0);
 box(0.15,13,22,M.glFrame, GBx+5.15,6.5,0);
 
 // ── STROMY ────────────────────────────────────────────────────────────────
+targetGroup = scene;   // konec budovy — stromy a lampy jdou zase přímo do scény
 function tree(x,z,h=5,r=2){
   cyl(0.2,0.25,h*0.4,6,M.darkW,x,h*0.2,z);
   const c=new THREE.Mesh(new THREE.SphereGeometry(r,8,5),
@@ -370,60 +381,30 @@ window.addEventListener('resize',()=>{
   renderer.setSize(innerWidth,innerHeight);
 });
 
-// ── KROK 1: DIAGNOSTIKA GLB (opt-in, ?debug=glb) ────────────────────────────
-// Nic z tohoto bloku se nespustí ani nezobrazí, pokud v URL není ?debug=glb.
-// Procedurální model výše zůstává 100% beze změny a je jediné, co se
-// za normálních okolností vykresluje.
-if (new URLSearchParams(location.search).get('debug') === 'glb') {
-  console.log('%c[GLB diagnostika] Načítám budvar_arena.glb…', 'color:#f5c300;font-weight:bold');
-  const t0 = performance.now();
-  new THREE.GLTFLoader().load(
-    'budvar_arena.glb',
-    (gltf) => {
-      const ms = Math.round(performance.now() - t0);
-      console.log(`%c[GLB diagnostika] Načteno za ${ms} ms`, 'color:#4caf50;font-weight:bold');
+// ── GLB MODEL — nahrazuje procedurální budovu ──────────────────────────────
+// Výchozí chování: zkusí se načíst budvar_arena.glb; pokud se povede,
+// procedurální budova (buildingGroup) se schová a nahradí GLB modelem.
+// Pokud se GLB nenačte (chybí soubor, výpadek sítě…), procedurální
+// budova zůstane viditelná — nic dalšího dělat nemusíš, funguje to samo.
 
-      // 1) Seznam uzlů — ověří konvenci LOD0_/LOD1_/LOD2_ + Roof/Facade/Glass/Entrance/Stands
-      const meshNames = [];
-      let triCount = 0;
-      gltf.scene.traverse(obj => {
-        if (obj.isMesh) {
-          meshNames.push(obj.name);
-          const geo = obj.geometry;
-          if (geo && geo.index) triCount += geo.index.count / 3;
-          else if (geo && geo.attributes.position) triCount += geo.attributes.position.count / 3;
-        }
-      });
-      console.log('[GLB diagnostika] Meshe (' + meshNames.length + '):', meshNames);
-      console.log('[GLB diagnostika] Celkem trojúhelníků: ~' + Math.round(triCount));
+const GLB_SCALE = 0.21;      // ← uprav, pokud bude model moc velký/malý
+const GLB_ROTATION_Y = 0;    // ← pokud bude vchod otočený špatně, zkus Math.PI/2, Math.PI, nebo -Math.PI/2
 
-      // 2) Bounding box — reálné měřítko modelu vs. procedurální scéna (HW=26, HD=36, avgH=13)
-      const box = new THREE.Box3().setFromObject(gltf.scene);
-      const size = new THREE.Vector3(); box.getSize(size);
-      const center = new THREE.Vector3(); box.getCenter(center);
-      console.log('[GLB diagnostika] Rozměry (Š×V×H):', size.x.toFixed(2), '×', size.y.toFixed(2), '×', size.z.toFixed(2));
-      console.log('[GLB diagnostika] Střed bounding boxu:', center.x.toFixed(2), center.y.toFixed(2), center.z.toFixed(2));
-      console.log('[GLB diagnostika] Pro srovnání — procedurální hala: Š=26, V≈13, H=36');
-      console.log('%c[GLB diagnostika] Poměr měřítka (Š): ' + (26 / size.x).toFixed(3) + '×', 'color:#f5c300');
-
-      // 3) Vlož model do scény VEDLE procedurální budovy (posunutý stranou),
-      //    ať je vizuálně vidět, ale nic nepřekrývá ani neruší stávající model.
-      gltf.scene.position.x += 70;
-      scene.add(gltf.scene);
-      console.log('%c[GLB diagnostika] Model přidán do scény (posunut o +70 na ose X, aby nepřekrýval procedurální halu)', 'color:#4caf50');
-    },
-    (progress) => {
-      if (progress.lengthComputable) {
-        const pct = Math.round(progress.loaded / progress.total * 100);
-        console.log('[GLB diagnostika] Stahování: ' + pct + '%');
-      }
-    },
-    (err) => {
-      console.error('[GLB diagnostika] Chyba načtení budvar_arena.glb:', err);
-      console.error('[GLB diagnostika] Zkontroluj, že budvar_arena.glb leží ve stejné složce jako tato stránka.');
-    }
-  );
-}
+new THREE.GLTFLoader().load(
+  'budvar_arena.glb',
+  (gltf) => {
+    gltf.scene.scale.setScalar(GLB_SCALE);
+    gltf.scene.rotation.y = GLB_ROTATION_Y;
+    gltf.scene.traverse(obj => { if (obj.isMesh) { obj.castShadow = true; obj.receiveShadow = true; } });
+    scene.add(gltf.scene);
+    buildingGroup.visible = false;   // schovej starou procedurální budovu
+  },
+  undefined,
+  (err) => {
+    console.warn('budvar_arena.glb se nepodařilo načíst — zůstává procedurální model.', err);
+    // buildingGroup zůstává viditelná (výchozí stav), nic dalšího není potřeba.
+  }
+);
 </script>
 </body>
 </html>
