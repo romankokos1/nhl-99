@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generátor obrázků výsledků — :D</title>
+<title>Generátor obrázků výsledků — ČT:D</title>
 <style>
   :root{
     --bg:#11140d;--panel:#1a1f12;--panel2:#222818;--line:#3a432a;
@@ -169,13 +169,33 @@
   .layer-row .li-btn:hover{background:var(--line);color:var(--ink)}
   .layer-row .li-btn:disabled{opacity:.25;cursor:default}
   .layer-row.locked .li-label{opacity:.55}
+
+  /* ── panel Sloupce ── */
+  .track-row{padding:8px 9px;border-radius:7px;margin-bottom:6px;background:var(--panel2);
+    border:1px solid var(--line)}
+  .track-row .tr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .track-row .tr-name{font-size:12.5px;font-weight:600;color:var(--ink)}
+  .track-row .tr-width{font-size:11px;color:var(--ink-dim);font-family:var(--mono)}
+  .track-row .tr-aligns{display:flex;gap:4px}
+  .track-row .tr-align-btn{flex:1;padding:5px 0;text-align:center;background:var(--panel);
+    border:1px solid var(--line);border-radius:5px;cursor:pointer;font-size:12px;color:var(--ink-dim)}
+  .track-row .tr-align-btn.on{background:rgba(138,171,82,.18);border-color:var(--brand-bright);color:var(--ink)}
+
+  /* ── táhla hranic sloupců v náhledu (Úpravy v obrázku) ── */
+  .col-handle{position:absolute;top:0;bottom:0;width:14px;margin-left:-7px;cursor:col-resize;
+    pointer-events:auto;display:flex;align-items:center;justify-content:center}
+  .col-handle .grip{width:3px;height:36px;background:var(--brand-bright);border-radius:2px;
+    opacity:0;transition:opacity .12s}
+  .col-handle:hover .grip,.col-handle.dragging .grip{opacity:.85}
+  #colHandleLayer{position:absolute;inset:0;pointer-events:none}
+  #colHandleLayer.on{pointer-events:auto}
 </style>
 </head>
 <body>
 
 <aside class="side">
   <div class="brandbar"><span class="dot"></span>
-    <h1>Generátor výsledků <span>· :D</span></h1></div>
+    <h1>Generátor výsledků <span>· ČT:D</span></h1></div>
 
   <!-- TYP -->
   <details class="acc" open>
@@ -207,7 +227,7 @@
       <label class="fl">Nadpis</label>
       <input type="text" id="fTitle" value="Hodnocení pořadů">
       <label class="fl">Podnadpis</label>
-      <input type="text" id="fSub" value=":D · vlna 3 · vážená data">
+      <input type="text" id="fSub" value="ČT:D · vlna 3 · vážená data">
 
       <!-- segment names -->
       <div id="segNames" style="display:none">
@@ -298,6 +318,7 @@
         <span class="pill on" data-rs="card">Karty (stín)</span>
         <span class="pill" data-rs="flat">Ploché</span>
         <span class="pill" data-rs="striped">Pruhované</span>
+        <span class="pill" data-rs="editorial">Redakční (linky)</span>
       </div>
 
       <label class="fl">Zaoblení rohů <span class="dimnote" id="aRadiusV">13 px</span></label>
@@ -352,12 +373,19 @@
       <div class="pillrow" id="badgeShapePills">
         <span class="pill on" data-bs="circle">Kruh</span>
         <span class="pill" data-bs="square">Čtverec</span>
+        <span class="pill" data-bs="none">Bez tvaru</span>
+      </div>
+      <label class="fl">Styl kickeru (štítku nad nadpisem)</label>
+      <div class="pillrow" id="kickerStylePills">
+        <span class="pill on" data-kis="bar">Přes šířku</span>
+        <span class="pill" data-kis="corner">Rohová značka</span>
       </div>
       <label class="fl">Styl KPI karet</label>
       <div class="pillrow" id="kpiStylePills">
         <span class="pill on" data-ks="plain">Prostý</span>
         <span class="pill" data-ks="cardBg">V kartě</span>
         <span class="pill" data-ks="underline">Podtržený</span>
+        <span class="pill" data-ks="editorial">Redakční (mimo střed)</span>
       </div>
       <label class="fl">Styl tabulky/žebříčku</label>
       <div class="pillrow" id="tableStylePills">
@@ -402,11 +430,28 @@
       <input type="text" id="fN" placeholder="např. 842" value="842">
       <p class="hint">Zobrazí se jako „n = 842" u dat — u váženého výzkumu to klient čeká.</p>
       <label class="fl">Zdroj / metodika (patička)</label>
-      <input type="text" id="fSource" value="Zdroj: Tracking :D, vlna 3, vážená data">
+      <input type="text" id="fSource" value="Zdroj: Tracking ČT:D, vlna 3, vážená data">
       <label class="chk"><input type="checkbox" id="oDate" checked> Datum vpravo v patičce</label>
       <label class="fl">Logo / obrázek</label>
       <input type="file" id="fLogo" accept="image/*" style="font-size:12px">
       <input type="text" id="fLogoUrl" placeholder="…nebo URL obrázku" style="margin-top:6px">
+    </div>
+  </details>
+
+  <!-- SLOUPCE — šířka (táhne se přímo v náhledu), zarovnání, mezery -->
+  <details class="acc" id="tracksPanel" open style="display:none">
+    <summary>Sloupce <span class="dimnote">(žebříček/tabulka)</span></summary>
+    <div class="body">
+      <div id="tracksList"></div>
+      <label class="fl" style="margin-top:12px">Mezera mezi sloupci <span class="dimnote" id="colGapV">0 px</span></label>
+      <input type="range" id="colGap" min="0" max="40" step="1" value="0">
+      <label class="fl">Svislé zarovnání v řádku</label>
+      <div class="pillrow" id="rowValignPills">
+        <span class="pill" data-va="top">Nahoru</span>
+        <span class="pill on" data-va="middle">Na střed</span>
+        <span class="pill" data-va="bottom">Dolů</span>
+      </div>
+      <p class="hint">Šířku sloupce přetáhneš přímo v náhledu (zapni „Úpravy v obrázku") — táhni za hranici mezi sloupci.</p>
     </div>
   </details>
 
@@ -478,6 +523,7 @@
     <div id="fxLayer"></div>
     <div id="objLayer"></div>
     <div id="guideLayer"></div>
+    <div id="colHandleLayer"></div>
   </div></div></div>
 </main>
 <div class="toast" id="toast"></div>
@@ -485,7 +531,7 @@
 
 <script>
 /* ══════════════════════════════════════════════════════════════════
-   GENERÁTOR VÝSLEDKŮ — :D
+   GENERÁTOR VÝSLEDKŮ — ČT:D
    ──────────────────────────────────────────────────────────────────
    Architektura (jmenné prostory, jeden soubor, bez buildu):
      Schema   – centrální seznam ovládacích polí (jediný zdroj pravdy
@@ -557,6 +603,10 @@ const State = {
   badgeShape: 'circle',     // tvar odznaku pořadí (circle/square)
   kpiStyle: 'plain',        // styl KPI karet (plain/cardBg/underline)
   tableStyle: 'striped',    // styl tabulky/žebříčku (striped/bordered/flatCard)
+  kickerStyle: 'bar',       // styl kickeru nad nadpisem (bar/corner)
+  layoutTracks: {rank:null, table:null, excel:null}, // šířky/zarovnání sloupců podle typu
+  rowValign: {rank:'middle', table:'middle'},         // svislé zarovnání obsahu v řádku
+  colGap: {rank:0, table:0, excel:0},                 // mezera mezi sloupci (px)
   tweak: { font: 1, line: 1, pad: 1 }, // živé multiplikátory z táhel v náhledu
   excel: null,             // naposledy vložená Excel tabulka {rows, cols}
   logoImg: null,           // načtený obrázek loga (Image), nebo null
@@ -575,26 +625,36 @@ const State = {
    PRESETY VZHLEDU A UKÁZKOVÁ DATA
    ══════════════════════════════ */
 const PRESETS = [
-  {name:':D klasika',bg:'#f4f6ef',accent:'#607B38',accent2:'#c98a3c',ink:'#222a16',row:'#ffffff',dark:false,
+  {name:'ČT:D klasika',bg:'#f4f6ef',accent:'#607B38',accent2:'#c98a3c',ink:'#222a16',row:'#ffffff',dark:false,
     fHead:"'Barlow Condensed',sans-serif",fBody:"'Inter',system-ui,sans-serif",
     gap:10,radius:13,shadow:1,gradient:true,trackShape:'pill',badgeShape:'circle',
-    medalGold:'#D4AF37',medalSilver:'#A8B0B8',medalBronze:'#C77B3B',kpiStyle:'plain',tableStyle:'striped'},
+    medalGold:'#D4AF37',medalSilver:'#A8B0B8',medalBronze:'#C77B3B',kpiStyle:'plain',tableStyle:'striped',
+    rowStyle:'card',kickerStyle:'bar'},
   {name:'Premium Navy',bg:'#0B1D4E',accent:'#C9A844',accent2:'#5b9bd5',ink:'#ffffff',row:'#13265c',dark:true,
     fHead:"Cinzel,Georgia,serif",fBody:"'Inter',system-ui,sans-serif",
     gap:14,radius:6,shadow:0,gradient:true,trackShape:'rounded',badgeShape:'square',
-    medalGold:'#E8C766',medalSilver:'#C9D2DE',medalBronze:'#D9A066',kpiStyle:'underline',tableStyle:'bordered'},
+    medalGold:'#E8C766',medalSilver:'#C9D2DE',medalBronze:'#D9A066',kpiStyle:'underline',tableStyle:'bordered',
+    rowStyle:'card',kickerStyle:'bar'},
   {name:'Minimalistická plochá',bg:'#ffffff',accent:'#2b2b2b',accent2:'#8a8a8a',ink:'#1a1a1a',row:'#f7f7f7',dark:false,
     fHead:"'Inter',system-ui,sans-serif",fBody:"'Inter',system-ui,sans-serif",
     gap:8,radius:0,shadow:0,gradient:false,trackShape:'square',badgeShape:'square',
-    medalGold:'#2b2b2b',medalSilver:'#6b6b6b',medalBronze:'#9c9c9c',kpiStyle:'plain',tableStyle:'bordered'},
+    medalGold:'#2b2b2b',medalSilver:'#6b6b6b',medalBronze:'#9c9c9c',kpiStyle:'plain',tableStyle:'bordered',
+    rowStyle:'card',kickerStyle:'bar'},
   {name:'Playful kulatá',bg:'#fff7ee',accent:'#ff6f59',accent2:'#3aa6a0',ink:'#2b1d16',row:'#ffffff',dark:false,
     fHead:"Anton,Impact,sans-serif",fBody:"'Inter',system-ui,sans-serif",
     gap:16,radius:28,shadow:1.4,gradient:true,trackShape:'pill',badgeShape:'circle',
-    medalGold:'#FFC94A',medalSilver:'#B9C6D6',medalBronze:'#E39B6B',kpiStyle:'cardBg',tableStyle:'flatCard'},
+    medalGold:'#FFC94A',medalSilver:'#B9C6D6',medalBronze:'#E39B6B',kpiStyle:'cardBg',tableStyle:'flatCard',
+    rowStyle:'card',kickerStyle:'bar'},
   {name:'Editoriální',bg:'#f7f5f0',accent:'#8a3324',accent2:'#4a6b5a',ink:'#2a2420',row:'#fffdf9',dark:false,
     fHead:"Georgia,serif",fBody:"'Segoe UI',system-ui,sans-serif",
     gap:10,radius:2,shadow:0,gradient:false,trackShape:'square',badgeShape:'square',
-    medalGold:'#a3813e',medalSilver:'#8f8f8f',medalBronze:'#8a5a3a',kpiStyle:'underline',tableStyle:'bordered'},
+    medalGold:'#a3813e',medalSilver:'#8f8f8f',medalBronze:'#8a5a3a',kpiStyle:'underline',tableStyle:'bordered',
+    rowStyle:'card',kickerStyle:'bar'},
+  {name:'Redakční',bg:'#ffffff',accent:'#1f3a5f',accent2:'#6b7f76',ink:'#1a1a1a',row:'#ffffff',dark:false,
+    fHead:"Georgia,serif",fBody:"'Inter',system-ui,sans-serif",
+    gap:8,radius:0,shadow:0,gradient:false,trackShape:'square',badgeShape:'none',
+    medalGold:'#8a8a8a',medalSilver:'#a0a0a0',medalBronze:'#b5b5b5',kpiStyle:'editorial',tableStyle:'bordered',
+    rowStyle:'editorial',kickerStyle:'corner'},
 ];
 const SAMPLE = {
   rank:`Kouzelná školka\t842\nVečerníček\t790\nZprávičky\t654\nDěčko hraje\t531\nO chytrých přístrojích\t498`,
@@ -764,6 +824,7 @@ const Cfg = {
       // ── součásti šablony (viz sekce „Styl prvků") ──
       trackRadiusRatio:TRACK_SHAPE_RATIO[State.trackShape] ?? 0.5,
       badgeShape:State.badgeShape, kpiStyle:State.kpiStyle, tableStyle:State.tableStyle,
+      kickerStyle:State.kickerStyle,
     };
     const visibility = {
       medalsOn:Cfg.checked('aMedals',true), gradient:Cfg.checked('aGradient',true),
@@ -913,15 +974,29 @@ const History = {
   index: -1,
   limit: 50, // kolik kroků zpět si nástroj pamatuje
 
+  // sestaví serializovatelný snímek — objekty scény I rozložení sloupců
+  // patří do stejné historie, ať jde tažení šířky vrátit stejným Ctrl+Z
+  // jako přesun objektu
+  snapshotState(){
+    return JSON.stringify({objects:Scene.objects, tracks:State.layoutTracks, rowValign:State.rowValign, colGap:State.colGap});
+  },
+  applySnapshot(s){
+    const d=JSON.parse(s);
+    Scene.objects=d.objects||[];
+    State.layoutTracks=d.tracks||{rank:null,table:null,excel:null};
+    State.rowValign=d.rowValign||{rank:'middle',table:'middle'};
+    State.colGap=d.colGap||{table:0,excel:0};
+  },
+
   init(){
-    History.stack=[JSON.stringify(Scene.objects)];
+    History.stack=[History.snapshotState()];
     History.index=0;
     UI.updateHistoryButtons();
   },
 
   // uloží aktuální stav scény jako nový krok historie (zahodí "budoucí" kroky po redo)
   snapshot(){
-    const state=JSON.stringify(Scene.objects);
+    const state=History.snapshotState();
     if(History.stack[History.index]===state) return; // beze změny, netřeba ukládat
     History.stack=History.stack.slice(0,History.index+1);
     History.stack.push(state);
@@ -932,17 +1007,17 @@ const History = {
   undo(){
     if(History.index<=0) return;
     History.index--;
-    Scene.objects=JSON.parse(History.stack[History.index]);
+    History.applySnapshot(History.stack[History.index]);
     History.restoreSelection();
-    refresh(); UI.updateHistoryButtons();
+    refresh(); UI.updateHistoryButtons(); UI.refreshTracksPanel();
   },
 
   redo(){
     if(History.index>=History.stack.length-1) return;
     History.index++;
-    Scene.objects=JSON.parse(History.stack[History.index]);
+    History.applySnapshot(History.stack[History.index]);
     History.restoreSelection();
-    refresh(); UI.updateHistoryButtons();
+    refresh(); UI.updateHistoryButtons(); UI.refreshTracksPanel();
   },
 
   // po undo/redo se Scene.objects nahradí novým polem — objekty, které
@@ -1400,6 +1475,84 @@ const SceneInteraction = {
 };
 
 /* ══════════════════════════════
+   TRACK INTERACTION — tažení šířky sloupců přímo v náhledu
+   ──────────────────────────────
+   Táhla se objeví na hranicích mezi tracky (jen u typů se sloupci —
+   žebříček/tabulka), a jen v režimu "Úpravy v obrázku". Tažení hranice
+   mezi tracky i a i+1 upraví právě tenhle sousední pár — poslední track
+   je vždy roztahovací, takže tažení hranice před ním posune jen track
+   i a poslední track automaticky pohltí zbytek (nikdy nemůže dojít
+   k mezeře nebo přetečení).
+   ══════════════════════════════ */
+const TrackInteraction = {
+  // vrátí tracky a mezeru pro aktuální typ výstupu, nebo null, když typ
+  // sloupce nemá
+  activeTracks(){
+    const PAD=basePad(), contentW=1080-PAD*2;
+    if(State.type==='rank') return{tracks:LayoutTracks.get('rank'),gap:State.colGap.rank||0,contentW,PAD};
+    if(State.type==='table'){
+      const rows=Parse.rows(); if(!rows.length) return null;
+      return{tracks:LayoutTracks.get('table',rows[0].length,contentW),gap:State.colGap.table||0,contentW,PAD};
+    }
+    return null;
+  },
+
+  // znovu vykreslí táhla na hranicích sloupců podle aktuálního rozlišení
+  refreshHandles(){
+    const layer=$('colHandleLayer'); if(!layer) return;
+    layer.innerHTML='';
+    const editing=$('fxLayer').classList.contains('on');
+    layer.classList.toggle('on',editing);
+    if(!editing) return;
+    const ctx=TrackInteraction.activeTracks(); if(!ctx) return;
+    const resolved=LayoutTracks.resolve(ctx.tracks,ctx.contentW,ctx.PAD,ctx.gap);
+    for(let i=0;i<resolved.length-1;i++){
+      const boundaryX=resolved[i].x+resolved[i].width+ctx.gap/2;
+      const h=document.createElement('div');
+      h.className='col-handle'; h.style.left=boundaryX+'px';
+      h.innerHTML='<div class="grip"></div>';
+      h.addEventListener('pointerdown', e=>TrackInteraction.startDrag(e,ctx,i));
+      layer.appendChild(h);
+    }
+  },
+
+  // tažení hranice mezi tracky i a i+1 — respektuje min/max obou,
+  // poslední track (width:null) zůstává roztahovací i po tažení
+  startDrag(e,ctx,i){
+    e.preventDefault(); e.stopPropagation();
+    const{tracks,gap,contentW,PAD}=ctx;
+    const resolved=LayoutTracks.resolve(tracks,contentW,PAD,gap);
+    const isLastPair=(i+1)===tracks.length-1;
+    const startWidthA=resolved[i].width, startWidthB=resolved[i+1].width;
+    const minA=tracks[i].min||40, maxA=tracks[i].max||Infinity;
+    const minB=tracks[i+1].min||40, maxB=tracks[i+1].max||Infinity;
+    const startX=e.clientX; let moved=false;
+    function onMove(ev){
+      const z=State.viewport.zoom, dx=(ev.clientX-startX)/z;
+      if(Math.abs(dx)>0.5) moved=true;
+      let newA=Math.max(minA,Math.min(maxA,startWidthA+dx));
+      if(isLastPair){
+        tracks[i].width=Math.round(newA); // track i+1 (poslední) zůstává null
+      }else{
+        let newB=startWidthB-(newA-startWidthA);
+        if(newB<minB){ newB=minB; newA=startWidthA+(startWidthB-minB); }
+        else if(newB>maxB){ newB=maxB; newA=startWidthA+(startWidthB-maxB); }
+        tracks[i].width=Math.round(newA);
+        tracks[i+1].width=Math.round(newB);
+      }
+      refresh();
+    }
+    function onUp(){
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+      if(moved) History.snapshot();
+      UI.refreshTracksPanel();
+    }
+    window.addEventListener('pointermove',onMove);
+    window.addEventListener('pointerup',onUp);
+  },
+};
+
 /* ══════════════════════════════
    COMPONENTS — sdílené vizuální stavební bloky
    ──────────────────────────────
@@ -1439,11 +1592,14 @@ const Components = {
     return fillW;
   },
 
-  // velké „statistické" číslo (Anton), volitelně s jednotkou vlevo od něj —
-  // sjednocuje hodnotu v žebříčku a velké číslo v KPI do jedné komponenty
-  bigStat(cx,{x,y,value,unit,unitFont,size,weight=800,color,unitColor,unitSize,align='right'}){
+  // velké „statistické" číslo, volitelně s jednotkou vlevo od něj — sjednocuje
+  // hodnotu v žebříčku a velké číslo v KPI do jedné komponenty. Font je
+  // defaultně Anton (dnešní dramatický display styl), ale jde přepsat —
+  // redakční šablona ho používá jen pro hlavní hodnotu, ostatní čísla
+  // nechává v tišším textovém řezu
+  bigStat(cx,{x,y,value,unit,unitFont,size,weight=800,color,unitColor,unitSize,align='right',fontFamily='Anton,Impact,sans-serif'}){
     cx.textAlign=align;
-    const numFont=`${weight} ${size}px Anton,Impact,sans-serif`;
+    const numFont=`${weight} ${size}px ${fontFamily}`;
     if(unit){
       cx.font=`600 ${unitSize}px ${unitFont}`; cx.fillStyle=unitColor;
       cx.fillText(unit,x,y);
@@ -1617,6 +1773,94 @@ const Layout = {
 };
 
 /* ══════════════════════════════
+   LAYOUT TRACKS — sloupce/zóny jako samostatně nastavitelné jednotky
+   ──────────────────────────────
+   Dřív měl každý typ výstupu šířky sloupců/zón napevno v kódu (tabulka
+   46 %, Excel 40 %, žebříček odsazení 86/160 px) — tři nezávislé,
+   vzájemně nesouvisející hodnoty pro koncepčně stejný problém. Tenhle
+   modul zavádí jeden sdílený model: pole "tracků" (zón) pro daný typ,
+   každý s vlastní šířkou, min/max, zarovnáním. Poslední track v poli
+   je vždy "roztahovací" (width:null) — pohltí, co zbyde, takže součet
+   šířek vždy přesně sedí na dostupný prostor bez ohledu na to, co
+   uživatel s ostatními tracky provede.
+
+   Výchozí hodnoty pro rank/table odpovídají PŘESNĚ dnešním pevným
+   číslům (86/160/46/22/24 u žebříčku, 46 % u tabulky) — dokud uživatel
+   za nic netáhne, výsledek je pixelově identický s dneškem.
+   ══════════════════════════════ */
+const LayoutTracks = {
+  // vrátí (a při první potřebě založí) pole tracků pro daný typ
+  get(type,colCount,totalWidth){
+    if(type==='rank'){
+      if(!State.layoutTracks.rank) State.layoutTracks.rank=[
+        {id:'badge', width:86, min:60, max:140, align:'center', badgeSize:24, badgeCenterOffset:46},
+        {id:'name',  width:null, min:120, align:'left'},
+        {id:'value', width:160, min:90, max:280, align:'right', insetRight:22},
+      ];
+      return State.layoutTracks.rank;
+    }
+    if(type==='table'||type==='excel'){
+      return LayoutTracks.ensureDataTracks(type,colCount,totalWidth);
+    }
+    return null;
+  },
+
+  // založí/doplní/zkrátí tracky pro datové typy (tabulka/Excel) podle
+  // aktuálního počtu sloupců — sloupce, které existovaly už předtím
+  // (podle indexu), si zachovají uživatelem nastavenou šířku; nové
+  // dostanou výchozí; přebytečné se odeberou. Nikdy tak nechybí track
+  // pro existující sloupec dat.
+  ensureDataTracks(type,colCount,totalWidth){
+    let arr=State.layoutTracks[type];
+    if(!arr||!arr.length){
+      // první vytvoření — napodobí dnešní pevný poměr (46 % / 40 %)
+      // jako výchozí ŠÍŘKY (ne poměr), poslední sloupec je roztahovací
+      const firstRatio = type==='table' ? 0.46 : 0.40;
+      arr=[];
+      if(colCount<=1){
+        arr.push({id:'col0', width:null, min:60, align:'left'});
+      }else{
+        const firstW=totalWidth*firstRatio;
+        const restW=(totalWidth-firstW)/(colCount-1);
+        arr.push({id:'col0', width:firstW, min:60, align:'left'});
+        for(let i=1;i<colCount-1;i++) arr.push({id:'col'+i, width:restW, min:50, align:'right'});
+        arr.push({id:'col'+(colCount-1), width:null, min:50, align:'right'}); // poslední = roztahovací
+      }
+      State.layoutTracks[type]=arr;
+    }else if(arr.length!==colCount){
+      // počet sloupců v datech se změnil — zachovat existující, doplnit/zkrátit
+      if(arr.length<colCount){
+        for(let i=arr.length;i<colCount;i++) arr.push({id:'col'+i, width:120, min:50, align:'right'});
+      }else{
+        arr=arr.slice(0,colCount);
+      }
+      // poslední sloupec musí zůstat roztahovací, ať součet vždy sedí
+      arr.forEach((t,i)=>{ t.width = i===colCount-1 ? null : (t.width??120); });
+      State.layoutTracks[type]=arr;
+    }
+    return arr;
+  },
+
+  // spočte skutečné x/šířku každého tracku pro daný dostupný prostor;
+  // právě jeden track (width:null) pohltí zbytek místa po odečtení
+  // pevných šířek a mezer — garantuje přesný součet bez mezer/přetečení
+  resolve(tracks,totalWidth,startX,gap=0){
+    const n=tracks.length;
+    const totalGap=gap*Math.max(0,n-1);
+    const fixedSum=tracks.reduce((s,t)=>s+(t.width!=null?t.width:0),0);
+    const growIdx=tracks.findIndex(t=>t.width==null);
+    const growWidth = growIdx>=0 ? Math.max(tracks[growIdx].min||40, totalWidth-fixedSum-totalGap) : 0;
+    let x=startX; const out=[];
+    tracks.forEach(t=>{
+      const w = t.width!=null ? t.width : growWidth;
+      out.push({...t, x, width:w});
+      x+=w+gap;
+    });
+    return out;
+  },
+};
+
+/* ══════════════════════════════
    DRAW — čisté kreslicí funkce
    ──────────────────────────────
    Každá funkce dostává canvas kontext (cx), konfiguraci (c) a rozměry
@@ -1659,10 +1903,21 @@ const Draw = {
     // skutečně měnit panelem Vrstvy (viz Render.paint)
     cx.textAlign='left';
     let ty=64;
-    // nadřazený štítek (eyebrow kicker)
+    // nadřazený štítek (eyebrow kicker) — buď pás přes šířku (dnešní
+    // výchozí), nebo malá orámovaná redakční značka jen nad textem
     if(c.kicker&&c.showKicker){
-      cx.fillStyle=c.kickerColor||c.accent; cx.font=`700 15px ${c.fBody}`;
-      Draw.tracked(cx,c.kicker.toUpperCase(),PAD,ty,3.5);
+      const kickerColor=c.kickerColor||c.accent, label=c.kicker.toUpperCase();
+      if(c.kickerStyle==='corner'){
+        cx.font=`700 13px ${c.fBody}`;
+        const tw=cx.measureText(label).width, boxW=tw+18, boxH=22;
+        cx.strokeStyle=kickerColor; cx.lineWidth=1.5;
+        cx.strokeRect(PAD,ty-16,boxW,boxH);
+        cx.fillStyle=kickerColor; cx.textAlign='left';
+        cx.fillText(label,PAD+9,ty);
+      }else{
+        cx.fillStyle=kickerColor; cx.font=`700 15px ${c.fBody}`;
+        Draw.tracked(cx,label,PAD,ty,3.5);
+      }
       ty+=14;
     }
     // nadpis
@@ -1755,9 +2010,54 @@ const Draw = {
     const RAD=c.radius;
     const medal=c.medalColors||['#D4AF37','#A8B0B8','#C77B3B']; // zlatá / stříbrná / bronzová
     const topCol=c.topColor||c.accent;
+    const rw0=W-PAD*2;
+    // tracky (odznak/název/hodnota) se počítají jednou mimo smyčku — jejich
+    // rozměry se pro jednotlivé řádky nemění, jen konkrétní obsah uvnitř
+    const [badgeT,nameT,valueT]=LayoutTracks.resolve(LayoutTracks.get('rank'),rw0,PAD,State.colGap.rank||0);
+    const valign=State.rowValign.rank||'middle';
     rows.forEach((r,i)=>{
       const y=y0+i*(RH+GAP), name=r[0]||'', val=r[1]??'', top=i===0, top3=i<3;
-      const rw=W-PAD*2;
+      const rw=rw0;
+      const rcy = valign==='top' ? y+RH*0.32 : valign==='bottom' ? y+RH*0.68 : y+RH/2;
+
+      // ── redakční styl: samostatná větev, ne další podmínky uvnitř
+      // stávající logiky — žádné barevné pozadí karet, jen linky mezi
+      // řádky; barva se soustředí jen na hodnotu 1. místa (jediný "hit"
+      // barvy na celém obrázku), zbytek zůstává v tiché ink barvě a
+      // klidnějším řezu písma místo Anton na každém čísle ──
+      if(c.rowStyle==='editorial'){
+        const rcx=badgeT.x+badgeT.badgeCenterOffset;
+        if(top) Draw.hairline(cx,c,PAD,PAD+rw,y-Math.round(GAP/2)-2);
+        Draw.hairline(cx,c,PAD,PAD+rw,y+RH-1);
+        Components.badge(cx,{
+          shape:c.badgeShape||'none',
+          x:rcx, y:rcy, size:ls(badgeT.badgeSize-2), fill:null,
+          label:i+1, labelOffsetY:2,
+          labelColor: top?(c.topColor||c.accent):Color.alpha(c.ink,.4),
+          labelFont:`700 ${top?36:24}px ${c.fHead}`,
+        });
+        const nameFit=Layout.fitText(cx,name,nameT.width,{minSize:15,maxSize:top?28:20,fontWeight:top?800:600,fontFamily:c.fBody});
+        cx.textAlign='left'; cx.font=`${top?800:600} ${nameFit.fontSize}px ${c.fBody}`;
+        cx.fillStyle=c.ink;
+        cx.save(); Draw.roundRect(cx,nameT.x,y,nameT.width,RH,0); cx.clip();
+        cx.textBaseline='middle'; cx.fillText(nameFit.lines[0],nameT.x,rcy+1); cx.textBaseline='alphabetic'; cx.restore();
+        if(val!==''){
+          const m=String(val).match(/^([\d\s.,]+)\s*(.*)$/);
+          const numPart=m?m[1].trim():String(val), unit=m&&m[2]?m[2]:'';
+          cx.textBaseline='middle';
+          Components.bigStat(cx,{
+            x:valueT.x+valueT.width-valueT.insetRight, y:rcy+1, value:numPart, unit, unitFont:c.fBody,
+            size:top?40:22, weight:top?800:600, align:'right',
+            fontFamily: top?'Anton,Impact,sans-serif':c.fBody,
+            color: top?(c.topColor||c.accent):c.ink,
+            unitColor: top?Color.alpha(c.topColor||c.accent,.7):Color.alpha(c.ink,.55),
+            unitSize: top?17:13,
+          });
+          cx.textBaseline='alphabetic';
+        }
+        return;
+      }
+
       const flat=c.rowStyle==='flat', striped=c.rowStyle==='striped';
       let panelFill;
       if(top) panelFill=topCol;
@@ -1771,11 +2071,11 @@ const Draw = {
       if(c.medalsOn&&top3&&!top){
         Components.accentStrip(cx,{x:PAD,y,w:rw,h:RH,radius:RAD,stripW:7,color:medal[i]});
       }
-      // pořadové číslo v jemném odznaku (tvar dle šablony)
-      const rcx=PAD+46, rcy=y+RH/2;
+      // pořadové číslo v jemném odznaku (tvar dle šablony, velikost dle tracku)
+      const rcx=badgeT.x+badgeT.badgeCenterOffset;
       Components.badge(cx,{
         shape:c.badgeShape||'circle',
-        x:rcx, y:rcy, size:ls(24),
+        x:rcx, y:rcy, size:ls(badgeT.badgeSize),
         fill: top?null:((c.medalsOn&&top3)?Color.alpha(medal[i],.14):Color.alpha(c.ink,c.dark?.06:.05)),
         label:i+1, labelOffsetY:2,
         labelColor: top?(c.dark?'#11140d':'#fff'):((c.medalsOn&&top3)?medal[i]:Color.alpha(c.ink,.5)),
@@ -1783,21 +2083,27 @@ const Draw = {
       });
       // název — Layout.fitText nejdřív zmenší, pak ořízne výpustkou, když
       // se ani na minimální velikosti nevejde (dřív se text tiše odřízl
-      // canvas clipem úplně bez výpustky)
-      const nameMaxW=rw-86-160;
-      const nameFit=Layout.fitText(cx,name,nameMaxW,{minSize:15,maxSize:top?31:26,fontWeight:700,fontFamily:c.fBody});
-      cx.textAlign='left'; cx.font=`700 ${nameFit.fontSize}px ${c.fBody}`;
+      // canvas clipem úplně bez výpustky); šířka a zarovnání teď plynou
+      // z tracku "název", ne z pevných čísel
+      const nameFit=Layout.fitText(cx,name,nameT.width,{minSize:15,maxSize:top?31:26,fontWeight:700,fontFamily:c.fBody});
+      cx.textAlign=nameT.align||'left'; cx.font=`700 ${nameFit.fontSize}px ${c.fBody}`;
       cx.fillStyle=top?(c.dark?'#11140d':'#fff'):c.ink;
-      cx.save(); Draw.roundRect(cx,PAD+86,y,nameMaxW,RH,0); cx.clip();
-      cx.textBaseline='middle'; cx.fillText(nameFit.lines[0],PAD+86,rcy+1); cx.textBaseline='alphabetic'; cx.restore();
-      // hodnota — zarovnaná vpravo, velké číslo + jemná jednotka, pokud je přítomná
+      cx.save(); Draw.roundRect(cx,nameT.x,y,nameT.width,RH,0); cx.clip();
+      cx.textBaseline='middle';
+      cx.fillText(nameFit.lines[0], nameT.align==='right'?nameT.x+nameT.width:nameT.align==='center'?nameT.x+nameT.width/2:nameT.x, rcy+1);
+      cx.textBaseline='alphabetic'; cx.restore();
+      // hodnota — zarovnaná dle tracku, velké číslo + jemná jednotka, pokud je přítomná
       if(val!==''){
         const m=String(val).match(/^([\d\s.,]+)\s*(.*)$/);
         const numPart=m?m[1].trim():String(val), unit=m&&m[2]?m[2]:'';
         cx.textBaseline='middle';
+        const valueAlign=valueT.align||'right';
+        const valueX = valueAlign==='right' ? valueT.x+valueT.width-valueT.insetRight
+                     : valueAlign==='center' ? valueT.x+valueT.width/2
+                     : valueT.x+valueT.insetRight;
         Components.bigStat(cx,{
-          x:W-PAD-22, y:rcy+1, value:numPart, unit, unitFont:c.fBody,
-          size:top?34:30, weight:800, align:'right',
+          x:valueX, y:rcy+1, value:numPart, unit, unitFont:c.fBody,
+          size:top?34:30, weight:800, align:valueAlign,
           color: top?(c.dark?'#11140d':'#fff'):c.accent,
           unitColor: top?(c.dark?Color.alpha('#11140d',.7):Color.alpha('#fff',.85)):Color.alpha(c.accent,.7),
           unitSize: top?17:15,
@@ -1864,6 +2170,18 @@ const Draw = {
     // výchozí: jedna velká karta (styl 'plain' beze změny oproti dřívějšku)
     const val=$('fKpiVal').value, lab=$('fKpiLabel').value, note=$('fKpiNote').value, cxn=W/2;
     const style=c.kpiStyle||'plain';
+    // ── redakční styl: číslo mimo střed (vlevo), popisek vedle něj místo
+    // pod ním — schválné porušení dnešní striktně vertikální osy ──
+    if(style==='editorial'){
+      const nx=W*0.14, ny=H/2+10;
+      cx.font=`800 150px Anton,Impact,sans-serif`;
+      const numW=cx.measureText(val).width;
+      Components.bigStat(cx,{x:nx,y:ny,value:val,size:150,weight:800,color:c.accent,align:'left'});
+      const labelX=nx+numW+30;
+      Components.caption(cx,{x:labelX,y:ny-38,text:lab.toUpperCase(),font:`700 15px ${c.fBody}`,color:Color.alpha(c.ink,.55),align:'left'});
+      if(note) Components.caption(cx,{x:labelX,y:ny-12,text:note,font:`600 14px ${c.fBody}`,color:Color.alpha(c.ink,.4),align:'left'});
+      return;
+    }
     if(style==='cardBg'){
       Components.panel(cx,{x:W*0.12,y:H*0.14,w:W*0.76,h:H*0.72,radius:Math.min(40,c.radius*1.6+10),fill:Color.alpha(c.ink,c.dark?.08:.045)});
     }
@@ -1913,10 +2231,11 @@ const Draw = {
   table(cx,c,W,H,y0,PAD){
     const rows=Parse.rows(); if(!rows.length) return;
     const head=rows[0], body=rows.slice(1), cols=head.length, tW=W-PAD*2;
-    const firstW=tW*0.46, restW=(tW-firstW)/Math.max(1,cols-1);
-    const colX=i=>i===0?PAD:PAD+firstW+(i-1)*restW, colAlign=i=>i===0?'left':'right';
-    const cellX=i=>colAlign(i)==='left'?colX(i)+14:colX(i)+(i===0?firstW:restW)-14;
-    const colW=i=>i===0?firstW:restW;
+    const gap=State.colGap.table||0;
+    const tracks=LayoutTracks.resolve(LayoutTracks.get('table',cols,tW),tW,PAD,gap);
+    const colX=i=>tracks[i].x, colAlign=i=>tracks[i].align, colW=i=>tracks[i].width;
+    const cellX=i=>colAlign(i)==='left'?colX(i)+14:colX(i)+colW(i)-14;
+    const valign=State.rowValign.table||'middle';
     head.forEach((h,i)=>{
       const fit=Layout.fitText(cx,h.toUpperCase(),colW(i)-28,{minSize:12,maxSize:17,fontWeight:700,fontFamily:c.fBody});
       Components.caption(cx,{x:cellX(i),y:y0+8,text:fit.lines[0],font:`700 ${fit.fontSize}px ${c.fBody}`,color:Color.alpha(c.ink,.6),align:colAlign(i)});
@@ -1926,6 +2245,7 @@ const Draw = {
     const RH=52, tstyle=c.tableStyle||'striped';
     body.forEach((r,ri)=>{
       const y=y0+30+ri*RH;
+      const textY = valign==='top' ? y+18 : valign==='bottom' ? y+RH-14 : y+RH/2+8;
       if(tstyle==='striped'){
         if(ri%2===0) Components.panel(cx,{x:PAD,y,w:tW,h:RH,radius:6,fill:Color.alpha(c.accent,c.dark?.10:.06)});
       }else if(tstyle==='flatCard'){
@@ -1939,7 +2259,7 @@ const Draw = {
         // zmenší a jako poslední možnost ořízne výpustkou
         const weight=i===0?700:600;
         const fit=Layout.fitText(cx,cell,colW(i)-28,{minSize:14,maxSize:22,fontWeight:weight,fontFamily:c.fBody});
-        Components.caption(cx,{x:cellX(i),y:y+RH/2+8,text:fit.lines[0],font:`${weight} ${fit.fontSize}px ${c.fBody}`,color:i===0?c.ink:c.accent,align:colAlign(i)});
+        Components.caption(cx,{x:cellX(i),y:textY,text:fit.lines[0],font:`${weight} ${fit.fontSize}px ${c.fBody}`,color:i===0?c.ink:c.accent,align:colAlign(i)});
       });
     });
   },
@@ -2093,6 +2413,8 @@ const Render = {
       Viewport.apply();
       SceneInteraction.refreshBoxes();
       UI.refreshLayersPanel();
+      TrackInteraction.refreshHandles();
+      UI.refreshTracksPanel();
     }
   },
 };
@@ -2162,8 +2484,10 @@ const Presets = {
     const s={
       TYPE:State.type, RATIO:State.ratio, ROWSTYLE:State.rowStyle, TWEAK:{...State.tweak},
       TRACKSHAPE:State.trackShape, BADGESHAPE:State.badgeShape,
-      KPISTYLE:State.kpiStyle, TABLESTYLE:State.tableStyle,
+      KPISTYLE:State.kpiStyle, TABLESTYLE:State.tableStyle, KICKERSTYLE:State.kickerStyle,
       OBJECTS:JSON.parse(JSON.stringify(Scene.objects)), // pozice/zámek objektů scény (např. loga)
+      TRACKS:JSON.parse(JSON.stringify(State.layoutTracks)), // šířky/zarovnání sloupců
+      ROWVALIGN:{...State.rowValign}, COLGAP:{...State.colGap},
     };
     const allFields=[...Schema.liveFields, ...Object.keys(Schema.sliders), ...Schema.presetExtra];
     allFields.forEach(id=>{ const e=$(id); if(e) s[id]=e.value; });
@@ -2189,6 +2513,7 @@ const Presets = {
     pillRestore(s.BADGESHAPE,'badgeShape','#badgeShapePills','bs');
     pillRestore(s.KPISTYLE,'kpiStyle','#kpiStylePills','ks');
     pillRestore(s.TABLESTYLE,'tableStyle','#tableStylePills','tbs');
+    pillRestore(s.KICKERSTYLE,'kickerStyle','#kickerStylePills','kis');
     // poznámka: logo obrázek (soubor/URL) se v předvolbě neukládá, jen jeho
     // pozice — pokud v cílovém prohlížeči logo chybí, pozice se prostě
     // uplatní až poté, co uživatel logo znovu nahraje (viz ensureLogoObject)
@@ -2200,6 +2525,9 @@ const Presets = {
         if(m) Scene._nextId=Math.max(Scene._nextId, parseInt(m[1],10)+1);
       });
     }
+    if(s.TRACKS) State.layoutTracks=JSON.parse(JSON.stringify(s.TRACKS));
+    if(s.ROWVALIGN) State.rowValign={...State.rowValign, ...s.ROWVALIGN};
+    if(s.COLGAP) State.colGap={...State.colGap, ...s.COLGAP};
     Object.keys(s).forEach(id=>{
       const el=$(id); if(!el) return;
       if(el.type==='checkbox') el.checked=s[id]; else el.value=s[id];
@@ -2287,6 +2615,14 @@ const UI = {
     $('formatHint').innerHTML = HINTS[t];
     if(t!=='kpi' && SAMPLE[t] && !$('fData')._touched) $('fData').value = SAMPLE[t];
     UI.updateKpiFieldsVisibility();
+    // synchronizuje ovládání sloupců (mezera, svislé zarovnání) s hodnotou
+    // uloženou pro NOVĚ aktivní typ — každý typ si drží svou vlastní
+    if(State.colGap[t]!==undefined){
+      $('colGap').value=State.colGap[t]; $('colGapV').textContent=State.colGap[t]+' px';
+    }
+    if(State.rowValign[t]!==undefined){
+      document.querySelectorAll('#rowValignPills .pill').forEach(p=>p.classList.toggle('on',p.dataset.va===State.rowValign[t]));
+    }
     refresh();
   },
 
@@ -2319,6 +2655,10 @@ const UI = {
           document.querySelectorAll('#kpiStylePills .pill').forEach(x=>x.classList.toggle('on',x.dataset.ks===p.kpiStyle)); }
         if(p.tableStyle){ State.tableStyle=p.tableStyle;
           document.querySelectorAll('#tableStylePills .pill').forEach(x=>x.classList.toggle('on',x.dataset.tbs===p.tableStyle)); }
+        if(p.rowStyle){ State.rowStyle=p.rowStyle;
+          document.querySelectorAll('#rowStylePills .pill').forEach(x=>x.classList.toggle('on',x.dataset.rs===p.rowStyle)); }
+        if(p.kickerStyle){ State.kickerStyle=p.kickerStyle;
+          document.querySelectorAll('#kickerStylePills .pill').forEach(x=>x.classList.toggle('on',x.dataset.kis===p.kickerStyle)); }
         document.querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
         d.classList.add('on'); refresh();
       };
@@ -2473,6 +2813,42 @@ const UI = {
     });
   },
 
+  // panel "Sloupce" — vidí ho jen typy, které mají sloupce (žebříček/
+  // tabulka); pro každý track ukáže aktuální šířku a tlačítka zarovnání.
+  // Šířka samotná se nemění tady, ale tažením přímo v náhledu (viz
+  // TrackInteraction) — tenhle panel je pro to, co se tažením nedá.
+  refreshTracksPanel(){
+    const panel=$('tracksPanel'), list=$('tracksList'); if(!panel||!list) return;
+    const ctx=TrackInteraction.activeTracks();
+    panel.style.display = ctx ? '' : 'none';
+    if(!ctx) return;
+    const names = State.type==='rank'
+      ? {badge:'Odznak pořadí', name:'Název', value:'Hodnota'}
+      : null;
+    const resolved=LayoutTracks.resolve(ctx.tracks,ctx.contentW,ctx.PAD,ctx.gap);
+    list.innerHTML='';
+    resolved.forEach((t,i)=>{
+      const label = names ? (names[t.id]||t.id) : `Sloupec ${i+1}`;
+      const row=document.createElement('div'); row.className='track-row';
+      row.innerHTML=`
+        <div class="tr-head"><span class="tr-name"></span><span class="tr-width">${Math.round(t.width)} px</span></div>
+        <div class="tr-aligns">
+          <span class="tr-align-btn" data-al="left">⟵</span>
+          <span class="tr-align-btn" data-al="center">▬</span>
+          <span class="tr-align-btn" data-al="right">⟶</span>
+        </div>`;
+      row.querySelector('.tr-name').textContent=label;
+      row.querySelectorAll('.tr-align-btn').forEach(btn=>{
+        btn.classList.toggle('on', btn.dataset.al===(t.align||'left'));
+        btn.addEventListener('click', ()=>{
+          ctx.tracks[i].align=btn.dataset.al;
+          History.snapshot(); refresh();
+        });
+      });
+      list.appendChild(row);
+    });
+  },
+
   // sestaví a zobrazí kontextové menu na místě kliknutí; klik na objekt,
   // který ještě není (celý, včetně skupiny) vybraný, ho napřed vybere —
   // stejné pravidlo jako u běžného kliku v náhledu
@@ -2579,6 +2955,22 @@ const UI = {
     pillWire('#badgeShapePills','bs','badgeShape');
     pillWire('#kpiStylePills','ks','kpiStyle');
     pillWire('#tableStylePills','tbs','tableStyle');
+    pillWire('#kickerStylePills','kis','kickerStyle');
+
+    // svislé zarovnání v řádku — sdílené pro aktuální typ (rank/table)
+    document.querySelectorAll('#rowValignPills .pill').forEach(p=>p.onclick=()=>{
+      document.querySelectorAll('#rowValignPills .pill').forEach(x=>x.classList.remove('on'));
+      p.classList.add('on');
+      if(State.rowValign[State.type]!==undefined) State.rowValign[State.type]=p.dataset.va;
+      History.snapshot(); refresh();
+    });
+    // mezera mezi sloupci (jen typy s vlastními daty ve sloupcích — tabulka)
+    $('colGap').addEventListener('input', e=>{
+      $('colGapV').textContent=e.target.value+' px';
+      State.colGap[State.type]=+e.target.value;
+      refresh();
+    });
+    $('colGap').addEventListener('change', ()=>History.snapshot());
     ['aMedalGold','aMedalSilver','aMedalBronze'].forEach(id=>$(id).addEventListener('input',refresh));
 
     UI.wireSliders();
