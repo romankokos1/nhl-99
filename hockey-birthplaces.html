@@ -58,17 +58,19 @@ html{font-size:15px;-webkit-font-smoothing:antialiased}
 body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 
 /* ── HEADER ─────────────────────────────────── */
-.hdr{background:var(--blue);flex-shrink:0;position:relative}
+.hdr{background:linear-gradient(120deg,var(--blue3) 0%,var(--blue) 55%,var(--blue-light) 100%);flex-shrink:0;position:relative;box-shadow:0 2px 18px rgba(6,20,50,.35)}
 .hdr-inner{padding:.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.hdr-logo{display:flex;align-items:center;gap:12px}
-.hdr-logo .badge{width:36px;height:36px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:3px;flex-shrink:0}
+.hdr-logo{display:flex;align-items:center;gap:14px}
+.hdr-logo .badge{width:36px;height:36px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:10px;flex-shrink:0}
+.hdr-logo-chip{display:flex;align-items:center;justify-content:center;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(6,20,50,.35))}
+.hdr-logo-fallback{width:40px;height:40px;border-radius:10px;background:var(--yellow);color:var(--blue3);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em}
 .hdr-inner h1{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--white);line-height:1}
 .hdr-inner h1 span{color:var(--yellow)}
 .hdr-right{display:flex;align-items:center;gap:8px}
 .hdr-stats{font-size:13px;color:rgba(255,255,255,.6);white-space:nowrap;margin-right:4px}
 .hdr-stats strong{color:var(--yellow)}
-.hbtn{padding:6px 14px;background:transparent;border:1px solid var(--line2);border-radius:2px;color:rgba(255,255,255,.8);font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:.15s;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
-.hbtn:hover{border-color:var(--yellow);color:var(--yellow)}
+.hbtn{padding:7px 16px;background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:20px;color:rgba(255,255,255,.85);font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:.15s;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.hbtn:hover{border-color:var(--yellow);color:var(--yellow);background:rgba(245,195,0,.10)}
 /* Pruhy — žlutá + červená + žlutá */
 .hdr-stripes{height:8px;display:flex;flex-direction:column}
 .hdr-stripes .s1{flex:2;background:var(--yellow)}
@@ -90,9 +92,9 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .list-head{padding:.75rem 1.1rem;display:flex;align-items:center;gap:7px;border-bottom:1px solid #d4dae8;background:#fff}
 .lp-head-sticky{position:sticky;top:0;z-index:10;background:#fff}
 .list-head h2{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue3);flex:1}
-.btn-import{display:inline-flex;align-items:center;gap:4px;padding:6px 11px;background:transparent;color:#7a8fa8;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.15s}
+.btn-import{display:inline-flex;align-items:center;gap:4px;padding:6px 13px;background:transparent;color:#7a8fa8;border:1px solid #c4cedc;border-radius:20px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.15s}
 .btn-import:hover{color:var(--blue);border-color:var(--blue)}
-.btn-add{display:inline-flex;align-items:center;gap:4px;padding:6px 13px;background:var(--blue);color:#fff;border:none;border-radius:2px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:.15s}
+.btn-add{display:inline-flex;align-items:center;gap:4px;padding:6px 15px;background:var(--blue);color:#fff;border:none;border-radius:20px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:.15s;box-shadow:0 2px 8px rgba(28,72,150,.30)}
 .btn-add:hover{background:var(--blue2)}
 
 .players{padding:.55rem .8rem;display:flex;flex-direction:column;gap:4px;flex:1;overflow-y:auto;overflow-x:hidden}
@@ -120,7 +122,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 /* ── OVERLAY ─────────────────────────────────── */
 .ovl{display:flex;position:fixed;inset:0;background:rgba(15,47,106,.5);z-index:2500;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
 .ovl.on{display:flex}
-.modal{background:#fff;border:1px solid #c4cedc;border-top:4px solid var(--blue);border-radius:3px;padding:1.75rem;width:520px;max-width:100%;box-shadow:var(--sh2);margin:auto}
+.modal{background:#fff;border:1px solid #c4cedc;border-top:4px solid var(--blue);border-radius:18px;padding:1.75rem;width:520px;max-width:100%;box-shadow:var(--sh2);margin:auto;overflow:hidden}
 .modal h3{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue3);margin-bottom:1.25rem;border-bottom:2px solid var(--yellow);padding-bottom:.6rem}
 .modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#8a9ab5;margin-top:-4px;line-height:1}
 .modal-close:hover{color:var(--red)}
@@ -159,7 +161,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .imp-summary strong{color:var(--blue)}
 
 /* ── MAP LEGEND ──────────────────────────────── */
-.map-legend{position:absolute;bottom:14px;left:14px;z-index:400;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border:1px solid #c4cedc;border-top:3px solid var(--blue);border-radius:3px;padding:8px 12px;font-size:12px;color:#7a8fa8;pointer-events:none;display:none;box-shadow:var(--sh)}
+.map-legend{position:absolute;bottom:14px;left:14px;z-index:400;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border:1px solid #c4cedc;border-top:3px solid var(--blue);border-radius:14px;padding:8px 12px;font-size:12px;color:#7a8fa8;pointer-events:none;display:none;box-shadow:var(--sh)}
 .map-legend strong{color:var(--blue3);display:block;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .leg-row{display:flex;align-items:center;gap:7px;margin-top:3px}
 .leg-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid rgba(255,255,255,.8);flex-shrink:0}
@@ -717,7 +719,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .pc-active .pc-name { color: var(--blue); }
 .pc-highlight { background: #fffbe6; }
 
-.hdr-club-logo { height: 42px; width: auto; flex-shrink: 0; }
+.hdr-club-logo { height: 40px; width: auto; flex-shrink: 0; display:block; }
 
 /* Sort bar */
 .sort-bar {
@@ -727,7 +729,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 }
 .sort-label { font-size: 11px; color: #8a9ab5; flex-shrink:0; font-family:'Barlow',sans-serif; }
 .sort-btn {
-  font-size: 11px; padding: 3px 9px; border-radius: 3px; cursor: pointer;
+  font-size: 11px; padding: 4px 11px; border-radius: 20px; cursor: pointer;
   border: 1px solid #d0d8e8; background: #fff; color: #556;
   font-family: 'Barlow', sans-serif; font-weight: 500; transition: .12s;
 }
@@ -862,7 +864,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .stats-grid .msp-rec-grid  { grid-column: 2; }
 .stats-year-full { margin-top: 1rem; background: #fff; border-radius: 12px; padding: .8rem 1rem .5rem; border: 1px solid #e4eaf5; }
 .stats-year-full .msp-year-chart { height: 90px; }
-.hbtn-stats { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 8px; padding: 5px 12px; font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; transition: .15s; display: none; }
+.hbtn-stats { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 20px; padding: 6px 14px; font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; transition: .15s; display: none; }
 .hbtn-stats:hover { background: rgba(255,255,255,.25); }
 @media(min-width:751px) { .hbtn-stats { display: inline-flex; align-items: center; gap: 5px; } }
 
@@ -893,7 +895,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 <div class="hdr">
   <div class="hdr-inner">
     <div class="hdr-logo">
-      <img src="https://hcmotor.cz/img/logo-var-1.svg" class="hdr-club-logo" alt="HC Motor České Budějovice">
+      <div class="hdr-logo-chip"><img src="https://hcmotor.cz/img/logo-var-1.svg" class="hdr-club-logo" alt="HC Motor České Budějovice" onerror="this.parentElement.innerHTML='&lt;div class=&quot;hdr-logo-fallback&quot;&gt;HC&lt;/div&gt;'"></div>
       <h1>Místa narození hráčů <span>Motor České Budějovice</span></h1>
     </div>
     <div class="hdr-right">
