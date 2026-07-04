@@ -1,0 +1,3638 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<!-- SEO -->
+<title>Místa narození hráčů | Banes Motor České Budějovice</title>
+<meta name="description" content="Interaktivní mapa míst narození všech hráčů, kteří kdy nastoupili za HC Motor České Budějovice. Přes 640 hráčů z celého světa od roku 1928.">
+<meta name="author" content="HC Motor České Budějovice">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://romankokos1.github.io/nhl-99/hockey-birthplaces.html">
+
+<!-- Open Graph (Facebook, LinkedIn, sdílení) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Místa narození hráčů Motoru ČB">
+<meta property="og:description" content="Přes 640 hráčů na jedné mapě — odkud přicházeli hokejisté HC Motor České Budějovice od roku 1928 do dnes.">
+<meta property="og:image" content="https://romankokos1.github.io/nhl-99/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://romankokos1.github.io/nhl-99/hockey-birthplaces.html">
+<meta property="og:site_name" content="HC Motor České Budějovice">
+<meta property="og:locale" content="cs_CZ">
+
+<!-- Twitter / X Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Místa narození hráčů Motoru ČB">
+<meta name="twitter:description" content="Přes 640 hráčů na jedné mapě — odkud přicházeli hokejisté HC Motor České Budějovice od roku 1928 do dnes.">
+<meta name="twitter:image" content="https://romankokos1.github.io/nhl-99/og-image.png">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="https://hcmotor.cz/img/logo-var-1.svg">
+<link rel="shortcut icon" href="https://hcmotor.cz/img/logo-var-1.svg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --blue:#1c4896;      /* Motor královská modrá */
+  --blue2:#163d82;     /* tmavší modrá */
+  --blue3:#0f2f6a;     /* nejhlubší modrá */
+  --blue-light:#2558b0;/* světlejší panel */
+  --yellow:#f5c300;    /* Motor žlutá */
+  --red:#cc1f1f;       /* Motor červená */
+  --white:#ffffff;
+  --text:#e8eef8;
+  --muted:#8aa4cc;
+  --line:rgba(255,255,255,.12);
+  --line2:rgba(255,255,255,.2);
+  --green:#2db37a;
+  --sh:0 2px 16px rgba(0,0,0,.25);
+  --sh2:0 8px 40px rgba(0,0,0,.45);
+}
+html{font-size:15px;-webkit-font-smoothing:antialiased}
+body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── HEADER ─────────────────────────────────── */
+.hdr{background:linear-gradient(120deg,var(--blue3) 0%,var(--blue) 55%,var(--blue-light) 100%);flex-shrink:0;position:relative;box-shadow:0 2px 18px rgba(6,20,50,.35)}
+.hdr-inner{padding:.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.hdr-logo{display:flex;align-items:center;gap:14px}
+.hdr-logo .badge{width:36px;height:36px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:10px;flex-shrink:0}
+.hdr-logo-chip{display:flex;align-items:center;justify-content:center;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(6,20,50,.35))}
+.hdr-logo-fallback{width:40px;height:40px;border-radius:10px;background:var(--yellow);color:var(--blue3);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em}
+.hdr-inner h1{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--white);line-height:1}
+.hdr-inner h1 span{color:var(--yellow)}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-stats{font-size:13px;color:rgba(255,255,255,.6);white-space:nowrap;margin-right:4px}
+.hdr-stats strong{color:var(--yellow)}
+.hbtn{padding:7px 16px;background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:20px;color:rgba(255,255,255,.85);font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:.15s;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.hbtn:hover{border-color:var(--yellow);color:var(--yellow);background:rgba(245,195,0,.10)}
+/* Pruhy — žlutá + červená + žlutá */
+.hdr-stripes{height:8px;display:flex;flex-direction:column}
+.hdr-stripes .s1{flex:2;background:var(--yellow)}
+.hdr-stripes .s2{flex:3;background:var(--red)}
+.hdr-stripes .s3{flex:2;background:var(--yellow)}
+
+/* ── LAYOUT ─────────────────────────────────── */
+.app{display:flex;flex:1;min-height:0}
+.lp{width:420px;flex-shrink:0;overflow:hidden;background:#fff;border-right:1px solid #d4dae8;display:flex;flex-direction:column;transition:width .38s cubic-bezier(.4,0,.2,1);will-change:width}
+.lp > *{transition:opacity .2s ease;opacity:1}
+.app.lp-hidden .lp{width:0;border-right:none}
+.app.lp-hidden .lp > *{opacity:0;pointer-events:none}
+.rp{position:relative;flex:1;min-width:0;min-height:0}
+#mapEl{position:absolute;inset:0}
+.btn-toggle-panel{position:absolute;top:50%;left:0;transform:translateY(-50%);z-index:2000;width:24px;height:64px;background:var(--yellow);border:2px solid var(--blue3);border-left:none;border-radius:0 8px 8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-size:20px;font-weight:900;box-shadow:4px 0 14px rgba(0,0,0,.45);transition:background .15s,box-shadow .15s}
+.btn-toggle-panel:hover{background:#ffd000;box-shadow:4px 0 20px rgba(0,0,0,.55)}
+
+/* ── LIST HEAD ───────────────────────────────── */
+.list-head{padding:.75rem 1.1rem;display:flex;align-items:center;gap:7px;border-bottom:1px solid #d4dae8;background:#fff}
+.lp-head-sticky{position:sticky;top:0;z-index:10;background:#fff}
+.list-head h2{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue3);flex:1}
+.btn-import{display:inline-flex;align-items:center;gap:4px;padding:6px 13px;background:transparent;color:#7a8fa8;border:1px solid #c4cedc;border-radius:20px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.15s}
+.btn-import:hover{color:var(--blue);border-color:var(--blue)}
+.btn-add{display:inline-flex;align-items:center;gap:4px;padding:6px 15px;background:var(--blue);color:#fff;border:none;border-radius:20px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:.15s;box-shadow:0 2px 8px rgba(28,72,150,.30)}
+.btn-add:hover{background:var(--blue2)}
+
+.players{padding:.55rem .8rem;display:flex;flex-direction:column;gap:4px;flex:1;overflow-y:auto;overflow-x:hidden}
+.empty-msg{text-align:center;padding:2.5rem 1rem;color:#8a9ab5;font-size:14px;line-height:1.9}
+.empty-msg .ico{font-size:2.4rem;margin-bottom:.5rem;opacity:.4;display:block}
+.empty-msg strong{color:var(--blue)}
+
+/* ── PLAYER CARD ─────────────────────────────── */
+.pc{background:#fff;border:1px solid #e4e9f2;border-left:3px solid transparent;border-radius:10px;padding:.6rem .85rem;display:flex;align-items:center;gap:10px;transition:background .15s,box-shadow .15s,border-color .15s;cursor:pointer;box-shadow:0 1px 4px rgba(28,60,120,.06)}
+.pc:hover{background:#f4f7fd;border-left-color:var(--yellow);box-shadow:0 3px 12px rgba(28,60,120,.11)}
+.pc-avatar{width:40px;height:40px;border-radius:8px;background:var(--blue);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;flex-shrink:0;overflow:hidden;border:1.5px solid #d4dcea;box-shadow:0 1px 4px rgba(0,0,0,.10)}
+.pc-avatar img{width:100%;height:100%;object-fit:cover}
+.pc-info{flex:1;min-width:0}
+.pc-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--blue3)}
+.pc-meta{font-size:11px;color:#7a8fa8;margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pc-city{display:flex;align-items:center;gap:4px}
+.pc-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.pc-dot.pending{background:var(--yellow)}
+.pc-acts{display:flex;gap:3px;flex-shrink:0;opacity:0;transition:.15s}
+.pc:hover .pc-acts{opacity:1}
+.ib{width:26px;height:26px;border-radius:6px;border:1px solid #d4dcea;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#8a9ab5;transition:.1s}
+.ib:hover{background:#e8edf8;color:var(--blue3)}
+.ib.del:hover{background:#fce8e6;color:#b02020;border-color:#f0a8a0}
+
+/* ── OVERLAY ─────────────────────────────────── */
+.ovl{display:flex;position:fixed;inset:0;background:rgba(15,47,106,.5);z-index:2500;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+.ovl.on{display:flex}
+.modal{background:#fff;border:1px solid #c4cedc;border-top:4px solid var(--blue);border-radius:18px;padding:1.75rem;width:520px;max-width:100%;box-shadow:var(--sh2);margin:auto;overflow:hidden}
+.modal h3{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue3);margin-bottom:1.25rem;border-bottom:2px solid var(--yellow);padding-bottom:.6rem}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#8a9ab5;margin-top:-4px;line-height:1}
+.modal-close:hover{color:var(--red)}
+
+/* ── FIELDS ──────────────────────────────────── */
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ── PHOTO FIELD ─────────────────────────────── */
+.photo-prev{width:54px;height:54px;border-radius:2px;background:#f0f2f5;border:1px solid #c4cedc;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
+.photo-prev img{width:100%;height:100%;object-fit:cover}
+.photo-inputs{flex:1;display:flex;flex-direction:column;gap:6px}
+.file-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#f0f2f5;border:1px solid #c4cedc;border-radius:2px;font-size:12px;color:#7a8fa8;cursor:pointer;transition:.1s;width:fit-content;font-family:'Barlow',sans-serif}
+.file-btn:hover{border-color:var(--blue);color:var(--blue)}
+.file-btn input{display:none}
+
+/* ── AUTOCOMPLETE ────────────────────────────── */
+.ac-it{padding:8px 12px;cursor:pointer;border-bottom:1px solid #edf0f5}
+.ac-it:last-child{border-bottom:none}
+.ac-it:hover,.ac-it.hl{background:#eef1f9}
+.ac-nm{font-size:13px;font-weight:600;color:var(--blue3)}
+.ac-sb{font-size:11px;color:#8a9ab5;margin-top:1px}
+.ac-msg{padding:10px 12px;font-size:13px;color:#8a9ab5}
+
+/* ── FORM BUTTONS ────────────────────────────── */
+.form-btns .btn-p:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── IMPORT MODAL ────────────────────────────── */
+.imp-modal{width:720px}
+.imp-textarea{width:100%;height:130px;padding:10px;border:1px solid #c4cedc;border-radius:2px;font-family:'Barlow',sans-serif;font-size:13px;color:var(--blue3);background:#f5f7fb;resize:vertical;outline:none;transition:.12s}
+.imp-textarea:focus{border-color:var(--blue)}
+.imp-textarea::placeholder{color:#b0bdd0}
+.imp-hint{font-size:12px;color:#8a9ab5;margin-top:7px;line-height:1.7}
+.imp-hint code{background:#eef1f9;padding:1px 5px;border-radius:2px;font-size:11px;font-family:monospace;color:var(--blue)}
+.col-map-table th select{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:2px;color:#fff;font-family:'Barlow',sans-serif;font-size:12px;padding:3px 7px;cursor:pointer;outline:none;width:100%}
+.col-map-table th select option{color:var(--blue3);background:#fff}
+.imp-summary strong{color:var(--blue)}
+
+/* ── MAP LEGEND ──────────────────────────────── */
+.map-legend{position:absolute;bottom:14px;left:14px;z-index:400;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border:1px solid #c4cedc;border-top:3px solid var(--blue);border-radius:14px;padding:8px 12px;font-size:12px;color:#7a8fa8;pointer-events:none;display:none;box-shadow:var(--sh)}
+.map-legend strong{color:var(--blue3);display:block;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.leg-row{display:flex;align-items:center;gap:7px;margin-top:3px}
+.leg-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid rgba(255,255,255,.8);flex-shrink:0}
+
+/* ── LEAFLET POPUP ───────────────────────────── */
+.leaflet-popup-content-wrapper{border-radius:16px!important;box-shadow:0 12px 40px rgba(15,47,106,.24),0 2px 8px rgba(0,0,0,.10)!important;padding:0!important;overflow:hidden;border:none!important}
+.leaflet-popup-tip-container{filter:drop-shadow(0 4px 6px rgba(15,47,106,.15))}
+.leaflet-popup-content{margin:0!important;padding:0!important;min-width:200px}
+/* ── LAYERS CONTROL – collapsed premium button ─ */
+.leaflet-control-layers{border-radius:12px!important;border:1.5px solid rgba(28,72,150,.18)!important;box-shadow:0 4px 16px rgba(15,40,100,.16)!important;overflow:hidden}
+.leaflet-control-layers-toggle{width:36px!important;height:36px!important;background-color:rgba(246,249,255,.96)!important;background-image:none!important;border-radius:10px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.leaflet-control-layers-toggle::after{content:'';display:block;width:18px;height:18px;margin:auto;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c4896' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='12 2 2 7 12 12 22 7'/%3E%3Cpolyline points='2 17 12 22 22 17'/%3E%3Cpolyline points='2 12 12 17 22 12'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;background-position:center}
+.leaflet-control-layers-expanded{background:rgba(246,249,255,.97)!important;border-radius:12px!important;padding:10px 12px 8px!important;min-width:140px}
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle{display:none!important}
+.leaflet-control-layers label{font-family:'Barlow',sans-serif;font-size:13px;font-weight:500;color:#1c2e4a!important;display:flex;align-items:center;gap:6px;padding:3px 0;cursor:pointer}
+.leaflet-control-layers input[type=radio]{accent-color:#1c4896}
+.pop-hdr{padding:10px 14px;background:linear-gradient(135deg,var(--blue3) 0%,var(--blue) 100%);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pop-player{padding:10px 14px;font-size:13px;color:var(--blue3);border-bottom:1px solid #edf0f5;display:flex;align-items:center;gap:10px;background:#fff;cursor:pointer;transition:background .15s}
+.pop-player:last-child{border-bottom:none;padding-bottom:11px}
+.pop-thumb{width:40px;height:40px;border-radius:8px;overflow:hidden;flex-shrink:0;border:1.5px solid #d4dcea;box-shadow:0 1px 4px rgba(0,0,0,.10)}
+.pop-thumb-ph{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--blue3),var(--blue));display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#fff;letter-spacing:.04em;flex-shrink:0}
+.pop-pname{font-weight:700;font-size:13px;color:var(--blue3)}
+.pop-pmeta{font-size:11px;color:#8a9ab5;margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+
+/* ── FILTER PANEL – glassmorphism redesign ───── */
+.filter-panel{
+  position:absolute;bottom:16px;left:14px;z-index:430;
+  background:rgba(232,241,255,.90);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:18px;
+  padding:10px;
+  min-width:242px;
+  box-shadow:0 8px 32px rgba(15,40,100,.18),0 2px 8px rgba(0,0,0,.07);
+}
+/* segmented control */
+.fp-modes{display:flex;gap:2px;background:rgba(28,72,150,.10);border-radius:12px;padding:3px;margin-bottom:0}
+.fp-mode{flex:1;padding:6px 0;background:transparent;border:none;border-radius:10px;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6a82a8;cursor:pointer;transition:background .18s,color .18s,box-shadow .18s}
+.fp-mode:hover{color:var(--blue)}
+.fp-mode.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(28,72,150,.30)}
+/* body */
+.fp-body{margin-top:10px;padding:0 4px}
+.fp-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.fp-field-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6a82a8}
+.fp-range-val{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;background:var(--blue);padding:2px 10px;border-radius:10px;letter-spacing:.02em}
+/* dual range slider */
+.fp-slider-wrap{position:relative;height:28px;display:flex;align-items:center}
+.fp-slider{-webkit-appearance:none;appearance:none;position:absolute;width:100%;height:4px;background:transparent;outline:none;pointer-events:none;z-index:2}
+.fp-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--blue);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(28,72,150,.40);cursor:pointer;pointer-events:all}
+.fp-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--blue);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(28,72,150,.40);cursor:pointer;pointer-events:all}
+/* track */
+.fp-slider-wrap::before{content:'';position:absolute;left:0;right:0;height:4px;background:rgba(28,72,150,.15);border-radius:2px;z-index:0}
+.fp-track-fill{position:absolute;height:4px;background:var(--yellow);border-radius:2px;z-index:1;pointer-events:none}
+.fp-hint{font-size:11px;color:#7a8fa8;margin-top:8px;text-align:center;letter-spacing:.02em}
+
+
+@media(max-width:480px){
+  h1{font-size:.85rem}
+  .hbtn{font-size:9px;padding:4px 6px}
+  .app{grid-template-rows:45vh 1fr}
+  .rp{min-height:45vh}
+}
+
+/* ── MOBILE BOTTOM NAV ──────────────────────── */
+.mob-nav{display:none}
+.mob-stats-panel{
+  position:fixed;bottom:0;left:0;right:0;height:68vh;z-index:2900;
+  background:#f2f5fb;border-radius:20px 20px 0 0;
+  box-shadow:0 -8px 36px rgba(15,40,100,.18);
+  overflow-y:auto;
+  transform:translateY(100%);opacity:0;pointer-events:none;
+  transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s;
+}
+.mob-stats-panel.on{transform:translateY(0);opacity:1;pointer-events:all}
+.msp-handle{width:36px;height:4px;border-radius:2px;background:rgba(28,72,150,.18);margin:10px auto 0}
+.msp-head{padding:.85rem 1.2rem .5rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--blue3);border-bottom:1px solid #dde5f0;margin-bottom:.6rem}
+.msp-body{padding:.4rem 1rem 2rem}
+.msp-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.2rem}
+.msp-kpi{background:#fff;border-radius:12px;border:1px solid #e4eaf5;padding:.65rem .5rem;text-align:center;box-shadow:0 1px 4px rgba(28,60,120,.06)}
+.msp-kpi-val{display:block;font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;color:var(--blue);line-height:1}
+.msp-kpi-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9aaac4;margin-top:3px}
+.msp-section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9aaac4;margin-bottom:.65rem}
+.msp-bars{display:flex;flex-direction:column;gap:.55rem}
+.msp-bar-row{display:flex;align-items:center;gap:.55rem}
+.msp-bar-city{font-size:12px;font-weight:600;color:var(--blue3);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msp-bar-track{flex:1;height:6px;background:rgba(28,72,150,.10);border-radius:3px;overflow:hidden}
+.msp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue) 0%,var(--blue-light) 100%);border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.msp-bar-count{font-size:11px;font-weight:700;color:var(--blue);width:20px;text-align:right;flex-shrink:0}
+/* Timeline chart */
+.msp-timeline{display:flex;align-items:flex-end;gap:4px;height:72px;padding:0 2px;margin-bottom:4px}
+.msp-decade-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:default}
+.msp-decade-bar{width:100%;background:linear-gradient(180deg,var(--blue-light) 0%,var(--blue) 100%);border-radius:4px 4px 2px 2px;min-height:3px;transition:height .5s cubic-bezier(.4,0,.2,1)}
+.msp-decade-bar:hover{filter:brightness(1.2)}
+.msp-decade-lbl{font-size:9px;font-weight:700;color:#9aaac4;letter-spacing:-.02em;text-align:center;line-height:1}
+.msp-decade-cnt{font-size:9px;font-weight:700;color:var(--blue);line-height:1}
+/* Records */
+.msp-rec-grid{display:flex;flex-direction:column;gap:.5rem}
+.msp-rec{display:flex;align-items:center;gap:.75rem;background:#fff;border-radius:12px;padding:.6rem .85rem;border:1px solid #e4eaf5;box-shadow:0 1px 4px rgba(28,60,120,.05)}
+.msp-rec-ico{font-size:1.3rem;flex-shrink:0;width:28px;text-align:center}
+.msp-rec-main{flex:1;min-width:0}
+.msp-rec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9aaac4;display:block;margin-bottom:2px}
+.msp-rec-name{font-size:13px;font-weight:700;color:var(--blue3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.msp-rec-val{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;color:var(--blue);flex-shrink:0}
+.msp-rec.dim .msp-rec-name{color:#b0bdd0;font-style:italic}
+.msp-rec.dim .msp-rec-val{color:#c4cedc}
+/* Club achievements */
+.msp-achieve{display:flex;flex-direction:column;gap:.45rem}
+.msp-ach-row{display:flex;align-items:baseline;gap:.6rem;padding:.5rem .75rem;background:#fff;border-radius:10px;border:1px solid #e4eaf5;box-shadow:0 1px 3px rgba(28,60,120,.05)}
+.msp-ach-ico{font-size:1rem;flex-shrink:0;width:22px;text-align:center}
+.msp-ach-lbl{font-size:12px;font-weight:600;color:var(--blue3);flex:1}
+.msp-ach-years{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--blue);white-space:nowrap}
+/* Name timeline */
+.msp-names{display:flex;flex-direction:column;gap:0;position:relative;padding-left:16px}
+.msp-names::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,var(--blue) 0%,#c4cedc 100%);border-radius:1px}
+.msp-name-row{display:flex;gap:.65rem;padding:.3rem 0;position:relative}
+.msp-name-row::before{content:'';position:absolute;left:-13px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#c4cedc;border:2px solid #fff}
+.msp-name-row.current::before{background:var(--blue);box-shadow:0 0 0 3px rgba(28,72,150,.2)}
+.msp-name-years{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#8a9ab5;white-space:nowrap;width:72px;flex-shrink:0;padding-top:1px}
+.msp-name-val{font-size:12px;font-weight:500;color:var(--blue3);line-height:1.35}
+.msp-name-row.current .msp-name-val{font-weight:700;color:var(--blue)}
+/* Captains grid */
+.msp-captain-grid{column-count:2;column-gap:.75rem}
+.msp-cap-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-radius:7px;transition:background .12s;break-inside:avoid}
+.msp-cap-row:hover{background:rgba(28,72,150,.06)}
+.msp-cap-years{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--blue);width:68px;flex-shrink:0}
+.msp-cap-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid #d4dcea;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:800;color:var(--yellow);transform:translateZ(0);isolation:isolate}
+.msp-cap-av img{width:100%;height:100%;object-fit:cover;display:block}
+.msp-cap-name{font-size:12px;font-weight:500;color:var(--blue3)}
+/* Captain badge */
+.detail-captain-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(245,195,0,.18);border:1px solid rgba(245,195,0,.55);
+  border-radius:20px;padding:4px 12px;
+  font-size:12px;font-weight:700;color:var(--yellow);
+  letter-spacing:.03em;width:fit-content;
+}
+.detail-captain-badge::before{
+  content:'C';display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--yellow);color:var(--blue3);
+  font-size:10px;font-weight:900;flex-shrink:0;
+}
+/* Captain dot on list card avatar */
+.pc-avatar{position:relative}
+.pc-captain-dot{
+  position:absolute;bottom:-2px;right:-2px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--yellow);color:var(--blue3);
+  font-size:8px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid #fff;line-height:1;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+/* Scroll to top */
+
+/* Placement chart */
+.placement-chart-wrap{margin-bottom:.5rem;overflow:visible}
+.pl-dot{cursor:pointer;transition:r .1s}
+.pl-dot:hover{r:5}
+.pl-season-tip{position:fixed;z-index:9999;pointer-events:none;background:#fff;border-radius:10px;padding:8px 12px;box-shadow:0 4px 20px rgba(10,30,80,.18);border:1px solid #e4eaf5;max-width:240px;opacity:0;transition:opacity .15s}
+.pl-tip-season{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--blue)}
+.pl-tip-comp{font-size:11px;color:var(--blue3);margin-top:1px;font-weight:700}
+.pl-tip-place{font-size:11px;color:#8a9ab5;margin-top:1px}
+.pl-tip-btn{display:inline-block;margin-top:6px;font-size:10px;background:var(--blue);color:#fff;border-radius:4px;padding:2px 8px;cursor:pointer;letter-spacing:.04em}
+/* Roster modal */
+.ovl-roster .modal{max-width:500px;max-height:80vh;overflow-y:auto;background:#fff}
+.roster-head{background:var(--blue3);padding:14px 20px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.roster-season{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:.04em}
+.roster-club{font-size:11px;opacity:.7;margin-top:2px}
+.roster-place-badge{background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800}
+.roster-comps{padding:8px 20px;background:#f4f7fb;border-bottom:1px solid #e4eaf5;font-size:11px;color:#6a7a9a}
+.roster-grid{display:flex;flex-wrap:wrap;gap:5px;padding:14px 20px}
+.roster-player{display:flex;align-items:center;gap:7px;padding:5px 9px;border-radius:8px;background:#f8fafd;border:1px solid #e8eef8;font-size:12px;color:var(--blue3);transition:background .12s}
+.roster-player.linked{cursor:pointer;border-color:rgba(28,72,150,.25)}
+.roster-player.linked:hover{background:#e8f0fd}
+.roster-player .rp-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:var(--yellow);transform:translateZ(0);isolation:isolate}
+.roster-player .rp-av img{width:100%;height:100%;object-fit:cover;display:block}
+.roster-eralink{display:inline-block;margin-top:6px;background:var(--blue);color:#fff;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:.15s}
+.roster-eralink:hover{background:#153a78}
+/* Dynasty section */
+.dynasty-row{display:flex;align-items:center;gap:10px;padding:.35rem 0;border-bottom:1px solid #f0f4fb}
+.dynasty-row:last-child{border-bottom:none}
+.dynasty-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--blue3);min-width:90px}
+.dynasty-bar-wrap{flex:1;background:#eef2fb;border-radius:4px;height:7px;overflow:hidden}
+.dynasty-bar{height:7px;background:linear-gradient(90deg,var(--blue),#4a7ad4);border-radius:4px;transition:width .6s ease}
+.dynasty-seasons{font-size:10px;color:#8a9ab5;font-weight:700;min-width:60px;text-align:right}
+
+/* Photo strip float above multi marker */
+.mk-photo-strip-float{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) scale(.7);transform-origin:center bottom;opacity:0;pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.56,.64,1);z-index:999;}
+.pop-cardbtn{padding:9px 14px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--blue);background:#f4f7fd;border-top:1px solid #e4eaf5;cursor:pointer;transition:.15s;border-radius:0 0 12px 12px}
+.pop-cardbtn:hover{background:#e8f0fd}
+/* Player card overlay */
+.card-ovl-inner{background:#fff;border-radius:16px;overflow:hidden;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.card-ovl-inner canvas{width:100%;display:block;background:#0f2f6a}
+.card-ovl-actions{display:flex;gap:8px;padding:14px}
+.card-ovl-actions button{flex:1;padding:10px;border-radius:8px;font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;border:none;transition:.15s}
+.card-btn-download{background:var(--blue);color:#fff}
+.card-btn-download:hover{background:#153a78}
+.card-btn-share{background:var(--yellow);color:#0f2f6a}
+.card-btn-share:hover{background:#e0b100}
+.card-btn-close{background:#eef2f8;color:#6a7a9a;flex:0 0 44px !important}
+
+/* Detail swipe navigace */
+#detailContent{transition:transform .18s ease,opacity .18s ease}
+#detailContent.slide-out-l{transform:translateX(-36px);opacity:0}
+#detailContent.slide-out-r{transform:translateX(36px);opacity:0}
+#detailContent.slide-prep-l{transition:none;transform:translateX(36px);opacity:0}
+#detailContent.slide-prep-r{transition:none;transform:translateX(-36px);opacity:0}
+/* ── PŘEHRÁVÁNÍ HISTORIE ── */
+.hist-ovl{position:absolute;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:1200;
+  background:rgba(10,22,56,.93);backdrop-filter:blur(8px);border:1px solid rgba(245,195,0,.35);
+  border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:4px;
+  box-shadow:0 10px 40px rgba(0,0,0,.45);opacity:0;transition:opacity .3s,transform .3s;min-width:280px}
+.hist-ovl.on{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
+.hist-year{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:800;color:#fff;line-height:1;letter-spacing:.02em}
+.hist-club{display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--yellow);letter-spacing:.05em;min-height:26px}
+.hist-club img{height:24px;object-fit:contain}
+.hist-count{font-size:12px;color:#9db0d6;font-weight:600}
+.hist-bar{width:100%;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin-top:6px;overflow:hidden}
+.hist-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--yellow));border-radius:2px}
+.hist-stop{position:absolute;top:8px;right:10px;background:none;border:none;color:#7d90bb;font-size:15px;cursor:pointer;padding:2px 5px}
+.hist-stop:hover{color:#fff}
+@media(max-width:750px){.hist-ovl{bottom:86px;padding:10px 16px;min-width:230px}.hist-year{font-size:38px}.hist-club{font-size:13px}}
+
+/* ── GLOBE INTRO ── */
+#introOvl{position:fixed;inset:0;z-index:6000;background:#060c1f;display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity 1s ease}
+#introOvl.fade{opacity:0;pointer-events:none}
+#introOvl canvas{position:absolute;inset:0;width:100%;height:100%}
+.intro-title{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);text-align:center;pointer-events:none}
+.intro-title .it1{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.22em;color:var(--yellow);text-transform:uppercase}
+.intro-title .it2{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:800;letter-spacing:.06em;color:#fff;margin-top:2px}
+.intro-skip{position:absolute;right:22px;bottom:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
+  color:#c7d2ea;border-radius:20px;padding:7px 16px;font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;
+  letter-spacing:.05em;cursor:pointer;transition:.15s}
+.intro-skip:hover{background:rgba(255,255,255,.16);color:#fff}
+/* ── PŘEHRÁVÁNÍ HISTORIE END ── */
+/* DB City labels layer */
+.db-label { pointer-events:none; }
+.db-label-inner {
+  white-space:nowrap;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px; font-weight:700; letter-spacing:.04em;
+  color:#1c2e4a;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(4px);
+  border:1px solid rgba(28,72,150,.18);
+  border-radius:20px;
+  padding:2px 8px;
+  box-shadow:0 1px 4px rgba(10,30,80,.12);
+  display:inline-flex; align-items:center; gap:5px;
+}
+.db-label-count {
+  background:var(--blue);
+  color:#fff;
+  font-size:9px; font-weight:800;
+  border-radius:10px;
+  padding:1px 5px;
+}
+/* Birthday section */
+.bday-section{padding:.5rem .8rem .3rem}
+.bday-header{display:flex;align-items:center;gap:6px;margin-bottom:.4rem}
+.bday-header span{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue3)}
+.bday-card{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(28,72,150,.07),rgba(245,195,0,.05));border:1px solid rgba(245,195,0,.28);border-radius:12px;padding:7px 10px;margin-bottom:5px;cursor:pointer;transition:background .15s}
+.bday-card:hover{background:linear-gradient(135deg,rgba(28,72,150,.13),rgba(245,195,0,.1))}
+.bday-av{width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(245,195,0,.5);background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--yellow);transform:translateZ(0);isolation:isolate}
+.bday-av img{width:100%;height:100%;object-fit:cover;display:block}
+.bday-info{flex:1;min-width:0}
+.bday-name{font-size:13px;font-weight:700;color:var(--blue3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bday-meta{font-size:11px;color:#8a9ab5;margin-top:1px}
+.bday-age{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--yellow);flex-shrink:0}
+.bday-died{opacity:.55;border-color:rgba(140,150,170,.25);background:linear-gradient(135deg,rgba(80,90,110,.06),rgba(100,110,130,.04))}
+.bday-died .bday-age{color:#8a9ab5}
+.scroll-top{
+  position:sticky;bottom:12px;
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;
+  margin:8px auto 4px;
+  background:var(--blue);color:#fff;
+  border:none;border-radius:50%;
+  box-shadow:0 4px 14px rgba(28,72,150,.35);
+  cursor:pointer;font-size:16px;
+  opacity:0;pointer-events:none;
+  transition:opacity .25s,transform .25s;
+  z-index:10;
+}
+.scroll-top.visible{opacity:1;pointer-events:all}
+.scroll-top:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(28,72,150,.45)}
+/* Club info card */
+.msp-club-info{background:#fff;border-radius:12px;border:1px solid #e4eaf5;padding:.7rem .9rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(28,60,120,.06)}
+.msp-club-row{display:flex;align-items:baseline;gap:.5rem;padding:.25rem 0;border-bottom:1px solid #f0f3f9}
+.msp-club-row:last-child{border-bottom:none}
+.msp-club-key{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#8a9ab5;width:100px;flex-shrink:0}
+.msp-club-val{font-size:13px;font-weight:600;color:var(--blue3);line-height:1.3}
+.msp-club-colors{display:flex;gap:5px;align-items:center}
+.msp-color-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(0,0,0,.12);flex-shrink:0}
+/* Year chart interactive tooltip */
+.year-chart-tip{position:fixed;z-index:9999;pointer-events:none;background:#fff;border-radius:10px;padding:8px 12px;box-shadow:0 4px 20px rgba(10,30,80,.18);border:1px solid #e4eaf5;max-width:230px;opacity:0;transition:opacity .15s;transform:translate(-50%,calc(-100% - 10px))}
+.yct-year{display:block;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--blue)}
+.yct-count{display:block;font-size:11px;font-weight:700;color:var(--blue3);margin-top:1px}
+.yct-names{display:block;font-size:10px;color:#8a9ab5;margin-top:5px;line-height:1.5}
+/* Year line chart */
+.msp-year-chart{display:block;width:100%;margin-bottom:2px;overflow:visible}
+/* Expandable region list */
+.msp-bars-wrap{position:relative}
+.msp-bars-wrap .msp-bars{max-height:132px;overflow:hidden;transition:max-height .3s}
+.msp-bars-wrap .msp-bars.exp{max-height:600px}
+.msp-show-more{display:block;width:100%;margin-top:4px;padding:4px;background:none;border:none;font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);cursor:pointer;text-align:center}
+/* Stats backdrop */
+.mob-stats-backdrop{display:none;position:fixed;inset:0;z-index:2850;cursor:pointer;background:rgba(0,0,0,.12)}
+@media(max-width:750px){
+  body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+  .btn-toggle-panel{display:none!important}
+  /* Layout: map full-screen, list as sliding full-screen overlay */
+  .app{flex-direction:column}
+  .rp{flex:1;min-height:0;order:1}
+  .lp{
+    position:fixed!important;
+    top:var(--hdr-h,54px);left:0;right:0;
+    bottom:calc(60px + env(safe-area-inset-bottom,0px));
+    width:100%!important;height:auto!important;
+    z-index:2800;
+    transform:translateY(110%);
+    transition:transform .32s cubic-bezier(.4,0,.2,1);
+    border:none!important;border-top:none!important;
+    overflow-y:auto;
+  }
+  .lp.lp-open{transform:translateY(0)}
+  /* Header stays above lp overlay */
+  .hdr{position:relative;z-index:3100}
+  /* Filter panel above nav */
+  .filter-panel{bottom:calc(72px + env(safe-area-inset-bottom,0px))!important}
+  /* Stats panel above nav */
+  .mob-stats-panel{bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+  /* Header tweaks */
+  .hdr-inner{padding:.5rem .8rem;gap:.5rem}
+  .hdr-club-logo{height:30px}
+  h1{font-size:1rem}
+  h1 span{display:none}
+  .hdr-stats{display:none}
+  .hbtn{padding:5px 8px;font-size:10px}
+  .list-head{flex-wrap:wrap;padding:.5rem .7rem;gap:5px}
+  .list-head h2{font-size:.85rem}
+  .sort-bar{padding:4px 8px;gap:4px}
+  .imp-modal{width:100%}
+  .fg3{grid-template-columns:1fr 1fr}
+  .mob-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:3000;
+    background:rgba(246,249,255,.95);
+    -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+    border-radius:16px 16px 0 0;
+    border-top:1px solid rgba(200,215,240,.55);
+    box-shadow:0 -4px 24px rgba(15,40,100,.13);
+    padding:8px 4px max(env(safe-area-inset-bottom,0px),10px);
+  }
+  .mob-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:5px 0 3px;background:none;border:none;cursor:pointer;
+    color:#a0b0cc;font-family:'Barlow',sans-serif;font-size:10px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;
+    transition:color .18s;-webkit-tap-highlight-color:transparent;position:relative;
+  }
+  .mob-tab svg{width:22px;height:22px;stroke-width:1.65;transition:filter .18s}
+  .mob-tab.active{color:var(--blue)}
+  .mob-tab.active svg{filter:drop-shadow(0 1px 4px rgba(28,72,150,.32))}
+  .mob-tab::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:3px;border-radius:0 0 3px 3px;background:var(--blue);transition:width .2s cubic-bezier(.4,0,.2,1)}
+  .mob-tab.active::after{width:24px}
+}
+
+/* City group sections */
+.city-section { margin-bottom: 2px; }
+.city-hdr {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; cursor: pointer;
+  background: rgba(28,72,150,.12);
+  border-left: 3px solid #1c4896;
+  border-radius: 4px;
+  user-select: none;
+  transition: background .15s;
+}
+.city-hdr:hover { background: rgba(28,72,150,.22); }
+.city-hdr.collapsed { border-left-color: #aaa; background: rgba(0,0,0,.04); }
+.city-hdr-name { flex: 1; font-weight: 600; font-size: .88rem; color: #1c3a7a; }
+.city-hdr.collapsed .city-hdr-name { color: #555; }
+.city-hdr-count {
+  background: #1c4896; color: #f5c300;
+  font-size: .75rem; font-weight: 700;
+  padding: 1px 7px; border-radius: 10px; min-width: 22px; text-align: center;
+}
+.city-hdr.collapsed .city-hdr-count { background: #999; color: #fff; }
+.city-hdr-arrow { font-size: .7rem; color: #888; width: 12px; }
+.city-body { margin-left: 4px; }
+
+/* Multi-player popup compact list */
+.pop-badge{background:rgba(245,195,0,.2);color:var(--yellow);border:1px solid rgba(245,195,0,.4);font-size:11px;font-weight:800;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.pop-list{max-height:300px;overflow-y:auto}
+.pop-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 14px;border-bottom:1px solid #edf0f5;font-size:12px;cursor:pointer;transition:background .15s}
+.pop-row:last-child{border-bottom:none}
+.pop-row:hover{background:#eef3fc!important}
+.pop-row:hover .pop-rname{color:var(--blue)}
+.pop-rname{font-weight:600;color:var(--blue3);flex:1}
+.pop-rmeta{display:flex;gap:4px;color:#8a9ab5;font-size:11px;white-space:nowrap;align-items:center}
+.pop-rmeta span{background:#eef1f8;padding:2px 6px;border-radius:6px;font-weight:600}
+.pop-player:hover{background:#eef3fc!important}
+.pop-detail-hint{text-align:center;font-size:10px;color:#b0bdd0;padding:4px 0 7px;letter-spacing:.04em}
+.pop-actions{display:flex;border-top:1px solid #edf0f5}
+.pop-act{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;transition:background .15s;letter-spacing:.02em}
+.pop-act:hover{background:#eef3fc}
+.pop-act+.pop-act{border-left:1px solid #edf0f5}
+
+/* ── PLAYER DETAIL MODAL – premium card redesign ─── */
+#detailOvl .modal {
+  max-width: 460px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-top: none !important;
+  border-radius: 24px !important;
+  overflow: hidden;
+  box-shadow: 0 28px 70px rgba(10,30,80,.38), 0 8px 20px rgba(0,0,0,.16) !important;
+}
+.detail-card-header {
+  background: linear-gradient(140deg, var(--blue3) 0%, var(--blue) 55%, var(--blue-light) 100%);
+  padding: 1.75rem 1.75rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  position: relative;
+}
+.detail-photo {
+  width: 120px; height: 120px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,.22);
+  box-shadow: 0 10px 28px rgba(0,0,0,.40);
+  flex-shrink: 0;
+  float: none; margin: 0;
+  display: block;
+}
+.detail-photo-ph {
+  width: 120px; height: 120px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.18);
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem; font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; letter-spacing: .06em; color: #fff;
+  flex-shrink: 0; float: none; margin: 0;
+}
+.detail-header-info {
+  flex: 1; min-width: 0;
+  padding-top: 4px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.detail-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.7rem; font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  line-height: 1.05;
+  margin: 0;
+}
+.detail-city-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(245,195,0,.16);
+  border: 1px solid rgba(245,195,0,.38);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px; font-weight: 600;
+  color: var(--yellow);
+  letter-spacing: .03em;
+  width: fit-content;
+}
+.detail-card-body {
+  padding: 1.5rem 1.75rem 1.3rem;
+}
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem .75rem;
+}
+.detail-info-item {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.detail-info-item.full { grid-column: 1 / -1; }
+.detail-lbl {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .09em;
+  color: #8a9ab5;
+}
+.detail-val {
+  font-size: 14px; font-weight: 600;
+  color: var(--blue3); line-height: 1.3;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.detail-seasons {
+  display: inline-block;
+  background: rgba(28,72,150,.10);
+  color: var(--blue); font-size: 12px; font-weight: 700;
+  padding: 2px 9px; border-radius: 10px;
+  border: 1px solid rgba(28,72,150,.2);
+}
+.detail-card-footer {
+  border-top: 1px solid #edf0f5;
+  padding: .9rem 1.75rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.detail-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  background: transparent;
+  border: 1px solid #c4cedc; border-radius: 20px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em;
+  color: #7a8fa8; cursor: pointer; transition: .15s;
+  margin: 0;
+}
+.detail-back:hover { border-color: var(--blue); color: var(--blue); background: rgba(28,72,150,.04); }
+.detail-close-btn {
+  margin-left: auto;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: transparent; border: 1px solid #c4cedc;
+  color: #8a9ab5; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: .15s; flex-shrink: 0;
+}
+.detail-close-btn:hover { background: #fce8e6; border-color: #f0a8a0; color: var(--red); }
+
+/* Search bar */
+.search-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-bottom: 2px solid #d4dae8;
+  background: #f4f7fb;
+}
+.search-icon { font-size: 13px; opacity: .5; flex-shrink:0; }
+#playerSearch {
+  flex: 1; border: 1px solid #c4cedc; border-radius: 4px;
+  padding: 5px 8px; font-size: 13px; font-family: 'Barlow', sans-serif;
+  outline: none; background: #fff; color: var(--blue3);
+}
+#playerSearch:focus { border-color: #1c4896; box-shadow: 0 0 0 2px rgba(28,72,150,.15); }
+.search-clear {
+  border: none; background: none; cursor: pointer; font-size: 13px;
+  color: #aaa; padding: 2px 4px; display: none; border-radius: 3px;
+}
+.search-clear:hover { background: #e8edf4; color: #555; }
+
+/* Active / highlighted player card */
+.pc-active {
+  background: linear-gradient(90deg, #e4edfc 0%, #eef3fd 100%) !important;
+  border-left: 3px solid var(--blue) !important;
+  box-shadow: 0 4px 16px rgba(28,72,150,.14) !important;
+}
+.pc-active .pc-name { color: var(--blue); }
+.pc-highlight { background: #fffbe6; }
+
+.hdr-club-logo { height: 40px; width: auto; flex-shrink: 0; display:block; }
+
+/* Sort bar */
+.sort-bar {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-bottom: 1px solid #d4dae8;
+  background: #f9fafc;
+}
+.sort-label { font-size: 11px; color: #8a9ab5; flex-shrink:0; font-family:'Barlow',sans-serif; }
+.sort-btn {
+  font-size: 11px; padding: 4px 11px; border-radius: 20px; cursor: pointer;
+  border: 1px solid #d0d8e8; background: #fff; color: #556;
+  font-family: 'Barlow', sans-serif; font-weight: 500; transition: .12s;
+}
+.sort-btn:hover { border-color: #1c4896; color: #1c4896; }
+.sort-btn.active { background: #1c4896; color: #f5c300; border-color: #1c4896; font-weight: 700; }
+.sort-btn.sort-cap.active { background: var(--yellow); color: var(--blue3); border-color: #c8a800; }
+.sort-btn.sort-cur.active { background: var(--blue3); color: #fff; border-color: var(--blue3); }
+
+
+/* ── MARKER POP ANIMATION ──────────────────────── */
+@keyframes mkPop {
+  from { opacity: 0; filter: blur(2px) brightness(.6); }
+  to   { opacity: 1; filter: blur(0)   brightness(1); }
+}
+.mk-anim { animation: mkPop .35s ease both; }
+/* Allow photo bubbles/strips to overflow marker pane */
+.leaflet-marker-pane, .leaflet-pane { overflow: visible !important; }
+/* Marker hover — scale inner SVG only (not wrapper, to keep absolute positioning intact) */
+.leaflet-marker-icon { cursor: pointer; }
+.mk-wrap > svg, .mk-multi-wrap > svg {
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1);
+  transform-origin: center bottom; display: block;
+}
+/* CSS :hover for scale — reliable, doesn't need JS */
+.leaflet-marker-icon:hover .mk-wrap > svg    { transform: scale(1.22); }
+.leaflet-marker-icon:hover .mk-multi-wrap > svg { transform: scale(1.12); }
+/* mk-hovered class for photo elements (set by Leaflet events) */
+.leaflet-marker-icon.mk-hovered .mk-wrap > svg    { transform: scale(1.22); }
+.leaflet-marker-icon.mk-hovered .mk-multi-wrap > svg { transform: scale(1.12); }
+/* Round photo bubble — single marker */
+.mk-photo-bubble {
+  position: absolute; bottom: calc(100% + 16px); left: 50%;
+  transform: translateX(-50%) scale(.7); transform-origin: center bottom;
+  width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
+  border: 2.5px solid #fff; box-shadow: 0 4px 16px rgba(10,30,80,.38);
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s, transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.leaflet-marker-icon.mk-hovered .mk-photo-bubble { opacity: 1; transform: translateX(-50%) scale(1); }
+.mk-wrap:hover .mk-photo-bubble { opacity: 1 !important; transform: translateX(-50%) scale(1) !important; }
+.mk-photo-bubble img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Photo strip — multi marker */
+.mk-photo-strip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%) scale(.7); transform-origin: center bottom;
+  display: flex; align-items: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+  z-index: 9999;
+}
+.leaflet-marker-icon.mk-hovered .mk-photo-strip { opacity: 1 !important; transform: translateX(-50%) scale(1) !important; }
+.mk-multi-wrap:hover .mk-photo-strip { opacity: 1 !important; transform: translateX(-50%) scale(1) !important; }
+.mk-strip-av {
+  width: 30px; height: 30px; border-radius: 50%; overflow: hidden;
+  border: 2.5px solid #fff; margin-left: -7px; flex-shrink: 0;
+  background: var(--blue); color: var(--yellow);
+  font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(10,30,80,.3);
+}
+.mk-strip-av:first-child { margin-left: 0; }
+.mk-strip-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Ensure wrapper doesn't clip the strip */
+.mk-multi-wrap { overflow: visible !important; }
+/* Leaflet photo tooltip */
+.mk-photo-tooltip { background:transparent!important; border:none!important; box-shadow:none!important; padding:0!important; }
+.mk-photo-tooltip::before { display:none!important; }
+.mk-tooltip-strip { display:flex; align-items:center; filter:drop-shadow(0 3px 10px rgba(10,30,80,.45)); }
+/* Arena popup */
+.arena-popup .leaflet-popup-content-wrapper { background:#0d1219; border:1px solid rgba(200,16,46,0.3); border-radius:16px; padding:0; overflow:hidden; }
+.arena-popup .leaflet-popup-content { margin:0; width:auto!important; }
+.arena-popup .leaflet-popup-tip { background:#0d1219; }
+.arena-popup .leaflet-popup-close-button { color:rgba(255,255,255,.4)!important; top:8px!important; right:8px!important; font-size:18px!important; z-index:10; }
+.arena-popup .leaflet-popup-close-button:hover { color:#fff!important; }
+.mk-city-label {
+  position:absolute; pointer-events:none; z-index:1001;
+  transform:translateX(-50%) translateY(6px);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:.04em;
+  color:var(--blue3);white-space:nowrap;
+  background:rgba(255,255,255,.93);backdrop-filter:blur(6px);
+  padding:2px 9px;border-radius:8px;
+  box-shadow:0 2px 8px rgba(10,30,80,.15);
+  border:1px solid rgba(28,72,150,.12);
+  opacity:0;transition:opacity .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+/* Modal fade + scale animation */
+.ovl { display: flex; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
+.ovl.on { pointer-events: all; opacity: 1; }
+.ovl .modal {
+  transform: scale(.94) translateY(14px); opacity: 0;
+  transition: transform .28s cubic-bezier(.34,1.2,.64,1), opacity .22s ease;
+}
+.ovl.on .modal { transform: scale(1) translateY(0); opacity: 1; }
+/* Premium zoom control */
+.leaflet-control-zoom { border:none!important; border-radius:12px!important; overflow:hidden; box-shadow:0 4px 16px rgba(15,40,100,.16)!important; }
+.leaflet-control-zoom a { width:36px!important; height:36px!important; line-height:36px!important; background:rgba(246,249,255,.96)!important; color:var(--blue)!important; font-size:18px!important; font-weight:300!important; border:none!important; border-bottom:1px solid rgba(28,72,150,.1)!important; transition:background .15s!important; }
+.leaflet-control-zoom a:last-child { border-bottom:none!important; }
+.leaflet-control-zoom a:hover { background:rgba(232,241,255,.98)!important; color:var(--blue3)!important; }
+.leaflet-fullscreen-btn {
+  width:36px!important;height:36px!important;
+  background:rgba(246,249,255,.96)!important;
+  border:1.5px solid rgba(28,72,150,.18)!important;
+  border-radius:10px!important;
+  font-size:15px!important;cursor:pointer!important;
+  display:flex!important;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(15,40,100,.12)!important;
+  transition:background .15s!important;
+}
+.leaflet-fullscreen-btn:hover{background:rgba(232,241,255,.98)!important}
+@keyframes mkPulse {
+  0%   { transform: scale(1);   opacity: .6; }
+  100% { transform: scale(2.4); opacity: 0;  }
+}
+
+/* ── CAREER TIMELINE ────────────────────────────── */
+.career-tl { padding: 0 1.75rem 1.2rem; }
+.career-tl-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: #8a9ab5; margin-bottom: 8px; }
+.career-tl-wrap { display: flex; align-items: center; gap: 8px; }
+.career-tl-y { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; color: #8a9ab5; flex-shrink: 0; }
+.career-tl-track { flex: 1; height: 8px; background: #edf0f7; border-radius: 4px; position: relative; overflow: visible; }
+.career-tl-bar { position: absolute; top: 0; height: 100%; background: linear-gradient(90deg, var(--blue) 0%, var(--blue-light) 100%); border-radius: 4px; box-shadow: 0 2px 6px rgba(28,72,150,.3); transition: width .4s cubic-bezier(.4,0,.2,1); }
+.career-tl-seasons { font-size: 11px; color: #8a9ab5; text-align: center; margin-top: 5px; }
+
+/* ── DESKTOP STATS MODAL ────────────────────────── */
+#statsOvl .modal { max-width: 580px !important; padding: 0 !important; border: none !important; border-top: none !important; border-radius: 20px !important; overflow: hidden; box-shadow: 0 24px 64px rgba(10,30,80,.32) !important; }
+.stats-modal-head { background: linear-gradient(135deg, var(--blue3), var(--blue)); padding: 1rem 1.4rem; display: flex; align-items: center; justify-content: space-between; }
+.stats-modal-head h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #fff; margin: 0; }
+.stats-modal-body { padding: 1.2rem 1.4rem 1.4rem; background: #f2f5fb; max-height: 80vh; overflow-y: auto; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.stats-grid .msp-bars-wrap { grid-column: 1; }
+.stats-grid .msp-rec-grid  { grid-column: 2; }
+.stats-year-full { margin-top: 1rem; background: #fff; border-radius: 12px; padding: .8rem 1rem .5rem; border: 1px solid #e4eaf5; }
+.stats-year-full .msp-year-chart { height: 90px; }
+.hbtn-stats { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 20px; padding: 6px 14px; font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; transition: .15s; display: none; }
+.hbtn-stats:hover { background: rgba(255,255,255,.25); }
+@media(min-width:751px) { .hbtn-stats { display: inline-flex; align-items: center; gap: 5px; } }
+
+/* ── MOBILE SEARCH OVERLAY ──────────────────────── */
+.mob-search-btn { display: none; background: none; border: none; cursor: pointer; padding: 4px; color: rgba(255,255,255,.85); }
+.mob-search-btn svg { width: 20px; height: 20px; }
+@media(max-width:750px) { .mob-search-btn { display: flex; align-items: center; } }
+.mob-search-ovl { display: none; position: fixed; inset: 0; z-index: 4000; background: #f2f5fb; flex-direction: column; }
+.mob-search-ovl.on { display: flex; }
+.mob-search-bar { display: flex; align-items: center; gap: 8px; padding: .7rem .9rem; background: #fff; border-bottom: 1px solid #e4eaf5; box-shadow: 0 2px 8px rgba(15,40,100,.08); }
+.mob-search-back { background: none; border: none; cursor: pointer; font-size: 1.3rem; color: var(--blue); padding: 2px 6px; flex-shrink: 0; }
+.mob-search-input { flex: 1; border: none; outline: none; font-family: 'Barlow', sans-serif; font-size: 15px; color: var(--blue3); background: transparent; }
+.mob-search-input::placeholder { color: #a0b0cc; }
+.mob-search-results { flex: 1; overflow-y: auto; padding: .5rem .75rem; }
+.mob-sr-row { display: flex; align-items: center; gap: 10px; padding: .7rem .5rem; border-bottom: 1px solid #edf0f5; cursor: pointer; border-radius: 8px; transition: background .15s; }
+.mob-sr-row:hover, .mob-sr-row:active { background: #e8edf8; }
+.mob-sr-thumb { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex-shrink: 0; border: 1.5px solid #d4dcea; }
+.mob-sr-ini { width: 38px; height: 38px; border-radius: 8px; background: linear-gradient(135deg, var(--blue3), var(--blue)); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.mob-sr-info { flex: 1; min-width: 0; }
+.mob-sr-name { font-size: 14px; font-weight: 600; color: var(--blue3); }
+.mob-sr-city { font-size: 11px; color: #8a9ab5; margin-top: 1px; }
+.mob-sr-meta { font-size: 11px; font-weight: 700; color: var(--blue); flex-shrink: 0; }
+.mob-sr-empty { text-align: center; padding: 2rem; color: #a0b0cc; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">
+      <div class="hdr-logo-chip"><img src="https://hcmotor.cz/img/logo-var-1.svg" class="hdr-club-logo" alt="HC Motor České Budějovice" onerror="this.parentElement.innerHTML='&lt;div class=&quot;hdr-logo-fallback&quot;&gt;HC&lt;/div&gt;'"></div>
+      <h1>Místa narození hráčů <span>Motor České Budějovice</span></h1>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-stats" id="hdrStats"></div>
+      <button class="hbtn-stats" onclick="playHistory()" title="Přehrát 100 let historie na mapě">▶ Historie</button>
+      <button class="hbtn-stats" onclick="randomPlayer()" title="Náhodný hráč">🎲 Náhodný hráč</button>
+      <button class="hbtn-stats" onclick="openStatsDesktop()">📊 Statistiky</button>
+      <button class="mob-search-btn" onclick="playHistory()" aria-label="Přehrát historii" title="Přehrát historii" style="font-size:15px">▶</button>
+      <button class="mob-search-btn" onclick="randomPlayer()" aria-label="Náhodný hráč" title="Náhodný hráč" style="font-size:16px">🎲</button>
+      <button class="mob-search-btn" onclick="openMobSearch()" aria-label="Hledat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="hdr-stripes"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
+</div>
+
+<div class="app">
+  <div class="lp">
+    <div class="lp-head-sticky">
+      <div class="list-head">
+        <h2 id="listTitle">Hráči</h2>
+      </div>
+      <div class="sort-bar">
+        <span class="sort-label">Řadit:</span>
+        <button class="sort-btn active" id="sortName" onclick="setSort('name')">A–Z</button>
+        <button class="sort-btn" id="sortSeasons" onclick="setSort('seasons')">Sezóny ↓</button>
+        <button class="sort-btn" id="sortBorn" onclick="setSort('born')">Rok nar.</button>
+        <button class="sort-btn" id="sortDist" onclick="setSort('dist')">Vzdálenost ↓</button>
+        <span style="color:#d4dae8;padding:0 2px">|</span>
+        <button class="sort-btn sort-cap" id="filterCaptain" onclick="toggleCaptainFilter()">C Kapitáni</button>
+        <button class="sort-btn sort-cur" id="filterCurrent" onclick="toggleCurrentFilter()">⛸ Současný kádr</button>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="playerSearch" placeholder="Hledat podle jména nebo příjmení…" oninput="filterList()" autocomplete="off">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Vymazat">✕</button>
+      </div>
+    </div>
+    <div class="players" id="playerList">
+      <div class="empty-msg" id="emptyMsg">
+        <span class="ico">🏒</span>
+        Zatím žádní hráči.<br>
+        Použij <strong>+ Přidat</strong> pro přidání hráče.
+      </div>
+    </div>
+    <button class="scroll-top" id="scrollTopBtn" onclick="document.querySelector('.players').scrollTo({top:0,behavior:'smooth'})" title="Zpět nahoru">↑</button>
+  </div>
+  <div class="rp">
+    <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
+    <div id="mapEl"></div>
+    <div id="mkCityLabel" class="mk-city-label"></div>
+    <div id="eraLegend" style="display:none;position:absolute;left:10px;bottom:26px;z-index:1100;background:rgba(255,255,255,.93);backdrop-filter:blur(6px);border:1px solid #dde6f5;border-radius:10px;padding:8px 12px;font-size:10px;color:#3a4a6a;box-shadow:0 3px 14px rgba(10,30,80,.15)">
+      <div style="font-weight:800;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.05em;margin-bottom:4px">PŘÍCHOD PRVNÍHO HRÁČE</div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c9a15a;margin-right:5px;vertical-align:-1px"></i>do 1949</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8a9bb0;margin-right:5px;vertical-align:-1px"></i>50.–60. léta</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3a6ed8;margin-right:5px;vertical-align:-1px"></i>70.–80. léta</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#279e8e;margin-right:5px;vertical-align:-1px"></i>90.–00. léta</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f5c300;margin-right:5px;vertical-align:-1px"></i>2010+</span>
+      </div>
+    </div>
+    <div class="hist-ovl" id="histOvl">
+      <button class="hist-stop" onclick="stopHistory()" title="Zastavit">✕</button>
+      <div class="hist-year" id="histYear">1927</div>
+      <div class="hist-club" id="histClub"></div>
+      <div class="hist-count" id="histCount"></div>
+      <div class="hist-bar"><div class="hist-bar-fill" id="histBarFill"></div></div>
+    </div>
+    <!-- FILTR -->
+    <div class="filter-panel" id="filterPanel" style="display:none">
+      <div class="fp-modes">
+        <button class="fp-mode active" id="fmOff"   onclick="setFilter('off')">Vše</button>
+        <button class="fp-mode"        id="fmBorn"  onclick="setFilter('born')">Narozen</button>
+        <button class="fp-mode"        id="fmSeas"  onclick="setFilter('seasons')">Sezóny</button>
+        <button class="fp-mode"        id="fmEra"   onclick="setFilter('era')">Éra klubu</button>
+      </div>
+      <div class="fp-body" id="fpBody" style="display:none">
+        <div class="fp-label-row">
+          <span class="fp-field-label" id="fpLabel">Rok narození</span>
+          <span class="fp-range-val" id="fpVal"></span>
+        </div>
+        <div class="fp-slider-wrap">
+          <input type="range" class="fp-slider" id="sliderMin" oninput="onSlider()">
+          <input type="range" class="fp-slider" id="sliderMax" oninput="onSlider()">
+          <div class="fp-track-fill" id="fpFill"></div>
+        </div>
+        <div class="fp-hint" id="fpHint"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ROSTER MODAL ══ -->
+<!-- ══ PLAYER CARD (vizitka) ══ -->
+<div class="ovl" id="cardOvl" onclick="closeCardOvl(event)">
+  <div class="card-ovl-inner">
+    <canvas id="cardCanvas" width="1080" height="1350"></canvas>
+    <div class="card-ovl-actions">
+      <button class="card-btn-close" onclick="closeCardOvl()">✕</button>
+      <button class="card-btn-download" onclick="downloadPlayerCard()">⬇ Stáhnout</button>
+      <button class="card-btn-share" onclick="sharePlayerCard()">📤 Sdílet</button>
+    </div>
+  </div>
+</div>
+
+<div class="ovl ovl-roster" id="rosterOvl" onclick="closeRosterOvl(event)">
+  <div class="modal" style="padding:0;border-radius:16px;overflow:hidden;border:none">
+    <div class="roster-head" style="gap:14px">
+      <img id="rosterLogo" src="" alt="" style="height:40px;object-fit:contain;display:none;flex-shrink:0">
+      <div>
+        <div class="roster-season" id="rosterSeason"></div>
+        <div class="roster-club" id="rosterClub"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="roster-place-badge" id="rosterBadge"></div>
+        <button class="modal-close" onclick="closeRosterOvl()" style="position:relative;top:0;right:0;color:#fff;background:rgba(255,255,255,.15)">✕</button>
+      </div>
+    </div>
+    <div class="roster-comps" id="rosterComps"></div>
+    <div class="roster-grid" id="rosterGrid"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let players = [];
+let map, mlayers = [], playerMarkers = [];
+let ROSTER_DATA = null;
+let labelLayer = null;
+let arenaLayer = null;
+let arcsLayer = null;
+let _arcRenderer = null;
+let eraColorsLayer = null;
+let eraColorsOn = false;
+function eraColorFor(y){ if(y<1950)return '#c9a15a'; if(y<1970)return '#8a9bb0'; if(y<1990)return '#3a6ed8'; if(y<2010)return '#279e8e'; return '#f5c300'; }
+function eraNumColor(c){ return (c==='#3a6ed8'||c==='#279e8e') ? '#fff' : '#0f2f6a'; }
+const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+function zoomScaleFor(zoom) {
+  if (zoom <= 7) return 0.58;
+  if (zoom === 8) return 0.7;
+  if (zoom === 9) return 0.84;
+  return 1;
+}
+let cityTimer = null;
+
+// Import state
+let impRows = [], impColMap = [], impHasHeader = false;
+
+const FIELD_OPTS = [
+  {key:'',          label:'— ignorovat —'},
+  {key:'surname',   label:'Příjmení'},
+  {key:'firstname', label:'Jméno'},
+  {key:'city',      label:'Rodné město'},
+  {key:'born',      label:'Narozen'},
+  {key:'died',      label:'Zemřel'},
+  {key:'seasons',   label:'Sezóny'},
+];
+const DETECT_RX = {
+  surname:   /^(p[řr][íi][íi]jmen[íi]|surname|last.?name)$/i,
+  firstname: /^(jm[eé]no|first.?name|given.?name)$/i,
+  city:      /^(m[eě]sto|rodné\.? m[eě]sto|birthplace|city|hometown)$/i,
+  born:      /^(narozen[ao]?|born|datum nar\.?|birth.?date)$/i,
+  died:      /^(zem[řr]el[ao]?|died|[úu]mrt[íi]|death)$/i,
+  seasons:   /^(sez[oó]n[ya]?|seasons?|ro[čc]n[íi]ky?)$/i,
+};
+
+// ── SAMPLES — skuteční hráči HC Motor České Budějovice ──────────────────────
+// ── DATA — načítání z externího JSON souboru ────────────────────────────
+const DATA_URL = 'hcmotor_players.json';
+
+function loadRosters() {
+  fetch('hcmotor_rosters.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => {
+      ROSTER_DATA = data;
+      // Re-render stats pokud jsou právě otevřené
+      if (document.getElementById('statsOvl')?.classList.contains('on')) {
+        renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', distDecades:'statsDistDecades', coaches:'statsCoaches' });
+      }
+      if (document.getElementById('mob-stats-panel')?.style.display === 'block') {
+        renderMobStats();
+      }
+    })
+    .catch(e => console.error('hcmotor_rosters.json chyba:', e));
+}
+
+function loadPlayers(callback) {
+  fetch(DATA_URL)
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => { SAMPLES = data; callback(); })
+    .catch(err => {
+      document.body.innerHTML = '<div style="padding:2em;font-family:sans-serif;color:#c00">' +
+        '<h2>Chyba při načítání dat</h2><p>' + err.message + '</p>' +
+        '<p>Ujistěte se, že soubor <b>hcmotor_players.json</b> je ve stejné složce.</p></div>';
+    });
+}
+
+// ══════════════════════════════════════════════════
+// MAP
+// ══════════════════════════════════════════════════
+let heatLayer = null;
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+function initMap() {
+  map = L.map('mapEl',{zoomControl:true,attributionControl:true}).setView([49.05,14.45],9);
+  map.attributionControl.setPrefix(false);
+  map.attributionControl.addAttribution('© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>');
+  map.on('zoomend', () => {
+    const zs = zoomScaleFor(map.getZoom());
+    document.querySelectorAll('.mk-wrap, .mk-multi-wrap').forEach(wrapEl => {
+      wrapEl.dataset.zscale = zs;
+      // Neaktualizuj pokud je marker právě hoverován/aktivní (ať se to nesekne s hover efektem)
+      if (!wrapEl.closest('.leaflet-marker-icon')?.classList.contains('mk-hovered')) {
+        wrapEl.style.transform = `scale(${zs})`;
+      }
+    });
+  });
+  const baseLayers = {
+    '🗺 OpenStreetMap':      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}),
+    '⬜ Positron (světlý)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}),
+    '🌍 Voyager (barevný)':  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}),
+  };
+  baseLayers['🌍 Voyager (barevný)'].addTo(map);
+  L.control.attribution({prefix:'© <a href="https://osm.org/copyright">OSM</a>'}).addTo(map);
+  L.control.scale({position:'bottomright', imperial:false, maxWidth:120}).addTo(map);
+
+  // Distance circles from ČB
+  const CB = [48.9764, 14.4742];
+  const cStyle = {color:'#1c4896', weight:1.5, opacity:.45, fillOpacity:.03, fillColor:'#1c4896', dashArray:'6 4'};
+  const distCircles = L.layerGroup([
+    L.circle(CB, {...cStyle, radius:100000}).bindTooltip('100 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+    L.circle(CB, {...cStyle, radius:200000, opacity:.3}).bindTooltip('200 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+    L.circle(CB, {...cStyle, radius:500000, weight:1, opacity:.2}).bindTooltip('500 km od ČB', {permanent:false, direction:'top', className:'mk-photo-tooltip'}),
+  ]);
+  // Label layer — popisky z databáze
+  labelLayer = L.layerGroup();
+  arenaLayer = L.layerGroup();
+  arcsLayer = L.layerGroup();
+  eraColorsLayer = L.layerGroup();   // jen přepínač, nemá vlastní obsah
+  _arcRenderer = L.svg({padding: 0.6});
+  L.control.layers(baseLayers, {
+    '⭕ Vzdálenosti od ČB': distCircles,
+    '🏟 Stadion Budvar Aréna': arenaLayer,
+    '🏒 Cesty do Budějovic': arcsLayer,
+    '🎨 Barvy podle éry': eraColorsLayer,
+    '🏷 Popisky z databáze': labelLayer
+  }, {position:'topright', collapsed:true}).addTo(map);
+  // Aktualizuj labely když se vrstva zapne
+  map.on('overlayadd', e => {
+    if (e.name.includes('Popisky')) updateLabelLayer();
+    if (e.name.includes('Cesty')) updateArcsLayer(true);
+    if (e.name.includes('Barvy')) { eraColorsOn = true; updateMap(); document.getElementById('eraLegend').style.display = 'block'; }
+    if (e.name.includes('Stadion')) {
+      const c = document.getElementById('arena3d-canvas');
+      if (c) c.style.display = '';
+    }
+  });
+  map.on('overlayremove', e => {
+    if (e.name.includes('Barvy')) { eraColorsOn = false; updateMap(); document.getElementById('eraLegend').style.display = 'none'; }
+    if (e.name.includes('Stadion')) {
+      const c = document.getElementById('arena3d-canvas');
+      if (c) c.style.display = 'none';
+    }
+  });
+
+  // Set default popup options — keepInView globally
+  L.Popup.mergeOptions({keepInView: true});
+
+  // ── BUDVAR ARÉNA MARKER ───────────────────────────────────────────────────
+  const arenaLatLng = [48.97080, 14.47116];
+  const arenaIcon = L.divIcon({
+    className: '',
+    html: `<div style="width:36px;height:36px;background:#C8102E;border:2.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.5);font-size:18px;line-height:1;">🏒</div>`,
+    iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -22],
+  });
+  L.marker(arenaLatLng, {icon: arenaIcon, zIndexOffset: 5000})
+    .addTo(arenaLayer)
+    .bindPopup(`
+      <div style="width:340px;font-family:'Barlow',Arial,sans-serif;background:#0d1219;border-radius:16px;overflow:hidden;padding:0;">
+        <iframe src="budvar_arena_v4.html" width="340" height="200"
+          style="display:block;border:none;border-radius:16px 16px 0 0;" title="Budvar Aréna 3D"></iframe>
+        <div style="padding:16px 20px 4px;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <span style="width:9px;height:9px;border-radius:50%;background:#C8102E;flex-shrink:0"></span>
+            <span style="font-size:10px;color:rgba(255,255,255,.55);letter-spacing:.1em;text-transform:uppercase;font-weight:700;">České Budějovice, CZ</span>
+          </div>
+          <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;margin:0;line-height:1.1;text-transform:uppercase;letter-spacing:.03em;">Budvar Aréna</h2>
+          <p style="font-size:12px;color:rgba(255,255,255,.5);margin:3px 0 0;">Domácí stadion HC Motor České Budějovice</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+            <div><div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:2px;">Kapacita</div><div style="font-size:14px;color:#fff;font-weight:700;">6 421</div></div>
+            <div><div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:2px;">Otevřeno</div><div style="font-size:14px;color:#fff;font-weight:700;">1946</div></div>
+            <div><div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:2px;">Povrch</div><div style="font-size:14px;color:#fff;font-weight:700;">led</div></div>
+            <div><div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:2px;">Ligy</div><div style="font-size:14px;color:#fff;font-weight:700;">Extraliga</div></div>
+          </div>
+          <p style="font-size:11px;color:rgba(255,255,255,.6);margin:10px 0 10px;font-style:italic;">Nejstarší zimní stadion v provozu v České republice</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+            <span style="font-size:10px;color:#fff;background:rgba(255,255,255,.08);border-radius:100px;padding:3px 9px;">HC Motor ČB</span>
+            <span style="font-size:10px;color:#fff;background:rgba(200,16,46,.2);border-radius:100px;padding:3px 9px;border:1px solid rgba(200,16,46,.4);">Tipsport Extraliga</span>
+            <span style="font-size:10px;color:#fff;background:rgba(255,255,255,.08);border-radius:100px;padding:3px 9px;">od roku 1928</span>
+          </div>
+          <a href="budvar_arena_v4.html" target="_blank"
+            style="display:block;text-align:center;background:rgba(200,16,46,.85);color:#fff;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:8px;border-radius:8px;text-decoration:none;margin-bottom:4px;">⛶ Celá obrazovka</a>
+        </div>
+      </div>
+    `, {maxWidth: 360, className: 'arena-popup'});
+
+  const FullscreenControl = L.Control.extend({
+    onAdd() {
+      const btn = L.DomUtil.create('button','leaflet-fullscreen-btn');
+      btn.title = 'Celá obrazovka'; btn.innerHTML = '⛶';
+      L.DomEvent.on(btn, 'click', L.DomEvent.stop);
+      L.DomEvent.on(btn, 'click', () => {
+        const el = document.querySelector('.rp');
+        if (!document.fullscreenElement) { el.requestFullscreen(); btn.innerHTML = '✕'; }
+        else { document.exitFullscreen(); btn.innerHTML = '⛶'; }
+      });
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) btn.innerHTML = '⛶';
+      });
+      return btn;
+    }
+  });
+  new FullscreenControl({position:'topleft'}).addTo(map);
+
+  // Three.js 3D model arény — zobrazí se přímo v mapě od zoom 14
+  // Lazy init — 3D aréna se inicializuje až při prvním zapnutí vrstvy (šetří GPU/baterii)
+  let _arenaInited = false;
+  map.on('overlayadd', e => {
+    if (e.name.includes('Stadion') && !_arenaInited) {
+      _arenaInited = true;
+      setTimeout(initArena3D, 50);
+    }
+  });
+}
+
+
+function initArena3D() {
+  if (typeof THREE === 'undefined') return;
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'arena3d-canvas';
+  canvas.style.display = 'none';
+  canvas.style.cssText = 'position:absolute;z-index:420;pointer-events:auto;cursor:grab;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.35);';
+  document.querySelector('.rp').appendChild(canvas);
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  renderer.setClearColor(0x000000, 0);
+  const AW=320, AH=230;
+  renderer.setSize(AW, AH);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(44, 1, 0.1, 600);
+
+  scene.add(new THREE.AmbientLight(0x8899bb, 0.6));
+  const sun = new THREE.DirectionalLight(0xfff8e0, 1.5);
+  sun.position.set(25,55,40); sun.castShadow=true;
+  sun.shadow.mapSize.set(1024,1024);
+  sun.shadow.camera.left=sun.shadow.camera.bottom=-80;
+  sun.shadow.camera.right=sun.shadow.camera.top=80;
+  sun.shadow.camera.far=220; sun.shadow.bias=-0.0005;
+  scene.add(sun);
+  const fill=new THREE.DirectionalLight(0x4466cc,0.25); fill.position.set(-30,18,-20); scene.add(fill);
+  const back=new THREE.DirectionalLight(0xffffff,0.12); back.position.set(0,8,-50); scene.add(back);
+
+  const M={
+    white:new THREE.MeshLambertMaterial({color:0xe8ecef}),
+    grey:new THREE.MeshLambertMaterial({color:0xc0cad2}),
+    darkW:new THREE.MeshLambertMaterial({color:0x3a4550}),
+    roofTop:new THREE.MeshLambertMaterial({color:0xd8dfe4}),
+    roofBot:new THREE.MeshLambertMaterial({color:0x2e3a44}),
+    roofEdge:new THREE.MeshLambertMaterial({color:0x8a9aaa}),
+    glass:new THREE.MeshLambertMaterial({color:0x3a6888,transparent:true,opacity:0.6}),
+    glFrame:new THREE.MeshLambertMaterial({color:0x1e2c38}),
+    pillar:new THREE.MeshLambertMaterial({color:0xe0e6ea}),
+    shadow:new THREE.ShadowMaterial({opacity:0.18}),
+    concrete:new THREE.MeshLambertMaterial({color:0xb0bcc5}),
+    red:new THREE.MeshLambertMaterial({color:0xC8102E}),
+    steel:new THREE.MeshLambertMaterial({color:0x8899aa}),
+    lamel:new THREE.MeshLambertMaterial({color:0x5a6a78}),
+    darkG:new THREE.MeshLambertMaterial({color:0x253d20}),
+  };
+
+  function mesh(geo,mat,x=0,y=0,z=0,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
+  function box(w,h,d,mat,x,y,z,ry=0){return mesh(new THREE.BoxGeometry(w,h,d),mat,x,y,z,0,ry,0);}
+  function cyl(rt,rb,h,seg,mat,x,y,z,rx=0,ry=0,rz=0){return mesh(new THREE.CylinderGeometry(rt,rb,h,seg,1,false),mat,x,y,z,rx,ry,rz);}
+  function addGeo(verts,idx,mat){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));geo.setIndex(new THREE.BufferAttribute(new Uint16Array(idx),1));geo.computeVertexNormals();const m=new THREE.Mesh(geo,mat);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
+
+  // Shadow-only ground
+  const gnd=mesh(new THREE.PlaneGeometry(220,220),M.shadow,0,0,0,-Math.PI/2);gnd.receiveShadow=true;
+
+  const HW=26,HD=36,HHn=16,HHj=10,avgH=(HHn+HHj)/2;
+  box(HW,avgH,HD,M.grey,0,avgH/2,0);
+  {const ovN=2,ovS=9,ovW=1.5,ovE=1.5;
+  addGeo([-HW/2-ovW,HHn+0.2,-HD/2-ovN,HW/2+ovE,HHn+0.2,-HD/2-ovN,HW/2+ovE,HHj-0.3,HD/2+ovS,-HW/2-ovW,HHj-0.3,HD/2+ovS],[0,2,1,0,3,2],M.roofTop);
+  addGeo([-HW/2-ovW,HHj-0.35,HD/2+ovS,HW/2+ovE,HHj-0.35,HD/2+ovS,HW/2+ovE,HHj-0.05,HD/2,-HW/2-ovW,HHj-0.05,HD/2],[0,1,2,0,2,3],M.roofBot);
+  addGeo([-HW/2-ovW,HHn+0.2,-HD/2-ovN,-HW/2-ovW,HHj-0.3,HD/2+ovS,-HW/2-ovW,HHj,HD/2,-HW/2-ovW,HHn,-HD/2],[0,1,3,1,2,3],M.roofTop);
+  addGeo([HW/2+ovE,HHn+0.2,-HD/2-ovN,HW/2+ovE,HHj-0.3,HD/2+ovS,HW/2+ovE,HHj,HD/2,HW/2+ovE,HHn,-HD/2],[0,3,1,1,3,2],M.roofTop);}
+  for(let i=0;i<7;i++)box(HW+3.2,0.14,0.2,M.lamel,0,HHj-0.1-i*0.04,HD/2+0.8+i*1.2);
+  cyl(0.8,0.8,HW+3.5,14,M.roofEdge,0,HHj-0.45,HD/2+9,0,0,Math.PI/2);
+  box(HW,HHn,0.3,M.white,0,HHn/2,-HD/2);
+  for(let j=1;j<7;j++)box(HW+0.2,0.2,0.5,M.grey,0,j*(HHn/7),-HD/2-0.2);
+  box(0.4,avgH,HD,M.darkW,-HW/2,avgH/2,0);box(3.2,3.2,0.2,M.red,-HW/2-0.15,avgH*0.65,-2);
+  box(0.4,avgH,HD,M.grey,HW/2,avgH/2,0);
+  box((HW-14)*0.5,HHj,0.3,M.white,-HW/2+(HW-14)*0.25,HHj/2,HD/2);box((HW-14)*0.5,HHj,0.3,M.white,HW/2-(HW-14)*0.25,HHj/2,HD/2);
+  const TR=5.5,TX=-5,TZ=HD/2,TH1=4.5,TH2=3.0,tSegs=24;
+  for(let i=0;i<tSegs;i++){const a1=-Math.PI*0.18+i*(Math.PI*1.36/tSegs),a2=-Math.PI*0.18+(i+1)*(Math.PI*1.36/tSegs);const mx=TX+(Math.cos(a1)+Math.cos(a2))/2*TR,mz=TZ+(Math.sin(a1)+Math.sin(a2))/2*TR;const ang=Math.atan2(Math.cos(a2)-Math.cos(a1),Math.sin(a2)-Math.sin(a1));box(TR*Math.PI*1.36/tSegs+0.1,TH1,0.25,M.white,mx,TH1/2,mz,-ang);}
+  const colAngles=[-0.6,-0.25,0.1,0.45,0.8];colAngles.forEach(a=>{cyl(0.35,0.38,TH1+TH2+0.5,10,M.pillar,TX+Math.sin(a)*(TR*0.8),(TH1+TH2+0.5)/2,TZ+Math.cos(a)*(TR*0.8));});
+  for(let i=0;i<tSegs;i++){const a1=-Math.PI*0.15+i*(Math.PI*1.3/tSegs),a2=-Math.PI*0.15+(i+1)*(Math.PI*1.3/tSegs);const mx=TX+(Math.cos(a1)+Math.cos(a2))/2*(TR+0.1),mz=TZ+(Math.sin(a1)+Math.sin(a2))/2*(TR+0.1);const ang=Math.atan2(Math.cos(a2)-Math.cos(a1),Math.sin(a2)-Math.sin(a1));box(TR*Math.PI*1.3/tSegs+0.1,TH2,0.18,i%3===1?M.glFrame:M.glass,mx,TH1+TH2/2,mz,-ang);}
+  cyl(TR+0.3,TR+0.3,0.45,32,M.white,TX,TH1+TH2+0.22,TZ);cyl(TR+0.2,TR+0.2,0.35,32,M.white,TX,0.18,TZ);cyl(TR+0.25,TR+0.25,0.3,32,M.grey,TX,TH1+0.15,TZ);
+  box(TR*1.1,0.5,0.08,M.red,TX,TH1+TH2*0.25,TZ+TR+0.05);
+  const SX=8,SZ=HD/2+1;box(5.5,HHj,3,M.grey,SX,HHj/2,SZ);box(6.5,0.25,2.5,M.concrete,SX,TH1+0.1,SZ+0.5);box(6.5,0.25,2.5,M.concrete,SX,TH1+TH2+0.1,SZ+0.5);for(let s=0;s<6;s++)box(3,0.15,1,M.steel,SX+0.5,0.5+s*1.5,SZ+2.5+s*0.4);box(0.08,3.5,0.08,M.steel,SX-1.2,1.75,SZ+2.5);box(0.08,3.5,0.08,M.steel,SX+2.2,1.75,SZ+2.5);box(3.5,0.08,0.08,M.steel,SX+0.5,3.5,SZ+2.5);
+  const cnR=4.5,cnX=-HW/2,cnZ=-HD/2,cnSegs=12;for(let i=0;i<cnSegs;i++){const a1=Math.PI+(i/cnSegs)*Math.PI*0.5,a2=Math.PI+((i+1)/cnSegs)*Math.PI*0.5;const mx=cnX+cnR*(Math.cos(a1)+Math.cos(a2))/2,mz=cnZ+cnR*(Math.sin(a1)+Math.sin(a2))/2;const ang=Math.atan2((Math.sin(a2)-Math.sin(a1)),(Math.cos(a2)-Math.cos(a1)));box(0.3,HHn,0.5,M.white,mx,HHn/2,mz,ang+Math.PI/2);box(0.2,HHn*0.35,0.35,M.glass,mx,HHn*0.78,mz,ang+Math.PI/2);}
+  const TrW=20,TrH=7.5,TrD=22;box(TrW,TrH,TrD,M.white,2,TrH/2,HD/2+TrD/2+2.5);addGeo([-TrW/2-0.5,TrH,HD/2+2.3,TrW/2+0.5,TrH,HD/2+2.3,-TrW/2-0.5,TrH+1.5,HD/2+TrD+2.8,TrW/2+0.5,TrH+1.5,HD/2+TrD+2.8],[0,2,1,1,2,3],M.roofTop);box(0.3,TrH,TrD,M.grey,2-TrW/2,TrH/2,HD/2+TrD/2+2.5);box(0.3,TrH,TrD,M.grey,2+TrW/2,TrH/2,HD/2+TrD/2+2.5);
+  const GBx=HW/2+7;box(10,13,22,M.grey,GBx,6.5,0);for(let r=0;r<4;r++)for(let c=0;c<3;c++){box(2.2,2.5,0.15,M.glass,GBx-3.5+c*3.3,2+r*3,-8);box(2.2,2.5,0.15,M.glass,GBx-3.5+c*3.3,2+r*3,8);}box(0.15,13,22,M.glFrame,GBx-5.15,6.5,0);box(0.15,13,22,M.glFrame,GBx+5.15,6.5,0);
+  function tree(x,z,h=5,r=2){cyl(0.2,0.25,h*0.4,6,M.darkW,x,h*0.2,z);const c=new THREE.Mesh(new THREE.SphereGeometry(r,8,5),M.darkG);c.position.set(x,h*0.52,z);c.castShadow=true;scene.add(c);}
+  tree(-22,4,5.5,2.2);tree(-24,-6,5,1.8);tree(-23,12,6,2.3);tree(-22,-18,4.5,1.6);tree(20,-26,4.5,1.7);tree(24,-22,5,1.9);
+
+  let drag=false,rclick=false,opx=0,opy=0,theta=1.9,phi=0.52,radius=88;
+  const target=new THREE.Vector3(2,7,6);
+  function updateCam(){camera.position.set(target.x+radius*Math.sin(phi)*Math.sin(theta),target.y+radius*Math.cos(phi),target.z+radius*Math.sin(phi)*Math.cos(theta));camera.lookAt(target);}
+  updateCam();
+  canvas.addEventListener('mousedown',e=>{drag=true;rclick=e.button===2;opx=e.clientX;opy=e.clientY;canvas.style.cursor='grabbing';e.stopPropagation();});
+  window.addEventListener('mouseup',()=>{drag=false;canvas.style.cursor='grab';});
+  window.addEventListener('mousemove',e=>{if(!drag)return;const dx=e.clientX-opx,dy=e.clientY-opy;if(rclick){target.x-=dx*0.04*Math.cos(theta);target.z+=dx*0.04*Math.sin(theta);target.y+=dy*0.04;}else{theta-=dx*0.007;phi=Math.max(0.05,Math.min(Math.PI*0.47,phi+dy*0.005));}opx=e.clientX;opy=e.clientY;updateCam();});
+  canvas.addEventListener('wheel',e=>{e.stopPropagation();radius=Math.max(20,Math.min(170,radius+e.deltaY*0.07));updateCam();},{passive:true});
+  canvas.addEventListener('contextmenu',e=>e.preventDefault());
+
+  (function animate(){
+    requestAnimationFrame(animate);
+    if (canvas.style.display !== 'none') renderer.render(scene,camera);
+  })();
+
+  const ARENA_LL=L.latLng(48.97080,14.47116);
+  camera.aspect = AW/AH; camera.updateProjectionMatrix();
+  function positionAndSize(){
+    const zoom=map.getZoom();
+    if(zoom<13 || !map.hasLayer(arenaLayer)){canvas.style.display='none';return;}
+    canvas.style.display='block';
+    const pt=map.latLngToContainerPoint(ARENA_LL);
+    const mapEl=document.getElementById('mapEl');
+    const ml=mapEl.getBoundingClientRect().left - mapEl.closest('.rp').getBoundingClientRect().left;
+    const mt=mapEl.getBoundingClientRect().top  - mapEl.closest('.rp').getBoundingClientRect().top;
+    canvas.style.left=(ml+pt.x-AW/2)+'px';
+    canvas.style.top=(mt+pt.y-AH*0.78)+'px';
+  }
+  map.on('move zoom moveend zoomend',positionAndSize);
+  positionAndSize();
+}
+
+function mkIcon(label, photoOrPlayers, photoZoom, photoPos, eraColor) {
+  const multi = label !== '●';
+  const n = multi ? parseInt(label) || 0 : 0;
+
+  if (!multi) {
+    const photo = photoOrPlayers;
+    const photoStyle = photo
+      ? (photoZoom && photoZoom > 1
+          ? `transform:scale(${photoZoom});transform-origin:${photoPos||'50% 50%'};`
+          : `object-position:${photoPos||'50% 50%'};`)
+      : '';
+    const bubble = photo
+      ? `<div class="mk-photo-bubble"><img src="${photo.replace(/"/g,'&quot;')}" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}"></div>`
+      : '';
+    return L.divIcon({
+      html: `<div class="mk-wrap">${bubble}<svg width="28" height="40" viewBox="0 0 28 40" style="display:block;filter:drop-shadow(0 3px 10px rgba(10,30,80,.45));overflow:visible">
+        <defs>
+          <linearGradient id="pinG" x1="0" y1="0" x2="0.3" y2="1">
+            <stop offset="0%" stop-color="#3a6ed8"/>
+            <stop offset="100%" stop-color="#0b1f52"/>
+          </linearGradient>
+          <linearGradient id="pinGH" x1="0" y1="0" x2="0.3" y2="1">
+            <stop offset="0%" stop-color="#ffd84d"/>
+            <stop offset="100%" stop-color="#c88000"/>
+          </linearGradient>
+        </defs>
+        <path class="mk-pin-body" d="M14 0C6.3 0 0 6.3 0 14C0 24.5 14 40 14 40C14 40 28 24.5 28 14C28 6.3 21.7 0 14 0Z" fill="${eraColor || 'url(#pinG)'}" data-basefill="${eraColor || 'url(#pinG)'}" style="transition:fill .22s ease"/>
+        <path d="M14 1.5C7.1 1.5 1.5 7.1 1.5 14C1.5 24 14 38 14 38C14 38 26.5 24 26.5 14C26.5 7.1 20.9 1.5 14 1.5Z" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+        <path d="M6 3.5 Q4 8 4 13 Q4 8 9 5 Z" fill="rgba(255,255,255,.18)"/>
+        <circle class="mk-pin-dot" cx="14" cy="14" r="6.5" fill="${eraColor ? eraNumColor(eraColor) : '#f5c300'}" data-basedot="${eraColor ? eraNumColor(eraColor) : '#f5c300'}" style="transition:fill .22s ease"/>
+        <circle cx="14" cy="14" r="6.5" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+        <circle cx="12" cy="12" r="2.2" fill="rgba(255,255,255,.38)"/>
+      </svg></div>`,
+      className: '',
+      iconSize: [28, 40],
+      iconAnchor: [14, 40],
+      popupAnchor: [0, -50]
+    });
+  }
+
+  // Multi: layered bubble circle — inner gradient + outer ring growing with count
+  const tier = n >= 100 ? 3 : n >= 50 ? 2 : n >= 15 ? 1 : 0;
+  const sizes = [
+    {W:48, inner:34, fs:14},  // 2-14
+    {W:60, inner:44, fs:16},  // 15-49
+    {W:74, inner:54, fs:18},  // 50-99
+    {W:90, inner:66, fs:21},  // 100+
+  ][tier];
+  const {W, inner, fs} = sizes;
+  // Photo strip
+  const ps = Array.isArray(photoOrPlayers) ? photoOrPlayers : [];
+  const shuffled = [...ps].sort(()=>Math.random()-.5);
+  const withPhoto = shuffled.filter(({p})=>p.photo);
+  const shown = (withPhoto.length?withPhoto:shuffled).slice(0,3);
+  const restN = n - shown.length;
+  const avHtml = shown.map(({p})=>{
+    const ini=[(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+    const ps2=p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`:`object-position:${p.photoPos||'50% 50%'};`;
+    return p.photo?`<div class="mk-strip-av"><img src="${p.photo.replace(/"/g,'&quot;')}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${ps2}" onerror="this.parentElement.textContent='${ini}'"></div>`:`<div class="mk-strip-av">${ini}</div>`;
+  }).join('');
+  const restBadge = restN>0?`<div class="mk-strip-av" style="background:#0f2f6a;color:#f5c300;font-size:9px">+${restN}</div>`:'';
+  const photoStrip = shown.length?`<div class="mk-photo-strip-float"><div class="mk-tooltip-strip">${avHtml}${restBadge}</div></div>`:'';
+
+  return L.divIcon({
+    html: `<div class="mk-multi-wrap" style="position:relative;width:${W}px;height:${W}px">
+      ${photoStrip}
+      <!-- Circle — tmavě modrá s odleskem -->
+      <div class="mk-bubble-inner" data-basebg="${eraColor ? `radial-gradient(circle at 35% 30%,${eraColor},${eraColor})` : 'radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a)'}" style="position:absolute;
+        top:${(W-inner)/2}px;left:${(W-inner)/2}px;
+        width:${inner}px;height:${inner}px;
+        border-radius:50%;
+        background:${eraColor ? eraColor : 'radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a)'};
+        box-shadow:0 2px 10px rgba(10,30,80,.5);
+        display:flex;align-items:center;justify-content:center;
+        overflow:hidden;transition:background .22s ease">
+        <div style="position:absolute;top:-30%;left:-10%;width:120%;height:55%;
+          background:rgba(255,255,255,.12);border-radius:50%;pointer-events:none"></div>
+        <span class="mk-bubble-num" data-basenum="${eraColor ? eraNumColor(eraColor) : '#f5c300'}" style="position:relative;font-family:'Barlow Condensed',sans-serif;font-size:${fs}px;font-weight:900;color:${eraColor ? eraNumColor(eraColor) : '#f5c300'};letter-spacing:-.5px;line-height:1;transition:color .22s ease">${n}</span>
+      </div>
+    </div>`,
+    className: '',
+    iconSize: [W, W],
+    iconAnchor: [W/2, W/2],
+    popupAnchor: [0, -(W/2+6)]
+  });
+}
+
+// Cluster icon — same visual style as multi-player badge
+// ══════════════════════════════════════════════════
+let filterMode = 'off';   // 'off' | 'born' | 'seasons'
+let filterMin  = 0;
+let filterMax  = 0;
+let rangeMin   = 0;
+let rangeMax   = 0;
+
+function parseBornYear(s) {
+  if (!s) return null;
+  const m = String(s).match(/\d{4}/);
+  return m ? parseInt(m[0]) : null;
+}
+function parseSeasonsNum(s) {
+  if (!s) return null;
+  const n = parseInt(String(s).replace(/\D.*$/,''));
+  return isNaN(n) ? null : n;
+}
+
+function parseSeasonRangeYears(p) {
+  const src = p.seasonsRange || '';
+  const nums = (src.match(/\d{4}/g) || []).map(Number);
+  if (!nums.length) return null;
+  return { start: Math.min(...nums), end: Math.max(...nums) };
+}
+
+function getFilteredPlayers() {
+  let base = players;
+  if (currentFilter) base = base.filter(isCurrentPlayer);
+  if (captainFilter) base = base.filter(p => !!p.captainYears);
+  if (filterMode === 'off') return base;
+  if (filterMode === 'era') {
+    return base.filter(p => {
+      const r = parseSeasonRangeYears(p);
+      if (!r) return false;
+      return r.end >= filterMin && r.start <= filterMax;
+    });
+  }
+  return base.filter(p => {
+    const val = filterMode === 'born'
+      ? parseBornYear(p.born)
+      : parseSeasonsNum(p.seasons);
+    if (val === null) return false;
+    return val >= filterMin && val <= filterMax;
+  });
+}
+
+function setFilter(mode) {
+  filterMode = mode;
+  // toggle active button
+  ['off','born','seasons','era'].forEach(m => {
+    document.getElementById('fm'+m.charAt(0).toUpperCase()+m.slice(1))?.classList.toggle('active', m===mode);
+  });
+  const body = document.getElementById('fpBody');
+  if (mode === 'off') {
+    body.style.display = 'none';
+    updateMap(); return;
+  }
+  // Compute range from data
+  let vals;
+  if (mode === 'era') {
+    vals = players.flatMap(p => { const r = parseSeasonRangeYears(p); return r ? [r.start, r.end] : []; });
+  } else {
+    vals = players.map(p => mode==='born' ? parseBornYear(p.born) : parseSeasonsNum(p.seasons)).filter(v=>v!==null);
+  }
+  if (!vals.length) { body.style.display='none'; updateMap(); return; }
+  rangeMin = Math.min(...vals);
+  rangeMax = Math.max(...vals);
+  filterMin = rangeMin;
+  filterMax = rangeMax;
+  const sMin = document.getElementById('sliderMin');
+  const sMax = document.getElementById('sliderMax');
+  sMin.min = sMax.min = rangeMin;
+  sMin.max = sMax.max = rangeMax;
+  sMin.value = rangeMin;
+  sMax.value = rangeMax;
+  document.getElementById('fpLabel').textContent = mode==='born' ? 'Rok narození' : mode==='era' ? 'Sezóna (rok)' : 'Počet sezón';
+  body.style.display = 'block';
+  updateSliderUI();
+  updateMap();
+}
+
+let _sliderT = null;
+function onSlider() {
+  const sMin = document.getElementById('sliderMin');
+  const sMax = document.getElementById('sliderMax');
+  let lo = parseInt(sMin.value), hi = parseInt(sMax.value);
+  if (lo > hi) { if (document.activeElement===sMin) sMin.value=lo=hi; else sMax.value=hi=lo; }
+  filterMin = lo; filterMax = hi;
+  updateSliderUI();               // label okamžitě (levné)
+  clearTimeout(_sliderT);         // přestavba mapy debounced (drahé)
+  _sliderT = setTimeout(updateMap, 110);
+}
+
+function updateSliderUI() {
+  const sMin = document.getElementById('sliderMin');
+  const sMax = document.getElementById('sliderMax');
+  const fill = document.getElementById('fpFill');
+  const lo = parseInt(sMin.value), hi = parseInt(sMax.value);
+  const span = rangeMax - rangeMin || 1;
+  const pctL = (lo - rangeMin) / span * 100;
+  const pctR = (hi - rangeMin) / span * 100;
+  fill.style.left  = pctL + '%';
+  fill.style.width = (pctR - pctL) + '%';
+  const label = filterMode==='born' || filterMode==='era'
+    ? (lo===hi ? String(lo) : lo+' – '+hi)
+    : (lo===hi ? lo+' sez.' : lo+' – '+hi+' sez.');
+  document.getElementById('fpVal').textContent = label;
+  const visible = getFilteredPlayers().filter(p=>p.lat).length;
+  const total   = players.filter(p=>p.lat).length;
+  document.getElementById('fpHint').textContent =
+    lo===rangeMin && hi===rangeMax
+      ? 'Zobrazeni všichni hráči'
+      : `Zobrazeno ${visible} z ${total} hráčů`;
+}
+
+function updateLabelLayer() {
+  if (!labelLayer || !map.hasLayer(labelLayer)) return;
+  labelLayer.clearLayers();
+  const visible = getFilteredPlayers().filter(p => p.lat && p.lon);
+
+  // Group by location
+  const groups = {};
+  visible.forEach(p => {
+    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    if (!groups[key]) groups[key] = {lat:p.lat, lon:p.lon, city:p.city, count:0};
+    groups[key].count++;
+  });
+
+  Object.values(groups).forEach(g => {
+    const icon = L.divIcon({
+      html: `<div class="db-label-inner">${esc(g.city||'?')}${g.count>1?`<span class="db-label-count">${g.count}</span>`:''}</div>`,
+      className: 'db-label',
+      iconAnchor: [0, -6]
+    });
+    L.marker([g.lat, g.lon], {icon, interactive:false}).addTo(labelLayer);
+  });
+}
+
+function updateMap() {
+  mlayers.forEach(l=>map.removeLayer(l)); mlayers=[];
+  playerMarkers = [];
+  const fp = document.getElementById('filterPanel');
+
+  const allResolved = players.filter(p=>p.lat&&p.lon);
+  fp.style.display = allResolved.length ? 'block' : 'none';
+  if (!allResolved.length) { updateStats(); return; }
+
+  const visible = getFilteredPlayers().filter(p=>p.lat&&p.lon);
+  if (!visible.length) { updateStats(); return; }
+
+  const groups = {};
+  visible.forEach(p => {
+    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    if (!groups[key]) groups[key] = {lat:p.lat, lon:p.lon, display:p.city, ps:[]};
+    const idx = players.indexOf(p);
+    groups[key].ps.push({p, idx});
+    playerMarkers[idx] = null; // will be set below
+  });
+
+  Object.values(groups).forEach((g, markerIdx) => {
+    const n = g.ps.length, multi = n > 1;
+    let popContent;
+    if (!multi) {
+      const {p, idx} = g.ps[0];
+      popContent = buildSinglePopup(p, idx, g.display);
+    } else {
+      popContent = buildCityPopup(g.ps, g.display);
+    }
+    const mk = L.marker([g.lat, g.lon], {
+      icon: (() => {
+        let ec = null;
+        if (eraColorsOn) {
+          const ys = g.ps.map(({p}) => { const r = parseSeasonRangeYears(p); return r ? r.start : null; }).filter(y => y !== null);
+          if (ys.length) ec = eraColorFor(Math.min(...ys));
+        }
+        return multi ? mkIcon(String(n), g.ps, null, null, ec) : mkIcon('●', g.ps[0].p.photo, g.ps[0].p.photoZoom, g.ps[0].p.photoPos, ec);
+      })(),
+      zIndexOffset: multi ? n * 10 : 0
+    }).bindPopup(popContent, {maxWidth:320, maxHeight:400}).addTo(map);
+
+    // stagger animation
+    const el = mk.getElement();
+    if (el) { el.style.animationDelay = `${Math.min(markerIdx * 6, 450)}ms`; el.classList.add('mk-anim'); }
+    // Zoom-based base scale — piny se zmenšují při oddálení, aby se méně překrývaly
+    if (el) {
+      const wrapSel = multi ? '.mk-multi-wrap' : '.mk-wrap';
+      const wrapEl = el.querySelector(wrapSel);
+      if (wrapEl) {
+        const zs = zoomScaleFor(map.getZoom());
+        wrapEl.style.transformOrigin = multi ? 'center center' : 'center bottom';
+        wrapEl.dataset.zscale = zs;
+        wrapEl.style.transform = `scale(${zs})`;
+        wrapEl.style.transition = 'transform .25s ease';
+      }
+    }
+
+    // Reliable hover — direct JS manipulation of inner SVG + photo elements + city label
+    const scale = multi ? 1.12 : 1.06;
+    const cityName = g.display || '';
+    const glat = g.lat, glon = g.lon;
+
+    function applyHoverIn(icon) {
+      icon.classList.add('mk-hovered');
+      if (multi) {
+        const wrap = icon.querySelector('.mk-multi-wrap');
+        if (wrap) {
+          const zs = parseFloat(wrap.dataset.zscale || '1');
+          wrap.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
+          wrap.style.transformOrigin = 'center center';
+          wrap.style.transform = `scale(${zs * scale})`;
+        }
+        const inner = icon.querySelector('.mk-bubble-inner');
+        const num   = icon.querySelector('.mk-bubble-num');
+        if (inner) { inner.style.transition='background .22s'; inner.style.background='radial-gradient(circle at 38% 35%,#ffd84d,#c88000)'; }
+        if (num)   { num.style.transition='color .22s'; num.style.color='#0f2f6a'; }
+      } else {
+        icon.querySelectorAll('svg').forEach(s => {
+          s.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1)';
+          s.style.transformOrigin = 'center bottom';
+          s.style.transform = `scale(${scale})`;
+        });
+        const body = icon.querySelector('.mk-pin-body');
+        const dot  = icon.querySelector('.mk-pin-dot');
+        if (body) body.style.fill = 'url(#pinGH)';
+        if (dot)  dot.style.fill  = '#0f2f6a';
+      }
+      // Foto bublina/strip — jen na desktopu (na mobilu je redundantní k popupu)
+      if (!IS_TOUCH) {
+        const bubble=icon.querySelector('.mk-photo-bubble');
+        if(bubble){bubble.style.opacity='1';bubble.style.transform='translateX(-50%) scale(1)';}
+        const strip=icon.querySelector('.mk-photo-strip-float');
+        if(strip){strip.style.opacity='1';strip.style.transform='translateX(-50%) scale(1)';}
+      }
+      if (cityName && !IS_TOUCH) {
+        const lbl = document.getElementById('mkCityLabel');
+        const pt = map.latLngToContainerPoint([glat, glon]);
+        lbl.textContent = cityName;
+        lbl.style.left = pt.x + 'px';
+        lbl.style.top = (pt.y + (multi ? 56 : 8)) + 'px';
+        lbl.style.opacity = '1';
+        lbl.style.transform = 'translateX(-50%) translateY(0)';
+      }
+    }
+
+    function applyHoverOut(icon) {
+      icon.classList.remove('mk-hovered');
+      if (multi) {
+        const wrap = icon.querySelector('.mk-multi-wrap');
+        if (wrap) { const zs = parseFloat(wrap.dataset.zscale || '1'); wrap.style.transform = `scale(${zs})`; }
+        const inner = icon.querySelector('.mk-bubble-inner');
+        const num   = icon.querySelector('.mk-bubble-num');
+        if (inner) inner.style.background = inner.dataset.basebg || 'radial-gradient(circle at 35% 30%,#2855a8,#0f2f6a)';
+        if (num)   num.style.color = num.dataset.basenum || '#f5c300';
+      } else {
+        icon.querySelectorAll('svg').forEach(s => { s.style.transform = ''; });
+        const body = icon.querySelector('.mk-pin-body');
+        const dot  = icon.querySelector('.mk-pin-dot');
+        if (body) body.style.fill = body.dataset.basefill || 'url(#pinG)';
+        if (dot)  dot.style.fill  = dot.dataset.basedot || '#f5c300';
+      }
+      const bubble2=icon.querySelector('.mk-photo-bubble');
+      if(bubble2){bubble2.style.opacity='0';bubble2.style.transform='translateX(-50%) scale(.7)';}
+      const strip2=icon.querySelector('.mk-photo-strip-float');
+      if(strip2){strip2.style.opacity='0';strip2.style.transform='translateX(-50%) scale(.7)';}
+      const lbl2 = document.getElementById('mkCityLabel'); lbl2.style.opacity = '0'; lbl2.style.transform = 'translateX(-50%) translateY(6px)';
+    }
+
+    if (IS_TOUCH) {
+      // Mobil: tap aktivuje vizuál a otevře popup zároveň; reset při zavření/přepnutí
+      mk.on('click', function() {
+        if (window._activeTouchMarker && window._activeTouchMarker !== mk) {
+          const prevIcon = window._activeTouchMarker.getElement();
+          if (prevIcon) applyHoverOut(prevIcon);
+        }
+        const icon = this.getElement(); if (!icon) return;
+        applyHoverIn(icon);
+        window._activeTouchMarker = mk;
+      });
+    } else {
+      mk.on('mouseover', function() { const icon = this.getElement(); if (icon) applyHoverIn(icon); });
+      mk.on('mouseout',  function() { const icon = this.getElement(); if (icon) applyHoverOut(icon); });
+    }
+
+    mk.on('popupopen',  function() {
+      const el = this.getTooltip()?.getElement();
+      if (el) el.style.display = 'none';
+      const lbl = document.getElementById('mkCityLabel');
+      if (lbl) { lbl.style.opacity='0'; lbl.style.transform='translateX(-50%) translateY(6px)'; }
+    });
+    mk.on('popupclose', function() {
+      const el = this.getTooltip()?.getElement();
+      if (el) el.style.display = '';
+      if (IS_TOUCH && window._activeTouchMarker === mk) {
+        const icon = this.getElement();
+        if (icon) applyHoverOut(icon);
+        window._activeTouchMarker = null;
+      }
+    });
+    // Roky příchodu hráčů — pro přehrávání historie (null = rok neznámý → objeví se až na konci)
+    mk._startYears = g.ps.map(({p}) => { const r = parseSeasonRangeYears(p); return r ? r.start : null; })
+      .filter(y => y !== null).sort((a,b)=>a-b);
+    mk._totalCount = g.ps.length;
+    mk._isMulti = multi;
+    g.ps.forEach(({idx}) => { playerMarkers[idx] = mk; });
+    mlayers.push(mk);
+  });
+
+  if (Object.keys(groups).length === 1) {
+    const g = Object.values(groups)[0];
+    map.setView([g.lat, g.lon], 10);
+  }
+  updateLabelLayer();
+  updateArcsLayer(false);
+  updateStats();
+}
+
+// ══════════════════════════════════════════════════
+// EDIT MODAL
+// ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════
+function isBirthdayToday(born) {
+  if (!born) return false;
+  const params = new URLSearchParams(location.search);
+  const override = params.get('bday'); // testování: ?bday=15.2
+  let d, m;
+  if (override) {
+    const [od, om] = override.split('.');
+    d = parseInt(od); m = parseInt(om);
+  } else {
+    const today = new Date();
+    d = today.getDate(); m = today.getMonth() + 1;
+  }
+  const match = born.match(/(\d{1,2})[.\s]+(\d{1,2})/);
+  return match && parseInt(match[1]) === d && parseInt(match[2]) === m;
+}
+
+function render() {
+  const list=document.getElementById('playerList'),empty=document.getElementById('emptyMsg');
+  Array.from(list.children).forEach(c=>{if(c!==empty)c.remove();});
+  empty.style.display=players.length?'none':'block';
+
+  // ── Oslavenci dne ────────────────────────────────
+  const today = new Date();
+  const todayStr = `${today.getDate()}. ${today.getMonth()+1}.`;
+  const bdPlayers = players.map((p,i)=>({p,i})).filter(({p})=>isBirthdayToday(p.born));
+  if (bdPlayers.length) {
+    const sec = document.createElement('div');
+    sec.className = 'bday-section';
+    sec.innerHTML = `<div class="bday-header">🎂 <span>Dnes slaví · ${todayStr}</span></div>` +
+      bdPlayers.map(({p,i})=>{
+        const yr = p.born ? parseInt(p.born.match(/\d{4}/)?.[0]) : null;
+        const age = yr ? today.getFullYear() - yr : null;
+        const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+        const photoStyle = p.photoZoom&&p.photoZoom>1
+          ? `transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`
+          : `object-position:${p.photoPos||'50% 50%'};`;
+        const av = p.photo
+          ? `<div class="bday-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`
+          : `<div class="bday-av">${ini}</div>`;
+        return `<div class="bday-card${p.died?' bday-died':''}" onclick="focusPlayer(${i})">${av}<div class="bday-info"><div class="bday-name">${p.died?'✝ ':''}${esc(fullName(p)||p.city||'—')}</div><div class="bday-meta">${p.born||''} ${p.city?'· '+esc(p.city):''}</div></div>${age?`<div class="bday-age">${age}</div>`:''}</div>`;
+      }).join('');
+    list.insertBefore(sec, list.firstChild);
+  }
+
+  // Sort
+  const sorted = players.map((p,i)=>({p,i})).sort((a,b)=>{
+    if (sortMode === 'seasons') return parseSeasonsCount(b.p.seasons) - parseSeasonsCount(a.p.seasons);
+    if (sortMode === 'dist') {
+      const da = a.p.lat ? (a.p._dist ??= haversineKm(48.9764,14.4742,a.p.lat,a.p.lon)) : -1;
+      const db = b.p.lat ? (b.p._dist ??= haversineKm(48.9764,14.4742,b.p.lat,b.p.lon)) : -1;
+      return db - da;
+    }
+    if (sortMode === 'born') {
+      const ya = a.p.born ? parseInt(a.p.born.slice(-4)) : 9999;
+      const yb = b.p.born ? parseInt(b.p.born.slice(-4)) : 9999;
+      return ya - yb;
+    }
+    // name (default)
+    return (a.p.surname||'').localeCompare(b.p.surname||'','cs');
+  });
+
+  sorted.forEach(({p,i})=>{
+    const nm=fullName(p)||p.city;
+    const thumb=p.photo
+      ?`<img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'">`
+      :(p.surname||p.firstname)?initials(p):'🏒';
+    const meta=[
+      p.born?'🎂 '+p.born:'',
+      p.died?('✝ '+p.died+(p.deathcity?' ('+p.deathcity+')':'')):''  ,
+      p.seasonsRange?(p.seasonsRange+(p.seasons?' ('+p.seasons+' sez.)':'')):p.seasons?p.seasons+' sez.':''
+    ].filter(Boolean);
+    const el=document.createElement('div'); el.className='pc';
+    el.dataset.idx=i;
+    el.innerHTML=`
+      <div class="pc-avatar">${thumb}${p.captainYears?'<span class="pc-captain-dot">C</span>':''}</div>
+      <div class="pc-info">
+        <div class="pc-name">${esc(nm)}</div>
+        <div class="pc-meta">
+          <span class="pc-city">${esc(p.city||'—')}</span>
+          ${meta.map(m=>`<span>${esc(m)}</span>`).join('')}
+        </div>
+      </div>`;
+    el.addEventListener('click', e=>{
+      focusPlayer(i);
+    });
+    list.appendChild(el);
+  });
+  updateStats();
+}
+
+// ── SEARCH / FILTER ───────────────────────────────
+function norm(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+let searchQuery = '';
+let sortMode = 'name';
+let captainFilter = false;
+let currentFilter = false;
+const CURRENT_YEAR_MIN = 2025;   // hráč je "současný", pokud jeho rozsah sezón sahá aspoň sem
+function isCurrentPlayer(p) {
+  const r = parseSeasonRangeYears(p);
+  return !!r && r.end >= CURRENT_YEAR_MIN;
+}
+function toggleCurrentFilter() {
+  currentFilter = !currentFilter;
+  document.getElementById('filterCurrent').classList.toggle('active', currentFilter);
+  render(); updateMap();
+}
+
+function toggleCaptainFilter() {
+  captainFilter = !captainFilter;
+  document.getElementById('filterCaptain').classList.toggle('active', captainFilter);
+  filterList();
+}
+
+function setSort(mode) {
+  sortMode = mode;
+  document.querySelectorAll('.sort-btn:not(.sort-cap):not(.sort-cur)').forEach(b => b.classList.remove('active'));
+  const btnId = {name:'sortName', seasons:'sortSeasons', born:'sortBorn', dist:'sortDist'}[mode];
+  document.getElementById(btnId)?.classList.add('active');
+  render();
+}
+
+function parseSeasonsCount(s) {
+  const n = parseInt(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function filterList() {
+  const q = norm(document.getElementById('playerSearch').value.trim());
+  searchQuery = q;
+  document.getElementById('searchClear').style.display = q ? '' : 'none';
+  const cards = document.querySelectorAll('#playerList .pc');
+  let visible = 0;
+  cards.forEach(card => {
+    const idx = parseInt(card.dataset.idx);
+    const p = players[idx];
+    if (!p) return;
+    const name = norm(fullName(p));
+    const match = (!q || name.includes(q)) && (!captainFilter || !!p.captainYears) && (!currentFilter || isCurrentPlayer(p));
+    card.style.display = match ? '' : 'none';
+    if (match) visible++;
+    card.classList.toggle('pc-highlight', match && q.length > 0);
+  });
+  document.getElementById('listTitle').textContent =
+    currentFilter ? `Současný kádr (${visible})` : captainFilter ? `Kapitáni (${visible})` : q ? `Hráči (${visible})` : 'Hráči';
+}
+
+function clearSearch() {
+  document.getElementById('playerSearch').value = '';
+  filterList();
+}
+
+// ── FOCUS PLAYER ON MAP ────────────────────────────
+function buildSinglePopup(p, idx, cityDisplay) {
+  const nm = fullName(p) || p.city;
+  const ini = [p.firstname,p.surname].filter(Boolean).map(s=>s[0].toUpperCase()).join('').slice(0,2)||'?';
+  const thumb = p.photo
+    ? `<div class="pop-thumb"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.style.display='none'"></div>`
+    : `<div class="pop-thumb-ph">${ini}</div>`;
+  const meta = [p.born?'🎂 '+p.born:'',p.died?'✝ '+p.died:'',p.seasonsRange||(p.seasons?p.seasons+' sez.':'')].filter(Boolean).join(' · ');
+  const display = cityDisplay || p.city || '';
+  return `<div class="pop-hdr">📍 ${esc(display)}</div><div class="pop-player" onclick="showPlayerDetail(${idx})">${thumb}<div><div class="pop-pname">${esc(nm)}</div>${meta?`<div class="pop-pmeta">${esc(meta)}</div>`:''}</div></div><div class="pop-actions"><span class="pop-act" onclick="showPlayerDetail(${idx})">👤 Celý profil</span><span class="pop-act" onclick="showCityList(${idx})">📋 V seznamu</span></div>`;
+}
+
+function buildCityPopup(list, display) {
+  const sorted = [...list].sort((a,b)=>(a.p.surname||'').localeCompare(b.p.surname||'','cs'));
+  const rows = sorted.map(({p,idx})=>{
+    const yr=p.born?p.born.slice(-4):'';
+    const s=p.seasons||'';
+    const capBadge = p.captainYears ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#f5c300;color:#0f2f6a;font-size:8px;font-weight:900;margin-left:4px;flex-shrink:0">C</span>' : '';
+    return `<div class="pop-row" onclick="showPlayerDetail(${idx})" title="Zobrazit detail hráče"><span class="pop-rname">${esc(fullName(p))}${capBadge}</span><span class="pop-rmeta">${yr?'<span>'+yr+'</span>':''}${s?'<span>'+esc(s)+' sez.</span>':''}</span></div>`;
+  }).join('');
+  const idxCsv = sorted.map(({idx}) => idx).join(',');
+  const cardBtn = `<div class="pop-cardbtn" onclick="event.stopPropagation();openCityCard([${idxCsv}])">🎴 Vizitka města</div>`;
+  return `<div class="pop-hdr"><span>📍 ${esc(display)}</span><span class="pop-badge">${list.length} hráčů</span></div><div class="pop-list">${rows}</div>${cardBtn}`;
+}
+
+// Open popup with ALL players from the player's birthplace
+function showCityList(idx) {
+  const p = players[idx];
+  if (!p || !p.lat) return;
+  document.getElementById('detailOvl').classList.remove('on');
+  const isMobile = window.innerWidth <= 750;
+  if (isMobile) mobTab('mapa');
+
+  const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+  const samePlace = players.map((pl,i)=>({p:pl,idx:i}))
+    .filter(({p:pl}) => pl.lat && (Math.round(pl.lat*200)+','+Math.round(pl.lon*200)) === key);
+
+  const delay = isMobile ? 400 : 0;
+  setTimeout(() => {
+    map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
+    setTimeout(() => {
+      const content = samePlace.length === 1
+        ? buildSinglePopup(p, idx, p.city)
+        : buildCityPopup(samePlace, p.city);
+      L.popup({maxWidth:320, maxHeight:400})
+        .setLatLng([p.lat, p.lon])
+        .setContent(content)
+        .openOn(map);
+    }, 900);
+  }, delay);
+}
+
+function focusPlayer(idx) {
+  const p = players[idx];
+  if (!p || !p.lat) return;
+
+  const isMobile = window.innerWidth <= 750;
+  if (isMobile) mobTab('mapa');
+
+  // Highlight card
+  document.querySelectorAll('#playerList .pc').forEach(c => c.classList.remove('pc-active'));
+  const card = document.querySelector(`.pc[data-idx="${idx}"]`);
+  if (card) { card.classList.add('pc-active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+
+  const delay = isMobile ? 400 : 0;
+  setTimeout(() => {
+    map.flyTo([p.lat, p.lon], 11, {duration: 0.8});
+    setTimeout(() => {
+      L.popup({maxWidth:320, maxHeight:400})
+        .setLatLng([p.lat, p.lon])
+        .setContent(buildSinglePopup(p, idx, p.city))
+        .openOn(map);
+    }, 900);
+  }, delay);
+}
+
+function updateStats() {
+  const el=document.getElementById('hdrStats');
+  if (!players.length){el.innerHTML='';return;}
+  const cities=new Set(players.filter(p=>p.lat).map(p=>Math.round(p.lat*200)+','+Math.round(p.lon*200))).size;
+  el.innerHTML=`<strong>${players.length}</strong> hráčů · <strong>${cities}</strong> ${cities===1?'město':cities<=4?'města':'měst'}`;
+  document.getElementById('listTitle').textContent=`Hráči (${players.length})`;
+}
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function load(){
+  players = SAMPLES.map(function(s){ return Object.assign({},s); });
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escA(s){return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fullName(p){return [p.surname,p.firstname].filter(Boolean).join(' ');}
+function initials(p){return [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';}
+
+
+// ══════════════════════════════════════════════════
+// PLAYER DETAIL MODAL (from multi-city popup)
+// ══════════════════════════════════════════════════
+function showPlayerDetail(idx) {
+  const p = players[idx];
+  if (!p) return;
+  map.closePopup();
+
+  const nm = fullName(p) || p.city;
+  const ini = initials(p);
+  const thumb = p.photo
+    ? `<div class="detail-photo" style="overflow:hidden;flex-shrink:0"><img src="${escA(p.photo)}" loading="eager" style="width:100%;height:100%;object-fit:cover;display:block;${p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${escA(p.photoPos||'50% 50%')};`:`object-position:${escA(p.photoPos||'50% 50%')};`}" onerror="this.parentElement.outerHTML='<div class=detail-photo-ph>${ini}</div>'"></div>`
+    : `<div class="detail-photo-ph">${ini}</div>`;
+
+  const bornVal = [p.born ? esc(p.born) : null, p.city ? `<span style="color:#8a9ab5;font-size:13px;font-weight:400">(${esc(p.city)})</span>` : null].filter(Boolean).join(' ');
+
+  const items = [];
+  if (bornVal) items.push(['Narozen', bornVal, false]);
+  if (p.died) items.push(['Zemřel', esc(p.died) + (p.deathcity ? ` <span style="color:#8a9ab5;font-size:12px">(${esc(p.deathcity)})</span>` : ''), false]);
+  if (p.seasonsRange) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasonsRange)}</span>${p.seasons ? `<span style="color:#8a9ab5;font-size:12px;font-weight:400"> ${esc(p.seasons)} sez.</span>` : ''}`, true]);
+  else if (p.seasons) items.push(['Sezóny', `<span class="detail-seasons">${esc(p.seasons)} sez.</span>`, true]);
+  if (p.lat && p.lon) {
+    const dist = haversineKm(48.9764, 14.4742, p.lat, p.lon);
+    items.push(['Vzdálenost od ČB', dist < 5 ? 'České Budějovice' : `${dist} km`, true]);
+  }
+
+  const gridHtml = items.map(([lbl, val, full]) =>
+    `<div class="detail-info-item${full ? ' full' : ''}">
+      <span class="detail-lbl">${lbl}</span>
+      <span class="detail-val">${val}</span>
+    </div>`
+  ).join('');
+
+  const captainBadge = p.captainYears
+    ? `<div class="detail-captain-badge">Kapitán · ${esc(p.captainYears)}</div>`
+    : '';
+
+  window._detailIdx = idx;
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-card-header">
+      ${thumb}
+      <div class="detail-header-info">
+        <div class="detail-name">${esc(nm)}</div>
+        ${captainBadge}
+      </div>
+    </div>
+    ${items.length ? `<div class="detail-card-body"><div class="detail-info-grid">${gridHtml}</div></div>` : ''}
+    ${buildCareerTimeline(p)}
+    <div class="detail-card-footer">
+      <button class="detail-back" onclick="showCityList(${idx})">← Zobrazit v seznamu</button>
+      <button class="detail-back" onclick="sharePlayer(${idx})" title="Zkopírovat odkaz na hráče">🔗 Sdílet</button>
+      <button class="detail-back" onclick="openPlayerCard(${idx})" title="Grafická vizitka hráče">🎴 Vizitka</button>
+      <button class="detail-close-btn" onclick="closeDetailOvl()">✕</button>
+    </div>`;
+
+  document.getElementById('detailOvl').classList.add('on');
+  // Aktualizuj URL pro sdílení (bez přidání do historie)
+  try {
+    const url = new URL(window.location);
+    url.searchParams.set('player', idx);
+    history.replaceState(null, '', url);
+  } catch(e) {}
+}
+
+
+
+// ══════════════════════════════════════════════════
+// GLOBE INTRO — rodiště hráčů na zeměkouli → zoom na ČB
+// ══════════════════════════════════════════════════
+function runGlobeIntro() {
+  // Kdy intro NEpouštět:
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('intro') === '0') return;
+  if (params.get('player') !== null) return;           // sdílený odkaz → rovnou na hráče
+  if (typeof THREE === 'undefined') return;            // CDN nedostupné
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  try {
+    if (params.get('intro') !== '1' && sessionStorage.getItem('introSeen')) return;
+    sessionStorage.setItem('introSeen', '1');
+  } catch(e) {}
+
+  const CB_LAT = 48.9764, CB_LON = 14.4742;
+  const R = 1;
+
+  // Overlay
+  const ovl = document.createElement('div');
+  ovl.id = 'introOvl';
+  ovl.innerHTML = `
+    <div class="intro-title">
+      <div class="it1">HC Motor České Budějovice</div>
+      <div class="it2">MÍSTA NAROZENÍ HRÁČŮ</div>
+    </div>
+    <button class="intro-skip">Přeskočit ✕</button>`;
+  document.body.appendChild(ovl);
+
+  const canvas = document.createElement('canvas');
+  ovl.insertBefore(canvas, ovl.firstChild);
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  function sizeIt(){ renderer.setPixelRatio(DPR); renderer.setSize(window.innerWidth, window.innerHeight, false); }
+  sizeIt();
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 3.1);
+
+  scene.add(new THREE.AmbientLight(0x334477, 1.1));
+  const key = new THREE.DirectionalLight(0x8fb0ff, 1.0); key.position.set(2.5, 1.5, 2); scene.add(key);
+
+  const globe = new THREE.Group();
+  scene.add(globe);
+
+  // Koule — tmavě modrá
+  globe.add(new THREE.Mesh(
+    new THREE.SphereGeometry(R, 48, 32),
+    new THREE.MeshPhongMaterial({color:0x14275e, shininess:18, specular:0x223a6e})
+  ));
+  // Poledníková síť
+  globe.add(new THREE.LineSegments(
+    new THREE.WireframeGeometry(new THREE.SphereGeometry(R*1.002, 20, 12)),
+    new THREE.LineBasicMaterial({color:0x2855a8, transparent:true, opacity:0.28})
+  ));
+  // Rim glow — větší koule zevnitř
+  globe.add(new THREE.Mesh(
+    new THREE.SphereGeometry(R*1.05, 48, 32),
+    new THREE.MeshBasicMaterial({color:0x1c4896, side:THREE.BackSide, transparent:true, opacity:0.30})
+  ));
+
+  // lat/lon → 3D
+  function ll2xyz(lat, lon, r) {
+    const phi = (90 - lat) * Math.PI / 180;
+    const theta = (lon + 180) * Math.PI / 180;
+    return [ -r*Math.sin(phi)*Math.cos(theta), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(theta) ];
+  }
+
+  // ── Kontinenty jako tečkovaný povrch (run-length encoded grid 1.5°) ──
+  const LAND_RUNS = '2,74,1;3,72,4;4,71,3;5,70,4;6,70,5,166,1;7,70,7;8,70,6,233,1;9,71,6,232,3;10,72,5,218,1,234,2;11,71,6,217,2,235,2;12,71,8,237,1;13,72,7,237,2;14,71,11,214,6,237,1;15,72,10,213,8,236,1;16,72,10,83,1,133,1,198,2,212,9;17,73,12,133,6,198,5,210,12;18,73,13,133,7,198,24;19,73,14,132,9,197,26;20,73,15,131,11,197,26;21,73,15,131,11,196,27;22,73,15,130,12,197,25;23,74,16,130,14,150,2,196,26;24,74,19,130,14,149,3,196,25;25,74,19,129,15,150,3,198,22,230,1;26,74,20,129,15,150,3,201,18;27,73,21,128,17,150,3,202,16,239,1;28,1,71,94,34,147,3,154,48,212,3,218,22;29,70,25,129,19,152,2,204,7,215,2;30,70,25,129,19,153,1,207,4,215,1;31,69,26,130,17,209,1,211,1,215,1;32,68,28,129,18,220,1,228,1;33,68,29,129,18,198,1,204,1,214,2,218,2;34,67,30,129,18,192,4,213,6;35,66,31,129,17,191,1,213,6,220,1;36,66,29,128,19,189,2,200,1,202,1,211,6,222,1;37,67,27,127,20,188,3,194,4,200,2,206,1,209,1,211,4,221,1;38,67,23,127,21,188,2,194,4,200,2,208,2;39,67,20,127,22,187,3,193,6,200,1;40,68,19,127,23,186,4,193,6;41,69,18,127,25,185,2,188,1,195,4;42,69,17,115,1,124,28,184,2,188,1,197,3;43,69,13,113,8,124,29,187,2,198,1;44,68,13,112,42,174,1,202,3;45,65,1,67,2,70,10,112,42,172,1,174,1,186,1,190,1,204,1;46,63,2,70,6,78,2,111,43,171,3,186,1,190,2,202,1;47,63,2,72,1,110,39,154,1,171,3,186,1,189,4;48,61,4,109,43,170,4,186,7,202,1;49,59,6,109,38,149,5,170,4,186,7,201,1;50,55,7,109,38,149,7,169,6,183,9,201,1;51,52,10,69,1,76,1,110,36,148,10,169,7,183,8,201,1;52,50,6,60,2,72,2,110,35,148,11,169,8,183,8,193,1;53,50,6,60,3,68,2,109,36,147,13,167,1,169,10,182,10;54,50,5,64,1,66,2,110,35,147,13,167,14,182,15;55,49,6,110,34,146,13,165,34,201,1;56,48,8,66,1,111,33,145,10,160,40;57,44,2,47,9,66,1,111,32,144,10,156,45;58,44,1,46,10,65,2,113,29,144,9,155,47;59,43,1,45,16,63,1,65,1,114,39,154,48;60,43,1,45,21,114,17,134,4,144,58,207,1;61,42,26,115,13,144,57,207,1;62,40,29,116,11,144,56,208,2,211,1;63,39,31,121,7,145,56,205,2,211,3;64,39,31,115,5,129,2,135,1,139,15,156,44,201,1,205,2,213,1;65,38,32,114,6,131,1,134,2,138,15,156,43,204,2,214,1;66,38,33,115,6,126,1,130,6,140,14,156,45,202,5,214,1;67,38,35,114,9,126,1,128,3,133,6,143,1,148,5,155,52,214,1;68,38,36,115,2,119,6,127,3,131,8,147,5,155,55,215,2;69,38,38,77,2,120,9,130,10,143,1,145,7,155,57,215,1;70,38,39,119,22,142,2,146,8,156,57,215,1;71,37,1,39,38,81,4,118,96,215,1;72,36,1,38,38,78,1,82,1,119,95,215,2;73,35,46,82,1,117,4,122,92,215,1;74,35,31,68,15,114,2,118,4,123,93,225,1;75,32,1,34,32,68,14,114,2,119,1,126,86,213,1,215,1,224,3;76,12,1,33,30,69,11,117,2,126,1,128,2,135,76,224,4;77,15,1,17,1,32,29,69,11,116,3,126,1,129,2,135,78,225,4;78,14,1,16,2,29,29,68,7,76,3,117,1,124,2,128,4,136,79,226,3;79,9,1,11,11,26,31,69,5,77,1,124,9,136,1,140,84,228,4;80,10,48,69,4,88,4,124,8,135,90,227,2,230,6;81,7,1,11,49,73,2,76,1,87,5,125,8,135,105;82,4,1,10,1,13,49,63,3,68,9,86,7,106,5,128,7,136,8,145,94;83,7,2,63,8,75,1,79,6,96,9,106,1,111,18,144,4;84,3,8,56,1,62,1,66,3,70,2,78,7,98,32,148,2,151,2,169,1;85,11,9,29,1,42,3,49,2,52,4,57,1,60,3,66,3,75,11,103,29,145,16,164,2,169,1,233,1;86,13,8,45,7,56,3,61,14,84,19,136,5,165,4,170,57;87,37,3,41,7,49,2,53,3,60,11,84,21,155,3,166,3,170,4,175,31,213,7;88,38,5,49,2,53,3,57,3,61,2,65,1,67,2,83,24,157,2,174,26,203,2,214,2;89,45,5,54,1,56,2,59,8,82,25,158,3,178,18,212,5,218,3;90,39,3,47,1,53,2,56,4,61,7,74,32,164,2,188,7;91,45,2,53,1,55,1,63,6,72,35,129,4,135,1,187,1;92,57,14,77,31,128,5,135,2,183,4;93,58,1,61,15,77,34,183,2;94,63,16,89,17';
+  (function addLandDots() {
+    const STEP = 1.5, LAT0 = -58.5;
+    const pts = [];
+    LAND_RUNS.split(';').forEach(row => {
+      const v = row.split(',').map(Number);
+      const lat = LAT0 + v[0] * STEP;
+      for (let i = 1; i < v.length; i += 2) {
+        const start = v[i], len = v[i+1];
+        for (let k = 0; k < len; k++) {
+          const lon = -180 + (start + k) * STEP;
+          const [x,y,z] = ll2xyz(lat, lon, R*1.004);
+          pts.push(x, y, z);
+        }
+      }
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+    globe.add(new THREE.Points(g, new THREE.PointsMaterial({
+      color:0x4a6fb8, size:0.0085, sizeAttenuation:true, transparent:true, opacity:0.55
+    })));
+  })();
+
+  // Zlaté body — rodiště všech hráčů
+  const coords = players.filter(p => p.lat && p.lon);
+  const pos = new Float32Array(coords.length * 3);
+  coords.forEach((p, i) => {
+    const [x,y,z] = ll2xyz(p.lat, p.lon, R*1.012);
+    pos[i*3]=x; pos[i*3+1]=y; pos[i*3+2]=z;
+  });
+  const dotsGeo = new THREE.BufferGeometry();
+  dotsGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  globe.add(new THREE.Points(dotsGeo, new THREE.PointsMaterial({
+    color:0xf5c300, size:0.016, sizeAttenuation:true, transparent:true, opacity:0.95
+  })));
+
+  // ČB — pulsující zvýrazněný bod
+  const cbPos = ll2xyz(CB_LAT, CB_LON, R*1.015);
+  const cbDot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.022, 12, 8),
+    new THREE.MeshBasicMaterial({color:0xffd84d})
+  );
+  cbDot.position.set(...cbPos);
+  globe.add(cbDot);
+
+  // Cílová rotace — ČB čelem ke kameře
+  const targetY = (-90 - CB_LON) * Math.PI / 180;
+  const targetX = CB_LAT * Math.PI / 180;
+  const startY = targetY - 2.4;   // příletový oblouk přes Atlantik
+  const startX = targetX * 0.25;
+  globe.rotation.set(startX, startY, 0);
+
+  const DUR = 8000, FADE_AT = 7300;   // 8 s — filmový průběh
+  const t0 = performance.now();
+  let done = false, raf = null;
+
+  const ease = t => t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;  // easeInOutCubic — jemný start i dojezd
+
+  function finish() {
+    if (done) return;
+    done = true;
+    if (raf) cancelAnimationFrame(raf);
+    ovl.classList.add('fade');
+    setTimeout(() => {
+      renderer.dispose();
+      ovl.remove();
+      if (map) map.invalidateSize();
+    }, 1050);
+  }
+  ovl.querySelector('.intro-skip').addEventListener('click', finish);
+
+  function frame(now) {
+    if (done) return;
+    const raw = Math.min((now - t0) / DUR, 1);
+    // Rotace: prvních 70 % času (s vlastním easingem)
+    const rt = ease(Math.min(raw / 0.70, 1));
+    globe.rotation.y = startY + (targetY - startY) * rt;
+    globe.rotation.x = startX + (targetX - startX) * rt;
+    // Pomalý stálý drift navíc, ať koule nikdy nestojí
+    globe.rotation.y += Math.sin(now / 4000) * 0.004;
+    // Zoom: od 55 % do konce — pozvolný nájezd kamery
+    const zt = Math.max(0, (raw - 0.55) / 0.45);
+    camera.position.z = 3.2 - ease(zt) * 1.7;   // 3.2 → 1.5
+    // Puls ČB bodu
+    const s = 1 + 0.5 * Math.sin(now / 200);
+    cbDot.scale.set(s, s, s);
+    renderer.render(scene, camera);
+    if (raw >= FADE_AT / DUR && !ovl.classList.contains('fade')) ovl.classList.add('fade');
+    if (raw < 1) raf = requestAnimationFrame(frame);
+    else setTimeout(finish, 100);
+  }
+  raf = requestAnimationFrame(frame);
+  window.addEventListener('resize', sizeIt);
+}
+
+
+// ══════════════════════════════════════════════════
+// OBLOUKY — cesty z rodišť do Budvar arény
+// ══════════════════════════════════════════════════
+const ARENA_LL = [48.97080, 14.47116];
+
+function buildArcPoints(fromLat, fromLon) {
+  const [tLat, tLon] = ARENA_LL;
+  const dLat = tLat - fromLat, dLon = tLon - fromLon;
+  const dist = Math.sqrt(dLat*dLat + dLon*dLon);
+  // Kontrolní bod — střed + kolmý offset (křivost roste se vzdáleností)
+  const mLat = (fromLat + tLat) / 2, mLon = (fromLon + tLon) / 2;
+  const k = dist * 0.18;
+  const cLat = mLat + (-dLon / (dist || 1)) * k;
+  const cLon = mLon + ( dLat / (dist || 1)) * k;
+  const pts = [];
+  const N = 26;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, u = 1 - t;
+    pts.push([
+      u*u*fromLat + 2*u*t*cLat + t*t*tLat,
+      u*u*fromLon + 2*u*t*cLon + t*t*tLon
+    ]);
+  }
+  return pts;
+}
+
+function updateArcsLayer(animate) {
+  if (!arcsLayer || !map.hasLayer(arcsLayer)) return;
+  arcsLayer.clearLayers();
+  const visible = getFilteredPlayers().filter(p => p.lat && p.lon);
+  // Skupiny míst (stejný klíč jako updateMap)
+  const groups = {};
+  visible.forEach(p => {
+    const key = Math.round(p.lat*200)+','+Math.round(p.lon*200);
+    if (!groups[key]) groups[key] = {lat:p.lat, lon:p.lon, count:0};
+    groups[key].count++;
+  });
+  const arcs = [];
+  Object.values(groups).forEach(g => {
+    const dLat = g.lat - ARENA_LL[0], dLon = g.lon - ARENA_LL[1];
+    const dist = Math.sqrt(dLat*dLat + dLon*dLon);
+    if (dist < 0.05) return; // samotné ČB — bez oblouku
+    const line = L.polyline(buildArcPoints(g.lat, g.lon), {
+      renderer: _arcRenderer,
+      color: '#f5c300',
+      weight: Math.min(1 + g.count * 0.12, 2.6),
+      opacity: 0.45,
+      interactive: false
+    });
+    line._arcDist = dist;
+    line.addTo(arcsLayer);
+    arcs.push(line);
+  });
+  if (animate) animateArcs(arcs);
+}
+
+function animateArcs(arcs) {
+  // Seřaď od nejbližších — vlna se šíří ven z Budějovic
+  arcs.sort((a, b) => a._arcDist - b._arcDist);
+  requestAnimationFrame(() => {
+    arcs.forEach((line, i) => {
+      const path = line._path;
+      if (!path) return;
+      let len;
+      try { len = path.getTotalLength(); } catch(e) { return; }
+      path.style.transition = 'none';
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len;
+      path.getBoundingClientRect(); // reflow
+      path.style.transition = `stroke-dashoffset .7s ease ${Math.min(i * 14, 2200)}ms`;
+      path.style.strokeDashoffset = '0';
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════
+// PŘEHRÁVÁNÍ HISTORIE — 100 let na mapě
+// ══════════════════════════════════════════════════
+const ERA_NAMES = [[1928,'AC Stadion ČB'],[1948,'Sokol Stadion ČB'],[1949,'ZSJ OD Stadion ČB'],
+  [1950,'ZSJ SKP JNV ČB'],[1953,'DSO Slavoj ČB'],[1957,'TJ Slavoj ČB'],[1965,'TJ Motor ČB'],
+  [1992,'HC České Budějovice'],[2006,'HC Mountfield'],[2013,'ČEZ Motor ČB'],
+  [2020,'Madeta Motor ČB'],[2021,'HC Motor ČB'],[2023,'Banes Motor ČB']];
+function eraNameFor(year){let n=ERA_NAMES[0][1];for(const[y,name]of ERA_NAMES){if(year>=y)n=name;}return n;}
+
+let _histRAF = null, _histPlaying = false;
+const HIST_START = 1927, HIST_END = 2026, HIST_DUR = 22000; // 22 s
+
+function playHistory() {
+  if (_histPlaying) return;
+  // Reset filtrů na "Vše", ať hrajeme s kompletní mapou
+  if (filterMode !== 'off') setFilter('off');
+  map.closePopup();
+  document.getElementById('detailOvl')?.classList.remove('on');
+
+  // Markery musí existovat — updateMap je synchronní, ale dej DOM čas
+  setTimeout(() => {
+    _histPlaying = true;
+    // Schovej všechny markery
+    mlayers.forEach(mk => {
+      const el = mk.getElement && mk.getElement();
+      if (!el || !mk._startYears) return;
+      el.style.transition = 'none';
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+      mk._shown = false;
+      mk._lastCount = 0;
+    });
+    // Skryj i popisky vrstvy, ať nepředbíhají
+    if (labelLayer && map.hasLayer(labelLayer)) labelLayer.clearLayers();
+
+    const ovl = document.getElementById('histOvl');
+    ovl.classList.add('on');
+
+    const t0 = performance.now();
+    let lastYearShown = 0;
+
+    function tick(now) {
+      const t = Math.min((now - t0) / HIST_DUR, 1);
+      // ease-in-out lehce: lineární roky čtou líp — necháme lineární
+      const year = HIST_START + t * (HIST_END - HIST_START);
+      const yearInt = Math.floor(year);
+
+      if (yearInt !== lastYearShown) {
+        lastYearShown = yearInt;
+        document.getElementById('histYear').textContent = yearInt;
+        const logo = getLogoForYear(yearInt);
+        document.getElementById('histClub').innerHTML =
+          (logo ? `<img src="${logo}" onerror="this.style.display='none'">` : '') + eraNameFor(yearInt);
+      }
+      document.getElementById('histBarFill').style.width = (t*100).toFixed(1) + '%';
+
+      // Odhal markery + aktualizuj čísla
+      let totalPlayers = 0;
+      mlayers.forEach(mk => {
+        if (!mk._startYears) return;
+        const cnt = countLE(mk._startYears, year);
+        totalPlayers += cnt;
+        if (cnt > 0 && !mk._shown) {
+          mk._shown = true;
+          const el = mk.getElement();
+          if (el) {
+            el.style.transition = 'opacity .45s ease';
+            el.style.opacity = '1';
+            el.style.pointerEvents = '';
+            // pop efekt na wrapperu
+            const wrap = el.querySelector('.mk-wrap, .mk-multi-wrap');
+            if (wrap) {
+              const zs = parseFloat(wrap.dataset.zscale || '1');
+              wrap.style.transition = 'none';
+              wrap.style.transform = `scale(${zs*0.2})`;
+              requestAnimationFrame(() => {
+                wrap.style.transition = 'transform .5s cubic-bezier(.34,1.56,.64,1)';
+                wrap.style.transform = `scale(${zs})`;
+              });
+            }
+          }
+        }
+        if (mk._isMulti && cnt !== mk._lastCount && cnt > 0) {
+          mk._lastCount = cnt;
+          const el = mk.getElement();
+          const num = el && el.querySelector('.mk-bubble-num');
+          if (num) num.textContent = cnt;
+        }
+      });
+      document.getElementById('histCount').textContent = totalPlayers + ' hráčů';
+      // (hráči bez datace se objeví po skončení animace)
+
+      if (t < 1) {
+        _histRAF = requestAnimationFrame(tick);
+      } else {
+        // FINÁLE — všechny cesty vedou do Budějovic
+        window._arcsWereOn = map.hasLayer(arcsLayer);
+        if (!window._arcsWereOn) map.addLayer(arcsLayer);
+        updateArcsLayer(true);
+        document.getElementById('histClub').innerHTML = '🏒 Všechny cesty vedou do Budějovic';
+        setTimeout(stopHistory, 4200);
+      }
+    }
+    _histRAF = requestAnimationFrame(tick);
+  }, 80);
+}
+
+function countLE(sortedArr, x) {
+  // počet prvků <= x (pole je malé, lineárně stačí)
+  let c = 0;
+  for (let i = 0; i < sortedArr.length; i++) { if (sortedArr[i] <= x) c++; else break; }
+  return c;
+}
+
+function stopHistory() {
+  if (_histRAF) cancelAnimationFrame(_histRAF);
+  _histRAF = null;
+  _histPlaying = false;
+  document.getElementById('histOvl').classList.remove('on');
+  // Vše viditelné, čísla finální
+  mlayers.forEach(mk => {
+    const el = mk.getElement && mk.getElement();
+    if (!el) return;
+    el.style.transition = '';
+    el.style.opacity = '';
+    el.style.pointerEvents = '';
+    if (mk._isMulti && mk._totalCount) {
+      const num = el.querySelector('.mk-bubble-num');
+      if (num) num.textContent = mk._totalCount;
+    }
+    mk._shown = mk._lastCount = undefined;
+  });
+  updateLabelLayer();
+  // Dočasné finálové oblouky pryč (nech jen pokud si vrstvu zapnul uživatel)
+  if (window._arcsWereOn === false && arcsLayer && map.hasLayer(arcsLayer)) {
+    map.removeLayer(arcsLayer);
+  }
+  window._arcsWereOn = undefined;
+}
+
+
+// ══════════════════════════════════════════════════
+// DETAIL — navigace další/předchozí (swipe + šipky)
+// ══════════════════════════════════════════════════
+function detailListOrder() {
+  const order = Array.from(document.querySelectorAll('#playerList .pc'))
+    .map(c => parseInt(c.dataset.idx)).filter(n => !isNaN(n));
+  return order.length ? order : players.map((_, i) => i);
+}
+
+function navigateDetail(dir) {
+  if (window._detailIdx === undefined) return;
+  const order = detailListOrder();
+  let pos = order.indexOf(window._detailIdx);
+  if (pos === -1) pos = 0;
+  const next = order[(pos + dir + order.length) % order.length];
+  const dc = document.getElementById('detailContent');
+  // slide ven → vyměnit obsah → slide dovnitř z opačné strany
+  dc.classList.add(dir > 0 ? 'slide-out-l' : 'slide-out-r');
+  setTimeout(() => {
+    showPlayerDetail(next);
+    dc.classList.remove('slide-out-l', 'slide-out-r');
+    dc.classList.add(dir > 0 ? 'slide-prep-l' : 'slide-prep-r');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      dc.classList.remove('slide-prep-l', 'slide-prep-r');
+    }));
+  }, 160);
+}
+
+// Swipe na dotykových zařízeních — listenery na document,
+// protože #detailOvl je v DOM až za tímto skriptem
+(function initDetailSwipe() {
+  let sx = 0, sy = 0, tracking = false;
+  document.addEventListener('touchstart', e => {
+    const ovl = document.getElementById('detailOvl');
+    if (!ovl || !ovl.classList.contains('on') || !ovl.contains(e.target)) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+  }, {passive: true});
+  document.addEventListener('touchend', e => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy)) {
+      navigateDetail(dx < 0 ? 1 : -1);
+    }
+  }, {passive: true});
+})();
+
+// ── PLAYER CARD (grafická vizitka) ─────────────────────────────────────────
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function corsProxyUrl(url) {
+  if (!url) return url;
+  try {
+    const u = new URL(url, window.location.href);
+    if (u.protocol === 'data:') return url;
+    // Same-origin (lokální loga v repu) — proxy netřeba, canvas zůstane čistý
+    if (u.origin === window.location.origin) return url;
+    return `https://images.weserv.nl/?url=${encodeURIComponent(u.host + u.pathname + u.search)}`;
+  } catch(e) { return url; }
+}
+
+function loadImg(src, cors) {
+  return new Promise((resolve) => {
+    if (!src) { resolve(null); return; }
+    const finalSrc = cors ? corsProxyUrl(src) : src;
+    const img = new Image();
+    if (cors) img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      // Fallback — zkus přímo bez proxy (nemuselo by fungovat pro export, ale aspoň se něco zobrazí)
+      if (cors && finalSrc !== src) {
+        const img2 = new Image();
+        img2.crossOrigin = 'anonymous';
+        img2.onload = () => resolve(img2);
+        img2.onerror = () => resolve(null);
+        img2.src = src;
+        setTimeout(() => resolve(null), 4000);
+      } else {
+        resolve(null);
+      }
+    };
+    img.src = finalSrc;
+    setTimeout(() => resolve(null), 6000);
+  });
+}
+
+function parsePhotoPos(pos) {
+  const parts = (pos || '50% 50%').split(/\s+/).map(s => parseFloat(s));
+  return { x: isFinite(parts[0]) ? parts[0] : 50, y: isFinite(parts[1]) ? parts[1] : 50 };
+}
+
+// Replikuje CSS object-fit:cover + object-position (+ volitelně transform:scale kolem photoPos)
+// stejně jako se fotky ořezávají jinde v mapě (photo_position_picker.html)
+function drawCoverImage(ctx, img, cx0, cy0, dw, dh, zoom, posStr) {
+  const iw = img.width, ih = img.height;
+  const coverScale = Math.max(dw/iw, dh/ih);
+  const scaledW = iw*coverScale, scaledH = ih*coverScale;
+  const pos = parsePhotoPos(posStr);
+  if (zoom && zoom > 1) {
+    // Bez zoomu je object-position vždy střed; extra zoom se aplikuje kolem photoPos kotvy
+    const offsetX = (dw - scaledW) * 0.5;
+    const offsetY = (dh - scaledH) * 0.5;
+    const drawX = cx0 + offsetX, drawY = cy0 + offsetY;
+    const anchorX = cx0 + dw*(pos.x/100);
+    const anchorY = cy0 + dh*(pos.y/100);
+    ctx.save();
+    ctx.translate(anchorX, anchorY);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-anchorX, -anchorY);
+    ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+    ctx.restore();
+  } else {
+    const offsetX = (dw - scaledW) * (pos.x/100);
+    const offsetY = (dh - scaledH) * (pos.y/100);
+    ctx.drawImage(img, cx0+offsetX, cy0+offsetY, scaledW, scaledH);
+  }
+}
+
+async function drawPlayerCard(idx) {
+  const p = players[idx];
+  const canvas = document.getElementById('cardCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  await document.fonts.load('800 90px "Barlow Condensed"');
+  await document.fonts.load('700 34px "Barlow Condensed"');
+  await document.fonts.load('600 26px "Barlow"');
+  await document.fonts.load('700 24px "Barlow"');
+
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#1e3a8a');
+  bg.addColorStop(0.55, '#14275e');
+  bg.addColorStop(1, '#0a1638');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.globalAlpha = 0.10;
+  ctx.fillStyle = '#f5c300';
+  ctx.fillRect(0, 0, W, 14);
+  ctx.globalAlpha = 0.06;
+  ctx.fillRect(0, 14, W, 8);
+  ctx.restore();
+
+  const r = parseSeasonRangeYears(p);
+  const logoYear = r ? r.start : new Date().getFullYear();
+  const logoUrl = (typeof getLogoForYear === 'function') ? getLogoForYear(logoYear) : null;
+  let logoImg = null;
+  if (logoUrl) logoImg = await loadImg(logoUrl, true);
+  if (logoImg) {
+    const lw = 76, lh = 76 * (logoImg.height/logoImg.width || 1);
+    ctx.drawImage(logoImg, 56, 56, lw, Math.min(lh, 76));
+  }
+  ctx.textAlign = 'right';
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.font = '700 24px "Barlow", sans-serif';
+  ctx.fillText('HC MOTOR', W-56, 78);
+  ctx.font = '600 20px "Barlow", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.38)';
+  ctx.fillText('ČESKÉ BUDĚJOVICE', W-56, 104);
+
+  const cx = W/2, cy = 400, rad = 220;
+  let photoImg = p.photo ? await loadImg(p.photo, true) : null;
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, rad+14, 0, Math.PI*2);
+  ctx.fillStyle = '#f5c300';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, rad+6, 0, Math.PI*2);
+  ctx.fillStyle = '#0a1638';
+  ctx.fill();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, rad, 0, Math.PI*2);
+  ctx.clip();
+  if (photoImg) {
+    drawCoverImage(ctx, photoImg, cx-rad, cy-rad, rad*2, rad*2, p.photoZoom, p.photoPos);
+  } else {
+    ctx.fillStyle = '#2855a8';
+    ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
+    ctx.fillStyle = '#f5c300';
+    ctx.font = '900 150px "Barlow Condensed", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase() || '?';
+    ctx.fillText(ini, cx, cy+14);
+    ctx.textBaseline = 'alphabetic';
+  }
+  ctx.restore();
+
+  const nm = (typeof fullName === 'function' ? fullName(p) : `${p.firstname||''} ${p.surname||''}`).trim() || p.city || '';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fff';
+  let nameSize = 84;
+  ctx.font = `800 ${nameSize}px "Barlow Condensed", sans-serif`;
+  while (ctx.measureText(nm.toUpperCase()).width > W-140 && nameSize > 44) {
+    nameSize -= 4;
+    ctx.font = `800 ${nameSize}px "Barlow Condensed", sans-serif`;
+  }
+  ctx.fillText(nm.toUpperCase(), cx, 730);
+
+  let infoY = 790;
+  if (p.captainYears) {
+    ctx.font = '700 26px "Barlow", sans-serif';
+    const capText = `⭐ KAPITÁN · ${p.captainYears}`;
+    const tw = ctx.measureText(capText).width + 40;
+    roundRectPath(ctx, cx-tw/2, infoY, tw, 44, 22);
+    ctx.fillStyle = '#f5c300';
+    ctx.fill();
+    ctx.fillStyle = '#0a1638';
+    ctx.fillText(capText, cx, infoY+30);
+    infoY += 74;
+  }
+
+  ctx.font = '600 30px "Barlow", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.85)';
+  const bornLine = [p.born, p.city].filter(Boolean).join(' · ');
+  if (bornLine) { ctx.fillText(bornLine, cx, infoY+36); infoY += 60; }
+
+  ctx.strokeStyle = 'rgba(245,195,0,.35)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx-100, infoY+20);
+  ctx.lineTo(cx+100, infoY+20);
+  ctx.stroke();
+  infoY += 60;
+
+  const seasonsLabel = p.seasonsRange || (p.seasons ? `${p.seasons} sezón` : '');
+  if (seasonsLabel) {
+    ctx.font = '800 54px "Barlow Condensed", sans-serif';
+    ctx.fillStyle = '#f5c300';
+    ctx.fillText(seasonsLabel, cx, infoY+50);
+    infoY += 66;
+    if (p.seasons && p.seasonsRange) {
+      ctx.font = '600 24px "Barlow", sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,.5)';
+      ctx.fillText(`${p.seasons} sezón v klubu`, cx, infoY+30);
+      infoY += 50;
+    }
+  }
+
+  ctx.font = '600 22px "Barlow", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.35)';
+  ctx.fillText('MÍSTA NAROZENÍ HRÁČŮ · romankokos1.github.io/nhl-99', cx, H-48);
+}
+
+
+// ── VIZITKA MĚSTA ───────────────────────────────────────────────────────────
+async function drawCityCard(idxArr) {
+  const list = idxArr.map(i => players[i]).filter(Boolean);
+  if (!list.length) return;
+  const city = list[0].city || '';
+  const canvas = document.getElementById('cardCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  await document.fonts.load('800 90px "Barlow Condensed"');
+  await document.fonts.load('600 26px "Barlow"');
+
+  // Pozadí
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#1e3a8a'); bg.addColorStop(0.55, '#14275e'); bg.addColorStop(1, '#0a1638');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.globalAlpha = 0.10; ctx.fillStyle = '#f5c300'; ctx.fillRect(0, 0, W, 14); ctx.restore();
+
+  // Hlavička
+  const logoImg = await loadImg(getLogoForYear(2026), true);
+  if (logoImg) ctx.drawImage(logoImg, 56, 52, 72, Math.min(72 * (logoImg.height/logoImg.width || 1), 72));
+  ctx.textAlign = 'right';
+  ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '700 24px "Barlow", sans-serif';
+  ctx.fillText('HC MOTOR', W-56, 76);
+  ctx.fillStyle = 'rgba(255,255,255,.38)'; ctx.font = '600 20px "Barlow", sans-serif';
+  ctx.fillText('ČESKÉ BUDĚJOVICE', W-56, 102);
+
+  // Titulek — město
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fff';
+  let ts = 96;
+  ctx.font = `800 ${ts}px "Barlow Condensed", sans-serif`;
+  while (ctx.measureText(city.toUpperCase()).width > W-140 && ts > 44) {
+    ts -= 4; ctx.font = `800 ${ts}px "Barlow Condensed", sans-serif`;
+  }
+  ctx.fillText(city.toUpperCase(), W/2, 220);
+
+  ctx.font = '700 32px "Barlow Condensed", sans-serif';
+  ctx.fillStyle = '#f5c300';
+  ctx.fillText(`RODÁCI V MOTORU · ${list.length} ${list.length===1?'HRÁČ':list.length<5?'HRÁČI':'HRÁČŮ'}`, W/2, 272);
+
+  const km = list[0].lat ? Math.round(haversineKm(48.9764, 14.4742, list[0].lat, list[0].lon)) : null;
+  if (km !== null && km > 2) {
+    ctx.font = '600 25px "Barlow", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.6)';
+    ctx.fillText(`${km} km od Českých Budějovic`, W/2, 314);
+  }
+
+  // Výběr hráčů: s fotkou první, pak podle počtu sezón
+  const shown = [...list].sort((a, b) => {
+    if (!!b.photo - !!a.photo) return !!b.photo - !!a.photo;
+    return (parseInt(b.seasons)||0) - (parseInt(a.seasons)||0);
+  });
+  const MAX = 9;
+  const tiles = shown.slice(0, Math.min(shown.length, MAX));
+  const rest = list.length - tiles.length;
+
+  // Mřížka 3 sloupce
+  const cols = tiles.length <= 3 ? tiles.length : 3;
+  const rows = Math.ceil((tiles.length + (rest > 0 ? 1 : 0)) / 3);
+  const cellW = 300, rad = 100;
+  const gridW = cols * cellW;
+  const x0 = (W - gridW) / 2 + cellW/2;
+  const y0 = 430;
+  const rowH = 300;
+
+  const imgs = await Promise.all(tiles.map(p => p.photo ? loadImg(p.photo, true) : Promise.resolve(null)));
+
+  function drawTile(cx, cy, p, img) {
+    // žlutý prstenec
+    ctx.beginPath(); ctx.arc(cx, cy, rad+7, 0, Math.PI*2); ctx.fillStyle = '#f5c300'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, rad+3, 0, Math.PI*2); ctx.fillStyle = '#0a1638'; ctx.fill();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2); ctx.clip();
+    if (img) {
+      drawCoverImage(ctx, img, cx-rad, cy-rad, rad*2, rad*2, p.photoZoom, p.photoPos);
+    } else {
+      ctx.fillStyle = '#2855a8'; ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
+      ctx.fillStyle = '#f5c300'; ctx.font = '900 72px "Barlow Condensed", sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const ini = [(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase() || '?';
+      ctx.fillText(ini, cx, cy+6);
+      ctx.textBaseline = 'alphabetic';
+    }
+    ctx.restore();
+    // jméno pod kruhem
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    let nm = (typeof fullName === 'function' ? fullName(p) : p.surname || '').trim();
+    let fs2 = 30;
+    ctx.font = `700 ${fs2}px "Barlow Condensed", sans-serif`;
+    while (ctx.measureText(nm).width > cellW - 30 && fs2 > 18) {
+      fs2 -= 2; ctx.font = `700 ${fs2}px "Barlow Condensed", sans-serif`;
+    }
+    ctx.fillText(nm, cx, cy + rad + 42);
+    if (p.seasonsRange) {
+      ctx.font = '600 19px "Barlow", sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,.5)';
+      ctx.fillText(p.seasonsRange, cx, cy + rad + 70);
+    }
+  }
+
+  tiles.forEach((p, i) => {
+    const col = i % 3, row = Math.floor(i / 3);
+    const rowCols = Math.min(tiles.length + (rest>0?1:0) - row*3, 3);
+    const rx0 = (W - rowCols*cellW) / 2 + cellW/2;
+    drawTile(rx0 + col*cellW, y0 + row*rowH, p, imgs[i]);
+  });
+
+  // "+N" dlaždice
+  if (rest > 0) {
+    const i = tiles.length;
+    const col = i % 3, row = Math.floor(i / 3);
+    const rowCols = Math.min(tiles.length + 1 - row*3, 3);
+    const rx0 = (W - rowCols*cellW) / 2 + cellW/2;
+    const cx = rx0 + col*cellW, cy = y0 + row*rowH;
+    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(245,195,0,.5)'; ctx.lineWidth = 3;
+    ctx.setLineDash([10, 8]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#f5c300'; ctx.font = '800 56px "Barlow Condensed", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('+' + rest, cx, cy + 4);
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = '600 19px "Barlow", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.5)';
+    ctx.fillText('dalších hráčů', cx, cy + rad + 42);
+  }
+
+  // Footer
+  ctx.font = '600 22px "Barlow", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.35)';
+  ctx.textAlign = 'center';
+  ctx.fillText('MÍSTA NAROZENÍ HRÁČŮ · romankokos1.github.io/nhl-99', W/2, H-48);
+}
+
+function openCityCard(idxArr) {
+  map.closePopup();
+  document.getElementById('cardOvl').classList.add('on');
+  window._cardIdx = null;
+  window._cardName = (players[idxArr[0]]?.city) || 'mesto';
+  drawCityCard(idxArr);
+}
+
+function openPlayerCard(idx) {
+  document.getElementById('cardOvl').classList.add('on');
+  window._cardIdx = idx;
+  window._cardName = null;
+  drawPlayerCard(idx);
+}
+
+function closeCardOvl(e) {
+  if (e && e.target !== document.getElementById('cardOvl')) return;
+  document.getElementById('cardOvl').classList.remove('on');
+}
+
+function downloadPlayerCard() {
+  const canvas = document.getElementById('cardCanvas');
+  const nm = (window._cardIdx != null
+    ? (typeof fullName === 'function' ? fullName(players[window._cardIdx]) : players[window._cardIdx].surname || 'hrac')
+    : (window._cardName || 'vizitka')).replace(/\s+/g,'_');
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `vizitka_${nm}.png`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+  }, 'image/png');
+}
+
+function sharePlayerCard() {
+  const canvas = document.getElementById('cardCanvas');
+  canvas.toBlob(async blob => {
+    const nm = (window._cardIdx != null
+      ? (typeof fullName === 'function' ? fullName(players[window._cardIdx]) : '')
+      : (window._cardName || '')).trim();
+    const file = new File([blob], 'vizitka.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+      try { await navigator.share({ files:[file], title: nm, text: `${nm} — HC Motor České Budějovice` }); }
+      catch(e) {}
+    } else {
+      downloadPlayerCard();
+    }
+  }, 'image/png');
+}
+
+function sharePlayer(idx) {
+  const url = new URL(window.location);
+  url.searchParams.set('player', idx);
+  const shareUrl = url.toString();
+  if (navigator.share) {
+    navigator.share({ title: 'HC Motor České Budějovice', url: shareUrl }).catch(()=>{});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      const btn = event.target.closest('button');
+      if (btn) { const orig = btn.textContent; btn.textContent = '✓ Zkopírováno'; setTimeout(()=>{btn.textContent = orig;}, 1600); }
+    }).catch(()=>{});
+  }
+}
+
+function randomPlayer() {
+  const withCoords = players.map((p,i)=>({p,i})).filter(x => x.p.lat && x.p.lon);
+  if (!withCoords.length) return;
+  const pick = withCoords[Math.floor(Math.random()*withCoords.length)];
+  focusPlayer(pick.i);
+  setTimeout(() => showPlayerDetail(pick.i), 950);
+}
+
+function closeDetailOvl(e) {
+  if (e && e.target !== document.getElementById('detailOvl')) return;
+  document.getElementById('detailOvl').classList.remove('on');
+  try {
+    const url = new URL(window.location);
+    url.searchParams.delete('player');
+    history.replaceState(null, '', url);
+  } catch(e2) {}
+}
+
+// ══════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════
+loadPlayers(function() {
+  load(); initMap(); render(); setTimeout(updateMap,300);
+  runGlobeIntro();
+  // Otevři hráče z URL (?player=idx) pro sdílené odkazy
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedIdx = urlParams.get('player');
+  if (sharedIdx !== null && players[sharedIdx]) {
+    setTimeout(() => focusPlayer(parseInt(sharedIdx)), 700);
+    setTimeout(() => showPlayerDetail(parseInt(sharedIdx)), 1500);
+  }
+});
+loadRosters();
+  
+window.addEventListener('resize', () => { if (map) map.invalidateSize(); setHdrHeight(); });
+
+// Escape zavírá otevřené modaly (v pořadí podle vrstvení)
+window.addEventListener('keydown', e => {
+  // ←/→ listování v otevřeném detailu hráče
+  if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+      document.getElementById('detailOvl')?.classList.contains('on')) {
+    navigateDetail(e.key === 'ArrowRight' ? 1 : -1);
+    return;
+  }
+  if (e.key !== 'Escape') return;
+  if (_histPlaying) { stopHistory(); return; }
+  const modals = ['cardOvl','rosterOvl','detailOvl','statsOvl'];
+  for (const id of modals) {
+    const el = document.getElementById(id);
+    if (el && el.classList.contains('on')) {
+      el.classList.remove('on');
+      if (id === 'detailOvl') { try { const u=new URL(window.location); u.searchParams.delete('player'); history.replaceState(null,'',u); } catch(_){} }
+      return;
+    }
+  }
+  // Mobilní stats panel
+  const msp = document.getElementById('mobStatsPanel');
+  if (msp && msp.classList.contains('on')) mobTab('mapa');
+});
+
+// Measure header height for mobile lp overlay positioning
+function setHdrHeight() {
+  const h = document.querySelector('.hdr')?.offsetHeight || 54;
+  document.documentElement.style.setProperty('--hdr-h', h + 'px');
+}
+setHdrHeight();
+
+// Scroll to top button
+document.querySelector('.players')?.addEventListener('scroll', function() {
+  const btn = document.getElementById('scrollTopBtn');
+  if (btn) btn.classList.toggle('visible', this.scrollTop > 300);
+});
+// ── CAREER TIMELINE ───────────────────────────────
+function buildCareerTimeline(p) {
+  if (!p.seasonsRange) return '';
+  const TL_S = 1920, TL_E = 2026, span = TL_E - TL_S;
+
+  // Parse all ranges (e.g. "1958-63, 1965-70")
+  const ranges = [];
+  const re = /(\d{4})[–\-](\d{2,4})/g;
+  let m;
+  while ((m = re.exec(p.seasonsRange)) !== null) {
+    const y1 = parseInt(m[1]);
+    const raw = m[2].length <= 2 ? Math.floor(y1/100)*100 + parseInt(m[2]) : parseInt(m[2]);
+    const y2 = raw < y1 ? raw + 100 : raw;
+    ranges.push({ y1, y2 });
+  }
+  if (!ranges.length) return '';
+
+  const bars = ranges.map(({y1, y2}) => {
+    const left  = Math.max(0, Math.min(98, (y1 - TL_S) / span * 100));
+    const width = Math.max(1.2, Math.min(100 - left, (y2 - y1) / span * 100));
+    return `<div class="career-tl-bar" style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%" title="${y1}–${y2}"></div>`;
+  }).join('');
+
+  const label = ranges.map(({y1,y2})=>`${y1}–${y2}`).join(', ');
+  const seasons = p.seasons ? ` · ${p.seasons} sez.` : '';
+
+  return `<div class="career-tl">
+    <div class="career-tl-lbl">Kariéra v A-týmu ČB</div>
+    <div class="career-tl-wrap">
+      <span class="career-tl-y">${TL_S}</span>
+      <div class="career-tl-track">${bars}</div>
+      <span class="career-tl-y">${TL_E}</span>
+    </div>
+    <div class="career-tl-seasons">${label}${seasons}</div>
+  </div>`;
+}
+
+function togglePanel() {
+  const app = document.querySelector('.app');
+  const lp  = document.querySelector('.lp');
+  const btn = document.getElementById('btnTogglePanel');
+  const hidden = app.classList.toggle('lp-hidden');
+  const mobile = window.innerWidth <= 750;
+  if (mobile) {
+    btn.innerHTML = hidden ? '&#8963;' : '&#8964;';
+  } else {
+    btn.innerHTML = hidden ? '&#8250;' : '&#8249;';
+  }
+  btn.title = hidden ? 'Zobrazit panel' : 'Skrýt panel';
+  // Invalidate only after transition finishes — avoids Leaflet jank during animation
+  lp.addEventListener('transitionend', () => map.invalidateSize(), { once: true });
+}
+
+// ── MOBILE NAV ─────────────────────────────────────
+function mobTab(tab) {
+  const lp  = document.querySelector('.lp');
+  const stats = document.getElementById('mobStatsPanel');
+  const backdrop = document.getElementById('mobStatsBackdrop');
+  ['mapa','seznam','statistiky'].forEach(t => {
+    document.getElementById('mt'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.remove('active');
+  });
+  document.getElementById('mt'+tab.charAt(0).toUpperCase()+tab.slice(1))?.classList.add('active');
+  if (tab === 'seznam') {
+    lp?.classList.add('lp-open');
+    stats.classList.remove('on');
+    backdrop.style.display = 'none';
+  } else if (tab === 'statistiky') {
+    lp?.classList.remove('lp-open');
+    stats.classList.add('on');
+    backdrop.style.display = 'block';
+    renderMobStats();
+  } else {
+    lp?.classList.remove('lp-open');
+    stats.classList.remove('on');
+    backdrop.style.display = 'none';
+  }
+  setTimeout(() => map.invalidateSize(), 260);
+}
+function showYearTip(event) {
+  const r = event.currentTarget.querySelector('rect');
+  if (!r) return;
+  const year=r.dataset.year, count=r.dataset.count, names=r.dataset.names;
+  const word = count==1?'hráč':count<=4?'hráči':'hráčů';
+  let tip = document.getElementById('yearChartTip');
+  if (!tip) { tip=document.createElement('div'); tip.id='yearChartTip'; tip.className='year-chart-tip'; document.body.appendChild(tip); }
+  tip.innerHTML = `<span class="yct-year">${year}</span><span class="yct-count">${count} ${word}</span>${names?`<span class="yct-names">${names}</span>`:''}`;
+  tip.style.left=event.clientX+'px'; tip.style.top=(event.clientY-12)+'px'; tip.style.opacity='1';
+  event.currentTarget.querySelector('.chart-dot')?.setAttribute('opacity','1');
+  event.currentTarget.querySelector('.chart-vline')?.setAttribute('opacity','0.3');
+}
+function hideYearTip() {
+  const tip=document.getElementById('yearChartTip');
+  if(tip) tip.style.opacity='0';
+  document.querySelectorAll('.chart-dot').forEach(d=>d.setAttribute('opacity','0'));
+  document.querySelectorAll('.chart-vline').forEach(l=>l.setAttribute('opacity','0'));
+}
+
+function toggleRegions(barsId, btnId) {
+  const bars = document.getElementById(barsId);
+  const btn  = document.getElementById(btnId);
+  if (!bars) return;
+  const exp = bars.classList.toggle('exp');
+  bars.querySelectorAll('[data-extra="1"]').forEach(r => r.style.display = exp ? 'flex' : 'none');
+  if (btn) btn.textContent = exp ? 'Zobrazit méně' : btn.dataset.label;
+}
+
+function renderStats(ids) {
+  // ids: { kpis, regionBars, showMore, records, yearChart }
+  if (!players.length) return;
+  const withC = players.filter(p => p.lat);
+  const citySet = new Set(withC.map(p => Math.round(p.lat*200)+','+Math.round(p.lon*200)));
+
+  // KPIs
+  if (ids.kpis) document.getElementById(ids.kpis).innerHTML = `
+    <div class="msp-kpi"><span class="msp-kpi-val">${players.length}</span><span class="msp-kpi-lbl">Hráčů</span></div>
+    <div class="msp-kpi"><span class="msp-kpi-val">${citySet.size}</span><span class="msp-kpi-lbl">Míst</span></div>
+    <div class="msp-kpi"><span class="msp-kpi-val">${withC.length}</span><span class="msp-kpi-lbl">Na mapě</span></div>`;
+
+  // Origins
+  const oMap = {};
+  withC.forEach(p => { const o=classifyOrigin(p.lat,p.lon); oMap[o]=(oMap[o]||0)+1; });
+  const origins = Object.entries(oMap).sort((a,b)=>b[1]-a[1]);
+  const maxO = origins[0]?.[1]||1;
+  const SHOW = 2;
+  if (ids.regionBars) {
+    document.getElementById(ids.regionBars).innerHTML = origins.map(([o,n],i)=>`
+      <div class="msp-bar-row" data-extra="${i>=SHOW?1:0}" style="${i>=SHOW?'display:none':''}">
+        <span class="msp-bar-city">${esc(o)}</span>
+        <div class="msp-bar-track"><div class="msp-bar-fill" style="width:${Math.round(n/maxO*100)}%"></div></div>
+        <span class="msp-bar-count">${n}</span>
+      </div>`).join('');
+  }
+  if (ids.showMore) {
+    const btn = document.getElementById(ids.showMore);
+    if (btn) {
+      btn.style.display = origins.length > SHOW ? '' : 'none';
+      btn.dataset.label = `Zobrazit vše (${origins.length})`;
+      btn.textContent   = `Zobrazit vše (${origins.length})`;
+    }
+  }
+
+  // Records
+  function parseSR(r){if(!r)return 0;const m=r.match(/(\d{4})[–\-](\d{2,4})/);if(!m)return 0;const y1=parseInt(m[1]);const s=m[2];const y2=s.length<=2?Math.floor(y1/100)*100+parseInt(s):parseInt(s);return(y2<y1?y2+100:y2)-y1;}
+  const farthest = [...players].filter(p=>p.lat&&p.lon)
+    .sort((a,b)=>haversineKm(48.9764,14.4742,b.lat,b.lon)-haversineKm(48.9764,14.4742,a.lat,a.lon))[0];
+  const farthestDist = farthest ? haversineKm(48.9764,14.4742,farthest.lat,farthest.lon) : 0;
+  const topSeason   = [...players].filter(p=>p.seasons).sort((a,b)=>Number(b.seasons)-Number(a.seasons))[0];
+  const longestRange= [...players].filter(p=>p.seasonsRange).sort((a,b)=>parseSR(b.seasonsRange)-parseSR(a.seasonsRange))[0];
+  if (ids.records) document.getElementById(ids.records).innerHTML = `
+    <div class="msp-rec">
+      <span class="msp-rec-ico">🏒</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejvíce sezón v Motoru</span>
+        <span class="msp-rec-name">${topSeason?esc(fullName(topSeason)||topSeason.city):'—'}</span>
+      </div>
+      <span class="msp-rec-val">${topSeason?topSeason.seasons+' sez.':'—'}</span>
+    </div>
+    <div class="msp-rec">
+      <span class="msp-rec-ico">🌍</span>
+      <div class="msp-rec-main">
+        <span class="msp-rec-lbl">Nejdál od ČB</span>
+        <span class="msp-rec-name">${farthest?esc(fullName(farthest)):'—'}${farthest?.city?` <span style="color:#8a9ab5;font-size:11px;font-weight:400">(${esc(farthest.city)})</span>`:''}</span>
+      </div>
+      <span class="msp-rec-val">${farthestDist?farthestDist+' km':'—'}</span>
+    </div>`;
+
+  // Year chart
+  if (ids.yearChart) document.getElementById(ids.yearChart).innerHTML = buildYearChart(players);
+
+  // Club info
+  const clubInfoHtml = `<div class="msp-club-info">
+    <div class="msp-club-row"><span class="msp-club-key">Název klubu</span><span class="msp-club-val">Banes Motor České Budějovice</span></div>
+    <div class="msp-club-row"><span class="msp-club-key">Datum založení</span><span class="msp-club-val">10. ledna 1928</span></div>
+    <div class="msp-club-row"><span class="msp-club-key">Barvy klubu</span><span class="msp-club-val"><span class="msp-club-colors"><span class="msp-color-dot" style="background:#fff;border-color:#ccc"></span><span class="msp-color-dot" style="background:#c8102e"></span><span class="msp-color-dot" style="background:#1c4896"></span><span class="msp-color-dot" style="background:#f5c300"></span> bílá, červená, modrá, žlutá</span></span></div>
+  </div>`;
+  if (ids.clubInfo) document.getElementById(ids.clubInfo).innerHTML = clubInfoHtml;
+
+  // Achievements
+  const ACHIEVEMENTS=[['🥇','Mistr republiky','1951'],['🥈','2. místo','1981'],['🥉','3. místo','1937, 1953, 1995, 2008, 2022'],['🏆','Vítěz poháru','1960, 2000'],['📊','Vítěz základní části','1988, 2008']];
+  if (ids.achieve) document.getElementById(ids.achieve).innerHTML = `<div class="msp-achieve">${ACHIEVEMENTS.map(([ico,lbl,yrs])=>`<div class="msp-ach-row"><span class="msp-ach-ico">${ico}</span><span class="msp-ach-lbl">${lbl}</span><span class="msp-ach-years">${yrs}</span></div>`).join('')}</div>`;
+
+  // Name history
+  const NAMES=[['1928–1948','AC Stadion České Budějovice',false],['1948–1949','Sokol Stadion České Budějovice',false],['1949–1950','ZSJ Obchodní domy Stadion ČB',false],['1950–1952','ZSJ Sdružené komunální podniky JNV ČB',false],['1953–1957','DSO Slavoj České Budějovice',false],['1957–1965','TJ Slavoj České Budějovice',false],['1965–1992','TJ Motor České Budějovice',false],['1992–2006','HC České Budějovice',false],['2006–2013','HC Mountfield',false],['2013–2020','ČEZ Motor České Budějovice',false],['2020–2021','Madeta Motor České Budějovice',false],['2021–2023','HC Motor České Budějovice',false],['od 2023','Banes Motor České Budějovice',true]];
+  const LOGOS_BY_NAME = {'AC Stadion':1928,'Sdružené':1950,'Slavoj':1953,'TJ Motor':1965,'HC České Budějovice':1992,'HC ČB':1992,'ČEZ Motor':2013,'Madeta Motor':2020,'HC Motor':2021,'Banes Motor':2023};
+  if (ids.names) document.getElementById(ids.names).innerHTML = `<div class="msp-names">${NAMES.map(([yrs,name,cur])=>{
+    const nameKey = Object.keys(LOGOS_BY_NAME).find(k=>name.includes(k));
+    const logo = nameKey ? getLogoForYear(LOGOS_BY_NAME[nameKey]) : null;
+    const logoHtml = logo ? `<img src="${logo}" style="height:18px;object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'">` : '';
+    return `<div class="msp-name-row${cur?' current':''}"><span class="msp-name-years">${yrs}</span><span class="msp-name-val">${logoHtml}${name}</span></div>`;
+  }).join('')}</div>`;
+
+  // Captains
+  const captains=players.filter(p=>p.captainYears).map(p=>{const m=(p.captainYears||'').match(/\d{4}/);return{p,startYear:m?parseInt(m[0]):9999};}).sort((a,b)=>a.startYear-b.startYear);
+  if (ids.placementChart) document.getElementById(ids.placementChart).innerHTML = buildPlacementChart();
+  if (ids.dynasty) document.getElementById(ids.dynasty).innerHTML = buildDynastySection();
+  if (ids.distDecades) document.getElementById(ids.distDecades).innerHTML = buildDistDecadesSection();
+  if (ids.coaches) document.getElementById(ids.coaches).innerHTML = buildCoachesSection();
+  if (ids.captains&&captains.length) document.getElementById(ids.captains).innerHTML=`<div class="msp-captain-grid">${captains.map(({p})=>{
+    const ini=[(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+    const photoStyle=p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`:`object-position:${p.photoPos||'50% 50%'};`;
+    const av=p.photo?`<div class="msp-cap-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${photoStyle}" onerror="this.parentElement.textContent='${ini}'"></div>`:`<div class="msp-cap-av">${ini}</div>`;
+    return `<div class="msp-cap-row">${av}<span class="msp-cap-years">${esc(p.captainYears)}</span><span class="msp-cap-name">${esc(fullName(p))}</span></div>`;
+  }).join('')}</div>`;
+}
+
+function renderMobStats() {
+  renderStats({ clubInfo:'mspClubInfo', kpis:'mspKpis', regionBars:'mspRegionBars', showMore:'mspShowMore', records:'mspRecords', yearChart:'mspYearChart', achieve:'mspAchieve', names:'mspNames', captains:'mspCaptains', placementChart:'mspPlacementChart', dynasty:'mspDynasty', distDecades:'mspDistDecades', coaches:'mspCoaches' });
+}
+
+// ── DESKTOP STATS ─────────────────────────────────
+function openStatsDesktop() {
+  document.getElementById('statsOvl').classList.add('on');
+  renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', distDecades:'statsDistDecades', coaches:'statsCoaches' });
+}
+function closeStatsDesktop(e) {
+  if (e && e.target !== document.getElementById('statsOvl')) return;
+  document.getElementById('statsOvl').classList.remove('on');
+}
+
+// ── MOBILE SEARCH ─────────────────────────────────
+function openMobSearch() {
+  document.getElementById('mobSearchOvl').classList.add('on');
+  setTimeout(() => document.getElementById('mobSearchInput').focus(), 100);
+}
+function closeMobSearch() {
+  document.getElementById('mobSearchOvl').classList.remove('on');
+  document.getElementById('mobSearchInput').value = '';
+  document.getElementById('mobSearchResults').innerHTML = '';
+}
+function onMobSearch(q) {
+  const el = document.getElementById('mobSearchResults');
+  if (!q.trim()) { el.innerHTML = ''; return; }
+  const ql = norm(q);
+  const res = players.map((p,i)=>({p,i})).filter(({p})=>{
+    return norm(fullName(p)).includes(ql) || norm(p.city).includes(ql);
+  }).slice(0, 25);
+  el.innerHTML = res.length ? res.map(({p,i})=>{
+    const ini = initials(p);
+    const th = p.photo
+      ? `<img class="mob-sr-thumb" src="${escA(p.photo)}" onerror="this.outerHTML='<div class=mob-sr-ini>${ini}</div>'">`
+      : `<div class="mob-sr-ini">${ini}</div>`;
+    return `<div class="mob-sr-row" onclick="closeMobSearch();focusPlayer(${i})">
+      ${th}
+      <div class="mob-sr-info">
+        <div class="mob-sr-name">${esc(fullName(p)||p.city)}</div>
+        ${p.city?`<div class="mob-sr-city">${esc(p.city)}</div>`:''}
+      </div>
+      ${p.seasons?`<span class="mob-sr-meta">${p.seasons} sez.</span>`:''}
+    </div>`;
+  }).join('')
+  : `<div class="mob-sr-empty">Žádné výsledky pro „${esc(q)}"</div>`;
+}
+
+
+function classifyOrigin(lat, lon) {
+  if (!lat || !lon) return 'Neznámo';
+  if (lat >= 48.55 && lat <= 51.06 && lon >= 12.09 && lon <= 18.87) {
+    if (lat > 49.9 && lat < 50.22 && lon > 14.2 && lon < 14.75) return 'Praha';
+    if (lat < 49.55 && lon < 15.7)  return 'Jihočeský kraj';
+    if (lon < 13.9)                  return 'Plzeňský kraj';
+    if (lon > 17.75 && lat > 49.3)  return 'Moravskoslezský kraj';
+    if (lon > 16.2 && lat < 49.7)   return 'Jihomoravský kraj';
+    if (lon > 15.5 && lat < 50.1)   return 'Zlínský / Olomoucký';
+    if (lat > 50.3)                  return 'Severní Čechy';
+    return 'Středočeský kraj';
+  }
+  if (lat>=47.7&&lat<=49.6&&lon>=16.8&&lon<=22.6)  return 'Slovensko';
+  if (lat>=47.3&&lat<=55.1&&lon>=6.1&&lon<=15.05)  return 'Německo';
+  if (lat>=46.4&&lat<=49.1&&lon>=9.5&&lon<=17.2)   return 'Rakousko';
+  if (lat>=49.0&&lat<=54.9&&lon>=14.1&&lon<=24.2)  return 'Polsko';
+  if (lat>=55.3&&lat<=69.1&&lon>=11.0&&lon<=24.2)  return 'Švédsko';
+  if (lat>=59.8&&lat<=70.1&&lon>=20.0&&lon<=31.6)  return 'Finsko';
+  if (lat>=44.0&&lat<=70.0&&lon>=23.5)              return 'Rusko / SNS';
+  if (lon<=-52&&lat>=43)                            return 'Kanada';
+  if (lon<=-67&&lat>=25&&lat<=50)                   return 'USA';
+  return 'Ostatní';
+}
+
+function buildYearChart(players) {
+  const ym={},yNames={};
+  players.forEach(p=>{
+    if(!p.born)return;const m=p.born.match(/\d{4}/);if(!m)return;
+    const yr=parseInt(m[0]);if(yr<1920||yr>2015)return;
+    ym[yr]=(ym[yr]||0)+1;if(!yNames[yr])yNames[yr]=[];
+    yNames[yr].push(fullName(p)||p.city||'?');
+  });
+  const yrs=Object.keys(ym).map(Number).sort((a,b)=>a-b);
+  if(yrs.length<2)return '';
+  const minY=yrs[0],maxY=yrs[yrs.length-1],all=[],cnts=[];
+  for(let y=minY;y<=maxY;y++){all.push(y);cnts.push(ym[y]||0);}
+  const maxC=Math.max(...cnts,1);
+  const W=300,H=72,pL=6,pR=6,pT=14,pB=18,cW=W-pL-pR,cH=H-pT-pB;
+  const px=i=>pL+(i/(all.length-1))*cW;
+  const py=v=>pT+cH-(v/maxC)*cH;
+  const pts=all.map((_,i)=>`${px(i).toFixed(1)},${py(cnts[i]).toFixed(1)}`);
+  const line='M '+pts.join(' L ');
+  const area=`M ${pL},${pT+cH} L ${pts.join(' L ')} L ${W-pR},${pT+cH} Z`;
+  const xlabels=all.filter(y=>y%10===0).map(y=>{
+    const i=all.indexOf(y);
+    return `<text x="${px(i).toFixed(1)}" y="${H-3}" font-size="8" text-anchor="middle" fill="#9aaac4">${y}</text>`;
+  });
+  const colW=cW/(all.length-1||1);
+  const cols=all.map((yr,i)=>{
+    if(!cnts[i])return '';
+    const cx=px(i).toFixed(1),cy=py(cnts[i]).toFixed(1);
+    const names=(yNames[yr]||[]);
+    const nameStr=names.slice(0,8).join(', ')+(names.length>8?` +${names.length-8} dalších`:'');
+    const hitX=(px(i)-colW/2).toFixed(1);
+    return `<g class="chart-col" onmouseenter="showYearTip(event)" onmouseleave="hideYearTip()"><rect x="${hitX}" y="${pT}" width="${colW.toFixed(1)}" height="${cH+pB}" fill="transparent" data-year="${yr}" data-count="${cnts[i]}" data-names="${nameStr.replace(/"/g,'&quot;')}" style="cursor:crosshair"/><line x1="${cx}" y1="${pT}" x2="${cx}" y2="${pT+cH}" stroke="#1c4896" stroke-width="1" stroke-dasharray="3 2" opacity="0" class="chart-vline" style="transition:opacity .12s;pointer-events:none"/><circle cx="${cx}" cy="${cy}" r="3.5" fill="#fff" stroke="#1c4896" stroke-width="2" opacity="0" class="chart-dot" style="transition:opacity .12s;pointer-events:none"/></g>`;
+  }).join('');
+  return `<svg class="msp-year-chart" viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c4896" stop-opacity=".2"/><stop offset="100%" stop-color="#1c4896" stop-opacity=".02"/></linearGradient></defs><path d="${area}" fill="url(#ag)"/><path d="${line}" fill="none" stroke="#1c4896" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>${xlabels.join('')}${cols}</svg>`;
+}
+
+window.addEventListener('load', () => {
+  map.invalidateSize();
+  setHdrHeight();
+  if (window.innerWidth <= 750) {
+    document.querySelector('.app')?.classList.add('lp-hidden');
+    document.getElementById('mtMapa')?.classList.add('active');
+  }
+});
+
+
+// ── HISTORICKÁ LOGA ───────────────────────────────────────────────────────
+const LOGOS = {
+  1928: 'https://nitter.net/pic/orig/media%2FCYWQmOBWsAED2QI.png', // AC Stadion ČB
+  // 1948: '',  // Sokol Stadion — logo zatím nenalezeno
+  1950: 'https://fanshop.hcmotor.cz/min.php?file=files/product/1/18/889/image.jpg',  // ZSJ SKP JNV ČB
+  1953: 'https://fanshop.hcmotor.cz/min.php?file=files/product/1/18/887/image.jpg',  // DSO/TJ Slavoj ČB
+  1965: 'https://images.weserv.nl/?url=www.ski-motor.cz/assets/images/logo-150x134.jpg',  // TJ Motor ČB (proxováno kvůli http)
+  1992: 'https://www.mountfieldhk.cz/znaky/94ceb.png',  // HC České Budějovice
+  // 2006: '',  // HC Mountfield — logo zatím nenalezeno
+  2013: 'https://hcmotor.cz/img/logo-var-1.svg',  // ČEZ Motor ČB
+  2020: 'https://hcmotor.cz/img/logo-var-1.svg',  // Madeta Motor ČB
+  2021: 'https://hcmotor.cz/img/logo-var-1.svg',  // HC Motor ČB
+  2023: 'https://hcmotor.cz/img/logo-var-1.svg',  // Banes Motor ČB
+};
+
+function getLogoForYear(year) {
+  const keys = Object.keys(LOGOS).map(Number).sort((a,b)=>a-b);
+  let logo = null;
+  for (const k of keys) { if (year >= k) logo = LOGOS[k]; }
+  return logo;
+}
+// ── ROSTER FUNCTIONS ──────────────────────────────────────────────────────
+function openRosterOvl(seasonIdx) {
+  const s = ROSTER_DATA[seasonIdx];
+  if (!s) return;
+  document.getElementById('rosterSeason').textContent = s.season;
+  document.getElementById('rosterClub').textContent = s.club;
+  const rLogo = getLogoForYear(s.year);
+  const rLogoEl = document.getElementById('rosterLogo');
+  if (rLogoEl) { rLogoEl.src = rLogo||''; rLogoEl.style.display = rLogo?'block':'none'; }
+  document.getElementById('rosterBadge').textContent = s.mainPlace ? s.mainPlace + '. místo' : '—';
+  const compsText = s.comps.map(c => c.name + (c.place ? ' – ' + c.place + '. místo' : ' – nehráno')).join(' · ');
+  const coachText = s.coachesFull ? '🎽 ' + s.coachesFull : '';
+  const eraLink = `<span class="roster-eralink" onclick="showEraOnMap(${s.year})">🗺 Zobrazit tuto éru na mapě</span>`;
+  document.getElementById('rosterComps').innerHTML = [compsText, coachText].filter(Boolean).map(t=>`<span>${t}</span>`).join('<br>') + '<br>' + eraLink;
+  const grid = document.getElementById('rosterGrid');
+  grid.innerHTML = '';
+  const byName = {};
+  players.forEach((p,idx) => { const sr=(p.surname||'').toLowerCase().trim(); if(sr){if(!byName[sr])byName[sr]=[];byName[sr].push({p,idx});}});
+  s.players.forEach(name => {
+    if (!name||name.length<2) return;
+    const div = document.createElement('div'); div.className='roster-player';
+    const parts = name.trim().split(/\s+/);
+    const sr = parts[parts.length-1].toLowerCase();
+    const m = byName[sr];
+    if (m&&m.length===1) {
+      const {p,idx}=m[0]; div.classList.add('linked');
+      const ini=[(p.firstname||'')[0],(p.surname||'')[0]].filter(Boolean).join('').toUpperCase()||'?';
+      const ps2=p.photoZoom&&p.photoZoom>1?`transform:scale(${p.photoZoom});transform-origin:${p.photoPos||'50% 50%'};`:`object-position:${p.photoPos||'50% 50%'};`;
+      const av=p.photo?`<div class="rp-av"><img src="${escA(p.photo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;${ps2}" onerror="this.parentElement.textContent='${ini}'"></div>`:`<div class="rp-av">${ini}</div>`;
+      div.innerHTML=av+`<span>${esc(name)}</span>`;
+      div.onclick=()=>{closeRosterOvl();setTimeout(()=>focusPlayer(idx),200);};
+    } else { div.innerHTML=`<span>${esc(name)}</span>`; }
+    grid.appendChild(div);
+  });
+  document.getElementById('rosterOvl').classList.add('on');
+}
+
+function showEraOnMap(year) {
+  closeRosterOvl();
+  document.getElementById('statsOvl')?.classList.remove('on');
+  if (window.innerWidth <= 750 && typeof mobTab === 'function') mobTab('mapa');
+  setFilter('era');                          // připraví slidery na plný rozsah
+  const sMin = document.getElementById('sliderMin');
+  const sMax = document.getElementById('sliderMax');
+  sMin.value = year; sMax.value = year;
+  filterMin = year; filterMax = year;
+  updateSliderUI();
+  updateMap();
+}
+
+function closeRosterOvl(e) { if(e&&e.target!==document.getElementById('rosterOvl'))return; document.getElementById('rosterOvl').classList.remove('on'); }
+
+// ── PLACEMENT CHART ────────────────────────────────────────────────────────
+function buildPlacementChart() {
+  if (!ROSTER_DATA) return '';
+  const W=300,H=90,pL=28,pR=8,pT=10,pB=22,cW=W-pL-pR,cH=H-pT-pB;
+  const pts=ROSTER_DATA.filter(s=>s.mainPlace).map(s=>({s,yr:s.year,pl:s.mainPlace,tier:s.tier}));
+  if(!pts.length) return '';
+  const maxPl=Math.max(...pts.map(p=>p.pl),14);
+  const minYr=ROSTER_DATA[0].year,maxYr=ROSTER_DATA[ROSTER_DATA.length-1].year;
+  const px=yr=>pL+((yr-minYr)/(maxYr-minYr))*cW;
+  const py=pl=>pT+((pl-1)/(maxPl-1))*cH;
+  const bands=['rgba(245,195,0,.12)','rgba(180,180,180,.1)','rgba(200,130,50,.08)'].map((color,i)=>{
+    const y1=py(i+1),y2=py(i+1.8);
+    return `<rect x="${pL}" y="${y1.toFixed(1)}" width="${cW}" height="${(y2-y1).toFixed(1)}" fill="${color}"/>`;
+  }).join('');
+  const ylabels=[1,3,5,10].map(pl=>pl<=maxPl?`<text x="${pL-3}" y="${(py(pl)+3).toFixed(1)}" font-size="7" text-anchor="end" fill="#9aaac4">${pl}.</text>`:'').join('');
+  const xlabels=[];for(let y=1930;y<=maxYr;y+=10)xlabels.push(`<text x="${px(y).toFixed(1)}" y="${H-2}" font-size="7" text-anchor="middle" fill="#9aaac4">${y}</text>`);
+  const tierC={1:'#1c4896',2:'#5a90d0',3:'#9aaac4'};
+  const tier1=pts.filter(p=>p.tier===1);
+  const line=tier1.length>1?`<polyline points="${tier1.map(p=>`${px(p.yr).toFixed(1)},${py(p.pl).toFixed(1)}`).join(' ')}" fill="none" stroke="rgba(28,72,150,.2)" stroke-width="1"/>"`:'';
+  const dots=pts.map(pt=>{
+    const x=px(pt.yr).toFixed(1),y=py(pt.pl).toFixed(1);
+    const col=pt.pl===1?'#f5c300':pt.pl===2?'#aabbc8':pt.pl===3?'#c87040':(tierC[pt.tier]||'#1c4896');
+    const sIdx=ROSTER_DATA.indexOf(pt.s);
+    return `<g class="chart-col" onmouseenter="showPlaceTip(event,${sIdx})" onmouseleave="hidePlaceTip()" onclick="openRosterOvl(${sIdx})"><rect x="${(parseFloat(x)-6).toFixed(0)}" y="${pT}" width="12" height="${cH+pB}" fill="transparent" style="cursor:pointer"/><circle class="pl-dot" cx="${x}" cy="${y}" r="3.5" fill="${col}" stroke="#fff" stroke-width="1" style="cursor:pointer"/></g>`;
+  }).join('');
+  const grid1=`<line x1="${pL}" y1="${py(1).toFixed(1)}" x2="${W-pR}" y2="${py(1).toFixed(1)}" stroke="rgba(245,195,0,.3)" stroke-width="1" stroke-dasharray="3 2"/>`;
+  return `<div class="placement-chart-wrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible">${bands}${grid1}${ylabels}${xlabels.join('')}${line}${dots}</svg><div style="font-size:9px;color:#9aaac4;text-align:center;margin-top:2px;letter-spacing:.05em">Klikni na bod → soupiska sezóny</div></div>`;
+}
+function showPlaceTip(event,sIdx){const s=ROSTER_DATA[sIdx];if(!s)return;let tip=document.getElementById('placeTip');if(!tip){tip=document.createElement('div');tip.id='placeTip';tip.className='pl-season-tip';document.body.appendChild(tip);}const comps=s.comps.map(c=>c.name+(c.place?` – ${c.place}. místo`:' – nehráno')).join('<br>');const coachTip = s.coachesFull ? `<div class="pl-tip-place">🎽 ${s.coachesFull}</div>` : '';
+  const tLogo = getLogoForYear(s.year);
+  const tLogoHtml = tLogo ? `<img src="${tLogo}" style="height:22px;object-fit:contain;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'">` : '';
+  tip.innerHTML=`<div class="pl-tip-season">${s.season}</div><div class="pl-tip-comp">${tLogoHtml}${s.club}</div><div class="pl-tip-place">${comps}</div>${coachTip}<div class="pl-tip-btn">📋 Soupiska</div>`;tip.style.left=event.clientX+'px';tip.style.top=(event.clientY-12)+'px';tip.style.opacity='1';}
+function hidePlaceTip(){const t=document.getElementById('placeTip');if(t)t.style.opacity='0';}
+
+
+// ── EXPANZE KLUBU — průměrná vzdálenost rodiště podle dekády příchodu ──
+function buildDistDecadesSection() {
+  const buckets = [
+    {label:'do 1939', from:1900, to:1939},
+    {label:'40. léta', from:1940, to:1949},
+    {label:'50. léta', from:1950, to:1959},
+    {label:'60. léta', from:1960, to:1969},
+    {label:'70. léta', from:1970, to:1979},
+    {label:'80. léta', from:1980, to:1989},
+    {label:'90. léta', from:1990, to:1999},
+    {label:'2000–09', from:2000, to:2009},
+    {label:'2010–19', from:2010, to:2019},
+    {label:'2020+',   from:2020, to:2099},
+  ];
+  const rows = [];
+  buckets.forEach(b => {
+    const ds = [];
+    players.forEach(p => {
+      if (!p.lat || !p.lon) return;
+      const r = parseSeasonRangeYears(p);
+      if (!r || r.start < b.from || r.start > b.to) return;
+      ds.push(p._dist ??= haversineKm(48.9764, 14.4742, p.lat, p.lon));
+    });
+    if (ds.length >= 2) {
+      rows.push({label: b.label, avg: ds.reduce((a,x)=>a+x,0) / ds.length, n: ds.length});
+    }
+  });
+  if (!rows.length) return '';
+  const mx = Math.max(...rows.map(r => r.avg));
+  return `<div style="padding:.2rem 0">
+    <div style="font-size:10px;color:#8a9ab5;margin-bottom:.4rem">Průměrná vzdálenost rodiště hráčů, kteří v dané dekádě přišli do klubu</div>
+    ${rows.map(r => `<div class="dynasty-row">
+      <span class="dynasty-name" style="min-width:64px;font-size:13px">${r.label}</span>
+      <div class="dynasty-bar-wrap"><div class="dynasty-bar" style="width:${Math.max(Math.round(r.avg/mx*100),3)}%"></div></div>
+      <span class="dynasty-seasons" style="min-width:88px">Ø ${Math.round(r.avg)} km <span style="opacity:.6">(${r.n})</span></span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── DYNASTY ─────────────────────────────────────────────────────────────────
+function buildDynastySection(){
+  if (!ROSTER_DATA) return '';
+  const sc={};
+  ROSTER_DATA.forEach(s=>{const seen=new Set();s.players.forEach(name=>{const parts=name.trim().split(/\s+/);const sur=parts[parts.length-1];if(sur.length<3||seen.has(sur))return;seen.add(sur);sc[sur]=(sc[sur]||0)+1;});});
+  const d=Object.entries(sc).filter(([,c])=>c>=8).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const mx=d[0]?.[1]||1;
+  return `<div style="padding:.2rem 0">${d.map(([name,cnt])=>`<div class="dynasty-row"><span class="dynasty-name">${esc(name)}</span><div class="dynasty-bar-wrap"><div class="dynasty-bar" style="width:${Math.round(cnt/mx*100)}%"></div></div><span class="dynasty-seasons">${cnt} sez.</span></div>`).join('')}</div>`;
+}
+
+
+function buildCoachesSection(){
+  if(!ROSTER_DATA) return '';
+  // Deduplicate by period
+  const seen=new Set(), rows=[];
+  ROSTER_DATA.forEach(s=>{
+    if(!s.coachesPeriod||seen.has(s.coachesPeriod)) return;
+    seen.add(s.coachesPeriod);
+    rows.push({period:s.coachesPeriod, coaches:s.coaches, full:s.coachesFull});
+  });
+  return `<div style="column-count:2;column-gap:.75rem;padding:.2rem 0">${rows.map(r=>`<div style="break-inside:avoid;padding:.25rem 0;border-bottom:1px solid #f0f4fb;display:flex;flex-direction:column"><span style="font-size:9px;font-weight:700;color:var(--blue);letter-spacing:.04em">${esc(r.period)}</span><span style="font-size:11px;color:var(--blue3);line-height:1.3">${esc(r.full)}</span></div>`).join('')}</div>`;
+}
+</script>
+<!-- ══════════════════════════════════════
+  PLAYER DETAIL MODAL
+══════════════════════════════════════ -->
+<div class="ovl" id="detailOvl" onclick="closeDetailOvl(event)">
+<div class="modal">
+  <div id="detailContent"></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+  MOBILE STATS BACKDROP
+══════════════════════════════════════ -->
+<div class="mob-stats-backdrop" id="mobStatsBackdrop" onclick="mobTab('mapa')"></div>
+
+<!-- ══════════════════════════════════════
+  MOBILE STATS PANEL
+══════════════════════════════════════ -->
+<div class="mob-stats-panel" id="mobStatsPanel">
+  <div class="msp-handle"></div>
+  <div class="msp-head">📊 Statistiky</div>
+  <div class="msp-body" id="mspBody">
+    <div id="mspClubInfo"></div>
+    <div class="msp-kpis" id="mspKpis"></div>
+    <div class="msp-section-lbl">Původ hráčů</div>
+    <div class="msp-bars-wrap">
+      <div class="msp-bars" id="mspRegionBars"></div>
+      <button class="msp-show-more" id="mspShowMore" style="display:none" onclick="toggleRegions('mspRegionBars','mspShowMore')">Zobrazit vše</button>
+    </div>
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Rok narození</div>
+    <div id="mspYearChart"></div>
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Rekordy</div>
+    <div class="msp-rec-grid" id="mspRecords"></div>
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Kapitáni klubu</div>
+    <div id="mspCaptains"></div>
+    <div class="msp-section-lbl" style="margin-top:.8rem">Graf umístění</div>
+    <div id="mspPlacementChart"></div>
+    <div class="msp-section-lbl" style="margin-top:.8rem">Rodinné dynastie</div>
+    <div id="mspDynasty"></div>
+    <div class="msp-section-lbl" style="margin-top:.8rem">Expanze klubu</div>
+    <div id="mspDistDecades"></div>
+    <div class="msp-section-lbl" style="margin-top:.8rem">Trenéři klubu</div>
+    <div id="mspCoaches"></div>
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Největší úspěchy</div>
+    <div id="mspAchieve"></div>
+    <div class="msp-section-lbl" style="margin-top:1.1rem">Historie názvu klubu</div>
+    <div id="mspNames" style="padding-bottom:.5rem"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  MOBILE BOTTOM NAV
+══════════════════════════════════════ -->
+<nav class="mob-nav" role="navigation" aria-label="Navigace">
+  <button class="mob-tab active" id="mtMapa" onclick="mobTab('mapa')" aria-label="Mapa">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/>
+    </svg>
+    Mapa
+  </button>
+  <button class="mob-tab" id="mtSeznam" onclick="mobTab('seznam')" aria-label="Seznam hráčů">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 6h16M4 10h16M4 14h10M4 18h7"/>
+      <circle cx="19" cy="16" r="3"/>
+    </svg>
+    Seznam
+  </button>
+  <button class="mob-tab" id="mtStatistiky" onclick="mobTab('statistiky')" aria-label="Statistiky">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="12" width="4" height="9" rx="1"/>
+      <rect x="10" y="7" width="4" height="14" rx="1"/>
+      <rect x="17" y="3" width="4" height="18" rx="1"/>
+    </svg>
+    Statistiky
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════════
+  DESKTOP STATS MODAL
+══════════════════════════════════════ -->
+<div class="ovl" id="statsOvl" onclick="closeStatsDesktop(event)">
+<div class="modal">
+  <div class="stats-modal-head">
+    <h2>📊 Statistiky</h2>
+    <button class="modal-close" onclick="closeStatsDesktop()" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff">✕</button>
+  </div>
+  <div class="stats-modal-body" id="statsModalBody">
+    <div id="statsClubInfo"></div>
+    <div class="msp-kpis" id="statsKpis"></div>
+    <div class="stats-grid">
+      <div>
+        <div class="msp-section-lbl">Původ hráčů</div>
+        <div class="msp-bars-wrap"><div class="msp-bars" id="statsRegionBars"></div>
+        <button class="msp-show-more" id="statsShowMore" style="display:none" onclick="toggleRegions('statsRegionBars','statsShowMore')">Zobrazit vše</button></div>
+      </div>
+      <div>
+        <div class="msp-section-lbl">Rekordy</div>
+        <div class="msp-rec-grid" id="statsRecords"></div>
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <div class="msp-section-lbl">Kapitáni klubu</div>
+      <div id="statsCaptains"></div>
+      <div class="msp-section-lbl" style="margin-top:.8rem">Graf umístění</div>
+      <div id="statsPlacementChart"></div>
+      <div class="msp-section-lbl" style="margin-top:.8rem">Rodinné dynastie</div>
+      <div id="statsDynasty"></div>
+      <div class="msp-section-lbl" style="margin-top:.8rem">Expanze klubu</div>
+      <div id="statsDistDecades"></div>
+      <div class="msp-section-lbl" style="margin-top:.8rem">Trenéři klubu</div>
+      <div id="statsCoaches"></div>
+    </div>
+    <div class="stats-year-full">
+      <div class="msp-section-lbl">Rok narození</div>
+      <div id="statsYearChart"></div>
+    </div>
+    <div class="stats-grid" style="margin-top:1rem">
+      <div>
+        <div class="msp-section-lbl">Největší úspěchy</div>
+        <div id="statsAchieve"></div>
+      </div>
+      <div>
+        <div class="msp-section-lbl">Historie názvu klubu</div>
+        <div id="statsNames"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+  MOBILE SEARCH OVERLAY
+══════════════════════════════════════ -->
+<div class="mob-search-ovl" id="mobSearchOvl">
+  <div class="mob-search-bar">
+    <button class="mob-search-back" onclick="closeMobSearch()">←</button>
+    <input class="mob-search-input" id="mobSearchInput" type="search" placeholder="Hledat hráče nebo město..." oninput="onMobSearch(this.value)">
+  </div>
+  <div class="mob-search-results" id="mobSearchResults"></div>
+</div>
+
+</body>
