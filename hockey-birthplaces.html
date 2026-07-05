@@ -85,7 +85,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .app.lp-hidden .lp > *{opacity:0;pointer-events:none}
 .rp{position:relative;flex:1;min-width:0;min-height:0}
 #mapEl{position:absolute;inset:0}
-.btn-toggle-panel{position:absolute;top:50%;left:0;transform:translateY(-50%);z-index:2000;width:22px;height:60px;background:var(--yellow);border:2px solid var(--blue3);border-left:none;border-radius:0 16px 16px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-size:18px;font-weight:900;box-shadow:4px 0 14px rgba(0,0,0,.45);transition:background .15s,box-shadow .15s}
+.btn-toggle-panel{position:absolute;top:50%;left:0;transform:translateY(-50%);z-index:2000;width:24px;height:64px;background:var(--yellow);border:2px solid var(--blue3);border-left:none;border-radius:0 8px 8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-size:20px;font-weight:900;box-shadow:4px 0 14px rgba(0,0,0,.45);transition:background .15s,box-shadow .15s}
 .btn-toggle-panel:hover{background:#ffd000;box-shadow:4px 0 20px rgba(0,0,0,.55)}
 
 /* ── LIST HEAD ───────────────────────────────── */
@@ -370,6 +370,34 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 #detailContent.slide-out-r{transform:translateX(36px);opacity:0}
 #detailContent.slide-prep-l{transition:none;transform:translateX(36px);opacity:0}
 #detailContent.slide-prep-r{transition:none;transform:translateX(-36px);opacity:0}
+/* ── UVÍTACÍ ONBOARDING ── */
+#welcomeOvl{position:fixed;inset:0;z-index:6000;background:rgba(6,12,31,.72);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s ease;padding:20px}
+#welcomeOvl.on{opacity:1}
+.wc-card{background:linear-gradient(160deg,#1e3a8a 0%,#14275e 60%,#0a1638 100%);border:1px solid rgba(245,195,0,.25);
+  border-radius:20px;max-width:460px;width:100%;padding:32px 28px 26px;box-shadow:0 24px 70px rgba(0,0,0,.5);
+  transform:translateY(14px);transition:transform .35s ease}
+#welcomeOvl.on .wc-card{transform:translateY(0)}
+.wc-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.18em;
+  color:var(--yellow);text-transform:uppercase;text-align:center}
+.wc-title{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;letter-spacing:.03em;
+  color:#fff;text-align:center;margin-top:2px}
+.wc-stats{text-align:center;font-size:13px;color:#a9bce0;font-weight:600;margin-top:8px}
+.wc-steps{display:flex;flex-direction:column;gap:11px;margin-top:22px}
+.wc-step{display:flex;align-items:flex-start;gap:12px}
+.wc-step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:rgba(245,195,0,.14);
+  border:1px solid rgba(245,195,0,.4);color:var(--yellow);font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.wc-step-txt{font-size:13px;color:#dbe4f5;line-height:1.4;padding-top:3px}
+.wc-step-txt b{color:#fff;font-weight:700}
+.wc-btn{display:block;width:100%;margin-top:24px;background:var(--yellow);color:#0a1638;border:none;
+  border-radius:24px;padding:12px;font-family:'Barlow',sans-serif;font-weight:800;font-size:13px;
+  text-transform:uppercase;letter-spacing:.06em;cursor:pointer;transition:.15s}
+.wc-btn:hover{background:#ffd84d}
+.wc-skip{display:block;text-align:center;margin-top:12px;font-size:11px;color:#7d90bb;background:none;
+  border:none;cursor:pointer;letter-spacing:.03em}
+.wc-skip:hover{color:#c7d2ea}
+@media(max-width:480px){.wc-card{padding:26px 20px 20px}.wc-title{font-size:25px}}
 /* ── PŘEHRÁVÁNÍ HISTORIE ── */
 .hist-ovl{position:absolute;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:1200;
   background:rgba(10,22,56,.93);backdrop-filter:blur(8px);border:1px solid rgba(245,195,0,.35);
@@ -386,17 +414,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
 .hist-stop:hover{color:#fff}
 @media(max-width:750px){.hist-ovl{bottom:86px;padding:10px 16px;min-width:230px}.hist-year{font-size:38px}.hist-club{font-size:13px}}
 
-/* ── GLOBE INTRO ── */
-#introOvl{position:fixed;inset:0;z-index:6000;background:#060c1f;display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity 1s ease}
-#introOvl.fade{opacity:0;pointer-events:none}
-#introOvl canvas{position:absolute;inset:0;width:100%;height:100%}
-.intro-title{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);text-align:center;pointer-events:none}
-.intro-title .it1{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.22em;color:var(--yellow);text-transform:uppercase}
-.intro-title .it2{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:800;letter-spacing:.06em;color:#fff;margin-top:2px}
-.intro-skip{position:absolute;right:22px;bottom:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
-  color:#c7d2ea;border-radius:20px;padding:7px 16px;font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;
-  letter-spacing:.05em;cursor:pointer;transition:.15s}
-.intro-skip:hover{background:rgba(255,255,255,.16);color:#fff}
 /* ── PŘEHRÁVÁNÍ HISTORIE END ── */
 /* DB City labels layer */
 .db-label { pointer-events:none; }
@@ -950,6 +967,9 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
     <div id="mapEl"></div>
     <div id="mkCityLabel" class="mk-city-label"></div>
+    <div id="mapStatChip" style="position:absolute;right:10px;bottom:26px;z-index:1000;background:rgba(15,47,106,.82);backdrop-filter:blur(6px);border:1px solid rgba(245,195,0,.3);border-radius:20px;padding:6px 14px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.03em;color:#fff;box-shadow:0 3px 14px rgba(10,30,80,.25);pointer-events:none;white-space:nowrap">
+      <span id="mapStatChipText">647 hráčů · 97 sezón · 1928–2026</span>
+    </div>
     <div id="eraLegend" style="display:none;position:absolute;left:10px;bottom:26px;z-index:1100;background:rgba(255,255,255,.93);backdrop-filter:blur(6px);border:1px solid #dde6f5;border-radius:10px;padding:8px 12px;font-size:10px;color:#3a4a6a;box-shadow:0 3px 14px rgba(10,30,80,.15)">
       <div style="font-weight:800;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.05em;margin-bottom:4px">PŘÍCHOD PRVNÍHO HRÁČE</div>
       <div style="display:flex;flex-direction:column;gap:2px">
@@ -1073,11 +1093,21 @@ const DETECT_RX = {
 // ── DATA — načítání z externího JSON souboru ────────────────────────────
 const DATA_URL = 'hcmotor_players.json';
 
+function updateMapStatChip() {
+  const el = document.getElementById('mapStatChipText');
+  if (!el) return;
+  const n = players.length;
+  const seasons = ROSTER_DATA ? ROSTER_DATA.length : null;
+  const years = ROSTER_DATA && ROSTER_DATA.length ? `${ROSTER_DATA[0].year}–${ROSTER_DATA[ROSTER_DATA.length-1].year+1}` : '1928–2026';
+  el.textContent = `${n} hráčů` + (seasons ? ` · ${seasons} sezón` : '') + ` · ${years}`;
+}
+
 function loadRosters() {
   fetch('hcmotor_rosters.json')
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(data => {
       ROSTER_DATA = data;
+      updateMapStatChip();
       // Re-render stats pokud jsou právě otevřené
       if (document.getElementById('statsOvl')?.classList.contains('on')) {
         renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', distDecades:'statsDistDecades', coaches:'statsCoaches' });
@@ -2090,173 +2120,6 @@ function showPlayerDetail(idx) {
 
 
 // ══════════════════════════════════════════════════
-// GLOBE INTRO — rodiště hráčů na zeměkouli → zoom na ČB
-// ══════════════════════════════════════════════════
-function runGlobeIntro() {
-  // Kdy intro NEpouštět:
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('intro') === '0') return;
-  if (params.get('player') !== null) return;           // sdílený odkaz → rovnou na hráče
-  if (typeof THREE === 'undefined') return;            // CDN nedostupné
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  try {
-    if (params.get('intro') !== '1' && sessionStorage.getItem('introSeen')) return;
-    sessionStorage.setItem('introSeen', '1');
-  } catch(e) {}
-
-  const CB_LAT = 48.9764, CB_LON = 14.4742;
-  const R = 1;
-
-  // Overlay
-  const ovl = document.createElement('div');
-  ovl.id = 'introOvl';
-  ovl.innerHTML = `
-    <div class="intro-title">
-      <div class="it1">HC Motor České Budějovice</div>
-      <div class="it2">MÍSTA NAROZENÍ HRÁČŮ</div>
-    </div>
-    <button class="intro-skip">Přeskočit ✕</button>`;
-  document.body.appendChild(ovl);
-
-  const canvas = document.createElement('canvas');
-  ovl.insertBefore(canvas, ovl.firstChild);
-
-  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-  const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  function sizeIt(){ renderer.setPixelRatio(DPR); renderer.setSize(window.innerWidth, window.innerHeight, false); }
-  sizeIt();
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(38, window.innerWidth/window.innerHeight, 0.1, 100);
-  camera.position.set(0, 0, 3.1);
-
-  scene.add(new THREE.AmbientLight(0x334477, 1.1));
-  const key = new THREE.DirectionalLight(0x8fb0ff, 1.0); key.position.set(2.5, 1.5, 2); scene.add(key);
-
-  const globe = new THREE.Group();
-  scene.add(globe);
-
-  // Koule — tmavě modrá
-  globe.add(new THREE.Mesh(
-    new THREE.SphereGeometry(R, 48, 32),
-    new THREE.MeshPhongMaterial({color:0x14275e, shininess:18, specular:0x223a6e})
-  ));
-  // Poledníková síť
-  globe.add(new THREE.LineSegments(
-    new THREE.WireframeGeometry(new THREE.SphereGeometry(R*1.002, 20, 12)),
-    new THREE.LineBasicMaterial({color:0x2855a8, transparent:true, opacity:0.28})
-  ));
-  // Rim glow — větší koule zevnitř
-  globe.add(new THREE.Mesh(
-    new THREE.SphereGeometry(R*1.05, 48, 32),
-    new THREE.MeshBasicMaterial({color:0x1c4896, side:THREE.BackSide, transparent:true, opacity:0.30})
-  ));
-
-  // lat/lon → 3D
-  function ll2xyz(lat, lon, r) {
-    const phi = (90 - lat) * Math.PI / 180;
-    const theta = (lon + 180) * Math.PI / 180;
-    return [ -r*Math.sin(phi)*Math.cos(theta), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(theta) ];
-  }
-
-  // ── Kontinenty jako tečkovaný povrch (run-length encoded grid 1.5°) ──
-  const LAND_RUNS = '2,74,1;3,72,4;4,71,3;5,70,4;6,70,5,166,1;7,70,7;8,70,6,233,1;9,71,6,232,3;10,72,5,218,1,234,2;11,71,6,217,2,235,2;12,71,8,237,1;13,72,7,237,2;14,71,11,214,6,237,1;15,72,10,213,8,236,1;16,72,10,83,1,133,1,198,2,212,9;17,73,12,133,6,198,5,210,12;18,73,13,133,7,198,24;19,73,14,132,9,197,26;20,73,15,131,11,197,26;21,73,15,131,11,196,27;22,73,15,130,12,197,25;23,74,16,130,14,150,2,196,26;24,74,19,130,14,149,3,196,25;25,74,19,129,15,150,3,198,22,230,1;26,74,20,129,15,150,3,201,18;27,73,21,128,17,150,3,202,16,239,1;28,1,71,94,34,147,3,154,48,212,3,218,22;29,70,25,129,19,152,2,204,7,215,2;30,70,25,129,19,153,1,207,4,215,1;31,69,26,130,17,209,1,211,1,215,1;32,68,28,129,18,220,1,228,1;33,68,29,129,18,198,1,204,1,214,2,218,2;34,67,30,129,18,192,4,213,6;35,66,31,129,17,191,1,213,6,220,1;36,66,29,128,19,189,2,200,1,202,1,211,6,222,1;37,67,27,127,20,188,3,194,4,200,2,206,1,209,1,211,4,221,1;38,67,23,127,21,188,2,194,4,200,2,208,2;39,67,20,127,22,187,3,193,6,200,1;40,68,19,127,23,186,4,193,6;41,69,18,127,25,185,2,188,1,195,4;42,69,17,115,1,124,28,184,2,188,1,197,3;43,69,13,113,8,124,29,187,2,198,1;44,68,13,112,42,174,1,202,3;45,65,1,67,2,70,10,112,42,172,1,174,1,186,1,190,1,204,1;46,63,2,70,6,78,2,111,43,171,3,186,1,190,2,202,1;47,63,2,72,1,110,39,154,1,171,3,186,1,189,4;48,61,4,109,43,170,4,186,7,202,1;49,59,6,109,38,149,5,170,4,186,7,201,1;50,55,7,109,38,149,7,169,6,183,9,201,1;51,52,10,69,1,76,1,110,36,148,10,169,7,183,8,201,1;52,50,6,60,2,72,2,110,35,148,11,169,8,183,8,193,1;53,50,6,60,3,68,2,109,36,147,13,167,1,169,10,182,10;54,50,5,64,1,66,2,110,35,147,13,167,14,182,15;55,49,6,110,34,146,13,165,34,201,1;56,48,8,66,1,111,33,145,10,160,40;57,44,2,47,9,66,1,111,32,144,10,156,45;58,44,1,46,10,65,2,113,29,144,9,155,47;59,43,1,45,16,63,1,65,1,114,39,154,48;60,43,1,45,21,114,17,134,4,144,58,207,1;61,42,26,115,13,144,57,207,1;62,40,29,116,11,144,56,208,2,211,1;63,39,31,121,7,145,56,205,2,211,3;64,39,31,115,5,129,2,135,1,139,15,156,44,201,1,205,2,213,1;65,38,32,114,6,131,1,134,2,138,15,156,43,204,2,214,1;66,38,33,115,6,126,1,130,6,140,14,156,45,202,5,214,1;67,38,35,114,9,126,1,128,3,133,6,143,1,148,5,155,52,214,1;68,38,36,115,2,119,6,127,3,131,8,147,5,155,55,215,2;69,38,38,77,2,120,9,130,10,143,1,145,7,155,57,215,1;70,38,39,119,22,142,2,146,8,156,57,215,1;71,37,1,39,38,81,4,118,96,215,1;72,36,1,38,38,78,1,82,1,119,95,215,2;73,35,46,82,1,117,4,122,92,215,1;74,35,31,68,15,114,2,118,4,123,93,225,1;75,32,1,34,32,68,14,114,2,119,1,126,86,213,1,215,1,224,3;76,12,1,33,30,69,11,117,2,126,1,128,2,135,76,224,4;77,15,1,17,1,32,29,69,11,116,3,126,1,129,2,135,78,225,4;78,14,1,16,2,29,29,68,7,76,3,117,1,124,2,128,4,136,79,226,3;79,9,1,11,11,26,31,69,5,77,1,124,9,136,1,140,84,228,4;80,10,48,69,4,88,4,124,8,135,90,227,2,230,6;81,7,1,11,49,73,2,76,1,87,5,125,8,135,105;82,4,1,10,1,13,49,63,3,68,9,86,7,106,5,128,7,136,8,145,94;83,7,2,63,8,75,1,79,6,96,9,106,1,111,18,144,4;84,3,8,56,1,62,1,66,3,70,2,78,7,98,32,148,2,151,2,169,1;85,11,9,29,1,42,3,49,2,52,4,57,1,60,3,66,3,75,11,103,29,145,16,164,2,169,1,233,1;86,13,8,45,7,56,3,61,14,84,19,136,5,165,4,170,57;87,37,3,41,7,49,2,53,3,60,11,84,21,155,3,166,3,170,4,175,31,213,7;88,38,5,49,2,53,3,57,3,61,2,65,1,67,2,83,24,157,2,174,26,203,2,214,2;89,45,5,54,1,56,2,59,8,82,25,158,3,178,18,212,5,218,3;90,39,3,47,1,53,2,56,4,61,7,74,32,164,2,188,7;91,45,2,53,1,55,1,63,6,72,35,129,4,135,1,187,1;92,57,14,77,31,128,5,135,2,183,4;93,58,1,61,15,77,34,183,2;94,63,16,89,17';
-  (function addLandDots() {
-    const STEP = 1.5, LAT0 = -58.5;
-    const pts = [];
-    LAND_RUNS.split(';').forEach(row => {
-      const v = row.split(',').map(Number);
-      const lat = LAT0 + v[0] * STEP;
-      for (let i = 1; i < v.length; i += 2) {
-        const start = v[i], len = v[i+1];
-        for (let k = 0; k < len; k++) {
-          const lon = -180 + (start + k) * STEP;
-          const [x,y,z] = ll2xyz(lat, lon, R*1.004);
-          pts.push(x, y, z);
-        }
-      }
-    });
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
-    globe.add(new THREE.Points(g, new THREE.PointsMaterial({
-      color:0x4a6fb8, size:0.0085, sizeAttenuation:true, transparent:true, opacity:0.55
-    })));
-  })();
-
-  // Zlaté body — rodiště všech hráčů
-  const coords = players.filter(p => p.lat && p.lon);
-  const pos = new Float32Array(coords.length * 3);
-  coords.forEach((p, i) => {
-    const [x,y,z] = ll2xyz(p.lat, p.lon, R*1.012);
-    pos[i*3]=x; pos[i*3+1]=y; pos[i*3+2]=z;
-  });
-  const dotsGeo = new THREE.BufferGeometry();
-  dotsGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  globe.add(new THREE.Points(dotsGeo, new THREE.PointsMaterial({
-    color:0xf5c300, size:0.016, sizeAttenuation:true, transparent:true, opacity:0.95
-  })));
-
-  // ČB — pulsující zvýrazněný bod
-  const cbPos = ll2xyz(CB_LAT, CB_LON, R*1.015);
-  const cbDot = new THREE.Mesh(
-    new THREE.SphereGeometry(0.022, 12, 8),
-    new THREE.MeshBasicMaterial({color:0xffd84d})
-  );
-  cbDot.position.set(...cbPos);
-  globe.add(cbDot);
-
-  // Cílová rotace — ČB čelem ke kameře
-  const targetY = (-90 - CB_LON) * Math.PI / 180;
-  const targetX = CB_LAT * Math.PI / 180;
-  const startY = targetY - 2.4;   // příletový oblouk přes Atlantik
-  const startX = targetX * 0.25;
-  globe.rotation.set(startX, startY, 0);
-
-  const DUR = 8000, FADE_AT = 7300;   // 8 s — filmový průběh
-  const t0 = performance.now();
-  let done = false, raf = null;
-
-  const ease = t => t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;  // easeInOutCubic — jemný start i dojezd
-
-  function finish() {
-    if (done) return;
-    done = true;
-    if (raf) cancelAnimationFrame(raf);
-    ovl.classList.add('fade');
-    setTimeout(() => {
-      renderer.dispose();
-      ovl.remove();
-      if (map) map.invalidateSize();
-    }, 1050);
-  }
-  ovl.querySelector('.intro-skip').addEventListener('click', finish);
-
-  function frame(now) {
-    if (done) return;
-    const raw = Math.min((now - t0) / DUR, 1);
-    // Rotace: prvních 70 % času (s vlastním easingem)
-    const rt = ease(Math.min(raw / 0.70, 1));
-    globe.rotation.y = startY + (targetY - startY) * rt;
-    globe.rotation.x = startX + (targetX - startX) * rt;
-    // Pomalý stálý drift navíc, ať koule nikdy nestojí
-    globe.rotation.y += Math.sin(now / 4000) * 0.004;
-    // Zoom: od 55 % do konce — pozvolný nájezd kamery
-    const zt = Math.max(0, (raw - 0.55) / 0.45);
-    camera.position.z = 3.2 - ease(zt) * 1.7;   // 3.2 → 1.5
-    // Puls ČB bodu
-    const s = 1 + 0.5 * Math.sin(now / 200);
-    cbDot.scale.set(s, s, s);
-    renderer.render(scene, camera);
-    if (raw >= FADE_AT / DUR && !ovl.classList.contains('fade')) ovl.classList.add('fade');
-    if (raw < 1) raf = requestAnimationFrame(frame);
-    else setTimeout(finish, 100);
-  }
-  raf = requestAnimationFrame(frame);
-  window.addEventListener('resize', sizeIt);
-}
-
-
-// ══════════════════════════════════════════════════
 // OBLOUKY — cesty z rodišť do Budvar arény
 // ══════════════════════════════════════════════════
 const ARENA_LL = [48.97080, 14.47116];
@@ -2342,6 +2205,49 @@ function eraNameFor(year){let n=ERA_NAMES[0][1];for(const[y,name]of ERA_NAMES){i
 
 let _histRAF = null, _histPlaying = false;
 const HIST_START = 1927, HIST_END = 2026, HIST_DUR = 22000; // 22 s
+
+// ══════════════════════════════════════════════════
+// UVÍTACÍ ONBOARDING — první dojem + rychlý přehled funkcí
+// ══════════════════════════════════════════════════
+function runWelcomeOnboarding() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('intro') === '0') return;
+  if (params.get('player') !== null) return;   // sdílený odkaz na hráče → nic neotravuje
+  try {
+    if (params.get('intro') !== '1' && localStorage.getItem('welcomeSeen')) return;
+    localStorage.setItem('welcomeSeen', '1');
+  } catch(e) {}
+
+  const seasons = ROSTER_DATA ? ROSTER_DATA.length : 97;
+  const n = players.length || 647;
+
+  const ovl = document.createElement('div');
+  ovl.id = 'welcomeOvl';
+  ovl.innerHTML = `
+    <div class="wc-card">
+      <div class="wc-eyebrow">HC Motor České Budějovice</div>
+      <div class="wc-title">Místa narození hráčů</div>
+      <div class="wc-stats">${n} hráčů · ${seasons} sezón · 1928–2026</div>
+      <div class="wc-steps">
+        <div class="wc-step"><div class="wc-step-num">1</div><div class="wc-step-txt"><b>Prozkoumej mapu</b> — klikni na libovolné město a uvidíš seznam hráčů, kteří se tam narodili</div></div>
+        <div class="wc-step"><div class="wc-step-num">2</div><div class="wc-step-txt"><b>🎲 Náhodný hráč</b> — objev někoho, koho bys jinak nenašel</div></div>
+        <div class="wc-step"><div class="wc-step-num">3</div><div class="wc-step-txt"><b>▶ Historie</b> — sleduj, jak se klub za 100 let rozrůstal po celém světě</div></div>
+        <div class="wc-step"><div class="wc-step-num">4</div><div class="wc-step-txt"><b>📊 Statistiky</b> — grafy umístění, rodinné dynastie, trenéři a rekordy</div></div>
+      </div>
+      <button class="wc-btn">Prozkoumat mapu →</button>
+      <button class="wc-skip">Přeskočit</button>
+    </div>`;
+  document.body.appendChild(ovl);
+  requestAnimationFrame(() => ovl.classList.add('on'));
+
+  function close() {
+    ovl.classList.remove('on');
+    setTimeout(() => ovl.remove(), 350);
+  }
+  ovl.querySelector('.wc-btn').addEventListener('click', close);
+  ovl.querySelector('.wc-skip').addEventListener('click', close);
+  ovl.addEventListener('click', e => { if (e.target === ovl) close(); });
+}
 
 function playHistory() {
   if (_histPlaying) return;
@@ -2953,7 +2859,8 @@ function closeDetailOvl(e) {
 // ══════════════════════════════════════════════════
 loadPlayers(function() {
   load(); initMap(); render(); setTimeout(updateMap,300);
-  runGlobeIntro();
+  updateMapStatChip();
+  runWelcomeOnboarding();
   // Otevři hráče z URL (?player=idx) pro sdílené odkazy
   const urlParams = new URLSearchParams(window.location.search);
   const sharedIdx = urlParams.get('player');
@@ -2968,6 +2875,12 @@ window.addEventListener('resize', () => { if (map) map.invalidateSize(); setHdrH
 
 // Escape zavírá otevřené modaly (v pořadí podle vrstvení)
 window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('welcomeOvl')?.classList.contains('on')) {
+    const ovl = document.getElementById('welcomeOvl');
+    ovl.classList.remove('on');
+    setTimeout(() => ovl.remove(), 350);
+    return;
+  }
   // ←/→ listování v otevřeném detailu hráče
   if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
       document.getElementById('detailOvl')?.classList.contains('on')) {
