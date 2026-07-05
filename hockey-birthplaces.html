@@ -195,6 +195,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   border-radius:18px;
   padding:10px;
   min-width:242px;
+  max-height:calc(100% - 32px);overflow-y:auto;
   box-shadow:0 8px 32px rgba(15,40,100,.18),0 2px 8px rgba(0,0,0,.07);
 }
 /* segmented control */
@@ -744,16 +745,23 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
   padding: 5px 10px; border-bottom: 1px solid #d4dae8;
   background: #f9fafc;
 }
-.sort-label { font-size: 11px; color: #8a9ab5; flex-shrink:0; font-family:'Barlow',sans-serif; }
-.sort-btn {
-  font-size: 11px; padding: 4px 11px; border-radius: 20px; cursor: pointer;
-  border: 1px solid #d0d8e8; background: #fff; color: #556;
-  font-family: 'Barlow', sans-serif; font-weight: 500; transition: .12s;
+.sort-select {
+  font-size: 12px; padding: 6px 10px; border-radius: 10px; cursor: pointer;
+  border: 1px solid #d0d8e8; background: #fff; color: var(--blue3);
+  font-family: 'Barlow', sans-serif; font-weight: 600; transition: .12s;
+  flex: 1; min-width: 0;
 }
-.sort-btn:hover { border-color: #1c4896; color: #1c4896; }
-.sort-btn.active { background: #1c4896; color: #f5c300; border-color: #1c4896; font-weight: 700; }
-.sort-btn.sort-cap.active { background: var(--yellow); color: var(--blue3); border-color: #c8a800; }
-.sort-btn.sort-cur.active { background: var(--blue3); color: #fff; border-color: var(--blue3); }
+.sort-select:hover { border-color: #1c4896; }
+.sort-select:focus { outline: none; border-color: #1c4896; box-shadow: 0 0 0 3px rgba(28,72,150,.12); }
+.chip-toggle {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+  border: 1.5px solid #d0d8e8; background: #fff; color: #8a9ab5;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 13px;
+  display: flex; align-items: center; justify-content: center; transition: .12s;
+}
+.chip-toggle:hover { border-color: #1c4896; color: #1c4896; }
+.chip-cap.active { background: var(--yellow); color: var(--blue3); border-color: #c8a800; }
+.chip-cur.active { background: var(--blue3); color: #fff; border-color: var(--blue3); }
 
 
 /* ── MARKER POP ANIMATION ──────────────────────── */
@@ -939,14 +947,14 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
         <h2 id="listTitle">Hráči</h2>
       </div>
       <div class="sort-bar">
-        <span class="sort-label">Řadit:</span>
-        <button class="sort-btn active" id="sortName" onclick="setSort('name')">A–Z</button>
-        <button class="sort-btn" id="sortSeasons" onclick="setSort('seasons')">Sezóny ↓</button>
-        <button class="sort-btn" id="sortBorn" onclick="setSort('born')">Rok nar.</button>
-        <button class="sort-btn" id="sortDist" onclick="setSort('dist')">Vzdálenost ↓</button>
-        <span style="color:#d4dae8;padding:0 2px">|</span>
-        <button class="sort-btn sort-cap" id="filterCaptain" onclick="toggleCaptainFilter()">C Kapitáni</button>
-        <button class="sort-btn sort-cur" id="filterCurrent" onclick="toggleCurrentFilter()">⛸ Současný kádr</button>
+        <select class="sort-select" id="sortSelect" onchange="setSort(this.value)">
+          <option value="name">Řadit: A–Z</option>
+          <option value="seasons">Řadit: Sezóny ↓</option>
+          <option value="born">Řadit: Rok narození</option>
+          <option value="dist">Řadit: Vzdálenost ↓</option>
+        </select>
+        <button class="chip-toggle chip-cap" id="filterCaptain" onclick="toggleCaptainFilter()" title="Jen kapitáni">C</button>
+        <button class="chip-toggle chip-cur" id="filterCurrent" onclick="toggleCurrentFilter()" title="Jen současný kádr">⛸</button>
       </div>
       <div class="search-bar">
         <span class="search-icon">🔍</span>
@@ -967,10 +975,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1c2e4a;height:100
     <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()" title="Skrýt/zobrazit panel">&#8249;</button>
     <div id="mapEl"></div>
     <div id="mkCityLabel" class="mk-city-label"></div>
-    <div id="mapStatChip" style="position:absolute;right:10px;bottom:26px;z-index:1000;background:rgba(15,47,106,.82);backdrop-filter:blur(6px);border:1px solid rgba(245,195,0,.3);border-radius:20px;padding:6px 14px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.03em;color:#fff;box-shadow:0 3px 14px rgba(10,30,80,.25);pointer-events:none;white-space:nowrap">
-      <span id="mapStatChipText">647 hráčů · 97 sezón · 1928–2026</span>
-    </div>
-    <div id="eraLegend" style="display:none;position:absolute;left:10px;bottom:26px;z-index:1100;background:rgba(255,255,255,.93);backdrop-filter:blur(6px);border:1px solid #dde6f5;border-radius:10px;padding:8px 12px;font-size:10px;color:#3a4a6a;box-shadow:0 3px 14px rgba(10,30,80,.15)">
+<div id="eraLegend" style="display:none;position:absolute;right:10px;bottom:16px;z-index:1100;background:rgba(255,255,255,.93);backdrop-filter:blur(6px);border:1px solid #dde6f5;border-radius:10px;padding:8px 12px;font-size:10px;color:#3a4a6a;box-shadow:0 3px 14px rgba(10,30,80,.15)">
       <div style="font-weight:800;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.05em;margin-bottom:4px">PŘÍCHOD PRVNÍHO HRÁČE</div>
       <div style="display:flex;flex-direction:column;gap:2px">
         <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c9a15a;margin-right:5px;vertical-align:-1px"></i>do 1949</span>
@@ -1093,21 +1098,11 @@ const DETECT_RX = {
 // ── DATA — načítání z externího JSON souboru ────────────────────────────
 const DATA_URL = 'hcmotor_players.json';
 
-function updateMapStatChip() {
-  const el = document.getElementById('mapStatChipText');
-  if (!el) return;
-  const n = players.length;
-  const seasons = ROSTER_DATA ? ROSTER_DATA.length : null;
-  const years = ROSTER_DATA && ROSTER_DATA.length ? `${ROSTER_DATA[0].year}–${ROSTER_DATA[ROSTER_DATA.length-1].year+1}` : '1928–2026';
-  el.textContent = `${n} hráčů` + (seasons ? ` · ${seasons} sezón` : '') + ` · ${years}`;
-}
-
 function loadRosters() {
   fetch('hcmotor_rosters.json')
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(data => {
       ROSTER_DATA = data;
-      updateMapStatChip();
       // Re-render stats pokud jsou právě otevřené
       if (document.getElementById('statsOvl')?.classList.contains('on')) {
         renderStats({ clubInfo:'statsClubInfo', kpis:'statsKpis', regionBars:'statsRegionBars', showMore:'statsShowMore', records:'statsRecords', yearChart:'statsYearChart', achieve:'statsAchieve', names:'statsNames', captains:'statsCaptains', placementChart:'statsPlacementChart', dynasty:'statsDynasty', distDecades:'statsDistDecades', coaches:'statsCoaches' });
@@ -1921,9 +1916,8 @@ function toggleCaptainFilter() {
 
 function setSort(mode) {
   sortMode = mode;
-  document.querySelectorAll('.sort-btn:not(.sort-cap):not(.sort-cur)').forEach(b => b.classList.remove('active'));
-  const btnId = {name:'sortName', seasons:'sortSeasons', born:'sortBorn', dist:'sortDist'}[mode];
-  document.getElementById(btnId)?.classList.add('active');
+  const sel = document.getElementById('sortSelect');
+  if (sel && sel.value !== mode) sel.value = mode;
   render();
 }
 
@@ -2859,7 +2853,6 @@ function closeDetailOvl(e) {
 // ══════════════════════════════════════════════════
 loadPlayers(function() {
   load(); initMap(); render(); setTimeout(updateMap,300);
-  updateMapStatChip();
   runWelcomeOnboarding();
   // Otevři hráče z URL (?player=idx) pro sdílené odkazy
   const urlParams = new URLSearchParams(window.location.search);
