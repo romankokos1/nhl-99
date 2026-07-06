@@ -4,135 +4,310 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generátor obrázků výsledků — ČT:D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
   :root{
-    --bg:#11140d;--panel:#1a1f12;--panel2:#222818;--line:#3a432a;
-    --ink:#eef2e4;--ink-dim:#a9b596;--brand:#607B38;--brand-bright:#8aab52;--accent:#c9d8a8;
-    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    /* ── design tokens ── */
+    --bg:#F7F7F5;            /* app chrome */
+    --stage:#EFEFEC;         /* canvas backdrop */
+    --panel:#FFFFFF;         /* surfaces (JS-generated rows rely on this) */
+    --panel2:#F4F4F2;        /* wells, inputs */
+    --line:#E6E5E1;          /* hairline borders */
+    --line-strong:#D8D7D2;
+    --ink:#1D1C19;
+    --ink-dim:#75746C;
+    --ink-faint:#A3A29A;
+    --brand:#5E7A39;          /* pressed / hover olive */
+    --brand-bright:#6E8E44;   /* primary olive — read by JS via getComputedStyle */
+    --accent:#55702F;         /* readable olive for text on white (inline styles use it) */
+    --brand-soft:rgba(110,142,68,.10);
+    --brand-ring:rgba(110,142,68,.22);
+    --mono:"IBM Plex Mono","SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
     --sans:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+    --r-card:14px; --r-ctl:8px;
+    --shadow-card:0 1px 2px rgba(24,24,20,.04);
+    --shadow-pop:0 4px 10px rgba(24,24,20,.06),0 16px 40px rgba(24,24,20,.10);
+    --rail-w:236px; --rail-w-min:64px; --side-w:376px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
-  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;
-    display:grid;grid-template-columns:390px 1fr;height:100vh;overflow:hidden}
-  .side{background:var(--panel);border-right:1px solid var(--line);overflow-y:auto}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:13.5px;line-height:1.5;
+    display:grid;grid-template-columns:var(--rail-w) var(--side-w) 1fr;
+    height:100vh;overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.rail-collapsed{grid-template-columns:var(--rail-w-min) var(--side-w) 1fr}
+  ::selection{background:var(--brand-ring)}
+  button{font-family:var(--sans)}
+  :focus-visible{outline:2px solid var(--brand-bright);outline-offset:2px;border-radius:6px}
+
+  /* ════════════════ LEFT RAIL — navigation ════════════════ */
+  .rail{
+    background:var(--panel);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .rail-brand{
+    display:flex;align-items:center;gap:10px;padding:18px 16px 16px;
+    border-bottom:1px solid var(--line);min-height:64px;
+  }
+  .rail-brand .mark{
+    flex:0 0 auto;width:30px;height:30px;border-radius:8px;
+    background:var(--brand-bright);color:#fff;display:flex;align-items:center;
+    justify-content:center;font-weight:700;font-size:13px;letter-spacing:.5px;
+  }
+  .rail-brand .who{min-width:0;line-height:1.25}
+  .rail-brand .who b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rail-brand .who span{display:block;font-size:11px;color:var(--ink-dim);white-space:nowrap}
+  .rail-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+  .tab-btn{
+    display:flex;align-items:center;gap:11px;width:100%;
+    background:transparent;border:none;border-radius:9px;
+    padding:9px 10px;cursor:pointer;text-align:left;color:var(--ink-dim);
+    transition:background .12s,color .12s;position:relative;
+  }
+  .tab-btn svg{flex:0 0 auto;width:18px;height:18px;stroke:currentColor}
+  .tab-btn .tab-label{min-width:0;line-height:1.25}
+  .tab-btn .tab-label b{display:block;font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap}
+  .tab-btn .tab-label em{display:block;font-style:normal;font-size:11px;color:var(--ink-faint);white-space:nowrap}
+  .tab-btn:hover{background:var(--panel2);color:var(--ink)}
+  .tab-btn.on{background:var(--brand-soft);color:var(--accent)}
+  .tab-btn.on .tab-label b{color:var(--accent);font-weight:600}
+  .tab-btn.on .tab-label em{color:var(--accent);opacity:.65}
+  .rail-foot{padding:10px 8px;border-top:1px solid var(--line)}
+  .rail-collapse{
+    display:flex;align-items:center;gap:11px;width:100%;background:transparent;
+    border:none;border-radius:9px;padding:9px 10px;cursor:pointer;color:var(--ink-dim);
+    font-size:12.5px;transition:background .12s,color .12s;
+  }
+  .rail-collapse:hover{background:var(--panel2);color:var(--ink)}
+  .rail-collapse svg{flex:0 0 auto;width:18px;height:18px;transition:transform .2s}
+  body.rail-collapsed .rail-brand{justify-content:center;padding:18px 8px 16px}
+  body.rail-collapsed .rail-brand .who,
+  body.rail-collapsed .tab-btn .tab-label,
+  body.rail-collapsed .rail-collapse span{display:none}
+  body.rail-collapsed .tab-btn,body.rail-collapsed .rail-collapse{justify-content:center;padding:10px 0}
+  body.rail-collapsed .rail-collapse svg{transform:rotate(180deg)}
+
+  /* ════════════════ CENTER — property inspector ════════════════ */
+  .side{
+    background:var(--bg);border-right:1px solid var(--line);
+    overflow-y:auto;overscroll-behavior:contain;
+  }
   .side::-webkit-scrollbar{width:10px}
-  .side::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
-  .brandbar{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;
-    gap:10px;position:sticky;top:0;background:var(--panel);z-index:5}
-  .brandbar .dot{width:13px;height:13px;border-radius:3px;background:var(--brand-bright)}
-  .brandbar h1{font-size:14px;margin:0;font-weight:700}
-  .brandbar h1 span{color:var(--ink-dim);font-weight:500}
-  .acc{border-bottom:1px solid var(--line)}
-  .acc>summary{cursor:pointer;list-style:none;padding:13px 20px;font-weight:600;font-size:12px;
-    letter-spacing:.6px;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;
-    gap:8px;user-select:none}
+  .side::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:6px;border:2px solid var(--bg)}
+  .side-head{
+    position:sticky;top:0;z-index:6;background:var(--bg);
+    padding:20px 18px 12px;border-bottom:1px solid var(--line);
+  }
+  .side-head h1{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .side-head p{margin:3px 0 0;font-size:12px;color:var(--ink-dim)}
+
+  /* cards */
+  .acc{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--r-card);
+    margin:12px 14px;box-shadow:var(--shadow-card);overflow:hidden;
+  }
+  .acc>summary{
+    cursor:pointer;list-style:none;user-select:none;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:14px 16px;
+  }
   .acc>summary::-webkit-details-marker{display:none}
-  .acc>summary::before{content:"▸";color:var(--brand-bright);transition:transform .15s;font-size:11px}
-  .acc[open]>summary::before{transform:rotate(90deg)}
-  .acc>summary:hover{background:var(--panel2)}
-  .body{padding:6px 20px 18px}
-  label.fl{display:block;margin:11px 0 4px;font-size:11px;color:var(--ink-dim);
-    text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-  input[type=text],input[type=number],textarea,select{width:100%;background:var(--panel2);
-    border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:8px 10px;
-    font-family:var(--sans);font-size:13px}
-  textarea{resize:vertical;font-family:var(--mono);font-size:12px;line-height:1.55}
-  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand-bright)}
-  .row{display:flex;gap:8px}.row>*{flex:1}
-  input[type=color]{width:100%;height:34px;background:var(--panel2);border:1px solid var(--line);
-    border-radius:7px;padding:2px;cursor:pointer}
-  input[type=range]{width:100%;accent-color:var(--brand-bright)}
-  .chk{display:flex;align-items:center;gap:8px;margin:8px 0;cursor:pointer;font-size:13px}
-  .chk input{width:16px;height:16px;accent-color:var(--brand-bright)}
-  .types{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 0}
-  .typebtn{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:11px 10px;
-    cursor:pointer;text-align:left;transition:.12s;color:var(--ink)}
+  .acc>summary:hover{background:#FBFBFA}
+  .acc>summary::after{
+    content:"";flex:0 0 auto;width:16px;height:16px;
+    background:currentColor;color:var(--ink-faint);
+    -webkit-mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>') center/contain no-repeat;
+            mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>') center/contain no-repeat;
+    transition:transform .18s;
+  }
+  .acc[open]>summary::after{transform:rotate(180deg)}
+  .acc-t{min-width:0;font-weight:600;font-size:13px;letter-spacing:-.01em;line-height:1.3}
+  .acc-sub{display:block;font-weight:400;font-size:11.5px;color:var(--ink-dim);margin-top:1px}
+  .acc-sub .step{color:var(--accent);font-weight:600}
+  .acc .dimnote{font-size:11px;color:var(--ink-faint);font-weight:400;margin-left:4px}
+  .body{padding:2px 16px 16px;border-top:1px solid var(--line)}
+  .acc>.body{margin-top:0}
+  .side>div:last-of-type{padding:4px 20px 28px}
+
+  /* form controls */
+  label.fl{
+    display:block;margin:14px 0 5px;font-size:11px;color:var(--ink-dim);
+    text-transform:uppercase;letter-spacing:.55px;font-weight:600;
+  }
+  input[type=text],input[type=number],textarea,select{
+    width:100%;background:#FCFCFB;border:1px solid var(--line-strong);
+    color:var(--ink);border-radius:var(--r-ctl);padding:8px 10px;
+    font-family:var(--sans);font-size:13px;transition:border-color .12s,box-shadow .12s;
+  }
+  textarea{resize:vertical;font-family:var(--mono);font-size:12px;line-height:1.6}
+  input:focus,textarea:focus,select:focus{
+    outline:none;border-color:var(--brand-bright);box-shadow:0 0 0 3px var(--brand-ring);
+  }
+  input::placeholder,textarea::placeholder{color:var(--ink-faint)}
+  select{
+    appearance:none;-webkit-appearance:none;padding-right:30px;cursor:pointer;
+    background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2375746C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');
+    background-repeat:no-repeat;background-position:right 9px center;background-size:14px;
+  }
+  .row{display:flex;gap:10px}.row>*{flex:1}
+  input[type=color]{
+    width:100%;height:34px;background:#FCFCFB;border:1px solid var(--line-strong);
+    border-radius:var(--r-ctl);padding:3px;cursor:pointer;
+  }
+  input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+  input[type=color]::-webkit-color-swatch{border:none;border-radius:5px}
+  input[type=range]{width:100%;accent-color:var(--brand-bright);height:26px}
+  input[type=file]{font-size:12px;color:var(--ink-dim)}
+  input[type=file]::file-selector-button{
+    background:var(--panel);border:1px solid var(--line-strong);border-radius:7px;
+    padding:6px 11px;margin-right:9px;font-size:12px;font-weight:500;color:var(--ink);
+    cursor:pointer;font-family:var(--sans);
+  }
+  input[type=file]::file-selector-button:hover{border-color:var(--brand-bright);color:var(--accent)}
+  .chk{display:flex;align-items:center;gap:9px;margin:9px 0;cursor:pointer;font-size:13px;color:var(--ink)}
+  .chk input{width:15px;height:15px;accent-color:var(--brand-bright);margin:0}
+  .hint{font-size:11.5px;color:var(--ink-dim);margin:6px 0 0;line-height:1.5}
+  .hint b{color:var(--ink);font-weight:600}
+
+  /* output-type picker */
+  .types{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0 2px}
+  .typebtn{
+    background:var(--panel);border:1px solid var(--line-strong);border-radius:11px;
+    padding:11px 12px;cursor:pointer;text-align:left;color:var(--ink);
+    transition:border-color .12s,background .12s,box-shadow .12s;position:relative;
+  }
   .typebtn:hover{border-color:var(--brand-bright)}
-  .typebtn.on{border-color:var(--brand-bright);background:rgba(138,171,82,.12)}
-  .typebtn .ico{font-size:18px;display:block;margin-bottom:4px}
-  .typebtn .nm{font-weight:700;font-size:12px}
-  .typebtn .ds{font-size:10px;color:var(--ink-dim);margin-top:2px}
-  .hint{font-size:11px;color:var(--ink-dim);margin:5px 0 0;line-height:1.45}
-  .swatches{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-  .sw{width:26px;height:26px;border-radius:6px;cursor:pointer;border:2px solid transparent}
-  .sw.on{border-color:var(--ink)}
-  .pillrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-  .pill{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:6px 13px;
-    font-size:12px;cursor:pointer;transition:.12s}
-  .pill:hover{border-color:var(--brand-bright)}
-  .pill.on{background:rgba(138,171,82,.16);border-color:var(--brand-bright);color:var(--ink)}
-  .main{display:flex;flex-direction:column;overflow:hidden;
-    background:radial-gradient(circle at 30% 20%,rgba(96,123,56,.10),transparent 60%),var(--bg)}
-  .toolbar{padding:14px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;
-    gap:12px;flex-wrap:wrap;background:var(--panel)}
-  .btn{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:8px;
-    padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;
-    align-items:center;gap:7px;transition:.12s;font-family:var(--sans)}
-  .btn:hover{border-color:var(--brand-bright)}
-  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
-  .btn.primary:hover{background:var(--brand-bright);border-color:var(--brand-bright)}
+  .typebtn.on{
+    border-color:var(--brand-bright);background:var(--brand-soft);
+    box-shadow:inset 0 0 0 1px var(--brand-bright);
+  }
+  .typebtn .ico{font-size:17px;display:block;margin-bottom:5px;filter:grayscale(.25)}
+  .typebtn .nm{font-weight:600;font-size:12.5px;display:block;letter-spacing:-.01em}
+  .typebtn .ds{font-size:10.5px;color:var(--ink-dim);margin-top:1px;display:block}
+  .typebtn.on .nm{color:var(--accent)}
+
+  /* swatches + pills */
+  .swatches{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+  .sw{width:28px;height:28px;border-radius:8px;cursor:pointer;border:1px solid rgba(0,0,0,.08);
+    box-shadow:var(--shadow-card);transition:transform .1s}
+  .sw:hover{transform:scale(1.08)}
+  .sw.on{outline:2px solid var(--brand-bright);outline-offset:2px}
+  .pillrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+  .pill{
+    background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:500;color:var(--ink-dim);
+    cursor:pointer;transition:border-color .12s,background .12s,color .12s;
+  }
+  .pill:hover{border-color:var(--brand-bright);color:var(--ink)}
+  .pill.on{background:var(--brand-soft);border-color:var(--brand-bright);color:var(--accent);font-weight:600}
+
+  /* ════════════════ RIGHT — canvas / preview ════════════════ */
+  .main{display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--stage)}
+  .toolbar{
+    padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+    gap:8px;flex-wrap:wrap;background:var(--panel);min-height:56px;
+  }
+  .toolbar.contextual{
+    padding:7px 16px;background:#FBFBF9;display:none;min-height:0;
+    border-bottom:1px solid var(--line);
+  }
+  .toolbar.contextual.show{display:flex}
+  .btn{
+    border:1px solid var(--line-strong);background:var(--panel);color:var(--ink);
+    border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:500;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;transition:border-color .12s,background .12s,color .12s;
+    font-family:var(--sans);white-space:nowrap;
+  }
+  .btn svg{width:15px;height:15px;flex:0 0 auto}
+  .btn:hover{border-color:var(--brand-bright);color:var(--accent)}
+  .btn.primary{background:var(--brand-bright);border-color:var(--brand-bright);color:#fff;font-weight:600;box-shadow:var(--shadow-card)}
+  .btn.primary:hover{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn:disabled{opacity:.35;cursor:default;pointer-events:none}
+  .btn.small{padding:7px 10px}
+  .toolgroup{display:flex;align-items:center;gap:4px}
+  .tool-sep{width:1px;height:22px;background:var(--line);margin:0 4px;flex:0 0 auto}
   .spacer{flex:1}
-  .stage{flex:1;overflow:auto;padding:28px;display:flex;align-items:flex-start;justify-content:center}
-  .canvas-wrap{box-shadow:0 14px 50px rgba(0,0,0,.5);border-radius:6px;overflow:hidden;
+  .dimnote{font-size:11px;color:var(--ink-faint);margin-left:4px;font-family:var(--mono)}
+  .editToggle{margin-left:0}
+
+  .stage{flex:1;overflow:auto;padding:36px;display:flex;align-items:flex-start;justify-content:center;
+    background-image:radial-gradient(var(--line-strong) 1px,transparent 1px);background-size:22px 22px}
+  .stage::-webkit-scrollbar{width:12px;height:12px}
+  .stage::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px;border:3px solid var(--stage)}
+  #zoomBox{position:relative}
+  #canvasWrap{transform-origin:0 0}
+  .canvas-wrap{
+    position:relative;border-radius:6px;overflow:hidden;
+    box-shadow:0 0 0 1px rgba(24,24,20,.06),0 2px 6px rgba(24,24,20,.06),0 18px 48px rgba(24,24,20,.12);
     background:
-      linear-gradient(45deg,#2a2a2a 25%,transparent 25%,transparent 75%,#2a2a2a 75%) 0 0/20px 20px,
-      linear-gradient(45deg,#2a2a2a 25%,#222 25%,#222 75%,#2a2a2a 75%) 10px 10px/20px 20px}
+      linear-gradient(45deg,#E8E8E5 25%,transparent 25%,transparent 75%,#E8E8E5 75%) 0 0/20px 20px,
+      linear-gradient(45deg,#E8E8E5 25%,#F6F6F4 25%,#F6F6F4 75%,#E8E8E5 75%) 10px 10px/20px 20px;
+  }
   #preview{display:block;max-width:100%;height:auto}
-  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--brand);
-    color:#fff;padding:11px 22px;border-radius:30px;font-weight:600;font-size:13px;
-    box-shadow:0 8px 30px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.25s;z-index:50}
-  .toast.show{opacity:1}
-  .dimnote{font-size:11px;color:var(--ink-dim);margin-left:4px}
-  /* edit handles overlay */
-  .canvas-wrap{position:relative}
+
+  .zoom-float{
+    position:absolute;right:24px;bottom:22px;z-index:8;display:flex;align-items:center;gap:2px;
+    background:var(--panel);border:1px solid var(--line);border-radius:11px;
+    padding:4px 5px;box-shadow:var(--shadow-pop);
+  }
+  .zoom-float .btn{border:none;background:transparent;padding:7px 9px;border-radius:7px}
+  .zoom-float .btn:hover{background:var(--panel2);color:var(--ink)}
+  .zoom-float .dimnote{margin:0 2px;color:var(--ink-dim)}
+
+  .toast{
+    position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(6px);
+    background:var(--ink);color:#fff;padding:10px 20px;border-radius:10px;font-weight:500;
+    font-size:13px;box-shadow:var(--shadow-pop);opacity:0;pointer-events:none;
+    transition:opacity .2s,transform .2s;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ── in-canvas edit handles ── */
   #fxLayer{position:absolute;inset:0;pointer-events:none}
   #fxLayer .handle{display:none}
   #fxLayer.on{pointer-events:auto}
   #fxLayer.on .handle{display:flex}
-  .handle{position:absolute;background:var(--brand-bright);border:2px solid #fff;
-    box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:grab;pointer-events:auto;
-    display:flex;align-items:center;justify-content:center;color:#11140d;font-weight:700;
-    font-size:11px;user-select:none;transition:transform .08s}
+  .handle{
+    position:absolute;background:var(--brand-bright);border:2px solid #fff;
+    box-shadow:0 2px 8px rgba(24,24,20,.3);cursor:grab;pointer-events:auto;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;
+    font-size:11px;user-select:none;transition:transform .08s;
+  }
   .handle:hover{transform:scale(1.12)}
   .handle:active{cursor:grabbing}
-  .handle.h-font{width:30px;height:30px;border-radius:8px}
+  .handle.h-font{width:30px;height:30px;border-radius:9px}
   .handle.h-line{width:30px;height:30px;border-radius:50%}
-  .handle.h-pad{width:26px;height:26px;border-radius:5px;background:var(--accent)}
-  .handle .tip{position:absolute;bottom:115%;left:50%;transform:translateX(-50%);
-    background:#11140d;color:#fff;padding:3px 8px;border-radius:5px;font-size:10px;
-    white-space:nowrap;opacity:0;transition:.12s;pointer-events:none}
+  .handle.h-pad{width:26px;height:26px;border-radius:6px;background:var(--brand)}
+  .handle .tip{
+    position:absolute;bottom:115%;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:4px 9px;border-radius:6px;font-size:10.5px;
+    font-weight:500;white-space:nowrap;opacity:0;transition:.12s;pointer-events:none;
+  }
   .handle:hover .tip{opacity:1}
-  .editToggle{margin-left:4px}
 
-  /* ── zoom / pan viewport ──
-     #zoomBox is layout-affecting (its width/height match the scaled canvas),
-     so native scrolling in .stage works correctly at any zoom level.
-     #canvasWrap inside it is visually scaled via CSS transform only. */
-  #zoomBox{position:relative}
-  #canvasWrap{transform-origin:0 0}
-  .toolgroup{display:flex;align-items:center;gap:4px}
-  .btn:disabled{opacity:.35;cursor:default;pointer-events:none}
-  .btn.small{padding:9px 11px}
-
-  /* ── object selection layer (Scene objects, e.g. logo) ── */
+  /* ── selectable scene objects ── */
   #objLayer{position:absolute;inset:0;pointer-events:none}
-  .obj-box{position:absolute;border:2px dashed transparent;border-radius:4px;
-    cursor:move;pointer-events:auto;box-sizing:border-box;transition:border-color .1s}
-  .obj-box:hover{border-color:rgba(138,171,82,.55)}
-  .obj-box.selected{border-color:var(--brand-bright);box-shadow:0 0 0 3px rgba(138,171,82,.18)}
+  .obj-box{
+    position:absolute;border:2px dashed transparent;border-radius:4px;cursor:move;
+    pointer-events:auto;box-sizing:border-box;transition:border-color .1s;transform-origin:center center;
+  }
+  .obj-box:hover{border-color:rgba(110,142,68,.55)}
+  .obj-box.selected{border-color:var(--brand-bright);box-shadow:0 0 0 3px var(--brand-ring)}
   .obj-box.locked{cursor:not-allowed}
-  .obj-box.locked.selected{border-color:#a9b596;border-style:solid;box-shadow:none}
+  .obj-box.locked.selected{border-color:var(--ink-faint);border-style:solid;box-shadow:none}
   .obj-box.text-obj{border-radius:6px}
-  .obj-box{transform-origin:center center}
 
-  /* ── snap vodítka při tažení ── */
   #guideLayer{position:absolute;inset:0;pointer-events:none}
-  .guide-line{position:absolute;background:#ff5c8a;pointer-events:none;box-shadow:0 0 0 .5px rgba(255,92,138,.4)}
+  .guide-line{position:absolute;background:#F0427C;pointer-events:none;box-shadow:0 0 0 .5px rgba(240,66,124,.4)}
   .guide-line.v{top:0;bottom:0;width:1px}
   .guide-line.h{left:0;right:0;height:1px}
 
-  /* ── úchyty velikosti a rotace (jen u jediného vybraného objektu) ── */
   .resize-handle{position:absolute;width:10px;height:10px;background:#fff;
     border:2px solid var(--brand-bright);border-radius:3px;pointer-events:auto}
   .rh-nw{top:-6px;left:-6px;cursor:nwse-resize}
@@ -144,61 +319,109 @@
     border-radius:50%;cursor:grab;pointer-events:auto}
   .rotate-handle:active{cursor:grabbing}
 
-  /* ── kontextové menu (pravý klik) ── */
-  .ctx-menu{position:fixed;z-index:100;background:var(--panel);border:1px solid var(--line);
-    border-radius:9px;box-shadow:0 12px 40px rgba(0,0,0,.5);padding:5px;min-width:190px;
-    display:none;font-size:13px}
+  /* ── context menu ── */
+  .ctx-menu{
+    position:fixed;z-index:100;background:var(--panel);border:1px solid var(--line);
+    border-radius:11px;box-shadow:var(--shadow-pop);padding:5px;min-width:200px;
+    display:none;font-size:13px;
+  }
   .ctx-menu.on{display:block}
-  .ctx-item{padding:8px 12px;border-radius:6px;cursor:pointer;display:flex;
+  .ctx-item{padding:8px 11px;border-radius:7px;cursor:pointer;display:flex;
     align-items:center;gap:9px;color:var(--ink);white-space:nowrap}
   .ctx-item:hover{background:var(--panel2)}
   .ctx-item[disabled]{opacity:.35;pointer-events:none}
-  .ctx-sep{height:1px;background:var(--line);margin:5px 2px}
+  .ctx-sep{height:1px;background:var(--line);margin:5px 4px}
 
-  /* ── panel Vrstvy ── */
-  .layer-row{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:7px;
-    cursor:pointer;font-size:12.5px;border:1px solid transparent;margin-bottom:3px}
+  /* ── Layers panel rows ── */
+  .layer-row{
+    display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;
+    cursor:pointer;font-size:12.5px;border:1px solid transparent;margin-bottom:3px;
+  }
   .layer-row:hover{background:var(--panel2)}
-  .layer-row.selected{background:rgba(138,171,82,.14);border-color:var(--brand-bright)}
-  .layer-row .li-icon{flex:0 0 auto;font-size:14px;opacity:.85}
+  .layer-row.selected{background:var(--brand-soft);border-color:var(--brand-bright)}
+  .layer-row .li-icon{flex:0 0 auto;font-size:13px;opacity:.8}
   .layer-row .li-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
-  .layer-row .li-badge{flex:0 0 auto;font-size:11px;opacity:.7}
-  .layer-row .li-btn{flex:0 0 auto;width:20px;height:20px;border:none;background:transparent;
-    color:var(--ink-dim);cursor:pointer;border-radius:4px;font-size:11px;display:flex;
-    align-items:center;justify-content:center;padding:0}
+  .layer-row .li-badge{flex:0 0 auto;font-size:11px;opacity:.6}
+  .layer-row .li-btn{
+    flex:0 0 auto;width:22px;height:22px;border:none;background:transparent;color:var(--ink-faint);
+    cursor:pointer;border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0;
+  }
   .layer-row .li-btn:hover{background:var(--line);color:var(--ink)}
   .layer-row .li-btn:disabled{opacity:.25;cursor:default}
-  .layer-row.locked .li-label{opacity:.55}
+  .layer-row.locked .li-label{opacity:.5}
 
-  /* ── panel Sloupce ── */
-  .track-row{padding:8px 9px;border-radius:7px;margin-bottom:6px;background:var(--panel2);
-    border:1px solid var(--line)}
-  .track-row .tr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  /* ── Columns panel ── */
+  .track-row{padding:9px 10px;border-radius:9px;margin-bottom:7px;background:#FBFBFA;border:1px solid var(--line)}
+  .track-row .tr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
   .track-row .tr-name{font-size:12.5px;font-weight:600;color:var(--ink)}
   .track-row .tr-width{font-size:11px;color:var(--ink-dim);font-family:var(--mono)}
   .track-row .tr-aligns{display:flex;gap:4px}
-  .track-row .tr-align-btn{flex:1;padding:5px 0;text-align:center;background:var(--panel);
-    border:1px solid var(--line);border-radius:5px;cursor:pointer;font-size:12px;color:var(--ink-dim)}
-  .track-row .tr-align-btn.on{background:rgba(138,171,82,.18);border-color:var(--brand-bright);color:var(--ink)}
+  .track-row .tr-align-btn{
+    flex:1;padding:5px 0;text-align:center;background:var(--panel);border:1px solid var(--line-strong);
+    border-radius:6px;cursor:pointer;font-size:12px;color:var(--ink-dim);
+  }
+  .track-row .tr-align-btn:hover{border-color:var(--brand-bright)}
+  .track-row .tr-align-btn.on{background:var(--brand-soft);border-color:var(--brand-bright);color:var(--accent)}
 
-  /* ── táhla hranic sloupců v náhledu (Úpravy v obrázku) ── */
   .col-handle{position:absolute;top:0;bottom:0;width:14px;margin-left:-7px;cursor:col-resize;
     pointer-events:auto;display:flex;align-items:center;justify-content:center}
-  .col-handle .grip{width:3px;height:36px;background:var(--brand-bright);border-radius:2px;
-    opacity:.35;transition:opacity .12s}
+  .col-handle .grip{width:3px;height:36px;background:var(--brand-bright);border-radius:2px;opacity:.35;transition:opacity .12s}
   .col-handle:hover .grip,.col-handle.dragging .grip{opacity:.9}
   #colHandleLayer{position:absolute;inset:0;pointer-events:none}
+
+  /* ── tab → section visibility (JS contract, do not rename) ── */
+  .side[data-active-tab="obsah"] .acc[data-tab]:not([data-tab="obsah"]){display:none!important}
+  .side[data-active-tab="vzhled"] .acc[data-tab]:not([data-tab="vzhled"]){display:none!important}
+  .side[data-active-tab="rozlozeni"] .acc[data-tab]:not([data-tab="rozlozeni"]){display:none!important}
+  .side[data-active-tab="objekty"] .acc[data-tab]:not([data-tab="objekty"]){display:none!important}
+  .side[data-active-tab="export"] .acc[data-tab]:not([data-tab="export"]){display:none!important}
+
+  /* ── responsiveness ── */
+  @media (max-width:1500px){ :root{--side-w:348px} }
+  @media (max-width:1280px){
+    body{grid-template-columns:var(--rail-w-min) var(--side-w) 1fr}
+    .rail-brand .who,.tab-btn .tab-label,.rail-collapse span{display:none}
+    .rail-brand{justify-content:center;padding:18px 8px 16px}
+    .tab-btn,.rail-collapse{justify-content:center;padding:10px 0}
+    .rail-collapse{display:none}
+    :root{--side-w:324px}
+    .stage{padding:22px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition:none!important;animation:none!important}
+  }
 </style>
 </head>
 <body>
 
+<!-- ═══ LEFT RAIL · navigation ═══ -->
+<nav class="rail" aria-label="Sekce">
+  <div class="rail-brand">
+    <span class="mark">ČT</span>
+    <div class="who"><b>Generátor výsledků</b><span>ČT:D · výzkum</span></div>
+  </div>
+  <div class="rail-nav" id="tabBar">
+    <button class="tab-btn on" data-tab="obsah"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16"/><path d="M4 10h16"/><path d="M4 15h10"/><path d="M4 20h7"/></svg><span class="tab-label"><b>Obsah</b><em>Typ výstupu a data</em></span></button>
+    <button class="tab-btn" data-tab="vzhled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18c-1.5 0-2-1-2-2 0-1.2 1-1.6 1-2.7 0-.9-.7-1.3-1.6-1.3H7.6C5.6 15 4 13.4 4 11.4"/><circle cx="9" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="7.5" r="1" fill="currentColor" stroke="none"/><circle cx="17" cy="11.5" r="1" fill="currentColor" stroke="none"/></svg><span class="tab-label"><b>Vzhled</b><em>Barvy, písma, styl</em></span></button>
+    <button class="tab-btn" data-tab="rozlozeni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 4v16"/><path d="M16 4v16"/></svg><span class="tab-label"><b>Rozložení</b><em>Sloupce a mezery</em></span></button>
+    <button class="tab-btn" data-tab="objekty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="m3 13 9 5 9-5"/></svg><span class="tab-label"><b>Objekty</b><em>Vrstvy a popisky</em></span></button>
+    <button class="tab-btn" data-tab="export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="tab-label"><b>Export</b><em>Formát a zdroj</em></span></button>
+  </div>
+  <div class="rail-foot">
+    <button class="rail-collapse" id="railToggle" title="Sbalit / rozbalit panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"/></svg><span>Sbalit panel</span></button>
+  </div>
+</nav>
+
+<!-- ═══ CENTER · property inspector ═══ -->
 <aside class="side">
-  <div class="brandbar"><span class="dot"></span>
-    <h1>Generátor výsledků <span>· ČT:D</span></h1></div>
+  <div class="side-head">
+    <h1>Nastavení výstupu</h1>
+    <p>Náhled vpravo se aktualizuje sám. Šachovnice&nbsp;= průhledná oblast.</p>
+  </div>
 
   <!-- TYP -->
-  <details class="acc" open>
-    <summary>Typ výstupu</summary>
+  <details class="acc" open data-tab="obsah">
+    <summary><span class="acc-t">Typ výstupu<span class="acc-sub"><span class="step">Krok 1</span> · Vyber šablonu výstupu</span></span></summary>
     <div class="body">
       <div class="types" id="typeGrid">
         <button class="typebtn on" data-type="rank"><span class="ico">🏆</span>
@@ -218,8 +441,8 @@
   </details>
 
   <!-- DATA -->
-  <details class="acc" open>
-    <summary>Data</summary>
+  <details class="acc" open data-tab="obsah">
+    <summary><span class="acc-t">Data<span class="acc-sub"><span class="step">Krok 2</span> · Nadpisy a hodnoty</span></span></summary>
     <div class="body">
       <label class="fl">Nadřazený štítek <span class="dimnote">— eyebrow nad nadpisem</span></label>
       <input type="text" id="fKicker" value="Výzkum sledovanosti">
@@ -273,8 +496,8 @@
   </details>
 
   <!-- STYL -->
-  <details class="acc" open>
-    <summary>Styl &amp; barvy</summary>
+  <details class="acc" open data-tab="vzhled">
+    <summary><span class="acc-t">Styl &amp; barvy<span class="acc-sub"><span class="step">Krok 3</span> · Předvolby, barvy a písma</span></span></summary>
     <div class="body">
       <label class="fl">Předvolby</label>
       <div class="swatches" id="presets"></div>
@@ -309,8 +532,8 @@
   </details>
 
   <!-- VZHLED PRVKŮ -->
-  <details class="acc" open>
-    <summary>Vzhled prvků</summary>
+  <details class="acc" open data-tab="vzhled">
+    <summary><span class="acc-t">Vzhled prvků<span class="acc-sub">Doladění řádků, stínů a mezer</span></span></summary>
     <div class="body">
       <label class="fl">Styl řádků</label>
       <div class="pillrow" id="rowStylePills">
@@ -344,8 +567,8 @@
   </details>
 
   <!-- BARVY DO HLOUBKY -->
-  <details class="acc">
-    <summary>Barvy do hloubky</summary>
+  <details class="acc" data-tab="vzhled">
+    <summary><span class="acc-t">Barvy do hloubky<span class="acc-sub">Volitelné přepsání jednotlivých barev</span></span></summary>
     <div class="body">
       <p class="hint">Prázdné = použít hlavní akcent. Vyplň jen co chceš změnit.</p>
       <div class="row" style="margin-top:8px">
@@ -359,8 +582,8 @@
   </details>
 
   <!-- STYL PRVKŮ — součásti šablony, které se nedají vyjádřit jednou barvou -->
-  <details class="acc">
-    <summary>Styl prvků <span class="dimnote">(šablona)</span></summary>
+  <details class="acc" data-tab="vzhled">
+    <summary><span class="acc-t">Styl prvků <span class="dimnote">(šablona)</span><span class="acc-sub">Tvary a varianty prvků šablony</span></span></summary>
     <div class="body">
       <label class="fl">Tvar pruhu grafu</label>
       <div class="pillrow" id="trackShapePills">
@@ -401,8 +624,8 @@
     </div>
   </details>
 
-  <details class="acc" open>
-    <summary>Formát pro PowerPoint</summary>
+  <details class="acc" open data-tab="export">
+    <summary><span class="acc-t">Formát pro PowerPoint<span class="acc-sub"><span class="step">Krok 4</span> · Rozměr slidu a ostrost</span></span></summary>
     <div class="body">
       <label class="fl">Rozměr slidu</label>
       <div class="pillrow" id="ratioPills">
@@ -422,8 +645,8 @@
   </details>
 
   <!-- DŮVĚRYHODNOST -->
-  <details class="acc" open>
-    <summary>Důvěryhodnost &amp; zdroj</summary>
+  <details class="acc" open data-tab="export">
+    <summary><span class="acc-t">Důvěryhodnost &amp; zdroj<span class="acc-sub">N, zdroj dat a logo v patičce</span></span></summary>
     <div class="body">
       <label class="fl">Počet respondentů (N)</label>
       <input type="text" id="fN" placeholder="např. 842" value="842">
@@ -438,8 +661,8 @@
   </details>
 
   <!-- SLOUPCE — šířka (táhne se přímo v náhledu), zarovnání, mezery -->
-  <details class="acc" id="tracksPanel" open style="display:none">
-    <summary>Sloupce <span class="dimnote">(žebříček/tabulka)</span></summary>
+  <details class="acc" id="tracksPanel" open style="display:none" data-tab="rozlozeni">
+    <summary><span class="acc-t">Sloupce <span class="dimnote">(žebříček/tabulka)</span><span class="acc-sub">Šířky, mezery a zarovnání</span></span></summary>
     <div class="body">
       <div id="tracksList"></div>
       <label class="fl" style="margin-top:12px">Mezera mezi sloupci <span class="dimnote" id="colGapV">0 px</span></label>
@@ -455,8 +678,8 @@
   </details>
 
   <!-- VRSTVY — pořadí a rychlý přístup ke všem objektům scény -->
-  <details class="acc" open>
-    <summary>Vrstvy <span class="dimnote" id="layersCount"></span></summary>
+  <details class="acc" open data-tab="objekty">
+    <summary><span class="acc-t">Vrstvy <span class="dimnote" id="layersCount"></span><span class="acc-sub">Objekty na plátně a jejich pořadí</span></span></summary>
     <div class="body">
       <div id="layersList"></div>
       <p class="hint" id="layersEmptyHint">Zatím žádné objekty — přidej logo nebo textový popisek.</p>
@@ -464,8 +687,8 @@
   </details>
 
   <!-- VYBRANÝ TEXTOVÝ OBJEKT — jen když je vybraný alespoň jeden text -->
-  <details class="acc" id="objPanel" open style="display:none">
-    <summary>Vybraný popisek <span class="dimnote" id="objPanelCount"></span></summary>
+  <details class="acc" id="objPanel" open style="display:none" data-tab="objekty">
+    <summary><span class="acc-t">Vybraný popisek <span class="dimnote" id="objPanelCount"></span><span class="acc-sub">Vlastnosti vybraného textu</span></span></summary>
     <div class="body">
       <label class="fl">Text</label>
       <textarea id="objText" rows="2"></textarea>
@@ -477,21 +700,31 @@
     </div>
   </details>
 
-  <div style="padding:16px 20px 30px">
-    <p class="hint">Náhled se aktualizuje sám. Šachovnice = průhledná oblast (ne součást obrázku).</p>
-  </div>
+
 </aside>
 
+<!-- ═══ RIGHT · canvas ═══ -->
 <main class="main">
   <div class="toolbar">
-    <button class="btn primary" id="btnPng">⬇ Stáhnout PNG</button>
-    <button class="btn" id="btnCopy">⧉ Kopírovat</button>
+    <button class="btn primary" id="btnPng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Stáhnout PNG</button>
+    <button class="btn" id="btnCopy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopírovat</button>
+    <span class="tool-sep"></span>
     <button class="btn editToggle" id="btnEdit">✥ Úpravy v obrázku</button>
+    <button class="btn" id="btnAddText" title="Přidat textový popisek na plochu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Text</button>
+    <span class="tool-sep"></span>
     <div class="toolgroup">
-      <button class="btn small" id="btnUndo" title="Zpět (Ctrl+Z)">↶</button>
-      <button class="btn small" id="btnRedo" title="Znovu (Ctrl+Shift+Z)">↷</button>
+      <button class="btn small" id="btnUndo" title="Zpět (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg></button>
+      <button class="btn small" id="btnRedo" title="Znovu (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg></button>
     </div>
-    <button class="btn" id="btnAddText" title="Přidat textový popisek na plochu">✚ Text</button>
+    <div class="spacer"></div>
+    <button class="btn" id="btnSavePreset" title="Uložit aktuální nastavení jako soubor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Uložit předvolbu</button>
+    <button class="btn" id="btnLoadPreset" title="Načíst dříve uloženou předvolbu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Načíst</button>
+    <input type="file" id="presetFile" accept="application/json,.json" style="display:none">
+    <span class="dimnote" id="dimReadout"></span>
+  </div>
+
+  <!-- contextual bar — visible only with a selection (see refreshSelectionUI) -->
+  <div class="toolbar contextual" id="contextualToolbar">
     <div class="toolgroup" id="alignGroup" style="display:none">
       <button class="btn small" id="alLeft" title="Zarovnat vlevo">⇤</button>
       <button class="btn small" id="alCenterH" title="Na střed vodorovně">↔</button>
@@ -504,29 +737,39 @@
     <button class="btn" id="btnGroup" style="display:none" title="Seskupit (Ctrl+G)">🔗 Seskupit</button>
     <button class="btn" id="btnUngroup" style="display:none" title="Rozdělit skupinu (Ctrl+Shift+G)">🔓 Rozdělit</button>
     <button class="btn" id="btnLockObj" style="display:none">🔒 Zamknout</button>
-    <div class="spacer"></div>
-    <div class="toolgroup">
-      <button class="btn small" id="btnZoomOut" title="Oddálit (Ctrl+kolečko)">−</button>
-      <span class="dimnote" id="zoomReadout" style="min-width:40px;text-align:center">100%</span>
-      <button class="btn small" id="btnZoomIn" title="Přiblížit (Ctrl+kolečko)">+</button>
-      <button class="btn small" id="btnZoomReset" title="Obnovit na 100 %">1:1</button>
-      <button class="btn small" id="btnZoomFit" title="Přizpůsobit oknu">⛶</button>
-    </div>
-    <button class="btn" id="btnSavePreset" title="Uložit aktuální nastavení jako soubor">💾 Uložit předvolbu</button>
-    <button class="btn" id="btnLoadPreset" title="Načíst dříve uloženou předvolbu">📂 Načíst</button>
-    <input type="file" id="presetFile" accept="application/json,.json" style="display:none">
-    <span class="dimnote" id="dimReadout"></span>
   </div>
+
   <div class="stage" id="stage"><div id="zoomBox"><div class="canvas-wrap" id="canvasWrap">
     <canvas id="preview" width="1080" height="700"></canvas>
     <div id="fxLayer"></div>
     <div id="objLayer"></div>
     <div id="guideLayer"></div>
     <div id="colHandleLayer"></div>
-  </div></div></div>
+  </div></div>
+
+  <div class="zoom-float">
+    <button class="btn small" id="btnZoomOut" title="Oddálit (Ctrl+kolečko)">−</button>
+    <span class="dimnote" id="zoomReadout" style="min-width:42px;text-align:center">100%</span>
+    <button class="btn small" id="btnZoomIn" title="Přiblížit (Ctrl+kolečko)">+</button>
+    <button class="btn small" id="btnZoomReset" title="Obnovit na 100 %">1:1</button>
+    <button class="btn small" id="btnZoomFit" title="Přizpůsobit oknu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+  </div></div>
 </main>
 <div class="toast" id="toast"></div>
 <div class="ctx-menu" id="ctxMenu"></div>
+
+<script>
+/* nav rail collapse — standalone, independent of the app below */
+(function(){
+  var KEY='ctd-gen-rail-collapsed';
+  try{ if(localStorage.getItem(KEY)==='1') document.body.classList.add('rail-collapsed'); }catch(e){}
+  var t=document.getElementById('railToggle');
+  if(t) t.addEventListener('click', function(){
+    var on=document.body.classList.toggle('rail-collapsed');
+    try{ localStorage.setItem(KEY, on?'1':'0'); }catch(e){}
+  });
+})();
+</script>
 
 <script>
 /* ══════════════════════════════════════════════════════════════════
@@ -2598,6 +2841,14 @@ const UI = {
   },
 
   // zobrazí/skryje datové pole podle typu výstupu a přepínače "víc KPI"
+  // přepne aktivní záložku sidebaru — sekce jiných záložek se skryjí přes
+  // CSS (viz .side[data-active-tab=...]), vlastní logika viditelnosti
+  // jednotlivých panelů (podle typu výstupu apod.) zůstává nedotčená
+  switchTab(tab){
+    document.querySelector('.side').dataset.activeTab=tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  },
+
   updateKpiFieldsVisibility(){
     const t=State.type, multiKpi=$('oMultiKpi')&&$('oMultiKpi').checked;
     $('rowFields').style.display = (t==='excel' || (t==='kpi'&&!multiKpi)) ? 'none' : 'block';
@@ -2726,6 +2977,8 @@ const UI = {
     const objs=Selection.all();
     const lockBtn=$('btnLockObj'), dupBtn=$('btnDuplicate'), alignGrp=$('alignGroup');
     const groupBtn=$('btnGroup'), ungroupBtn=$('btnUngroup');
+    const ctxBar=$('contextualToolbar');
+    if(ctxBar) ctxBar.classList.toggle('show', objs.length>0);
     if(!objs.length){
       if(lockBtn) lockBtn.style.display='none';
       if(dupBtn) dupBtn.style.display='none';
@@ -2927,6 +3180,9 @@ const UI = {
     $('formatHint').innerHTML=HINTS.rank;
     $('fData').value=SAMPLE.rank;
     $('fData').addEventListener('input', ()=>{ $('fData')._touched=true; refresh(); });
+
+    document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>UI.switchTab(b.dataset.tab));
+    UI.switchTab('obsah');
 
     document.querySelectorAll('.typebtn').forEach(b=>b.onclick=()=>UI.setType(b.dataset.type));
 
