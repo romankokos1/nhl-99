@@ -472,6 +472,20 @@
         <label class="fl">Velké číslo</label><input type="text" id="fKpiVal" value="78 %">
         <label class="fl">Popisek čísla</label><input type="text" id="fKpiLabel" value="spokojených diváků">
         <label class="fl">Doplňkový text</label><input type="text" id="fKpiNote" value="meziročně +6 p. b.">
+        <label class="fl">Font velkého čísla</label>
+        <select id="fKpiFont">
+          <option value="">Auto (Anton — výchozí)</option>
+          <option value="'Bebas Neue',Impact,sans-serif">Bebas Neue</option>
+          <option value="'Archivo Black',sans-serif">Archivo Black</option>
+          <option value="Oswald,sans-serif">Oswald</option>
+          <option value="'Barlow Condensed',sans-serif">Barlow Condensed</option>
+          <option value="Montserrat,sans-serif">Montserrat</option>
+          <option value="'Space Grotesk',sans-serif">Space Grotesk</option>
+          <option value="'Playfair Display',Georgia,serif">Playfair Display</option>
+          <option value="Cinzel,Georgia,serif">Cinzel</option>
+          <option value="Georgia,serif">Georgia</option>
+          <option value="'Inter',system-ui,sans-serif">Inter</option>
+        </select>
         <label class="chk"><input type="checkbox" id="oMultiKpi"> Víc KPI karet najednou</label>
         <p class="hint" id="multiKpiHint" style="display:none">Zapni a vlož řádky ve formátu <b>popisek ⇥ hodnota</b> — rozvržení (2–12 karet, nebo kompaktní seznam nad 12) se zvolí samo podle počtu.</p>
       </div>
@@ -526,15 +540,26 @@
       <select id="fFontHead">
         <option value="'Barlow Condensed',sans-serif">Barlow Condensed</option>
         <option value="Anton,Impact,sans-serif">Anton (extra tučný)</option>
+        <option value="'Bebas Neue',Impact,sans-serif">Bebas Neue (display)</option>
+        <option value="'Archivo Black',sans-serif">Archivo Black (těžký)</option>
+        <option value="Oswald,sans-serif">Oswald (kondenzovaný)</option>
+        <option value="Montserrat,sans-serif">Montserrat (geometrický)</option>
+        <option value="'Space Grotesk',sans-serif">Space Grotesk (technický)</option>
+        <option value="'Playfair Display',Georgia,serif">Playfair Display (elegantní serif)</option>
         <option value="Cinzel,Georgia,serif">Cinzel (serif)</option>
-        <option value="Georgia,serif">Georgia</option>
+        <option value="Georgia,serif">Georgia (systémový serif)</option>
         <option value="'Inter',system-ui,sans-serif">Inter</option>
       </select>
       <label class="fl">Font dat</label>
       <select id="fFontBody">
         <option value="'Inter',system-ui,sans-serif">Inter</option>
+        <option value="'Source Sans 3',system-ui,sans-serif">Source Sans 3</option>
+        <option value="'IBM Plex Sans',system-ui,sans-serif">IBM Plex Sans</option>
+        <option value="'Roboto Condensed',sans-serif">Roboto Condensed (úsporný)</option>
         <option value="'Barlow Condensed',sans-serif">Barlow Condensed</option>
-        <option value="'Segoe UI',system-ui,sans-serif">Segoe UI</option>
+        <option value="Montserrat,sans-serif">Montserrat</option>
+        <option value="'Space Grotesk',sans-serif">Space Grotesk</option>
+        <option value="'Segoe UI',system-ui,sans-serif">Segoe UI (systémový)</option>
       </select>
     </div>
   </details>
@@ -824,7 +849,7 @@ const Schema = {
   // textová pole a barvy, jejichž změna má rovnou překreslit náhled
   liveFields: [
     'fKicker','fTitle','fSub','cBg','cAccent','cAccent2','cInk','cRow',
-    'fFontHead','fFontBody','fKpiVal','fKpiLabel','fKpiNote',
+    'fFontHead','fFontBody','fKpiVal','fKpiLabel','fKpiNote','fKpiFont',
     'fN','fSource','fSegA','fSegB',
     'aTopColor','aKicker','aMedalGold','aMedalSilver','aMedalBronze',
   ],
@@ -1030,18 +1055,36 @@ const Color = {
    FONTS — načtení webfontů použitých v exportovaném obrázku
    ══════════════════════════════ */
 const Fonts = {
+  // rodiny dostupné ve výběrech — načítají se přes Google Fonts CSS API,
+  // které samo vybere správný subset (latin-ext kvůli české diakritice)
+  FAMILIES:['Anton','Archivo Black','Barlow Condensed','Bebas Neue','Cinzel',
+    'IBM Plex Sans','Inter','Montserrat','Oswald','Playfair Display',
+    'Roboto Condensed','Source Sans 3','Space Grotesk'],
+  CSS_URL:'https://fonts.googleapis.com/css2'
+    +'?family=Anton&family=Archivo+Black&family=Bebas+Neue'
+    +'&family=Barlow+Condensed:wght@400;500;600;700;800'
+    +'&family=Cinzel:wght@400;600;700;800;900'
+    +'&family=IBM+Plex+Sans:wght@400;500;600;700'
+    +'&family=Inter:wght@400;500;600;700;800;900'
+    +'&family=Montserrat:wght@400;500;600;700;800;900'
+    +'&family=Oswald:wght@400;500;600;700'
+    +'&family=Playfair+Display:wght@400;600;700;800;900'
+    +'&family=Roboto+Condensed:wght@400;500;600;700'
+    +'&family=Source+Sans+3:wght@400;600;700;800;900'
+    +'&family=Space+Grotesk:wght@400;500;600;700'
+    +'&display=swap',
   async ensure(){
     if(State.fontsReady) return;
-    const list=[
-      ['Barlow Condensed','https://fonts.gstatic.com/s/barlowcondensed/v12/HTxxL3I-JCGChYJ8VI-L6OO_au7B497y_3HcuKECcrs.woff2'],
-      ['Anton','https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm0Kz8AM.woff2'],
-      ['Cinzel','https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2'],
-      ['Inter','https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2'],
-    ];
-    await Promise.all(list.map(([n,u])=>{
-      const f=new FontFace(n,'url('+u+')');
-      return f.load().then(ff=>document.fonts.add(ff)).catch(()=>{});
-    }));
+    if(!document.getElementById('gfLink')){
+      const l=document.createElement('link');
+      l.id='gfLink'; l.rel='stylesheet'; l.href=Fonts.CSS_URL;
+      document.head.appendChild(l);
+      // čekej na stylesheet, ale max 3 s — offline se prostě použijí fallbacky
+      await new Promise(res=>{ l.onload=res; l.onerror=res; setTimeout(res,3000); });
+    }
+    await Promise.all(Fonts.FAMILIES.map(f=>
+      document.fonts.load('700 20px "'+f+'"').catch(()=>{})
+    ));
     State.fontsReady=true;
   },
 };
@@ -1072,6 +1115,7 @@ const Cfg = {
     };
     const typography = {
       fHead:$('fFontHead').value, fBody:$('fFontBody').value,
+      fKpi:Cfg.val('fKpiFont','')||'Anton,Impact,sans-serif',
     };
     const layout = {
       radius:Cfg.num('aRadius',13), gap:Cfg.num('aGap',10), shadow:Cfg.num('aShadow',1),
@@ -2430,9 +2474,9 @@ const Draw = {
     // pod ním — schválné porušení dnešní striktně vertikální osy ──
     if(style==='editorial'){
       const nx=W*0.14, ny=H/2+10;
-      cx.font=`800 150px Anton,Impact,sans-serif`;
+      cx.font=`800 150px ${c.fKpi}`;
       const numW=cx.measureText(val).width;
-      Components.bigStat(cx,{x:nx,y:ny,value:val,size:150,weight:800,color:c.accent,align:'left'});
+      Components.bigStat(cx,{x:nx,y:ny,value:val,size:150,weight:800,color:c.accent,align:'left',fontFamily:c.fKpi});
       const labelX=nx+numW+30;
       Components.caption(cx,{x:labelX,y:ny-38,text:lab.toUpperCase(),font:`700 15px ${c.fBody}`,color:Color.alpha(c.ink,.55),align:'left'});
       if(note) Components.caption(cx,{x:labelX,y:ny-12,text:note,font:`600 14px ${c.fBody}`,color:Color.alpha(c.ink,.4),align:'left'});
@@ -2441,7 +2485,7 @@ const Draw = {
     if(style==='cardBg'){
       Components.panel(cx,{x:W*0.12,y:H*0.14,w:W*0.76,h:H*0.72,radius:Math.min(40,c.radius*1.6+10),fill:Color.alpha(c.ink,c.dark?.08:.045)});
     }
-    Components.bigStat(cx,{x:cxn,y:H/2+30,value:val,size:200,weight:900,color:c.accent,align:'center'});
+    Components.bigStat(cx,{x:cxn,y:H/2+30,value:val,size:200,weight:900,color:c.accent,align:'center',fontFamily:c.fKpi});
     if(style==='underline'){
       cx.fillStyle=c.accent; Draw.roundRect(cx,cxn-70,H/2+52,140,5,3); cx.fill();
     }
@@ -2461,7 +2505,7 @@ const Draw = {
         const cy=top+i*RH+RH/2;
         if(style==='cardBg'&&i%2===0) Components.panel(cx,{x:PAD-8,y:cy-RH/2+2,w:W-PAD*2+16,h:RH-4,radius:8,fill:Color.alpha(c.ink,c.dark?.06:.035)});
         Components.caption(cx,{x:PAD,y:cy+7,text:r[0]||'',font:`700 22px ${c.fBody}`,color:c.ink,align:'left'});
-        Components.bigStat(cx,{x:W-PAD,y:cy+7,value:r[1]||'',size:28,weight:800,color:c.accent,align:'right'});
+        Components.bigStat(cx,{x:W-PAD,y:cy+7,value:r[1]||'',size:28,weight:800,color:c.accent,align:'right',fontFamily:c.fKpi});
       });
       return;
     }
@@ -2474,7 +2518,7 @@ const Draw = {
       if(style==='cardBg'){
         Components.panel(cx,{x:PAD+col*cellW+8,y:top+row*cellH+8,w:cellW-16,h:cellH-16,radius:Math.min(24,c.radius+6),fill:Color.alpha(c.ink,c.dark?.07:.04)});
       }
-      Components.bigStat(cx,{x:ccx,y:ccy-Math.round(6*scale),value:r[1]||'',size:Math.round(88*scale),weight:900,color:c.accent,align:'center'});
+      Components.bigStat(cx,{x:ccx,y:ccy-Math.round(6*scale),value:r[1]||'',size:Math.round(88*scale),weight:900,color:c.accent,align:'center',fontFamily:c.fKpi});
       if(style==='underline'){
         const barW=Math.round(50*scale);
         cx.fillStyle=c.accent; Draw.roundRect(cx,ccx-barW/2,ccy+Math.round(10*scale),barW,4,2); cx.fill();
