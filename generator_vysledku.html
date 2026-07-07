@@ -30,7 +30,7 @@
     --r-card:14px; --r-ctl:8px;
     --shadow-card:0 1px 2px rgba(24,24,20,.04);
     --shadow-pop:0 4px 10px rgba(24,24,20,.06),0 16px 40px rgba(24,24,20,.10);
-    --rail-w:236px; --rail-w-min:64px; --side-w:376px;
+    --rail-w:236px; --rail-w-min:64px; --side-w:292px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -102,20 +102,20 @@
   .side::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:6px;border:2px solid var(--bg)}
   .side-head{
     position:sticky;top:0;z-index:6;background:var(--bg);
-    padding:20px 18px 12px;border-bottom:1px solid var(--line);
+    padding:13px 14px 10px;border-bottom:1px solid var(--line);
   }
   .side-head h1{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
-  .side-head p{margin:3px 0 0;font-size:12px;color:var(--ink-dim)}
+  .side-head p{margin:2px 0 0;font-size:11.5px;color:var(--ink-dim)}
 
   /* cards */
   .acc{
     background:var(--panel);border:1px solid var(--line);border-radius:var(--r-card);
-    margin:12px 14px;box-shadow:var(--shadow-card);overflow:hidden;
+    margin:10px 10px;box-shadow:var(--shadow-card);overflow:hidden;
   }
   .acc>summary{
     cursor:pointer;list-style:none;user-select:none;
     display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:14px 16px;
+    padding:10px 13px;
   }
   .acc>summary::-webkit-details-marker{display:none}
   .acc>summary:hover{background:#FBFBFA}
@@ -131,18 +131,18 @@
   .acc-sub{display:block;font-weight:400;font-size:11.5px;color:var(--ink-dim);margin-top:1px}
   .acc-sub .step{color:var(--accent);font-weight:600}
   .acc .dimnote{font-size:11px;color:var(--ink-faint);font-weight:400;margin-left:4px}
-  .body{padding:2px 16px 16px;border-top:1px solid var(--line)}
+  .body{padding:2px 13px 13px;border-top:1px solid var(--line)}
   .acc>.body{margin-top:0}
   .side>div:last-of-type{padding:4px 20px 28px}
 
   /* form controls */
   label.fl{
-    display:block;margin:14px 0 5px;font-size:11px;color:var(--ink-dim);
+    display:block;margin:10px 0 4px;font-size:10.5px;color:var(--ink-dim);
     text-transform:uppercase;letter-spacing:.55px;font-weight:600;
   }
   input[type=text],input[type=number],textarea,select{
     width:100%;background:#FCFCFB;border:1px solid var(--line-strong);
-    color:var(--ink);border-radius:var(--r-ctl);padding:8px 10px;
+    color:var(--ink);border-radius:var(--r-ctl);padding:7px 9px;
     font-family:var(--sans);font-size:13px;transition:border-color .12s,box-shadow .12s;
   }
   textarea{resize:vertical;font-family:var(--mono);font-size:12px;line-height:1.6}
@@ -170,16 +170,16 @@
     cursor:pointer;font-family:var(--sans);
   }
   input[type=file]::file-selector-button:hover{border-color:var(--brand-bright);color:var(--accent)}
-  .chk{display:flex;align-items:center;gap:9px;margin:9px 0;cursor:pointer;font-size:13px;color:var(--ink)}
+  .chk{display:flex;align-items:center;gap:8px;margin:7px 0;cursor:pointer;font-size:13px;color:var(--ink)}
   .chk input{width:15px;height:15px;accent-color:var(--brand-bright);margin:0}
   .hint{font-size:11.5px;color:var(--ink-dim);margin:6px 0 0;line-height:1.5}
   .hint b{color:var(--ink);font-weight:600}
 
   /* output-type picker */
-  .types{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0 2px}
+  .types{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 0 2px}
   .typebtn{
-    background:var(--panel);border:1px solid var(--line-strong);border-radius:11px;
-    padding:11px 12px;cursor:pointer;text-align:left;color:var(--ink);
+    background:var(--panel);border:1px solid var(--line-strong);border-radius:10px;
+    padding:8px 9px;cursor:pointer;text-align:left;color:var(--ink);
     transition:border-color .12s,background .12s,box-shadow .12s;position:relative;
   }
   .typebtn:hover{border-color:var(--brand-bright)}
@@ -187,9 +187,9 @@
     border-color:var(--brand-bright);background:var(--brand-soft);
     box-shadow:inset 0 0 0 1px var(--brand-bright);
   }
-  .typebtn .ico{font-size:17px;display:block;margin-bottom:5px;filter:grayscale(.25)}
-  .typebtn .nm{font-weight:600;font-size:12.5px;display:block;letter-spacing:-.01em}
-  .typebtn .ds{font-size:10.5px;color:var(--ink-dim);margin-top:1px;display:block}
+  .typebtn .ico{font-size:14px;display:block;margin-bottom:3px;filter:grayscale(.25)}
+  .typebtn .nm{font-weight:600;font-size:12px;display:block;letter-spacing:-.01em}
+  .typebtn .ds{font-size:10px;color:var(--ink-dim);margin-top:1px;display:block}
   .typebtn.on .nm{color:var(--accent)}
 
   /* swatches + pills */
@@ -201,7 +201,7 @@
   .pillrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
   .pill{
     background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;
-    padding:6px 12px;font-size:12px;font-weight:500;color:var(--ink-dim);
+    padding:5px 10px;font-size:12px;font-weight:500;color:var(--ink-dim);
     cursor:pointer;transition:border-color .12s,background .12s,color .12s;
   }
   .pill:hover{border-color:var(--brand-bright);color:var(--ink)}
@@ -210,9 +210,25 @@
   /* ════════════════ RIGHT — canvas / preview ════════════════ */
   .main{display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--stage)}
   .toolbar{
-    padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;
-    gap:8px;flex-wrap:wrap;background:var(--panel);min-height:56px;
+    padding:6px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+    gap:6px;flex-wrap:nowrap;background:var(--panel);min-height:46px;overflow:hidden;
   }
+  .tb-zone{display:flex;align-items:center;gap:6px;min-width:0}
+  .tb-left,.tb-right{flex:1 1 0}
+  .tb-right{justify-content:flex-end}
+  .tb-center{flex:0 0 auto;justify-content:center}
+  .toolbar .pillrow{margin:0;flex-wrap:nowrap;background:var(--panel2);border-radius:8px;padding:2px;gap:2px}
+  .toolbar .pill{border:1px solid transparent;background:transparent;padding:4px 9px;border-radius:6px;font-size:11.5px}
+  .toolbar .pill:hover{color:var(--ink)}
+  .toolbar .pill.on{background:var(--panel);border-color:var(--line-strong);color:var(--accent);box-shadow:var(--shadow-card)}
+  .tb-zoom{display:flex;align-items:center;gap:1px;background:var(--panel2);border-radius:8px;padding:2px}
+  .tb-zoom .btn{border:none;background:transparent;padding:4px 8px;border-radius:6px;font-size:12px}
+  .tb-zoom .btn:hover{background:var(--panel);color:var(--ink);box-shadow:var(--shadow-card)}
+  .tb-zoom .dimnote{margin:0 1px;min-width:38px;text-align:center;color:var(--ink-dim)}
+  #dimReadout{max-width:132px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
+  .btn .btn-lbl{display:none}
+  @media (min-width:1780px){ .btn .btn-lbl{display:inline} #dimReadout{max-width:220px} }
+  @media (max-width:1620px){ #dimReadout{display:none} }
   .toolbar.contextual{
     padding:7px 16px;background:#FBFBF9;display:none;min-height:0;
     border-bottom:1px solid var(--line);
@@ -220,7 +236,7 @@
   .toolbar.contextual.show{display:flex}
   .btn{
     border:1px solid var(--line-strong);background:var(--panel);color:var(--ink);
-    border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:500;cursor:pointer;
+    border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500;cursor:pointer;
     display:inline-flex;align-items:center;gap:7px;transition:border-color .12s,background .12s,color .12s;
     font-family:var(--sans);white-space:nowrap;
   }
@@ -229,14 +245,14 @@
   .btn.primary{background:var(--brand-bright);border-color:var(--brand-bright);color:#fff;font-weight:600;box-shadow:var(--shadow-card)}
   .btn.primary:hover{background:var(--brand);border-color:var(--brand);color:#fff}
   .btn:disabled{opacity:.35;cursor:default;pointer-events:none}
-  .btn.small{padding:7px 10px}
+  .btn.small{padding:6px 8px}
   .toolgroup{display:flex;align-items:center;gap:4px}
   .tool-sep{width:1px;height:22px;background:var(--line);margin:0 4px;flex:0 0 auto}
   .spacer{flex:1}
   .dimnote{font-size:11px;color:var(--ink-faint);margin-left:4px;font-family:var(--mono)}
   .editToggle{margin-left:0}
 
-  .stage{flex:1;overflow:auto;padding:36px;display:flex;align-items:flex-start;justify-content:center;
+  .stage{flex:1;overflow:auto;padding:22px;display:flex;align-items:flex-start;justify-content:center;
     background-image:radial-gradient(var(--line-strong) 1px,transparent 1px);background-size:22px 22px}
   .stage::-webkit-scrollbar{width:12px;height:12px}
   .stage::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px;border:3px solid var(--stage)}
@@ -251,14 +267,6 @@
   }
   #preview{display:block;max-width:100%;height:auto}
 
-  .zoom-float{
-    position:absolute;right:24px;bottom:22px;z-index:8;display:flex;align-items:center;gap:2px;
-    background:var(--panel);border:1px solid var(--line);border-radius:11px;
-    padding:4px 5px;box-shadow:var(--shadow-pop);
-  }
-  .zoom-float .btn{border:none;background:transparent;padding:7px 9px;border-radius:7px}
-  .zoom-float .btn:hover{background:var(--panel2);color:var(--ink)}
-  .zoom-float .dimnote{margin:0 2px;color:var(--ink-dim)}
 
   .toast{
     position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(6px);
@@ -377,15 +385,15 @@
   .side[data-active-tab="export"] .acc[data-tab]:not([data-tab="export"]){display:none!important}
 
   /* ── responsiveness ── */
-  @media (max-width:1500px){ :root{--side-w:348px} }
+  @media (max-width:1500px){ :root{--side-w:280px} }
   @media (max-width:1280px){
     body{grid-template-columns:var(--rail-w-min) var(--side-w) 1fr}
     .rail-brand .who,.tab-btn .tab-label,.rail-collapse span{display:none}
     .rail-brand{justify-content:center;padding:18px 8px 16px}
     .tab-btn,.rail-collapse{justify-content:center;padding:10px 0}
     .rail-collapse{display:none}
-    :root{--side-w:324px}
-    .stage{padding:22px}
+    :root{--side-w:262px}
+    .stage{padding:16px}
   }
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{transition:none!important;animation:none!important}
@@ -627,14 +635,7 @@
   <details class="acc" open data-tab="export">
     <summary><span class="acc-t">Formát pro PowerPoint<span class="acc-sub"><span class="step">Krok 4</span> · Rozměr slidu a ostrost</span></span></summary>
     <div class="body">
-      <label class="fl">Rozměr slidu</label>
-      <div class="pillrow" id="ratioPills">
-        <span class="pill on" data-ratio="auto">Auto (na výšku)</span>
-        <span class="pill" data-ratio="169">16:9 · 1920×1080</span>
-        <span class="pill" data-ratio="43">4:3 · 1440×1080</span>
-        <span class="pill" data-ratio="sq">Čtverec · 1080</span>
-      </div>
-      <p class="hint">16:9 sedne na celý slide bez ořezu. Auto roste podle počtu řádků.</p>
+      <p class="hint" style="margin-top:10px">Rozměr slidu (Auto / 16:9 / 4:3 / čtverec) přepneš v liště nad náhledem. 16:9 sedne na celý slide bez ořezu, Auto roste podle počtu řádků.</p>
       <label class="chk"><input type="checkbox" id="oTransparent"> Průhledné pozadí (splyne se šablonou klienta)</label>
       <label class="fl">Měřítko exportu (ostrost)</label>
       <div class="row" style="align-items:center">
@@ -706,21 +707,41 @@
 <!-- ═══ RIGHT · canvas ═══ -->
 <main class="main">
   <div class="toolbar">
-    <button class="btn primary" id="btnPng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Stáhnout PNG</button>
-    <button class="btn" id="btnCopy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopírovat</button>
-    <span class="tool-sep"></span>
-    <button class="btn editToggle" id="btnEdit">✥ Úpravy v obrázku</button>
-    <button class="btn" id="btnAddText" title="Přidat textový popisek na plochu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Text</button>
-    <span class="tool-sep"></span>
-    <div class="toolgroup">
-      <button class="btn small" id="btnUndo" title="Zpět (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg></button>
-      <button class="btn small" id="btnRedo" title="Znovu (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg></button>
+    <div class="tb-zone tb-left">
+      <div class="toolgroup">
+        <button class="btn small" id="btnUndo" title="Zpět (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg></button>
+        <button class="btn small" id="btnRedo" title="Znovu (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg></button>
+      </div>
+      <span class="tool-sep"></span>
+      <button class="btn editToggle" id="btnEdit">✥ Úpravy v obrázku</button>
+      <button class="btn" id="btnAddText" title="Přidat textový popisek na plochu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Text</button>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btnSavePreset" title="Uložit aktuální nastavení jako soubor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Uložit předvolbu</button>
-    <button class="btn" id="btnLoadPreset" title="Načíst dříve uloženou předvolbu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Načíst</button>
-    <input type="file" id="presetFile" accept="application/json,.json" style="display:none">
-    <span class="dimnote" id="dimReadout"></span>
+
+    <div class="tb-zone tb-center">
+      <span class="dimnote" id="dimReadout" title="Aktuální rozměr plátna a exportu"></span>
+      <div class="pillrow" id="ratioPills" title="Rozměr slidu / poměr stran">
+        <span class="pill on" data-ratio="auto" title="Auto — roste na výšku podle počtu řádků">Auto</span>
+        <span class="pill" data-ratio="169" title="16:9 · 1920×1080 — celý slide bez ořezu">16:9</span>
+        <span class="pill" data-ratio="43" title="4:3 · 1440×1080">4:3</span>
+        <span class="pill" data-ratio="sq" title="Čtverec · 1080×1080">1:1</span>
+      </div>
+      <div class="tb-zoom">
+        <button class="btn small" id="btnZoomOut" title="Oddálit (Ctrl+kolečko)">−</button>
+        <span class="dimnote" id="zoomReadout">100%</span>
+        <button class="btn small" id="btnZoomIn" title="Přiblížit (Ctrl+kolečko)">+</button>
+        <button class="btn small" id="btnZoomReset" title="Obnovit na 100 %">1:1</button>
+        <button class="btn small" id="btnZoomFit" title="Přizpůsobit oknu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+      </div>
+    </div>
+
+    <div class="tb-zone tb-right">
+      <button class="btn" id="btnSavePreset" title="Uložit aktuální nastavení jako soubor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span class="btn-lbl"> Uložit předvolbu</span></button>
+      <button class="btn" id="btnLoadPreset" title="Načíst dříve uloženou předvolbu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="btn-lbl"> Načíst</span></button>
+      <input type="file" id="presetFile" accept="application/json,.json" style="display:none">
+      <span class="tool-sep"></span>
+      <button class="btn" id="btnCopy" title="Kopírovat obrázek do schránky"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="btn-lbl"> Kopírovat</span></button>
+      <button class="btn primary" id="btnPng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Stáhnout PNG</button>
+    </div>
   </div>
 
   <!-- contextual bar — visible only with a selection (see refreshSelectionUI) -->
@@ -746,14 +767,7 @@
     <div id="guideLayer"></div>
     <div id="colHandleLayer"></div>
   </div></div>
-
-  <div class="zoom-float">
-    <button class="btn small" id="btnZoomOut" title="Oddálit (Ctrl+kolečko)">−</button>
-    <span class="dimnote" id="zoomReadout" style="min-width:42px;text-align:center">100%</span>
-    <button class="btn small" id="btnZoomIn" title="Přiblížit (Ctrl+kolečko)">+</button>
-    <button class="btn small" id="btnZoomReset" title="Obnovit na 100 %">1:1</button>
-    <button class="btn small" id="btnZoomFit" title="Přizpůsobit oknu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
-  </div></div>
+</div>
 </main>
 <div class="toast" id="toast"></div>
 <div class="ctx-menu" id="ctxMenu"></div>
