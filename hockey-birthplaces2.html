@@ -1066,9 +1066,11 @@ function loadPlayers(callback) {
         p.id = makePlayerId(p, seen);
         return p;
       });
-      callback();
     })
-    .catch(err => showLoadError(err, callback));
+    // druhý argument .then() zachytí JEN chyby fetch/parse výše —
+    // výjimka z callback() (chyba aplikace) propadne do konzole se stackem
+    // a nemaskuje se jako chyba načítání dat
+    .then(callback, err => showLoadError(err, callback));
 }
 
 // Chyba načtení — overlay s retry, nezničí aplikaci
@@ -1101,6 +1103,7 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 }
 
 function initMap() {
+  if (map) return;   // idempotence — opakovaný boot (retry) nesmí inicializovat mapu podruhé
   map = L.map('mapEl',{zoomControl:true,attributionControl:true}).setView([49.05,14.45],9);
   map.attributionControl.setPrefix(false);
   map.attributionControl.addAttribution('© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>');
@@ -2020,7 +2023,7 @@ function updateStats() {
 // UTILS
 // ══════════════════════════════════════════════════
 // Klíč pro seskupování hráčů podle místa (~0,5 km granularita) — jediný zdroj pravdy
-const locKey = p => locKey(p);
+const locKey = p => Math.round(p.lat*200)+','+Math.round(p.lon*200);
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escA(s){return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function fullName(p){return [p.surname,p.firstname].filter(Boolean).join(' ');}
@@ -2943,7 +2946,7 @@ function togglePanel() {
   }
   btn.title = hidden ? 'Zobrazit panel' : 'Skrýt panel';
   // Invalidate only after transition finishes — avoids Leaflet jank during animation
-  lp.addEventListener('transitionend', () => map.invalidateSize(), { once: true });
+  lp.addEventListener('transitionend', () => { if (map) map.invalidateSize(); }, { once: true });
 }
 
 // ── MOBILE NAV ─────────────────────────────────────
@@ -2969,7 +2972,7 @@ function mobTab(tab) {
     stats.classList.remove('on');
     backdrop.style.display = 'none';
   }
-  setTimeout(() => map.invalidateSize(), 260);
+  setTimeout(() => { if (map) map.invalidateSize(); }, 260);
 }
 function showYearTip(event) {
   const r = event.currentTarget.querySelector('rect');
@@ -3207,7 +3210,7 @@ function buildYearChart(players) {
 }
 
 window.addEventListener('load', () => {
-  map.invalidateSize();
+  if (map) map.invalidateSize();   // load event může předběhnout async fetch dat
   setHdrHeight();
   if (window.innerWidth <= 750) {
     document.querySelector('.app')?.classList.add('lp-hidden');
