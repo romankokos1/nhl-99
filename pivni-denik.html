@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pivní deník</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #16110a;
+    --bg-raised: #221a10;
+    --bg-card: #1d1509;
+    --border: #3a2c17;
+    --border-soft: #2a2012;
+    --text: #f2e6cf;
+    --text-dim: #b09a72;
+    --text-faint: #7a6640;
+    --amber: #e8a33d;
+    --amber-bright: #ffc35a;
+    --foam: #f6ecd4;
+    --deep: #8a4b16;
+    --red: #d16a4a;
+    --green: #8bb04f;
+    --shadow: rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 50% -10%, #2a1f0f 0%, var(--bg) 55%);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    padding: 0 0 80px;
+  }
+  ::selection { background: var(--amber); color: #16110a; }
+
+  /* ---- header / glass mascot ---- */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    max-width: 1000px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+  }
+  .mug { flex-shrink: 0; }
+  .brand h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 0.02em;
+    color: var(--foam);
+  }
+  .brand .sub {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .stats-strip {
+    margin-left: auto;
+    display: flex;
+    gap: 26px;
+    flex-wrap: wrap;
+  }
+  .stat { text-align: right; }
+  .stat .num {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--amber-bright);
+    line-height: 1;
+  }
+  .stat .lbl {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-faint);
+    margin-top: 4px;
+  }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---- form ---- */
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    margin-top: 24px;
+    box-shadow: 0 8px 24px -12px var(--shadow);
+  }
+  .panel-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--amber);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-title::before {
+    content: '';
+    width: 20px; height: 2px;
+    background: var(--amber);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.wide { grid-column: 1 / -1; }
+  label {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+  }
+  input[type=text], input[type=number], select, textarea {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(232,163,61,0.15);
+  }
+  textarea { resize: vertical; min-height: 62px; }
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23b09a72' stroke-width='1.4' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 30px;
+  }
+
+  /* ---- glass rating control ---- */
+  .rating-field { grid-column: 1 / -1; }
+  .glass-rate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .glass-btn {
+    background: none; border: none; cursor: pointer;
+    padding: 2px; line-height: 0;
+    transition: transform .12s;
+  }
+  .glass-btn:hover { transform: translateY(-3px) scale(1.08); }
+  .glass-btn:active { transform: scale(0.95); }
+  .glass-btn svg { display: block; }
+  .glass-fill { fill: var(--border); transition: fill .12s; }
+  .glass-btn.on .glass-fill { fill: var(--amber-bright); }
+  .rate-num {
+    margin-left: 8px;
+    font-weight: 700;
+    color: var(--amber-bright);
+    font-size: 1.1rem;
+    min-width: 42px;
+  }
+  .rate-num .of { color: var(--text-faint); font-weight: 400; font-size: 0.8rem; }
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  button.btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.05em;
+    padding: 11px 20px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-primary { background: var(--amber); color: #16110a; }
+  .btn-primary:hover { background: var(--amber-bright); }
+  .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-dim); }
+  .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* ---- toolbar ---- */
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .toolbar input[type=text] { max-width: 300px; }
+  .toolbar-sort { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+  .toolbar-sort select { min-width: 150px; }
+  .export-group { display: flex; gap: 8px; }
+
+  /* ---- list ---- */
+  .beer-list { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .beer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--amber);
+    border-radius: 8px;
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 16px;
+    transition: border-color .15s, transform .1s;
+  }
+  .beer-card:hover { border-left-color: var(--amber-bright); }
+  .beer-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .beer-name { font-weight: 700; font-size: 1.05rem; color: var(--foam); }
+  .beer-brewery { color: var(--text-dim); font-size: 0.85rem; }
+  .beer-meta {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 0.72rem; color: var(--text-faint);
+    margin-top: 4px;
+  }
+  .beer-meta .tag {
+    background: var(--bg-raised);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: var(--text-dim);
+  }
+  .beer-note {
+    grid-column: 1 / -1;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-style: italic;
+    border-top: 1px dashed var(--border-soft);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+  .beer-right {
+    grid-row: 1 / 3;
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .beer-score {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--amber-bright);
+    line-height: 1;
+  }
+  .beer-score .of { font-size: 0.8rem; color: var(--text-faint); font-weight: 400; }
+  .mini-glasses { display: flex; gap: 2px; }
+  .card-actions { display: flex; gap: 6px; }
+  .icon-btn {
+    background: none; border: 1px solid var(--border-soft);
+    border-radius: 5px; cursor: pointer;
+    color: var(--text-faint); padding: 4px 7px;
+    font-size: 0.7rem; font-family: inherit;
+    transition: all .15s;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--text-dim); }
+  .icon-btn.del:hover { color: var(--red); border-color: var(--red); }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-faint);
+  }
+  .empty svg { opacity: 0.4; margin-bottom: 16px; }
+  .empty p { font-size: 0.9rem; }
+
+  .count-line {
+    font-size: 0.7rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 24px;
+  }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-raised);
+    border: 1px solid var(--amber);
+    color: var(--text);
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 50;
+    box-shadow: 0 8px 30px -8px var(--shadow);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after { transition: none !important; animation: none !important; }
+  }
+  @media (max-width: 560px) {
+    .stats-strip { margin-left: 0; width: 100%; justify-content: space-between; gap: 14px; }
+    .stat { text-align: left; }
+    .beer-card { grid-template-columns: 1fr; }
+    .beer-right { grid-row: auto; grid-column: 1; align-items: flex-start; flex-direction: row; justify-content: space-between; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="mug">
+    <svg width="46" height="52" viewBox="0 0 46 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="26" height="34" rx="4" fill="#221a10" stroke="#3a2c17" stroke-width="2"/>
+      <rect x="8" y="24" width="22" height="22" rx="2" fill="#e8a33d"/>
+      <path d="M8 24h22v6H8z" fill="#ffc35a"/>
+      <ellipse cx="12" cy="12" rx="7" ry="5" fill="#f6ecd4"/>
+      <ellipse cx="20" cy="10" rx="8" ry="6" fill="#f6ecd4"/>
+      <ellipse cx="28" cy="12" rx="7" ry="5" fill="#f6ecd4"/>
+      <path d="M32 20h5a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5h-5" stroke="#3a2c17" stroke-width="2" fill="none"/>
+    </svg>
+  </div>
+  <div class="brand">
+    <h1>Pivní deník</h1>
+    <div class="sub">osobní katalog ochutnávek</div>
+  </div>
+  <div class="stats-strip">
+    <div class="stat"><div class="num" id="stat-count">0</div><div class="lbl">piv</div></div>
+    <div class="stat"><div class="num" id="stat-avg">–</div><div class="lbl">průměr</div></div>
+    <div class="stat"><div class="num" id="stat-top">–</div><div class="lbl">nejlepší</div></div>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="panel-title" id="form-title">Nový záznam</div>
+    <div class="grid">
+      <div class="field">
+        <label for="f-name">Název piva *</label>
+        <input type="text" id="f-name" placeholder="Světlý ležák" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="f-brewery">Pivovar</label>
+        <input type="text" id="f-brewery" placeholder="Budějovický Budvar" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="f-style">Styl</label>
+        <input type="text" id="f-style" placeholder="Ležák / IPA / Stout…" autocomplete="off" list="style-list">
+        <datalist id="style-list"></datalist>
+      </div>
+      <div class="field">
+        <label for="f-abv">Obsah alkoholu (%)</label>
+        <input type="number" id="f-abv" placeholder="4.8" step="0.1" min="0" max="70">
+      </div>
+      <div class="field">
+        <label for="f-where">Kde jsem ochutnal</label>
+        <input type="text" id="f-where" placeholder="U Medvídků / doma…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="f-date">Datum</label>
+        <input type="text" id="f-date" placeholder="RRRR-MM-DD" autocomplete="off">
+      </div>
+      <div class="field rating-field">
+        <label>Hodnocení</label>
+        <div class="glass-rate" id="glass-rate">
+          <span class="rate-num" id="rate-num">0<span class="of">/10</span></span>
+        </div>
+      </div>
+      <div class="field wide">
+        <label for="f-note">Poznámka / chuť</label>
+        <textarea id="f-note" placeholder="Nahořklá, plná chuť, jemná pěna…"></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="save-btn">Uložit pivo</button>
+      <button class="btn btn-ghost" id="cancel-btn" style="display:none">Zrušit úpravu</button>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Hledat…" autocomplete="off">
+    <div class="toolbar-sort">
+      <select id="sort">
+        <option value="date-desc">Nejnovější</option>
+        <option value="date-asc">Nejstarší</option>
+        <option value="rating-desc">Nejlépe hodnocené</option>
+        <option value="rating-asc">Nejhůře hodnocené</option>
+        <option value="name-asc">Podle názvu A–Z</option>
+      </select>
+      <div class="export-group">
+        <button class="btn btn-ghost" id="export-btn">Export TSV</button>
+        <button class="btn btn-ghost" id="export-json">JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="beer-list" id="list"></div>
+  <div class="count-line" id="count-line"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+  const KEY = 'pivni-denik-v1';
+  let beers = [];
+  let editId = null;
+  let currentRating = 0;
+
+  const $ = s => document.querySelector(s);
+  const el = {
+    name: $('#f-name'), brewery: $('#f-brewery'), style: $('#f-style'),
+    abv: $('#f-abv'), where: $('#f-where'), date: $('#f-date'), note: $('#f-note'),
+    save: $('#save-btn'), cancel: $('#cancel-btn'), list: $('#list'),
+    search: $('#search'), sort: $('#sort'), toast: $('#toast'),
+    rateNum: $('#rate-num'), glassRate: $('#glass-rate'), formTitle: $('#form-title'),
+    countLine: $('#count-line'), styleList: $('#style-list'),
+    statCount: $('#stat-count'), statAvg: $('#stat-avg'), statTop: $('#stat-top')
+  };
+
+  const glassSVG = '<svg width="26" height="30" viewBox="0 0 26 30"><path class="glass-fill" d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z"/><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="none" stroke="#3a2c17" stroke-width="1.5"/></svg>';
+
+  function load() {
+    try { beers = JSON.parse(localStorage.getItem(KEY)) || []; }
+    catch(e) { beers = []; }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(beers)); }
+    catch(e) { toast('Nepodařilo se uložit'); }
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add('show');
+    clearTimeout(el.toast._t);
+    el.toast._t = setTimeout(() => el.toast.classList.remove('show'), 2200);
+  }
+
+  // build rating glasses (1-10)
+  function buildGlasses() {
+    for (let i = 1; i <= 10; i++) {
+      const b = document.createElement('button');
+      b.className = 'glass-btn';
+      b.type = 'button';
+      b.dataset.v = i;
+      b.setAttribute('aria-label', 'Hodnocení ' + i);
+      b.innerHTML = glassSVG;
+      b.addEventListener('click', () => setRating(i));
+      el.glassRate.insertBefore(b, el.rateNum);
+    }
+  }
+  function setRating(v) {
+    currentRating = (currentRating === v) ? 0 : v; // click same = clear last
+    paintRating();
+  }
+  function paintRating() {
+    el.glassRate.querySelectorAll('.glass-btn').forEach(b => {
+      b.classList.toggle('on', +b.dataset.v <= currentRating);
+    });
+    el.rateNum.innerHTML = currentRating + '<span class="of">/10</span>';
+  }
+
+  function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function resetForm() {
+    editId = null; currentRating = 0;
+    ['name','brewery','style','abv','where','note'].forEach(k => el[k].value = '');
+    el.date.value = todayISO();
+    paintRating();
+    el.formTitle.textContent = 'Nový záznam';
+    el.save.textContent = 'Uložit pivo';
+    el.cancel.style.display = 'none';
+  }
+
+  function saveBeer() {
+    const name = el.name.value.trim();
+    if (!name) { toast('Zadej název piva'); el.name.focus(); return; }
+    const rec = {
+      id: editId || uid(),
+      name,
+      brewery: el.brewery.value.trim(),
+      style: el.style.value.trim(),
+      abv: el.abv.value.trim(),
+      where: el.where.value.trim(),
+      date: el.date.value.trim() || todayISO(),
+      note: el.note.value.trim(),
+      rating: currentRating
+    };
+    if (editId) {
+      const i = beers.findIndex(b => b.id === editId);
+      if (i >= 0) beers[i] = rec;
+      toast('Záznam upraven');
+    } else {
+      beers.unshift(rec);
+      toast('Pivo uloženo · na zdraví!');
+    }
+    save(); resetForm(); render();
+  }
+
+  function editBeer(id) {
+    const b = beers.find(x => x.id === id);
+    if (!b) return;
+    editId = id;
+    el.name.value = b.name; el.brewery.value = b.brewery; el.style.value = b.style;
+    el.abv.value = b.abv; el.where.value = b.where; el.date.value = b.date; el.note.value = b.note;
+    currentRating = b.rating || 0; paintRating();
+    el.formTitle.textContent = 'Úprava záznamu';
+    el.save.textContent = 'Uložit změny';
+    el.cancel.style.display = 'inline-block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function delBeer(id) {
+    const b = beers.find(x => x.id === id);
+    if (!b) return;
+    if (!confirm('Smazat „' + b.name + '"?')) return;
+    beers = beers.filter(x => x.id !== id);
+    if (editId === id) resetForm();
+    save(); render(); toast('Smazáno');
+  }
+
+  function miniGlasses(r) {
+    let html = '<div class="mini-glasses" aria-label="'+r+' z 10">';
+    for (let i = 1; i <= 10; i++) {
+      const on = i <= r ? 'var(--amber-bright)' : 'var(--border)';
+      html += '<svg width="9" height="11" viewBox="0 0 26 30"><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="'+on+'"/></svg>';
+    }
+    return html + '</div>';
+  }
+
+  function updateStats() {
+    el.statCount.textContent = beers.length;
+    const rated = beers.filter(b => b.rating > 0);
+    if (rated.length) {
+      const avg = rated.reduce((s,b)=>s+b.rating,0)/rated.length;
+      el.statAvg.textContent = avg.toFixed(1);
+      const top = rated.reduce((a,b)=> b.rating > a.rating ? b : a);
+      el.statTop.textContent = top.rating;
+    } else {
+      el.statAvg.textContent = '–';
+      el.statTop.textContent = '–';
+    }
+    // datalist of styles
+    const styles = [...new Set(beers.map(b=>b.style).filter(Boolean))];
+    el.styleList.innerHTML = styles.map(s=>'<option value="'+esc(s)+'">').join('');
+  }
+
+  function getFiltered() {
+    const q = el.search.value.trim().toLowerCase();
+    let arr = beers.filter(b => {
+      if (!q) return true;
+      return [b.name,b.brewery,b.style,b.where,b.note].some(f => (f||'').toLowerCase().includes(q));
+    });
+    const s = el.sort.value;
+    arr.sort((a,b) => {
+      switch(s) {
+        case 'date-asc': return (a.date||'').localeCompare(b.date||'');
+        case 'date-desc': return (b.date||'').localeCompare(a.date||'');
+        case 'rating-desc': return (b.rating||0)-(a.rating||0);
+        case 'rating-asc': return (a.rating||0)-(b.rating||0);
+        case 'name-asc': return (a.name||'').localeCompare(b.name||'','cs');
+        default: return 0;
+      }
+    });
+    return arr;
+  }
+
+  function render() {
+    updateStats();
+    const arr = getFiltered();
+    if (!arr.length) {
+      const msg = beers.length ? 'Nic neodpovídá hledání.' : 'Zatím žádná piva. Přidej první ochutnávku výše.';
+      el.list.innerHTML = '<div class="empty"><svg width="60" height="60" viewBox="0 0 26 30"><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="none" stroke="#3a2c17" stroke-width="1.5"/></svg><p>'+msg+'</p></div>';
+      el.countLine.textContent = '';
+      return;
+    }
+    el.list.innerHTML = arr.map(b => {
+      const meta = [];
+      if (b.style) meta.push('<span class="tag">'+esc(b.style)+'</span>');
+      if (b.abv) meta.push('<span class="tag">'+esc(b.abv)+' %</span>');
+      if (b.where) meta.push('📍 '+esc(b.where));
+      if (b.date) meta.push('🗓 '+esc(b.date));
+      return '<div class="beer-card">'
+        + '<div><div class="beer-head"><span class="beer-name">'+esc(b.name)+'</span>'
+        + (b.brewery ? '<span class="beer-brewery">'+esc(b.brewery)+'</span>' : '')
+        + '</div>'
+        + (meta.length ? '<div class="beer-meta">'+meta.join('')+'</div>' : '')
+        + '</div>'
+        + '<div class="beer-right">'
+        + '<div class="beer-score">'+(b.rating||'–')+'<span class="of">/10</span></div>'
+        + (b.rating ? miniGlasses(b.rating) : '')
+        + '<div class="card-actions"><button class="icon-btn" data-edit="'+b.id+'">upravit</button>'
+        + '<button class="icon-btn del" data-del="'+b.id+'">smazat</button></div>'
+        + '</div>'
+        + (b.note ? '<div class="beer-note">'+esc(b.note)+'</div>' : '')
+        + '</div>';
+    }).join('');
+    el.countLine.textContent = arr.length + ' z ' + beers.length + ' záznamů';
+  }
+
+  function exportTSV() {
+    if (!beers.length) { toast('Není co exportovat'); return; }
+    const cols = ['name','brewery','style','abv','where','date','rating','note'];
+    const head = ['Nazev','Pivovar','Styl','ABV','Kde','Datum','Hodnoceni','Poznamka'];
+    const rows = [head.join('\t')];
+    beers.forEach(b => rows.push(cols.map(c => String(b[c]||'').replace(/[\t\n\r]/g,' ')).join('\t')));
+    download(rows.join('\n'), 'pivni-denik.tsv', 'text/tab-separated-values');
+    toast('TSV exportováno');
+  }
+  function exportJSON() {
+    if (!beers.length) { toast('Není co exportovat'); return; }
+    download(JSON.stringify(beers,null,2), 'pivni-denik.json', 'application/json');
+    toast('JSON exportováno');
+  }
+  function download(content, fname, type) {
+    const blob = new Blob([content], {type: type+';charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = fname;
+    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // events
+  el.save.addEventListener('click', saveBeer);
+  el.cancel.addEventListener('click', resetForm);
+  el.search.addEventListener('input', render);
+  el.sort.addEventListener('change', render);
+  $('#export-btn').addEventListener('click', exportTSV);
+  $('#export-json').addEventListener('click', exportJSON);
+  el.list.addEventListener('click', e => {
+    const ed = e.target.closest('[data-edit]');
+    const dl = e.target.closest('[data-del]');
+    if (ed) editBeer(ed.dataset.edit);
+    if (dl) delBeer(dl.dataset.del);
+  });
+  // Ctrl+Enter to save
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey||e.metaKey) && e.key === 'Enter') { e.preventDefault(); saveBeer(); }
+  });
+
+  // init
+  buildGlasses();
+  load();
+  resetForm();
+  render();
+})();
+</script>
+</body>
+</html>
