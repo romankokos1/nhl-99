@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pivní deník</title>
+<title>Pivní deník — sdílený</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #16110a;
@@ -23,6 +23,7 @@
     --deep: #8a4b16;
     --red: #d16a4a;
     --green: #8bb04f;
+    --blue: #6fa8c7;
     --shadow: rgba(0,0,0,0.5);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,294 +39,230 @@
   }
   ::selection { background: var(--amber); color: #16110a; }
 
-  /* ---- header / glass mascot ---- */
   header {
     border-bottom: 1px solid var(--border);
-    padding: 28px 20px 22px;
+    padding: 24px 20px 20px;
     display: flex;
     align-items: center;
-    gap: 18px;
-    max-width: 1000px;
+    gap: 16px;
+    max-width: 1040px;
     margin: 0 auto;
     flex-wrap: wrap;
   }
   .mug { flex-shrink: 0; }
-  .brand h1 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 700;
-    font-size: 1.5rem;
-    letter-spacing: 0.02em;
-    color: var(--foam);
-  }
-  .brand .sub {
-    font-size: 0.72rem;
-    color: var(--text-faint);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    margin-top: 3px;
-  }
-  .stats-strip {
+  .brand h1 { font-weight: 700; font-size: 1.45rem; letter-spacing: 0.02em; color: var(--foam); }
+  .brand .sub { font-size: 0.7rem; color: var(--text-faint); letter-spacing: 0.16em; text-transform: uppercase; margin-top: 3px; }
+
+  .whoami {
     margin-left: auto;
-    display: flex;
-    gap: 26px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
   }
-  .stat { text-align: right; }
-  .stat .num {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--amber-bright);
-    line-height: 1;
-  }
-  .stat .lbl {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--text-faint);
-    margin-top: 4px;
-  }
+  .whoami .lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
+  .whoami .name { color: var(--amber-bright); font-weight: 700; }
+  .whoami button { background:none; border:none; color:var(--text-faint); cursor:pointer; font-family:inherit; font-size:0.7rem; text-decoration:underline; }
+  .whoami button:hover { color: var(--text-dim); }
 
-  main { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+  .sync-bar {
+    max-width: 1040px; margin: 0 auto; padding: 8px 20px 0;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.7rem; color: var(--text-faint);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); flex-shrink:0; }
+  .dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.offline { background: var(--red); }
+  .dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+  .sync-bar a { color: var(--blue); cursor: pointer; text-decoration: underline; }
 
-  /* ---- form ---- */
+  main { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+  .tabs { display: flex; gap: 4px; margin-top: 22px; border-bottom: 1px solid var(--border); }
+  .tab {
+    background: none; border: none; cursor: pointer;
+    font-family: inherit; font-size: 0.8rem; font-weight: 600;
+    color: var(--text-faint); padding: 10px 16px;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    letter-spacing: 0.04em; transition: color .15s, border-color .15s;
+  }
+  .tab:hover { color: var(--text-dim); }
+  .tab.active { color: var(--amber-bright); border-bottom-color: var(--amber); }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
   .panel {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 22px;
-    margin-top: 24px;
+    margin-top: 22px;
     box-shadow: 0 8px 24px -12px var(--shadow);
   }
   .panel-title {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--amber);
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--amber); margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
   }
-  .panel-title::before {
-    content: '';
-    width: 20px; height: 2px;
-    background: var(--amber);
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-  }
+  .panel-title::before { content:''; width:20px; height:2px; background:var(--amber); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
   .field { display: flex; flex-direction: column; gap: 6px; }
   .field.wide { grid-column: 1 / -1; }
-  label {
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-  }
-  input[type=text], input[type=number], select, textarea {
+  label { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); }
+  input[type=text], input[type=number], input[type=password], select, textarea {
     font-family: 'IBM Plex Mono', monospace;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    padding: 10px 12px;
-    font-size: 0.9rem;
-    transition: border-color .15s, box-shadow .15s;
-    width: 100%;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 10px 12px; font-size: 0.9rem;
+    transition: border-color .15s, box-shadow .15s; width: 100%;
   }
   input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--amber);
-    box-shadow: 0 0 0 3px rgba(232,163,61,0.15);
+    outline: none; border-color: var(--amber); box-shadow: 0 0 0 3px rgba(232,163,61,0.15);
   }
   textarea { resize: vertical; min-height: 62px; }
   select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23b09a72' stroke-width='1.4' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 30px;
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px;
   }
 
-  /* ---- glass rating control ---- */
   .rating-field { grid-column: 1 / -1; }
-  .glass-rate {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .glass-btn {
-    background: none; border: none; cursor: pointer;
-    padding: 2px; line-height: 0;
-    transition: transform .12s;
-  }
+  .glass-rate { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .glass-btn { background:none; border:none; cursor:pointer; padding:2px; line-height:0; transition: transform .12s; }
   .glass-btn:hover { transform: translateY(-3px) scale(1.08); }
   .glass-btn:active { transform: scale(0.95); }
-  .glass-btn svg { display: block; }
+  .glass-btn svg { display:block; }
   .glass-fill { fill: var(--border); transition: fill .12s; }
   .glass-btn.on .glass-fill { fill: var(--amber-bright); }
-  .rate-num {
-    margin-left: 8px;
-    font-weight: 700;
-    color: var(--amber-bright);
-    font-size: 1.1rem;
-    min-width: 42px;
-  }
-  .rate-num .of { color: var(--text-faint); font-weight: 400; font-size: 0.8rem; }
+  .rate-num { margin-left:8px; font-weight:700; color:var(--amber-bright); font-size:1.1rem; min-width:42px; }
+  .rate-num .of { color: var(--text-faint); font-weight:400; font-size:0.8rem; }
 
-  .form-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
+  .form-actions { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
   button.btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 600;
-    font-size: 0.82rem;
-    letter-spacing: 0.05em;
-    padding: 11px 20px;
-    border-radius: 7px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all .15s;
+    font-family: 'IBM Plex Mono', monospace; font-weight:600; font-size:0.82rem;
+    letter-spacing:0.05em; padding:11px 20px; border-radius:7px;
+    border:1px solid transparent; cursor:pointer; transition: all .15s;
   }
-  .btn-primary { background: var(--amber); color: #16110a; }
+  .btn-primary { background: var(--amber); color:#16110a; }
   .btn-primary:hover { background: var(--amber-bright); }
-  .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-dim); }
-  .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+  .btn-ghost { background:transparent; border-color:var(--border); color:var(--text-dim); }
+  .btn-ghost:hover { border-color:var(--text-dim); color:var(--text); }
 
-  /* ---- toolbar ---- */
-  .toolbar {
-    display: flex;
-    gap: 12px;
-    margin-top: 28px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .toolbar input[type=text] { max-width: 300px; }
-  .toolbar-sort { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }
-  .toolbar-sort select { min-width: 150px; }
-  .export-group { display: flex; gap: 8px; }
+  .toolbar { display:flex; gap:12px; margin-top:24px; align-items:center; flex-wrap:wrap; }
+  .toolbar input[type=text] { max-width:280px; }
+  .toolbar select { min-width:150px; }
+  .toolbar-right { margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; }
 
-  /* ---- list ---- */
-  .beer-list { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .beer-list { margin-top:20px; display:flex; flex-direction:column; gap:12px; }
   .beer-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-soft);
-    border-left: 3px solid var(--amber);
-    border-radius: 8px;
-    padding: 16px 18px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 6px 16px;
-    transition: border-color .15s, transform .1s;
+    background: var(--bg-card); border:1px solid var(--border-soft);
+    border-left:3px solid var(--amber); border-radius:8px; padding:16px 18px;
+    display:grid; grid-template-columns:1fr auto; gap:6px 16px; transition: border-color .15s;
   }
+  .beer-card.mine { border-left-color: var(--amber-bright); }
   .beer-card:hover { border-left-color: var(--amber-bright); }
-  .beer-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .beer-name { font-weight: 700; font-size: 1.05rem; color: var(--foam); }
-  .beer-brewery { color: var(--text-dim); font-size: 0.85rem; }
-  .beer-meta {
-    display: flex; gap: 14px; flex-wrap: wrap;
-    font-size: 0.72rem; color: var(--text-faint);
-    margin-top: 4px;
+  .beer-head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .beer-name { font-weight:700; font-size:1.05rem; color:var(--foam); }
+  .beer-brewery { color:var(--text-dim); font-size:0.85rem; }
+  .beer-who {
+    font-size:0.62rem; text-transform:uppercase; letter-spacing:0.1em;
+    background: var(--bg-raised); border:1px solid var(--border-soft);
+    border-radius:4px; padding:2px 7px; color: var(--blue);
   }
-  .beer-meta .tag {
-    background: var(--bg-raised);
-    border: 1px solid var(--border-soft);
-    border-radius: 4px;
-    padding: 2px 8px;
-    color: var(--text-dim);
-  }
+  .beer-meta { display:flex; gap:14px; flex-wrap:wrap; font-size:0.72rem; color:var(--text-faint); margin-top:4px; }
+  .beer-meta .tag { background:var(--bg-raised); border:1px solid var(--border-soft); border-radius:4px; padding:2px 8px; color:var(--text-dim); }
   .beer-note {
-    grid-column: 1 / -1;
-    font-size: 0.85rem;
-    color: var(--text-dim);
-    font-style: italic;
-    border-top: 1px dashed var(--border-soft);
-    padding-top: 8px;
-    margin-top: 4px;
+    grid-column:1 / -1; font-size:0.85rem; color:var(--text-dim); font-style:italic;
+    border-top:1px dashed var(--border-soft); padding-top:8px; margin-top:4px;
   }
-  .beer-right {
-    grid-row: 1 / 3;
-    grid-column: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-  }
-  .beer-score {
-    font-size: 1.9rem;
-    font-weight: 700;
-    color: var(--amber-bright);
-    line-height: 1;
-  }
-  .beer-score .of { font-size: 0.8rem; color: var(--text-faint); font-weight: 400; }
-  .mini-glasses { display: flex; gap: 2px; }
-  .card-actions { display: flex; gap: 6px; }
+  .beer-right { grid-row:1 / 3; grid-column:2; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+  .beer-score { font-size:1.9rem; font-weight:700; color:var(--amber-bright); line-height:1; }
+  .beer-score .of { font-size:0.8rem; color:var(--text-faint); font-weight:400; }
+  .mini-glasses { display:flex; gap:2px; }
+  .card-actions { display:flex; gap:6px; }
   .icon-btn {
-    background: none; border: 1px solid var(--border-soft);
-    border-radius: 5px; cursor: pointer;
-    color: var(--text-faint); padding: 4px 7px;
-    font-size: 0.7rem; font-family: inherit;
-    transition: all .15s;
+    background:none; border:1px solid var(--border-soft); border-radius:5px;
+    cursor:pointer; color:var(--text-faint); padding:4px 7px; font-size:0.7rem; font-family:inherit; transition: all .15s;
   }
-  .icon-btn:hover { color: var(--text); border-color: var(--text-dim); }
-  .icon-btn.del:hover { color: var(--red); border-color: var(--red); }
+  .icon-btn:hover { color:var(--text); border-color:var(--text-dim); }
+  .icon-btn.del:hover { color:var(--red); border-color:var(--red); }
+  .card-actions.locked { opacity:0.35; pointer-events:none; }
 
-  .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-faint);
+  .empty { text-align:center; padding:56px 20px; color:var(--text-faint); }
+  .empty svg { opacity:0.4; margin-bottom:16px; }
+  .count-line { font-size:0.7rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.12em; margin-top:22px; }
+
+  /* leaderboard */
+  .lb-podium { display:flex; gap:12px; margin-top:22px; flex-wrap:wrap; }
+  .lb-card {
+    flex:1; min-width:180px; background:var(--bg-card); border:1px solid var(--border);
+    border-radius:10px; padding:18px; text-align:center;
   }
-  .empty svg { opacity: 0.4; margin-bottom: 16px; }
-  .empty p { font-size: 0.9rem; }
+  .lb-card.gold { border-color: var(--amber); box-shadow: 0 0 24px -10px var(--amber); }
+  .lb-rank { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--text-faint); }
+  .lb-name { font-size:1.15rem; font-weight:700; color:var(--foam); margin:6px 0; }
+  .lb-stat { font-size:2rem; font-weight:700; color:var(--amber-bright); line-height:1; }
+  .lb-sub { font-size:0.68rem; color:var(--text-faint); margin-top:6px; }
 
-  .count-line {
-    font-size: 0.7rem;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-top: 24px;
+  .lb-section-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.18em; color:var(--amber); margin:30px 0 14px; }
+  table.lb { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  table.lb th { text-align:left; color:var(--text-faint); font-weight:500; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.1em; padding:8px 10px; border-bottom:1px solid var(--border); }
+  table.lb td { padding:10px; border-bottom:1px solid var(--border-soft); }
+  table.lb tr:hover td { background: var(--bg-card); }
+  .lb-medal { color: var(--amber-bright); font-weight:700; }
+  .lb-beer-score { color: var(--amber-bright); font-weight:700; }
+
+  /* modal */
+  .overlay {
+    position:fixed; inset:0; background:rgba(10,7,3,0.8); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:100; padding:20px;
   }
+  .overlay.show { display:flex; }
+  .modal {
+    background:var(--bg-raised); border:1px solid var(--border); border-radius:12px;
+    padding:26px; max-width:520px; width:100%; box-shadow:0 20px 60px -20px #000;
+    max-height:90vh; overflow-y:auto;
+  }
+  .modal h2 { font-size:1.1rem; color:var(--foam); margin-bottom:6px; }
+  .modal p { font-size:0.82rem; color:var(--text-dim); margin-bottom:16px; }
+  .modal .field { margin-bottom:14px; }
+  .modal ol { margin:0 0 16px 18px; font-size:0.8rem; color:var(--text-dim); }
+  .modal ol li { margin-bottom:8px; }
+  .modal code {
+    background: var(--bg); border:1px solid var(--border); border-radius:4px;
+    padding:1px 5px; color:var(--amber-bright); font-size:0.78rem;
+  }
+  .modal .sql {
+    background: var(--bg); border:1px solid var(--border); border-radius:6px;
+    padding:12px; font-size:0.72rem; color:var(--text-dim); white-space:pre-wrap;
+    max-height:180px; overflow-y:auto; margin-bottom:14px;
+  }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:8px; flex-wrap:wrap; }
 
-  /* toast */
   .toast {
-    position: fixed;
-    bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--bg-raised);
-    border: 1px solid var(--amber);
-    color: var(--text);
-    padding: 12px 22px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .25s, transform .25s;
-    z-index: 50;
-    box-shadow: 0 8px 30px -8px var(--shadow);
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--bg-raised); border:1px solid var(--amber); color:var(--text);
+    padding:12px 22px; border-radius:8px; font-size:0.85rem; opacity:0; pointer-events:none;
+    transition: opacity .25s, transform .25s; z-index:200; box-shadow:0 8px 30px -8px var(--shadow); max-width:90vw;
   }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.err { border-color: var(--red); }
 
-  @media (prefers-reduced-motion: reduce) {
-    *, ::before, ::after { transition: none !important; animation: none !important; }
-  }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { transition:none !important; animation:none !important; } }
   @media (max-width: 560px) {
-    .stats-strip { margin-left: 0; width: 100%; justify-content: space-between; gap: 14px; }
-    .stat { text-align: left; }
-    .beer-card { grid-template-columns: 1fr; }
-    .beer-right { grid-row: auto; grid-column: 1; align-items: flex-start; flex-direction: row; justify-content: space-between; width: 100%; }
+    .whoami { margin-left:0; width:100%; }
+    .beer-card { grid-template-columns:1fr; }
+    .beer-right { grid-row:auto; grid-column:1; flex-direction:row; align-items:flex-start; justify-content:space-between; width:100%; }
   }
 </style>
 </head>
 <body>
 <header>
   <div class="mug">
-    <svg width="46" height="52" viewBox="0 0 46 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="42" height="48" viewBox="0 0 46 52" fill="none">
       <rect x="6" y="14" width="26" height="34" rx="4" fill="#221a10" stroke="#3a2c17" stroke-width="2"/>
       <rect x="8" y="24" width="22" height="22" rx="2" fill="#e8a33d"/>
       <path d="M8 24h22v6H8z" fill="#ffc35a"/>
@@ -337,244 +274,349 @@
   </div>
   <div class="brand">
     <h1>Pivní deník</h1>
-    <div class="sub">osobní katalog ochutnávek</div>
+    <div class="sub">sdílený žebříček party</div>
   </div>
-  <div class="stats-strip">
-    <div class="stat"><div class="num" id="stat-count">0</div><div class="lbl">piv</div></div>
-    <div class="stat"><div class="num" id="stat-avg">–</div><div class="lbl">průměr</div></div>
-    <div class="stat"><div class="num" id="stat-top">–</div><div class="lbl">nejlepší</div></div>
+  <div class="whoami" id="whoami">
+    <div>
+      <div class="lbl">přihlášen jako</div>
+      <div class="name" id="me-name">–</div>
+    </div>
+    <button id="change-name">změnit</button>
   </div>
 </header>
 
-<main>
-  <section class="panel">
-    <div class="panel-title" id="form-title">Nový záznam</div>
-    <div class="grid">
-      <div class="field">
-        <label for="f-name">Název piva *</label>
-        <input type="text" id="f-name" placeholder="Světlý ležák" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="f-brewery">Pivovar</label>
-        <input type="text" id="f-brewery" placeholder="Budějovický Budvar" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="f-style">Styl</label>
-        <input type="text" id="f-style" placeholder="Ležák / IPA / Stout…" autocomplete="off" list="style-list">
-        <datalist id="style-list"></datalist>
-      </div>
-      <div class="field">
-        <label for="f-abv">Obsah alkoholu (%)</label>
-        <input type="number" id="f-abv" placeholder="4.8" step="0.1" min="0" max="70">
-      </div>
-      <div class="field">
-        <label for="f-where">Kde jsem ochutnal</label>
-        <input type="text" id="f-where" placeholder="U Medvídků / doma…" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="f-date">Datum</label>
-        <input type="text" id="f-date" placeholder="RRRR-MM-DD" autocomplete="off">
-      </div>
-      <div class="field rating-field">
-        <label>Hodnocení</label>
-        <div class="glass-rate" id="glass-rate">
-          <span class="rate-num" id="rate-num">0<span class="of">/10</span></span>
-        </div>
-      </div>
-      <div class="field wide">
-        <label for="f-note">Poznámka / chuť</label>
-        <textarea id="f-note" placeholder="Nahořklá, plná chuť, jemná pěna…"></textarea>
-      </div>
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-primary" id="save-btn">Uložit pivo</button>
-      <button class="btn btn-ghost" id="cancel-btn" style="display:none">Zrušit úpravu</button>
-    </div>
-  </section>
+<div class="sync-bar">
+  <span class="dot" id="sync-dot"></span>
+  <span id="sync-text">Nepřipojeno k databázi</span>
+  <a id="setup-link">nastavit sdílení</a>
+</div>
 
-  <div class="toolbar">
-    <input type="text" id="search" placeholder="Hledat…" autocomplete="off">
-    <div class="toolbar-sort">
-      <select id="sort">
+<main>
+  <div class="tabs">
+    <button class="tab active" data-view="mine">Moje piva</button>
+    <button class="tab" data-view="all">Všechna piva</button>
+    <button class="tab" data-view="board">Žebříček</button>
+  </div>
+
+  <!-- MOJE PIVA -->
+  <section class="view active" id="view-mine">
+    <div class="panel">
+      <div class="panel-title" id="form-title">Nový záznam</div>
+      <div class="grid">
+        <div class="field"><label for="f-name">Název piva *</label><input type="text" id="f-name" placeholder="Světlý ležák" autocomplete="off"></div>
+        <div class="field"><label for="f-brewery">Pivovar</label><input type="text" id="f-brewery" placeholder="Budějovický Budvar" autocomplete="off"></div>
+        <div class="field"><label for="f-style">Styl</label><input type="text" id="f-style" placeholder="Ležák / IPA / Stout…" autocomplete="off" list="style-list"><datalist id="style-list"></datalist></div>
+        <div class="field"><label for="f-abv">Alkohol (%)</label><input type="number" id="f-abv" placeholder="4.8" step="0.1" min="0" max="70"></div>
+        <div class="field"><label for="f-where">Kde jsem ochutnal</label><input type="text" id="f-where" placeholder="U Medvídků / doma…" autocomplete="off"></div>
+        <div class="field"><label for="f-date">Datum</label><input type="text" id="f-date" placeholder="RRRR-MM-DD" autocomplete="off"></div>
+        <div class="field rating-field"><label>Hodnocení</label><div class="glass-rate" id="glass-rate"><span class="rate-num" id="rate-num">0<span class="of">/10</span></span></div></div>
+        <div class="field wide"><label for="f-note">Poznámka / chuť</label><textarea id="f-note" placeholder="Nahořklá, plná chuť, jemná pěna…"></textarea></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="save-btn">Uložit pivo</button>
+        <button class="btn btn-ghost" id="cancel-btn" style="display:none">Zrušit úpravu</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input type="text" id="search-mine" placeholder="Hledat v mých…" autocomplete="off">
+      <select id="sort-mine">
         <option value="date-desc">Nejnovější</option>
         <option value="date-asc">Nejstarší</option>
         <option value="rating-desc">Nejlépe hodnocené</option>
         <option value="rating-asc">Nejhůře hodnocené</option>
         <option value="name-asc">Podle názvu A–Z</option>
       </select>
-      <div class="export-group">
+      <div class="toolbar-right">
         <button class="btn btn-ghost" id="export-btn">Export TSV</button>
-        <button class="btn btn-ghost" id="export-json">JSON</button>
       </div>
     </div>
-  </div>
+    <div class="beer-list" id="list-mine"></div>
+    <div class="count-line" id="count-mine"></div>
+  </section>
 
-  <div class="beer-list" id="list"></div>
-  <div class="count-line" id="count-line"></div>
+  <!-- VSECHNA PIVA -->
+  <section class="view" id="view-all">
+    <div class="toolbar" style="margin-top:22px">
+      <input type="text" id="search-all" placeholder="Hledat ve všech…" autocomplete="off">
+      <select id="filter-person"><option value="">Všichni lidé</option></select>
+      <select id="sort-all">
+        <option value="date-desc">Nejnovější</option>
+        <option value="rating-desc">Nejlépe hodnocené</option>
+        <option value="rating-asc">Nejhůře hodnocené</option>
+        <option value="name-asc">Podle názvu A–Z</option>
+      </select>
+    </div>
+    <div class="beer-list" id="list-all"></div>
+    <div class="count-line" id="count-all"></div>
+  </section>
+
+  <!-- ZEBRICEK -->
+  <section class="view" id="view-board">
+    <div class="lb-section-title">Top hodnotitelé</div>
+    <div class="lb-podium" id="podium"></div>
+    <div class="lb-section-title">Kdo kolik vypil a jak přísně hodnotí</div>
+    <table class="lb"><thead><tr><th>#</th><th>Jméno</th><th>Piv</th><th>Ø hodnocení</th><th>Nejlepší</th></tr></thead><tbody id="lb-people"></tbody></table>
+    <div class="lb-section-title">Nejlépe hodnocená piva (napříč partou)</div>
+    <table class="lb"><thead><tr><th>#</th><th>Pivo</th><th>Pivovar</th><th>Ø</th><th>Hodnotilo</th></tr></thead><tbody id="lb-beers"></tbody></table>
+  </section>
 </main>
+
+<!-- name modal -->
+<div class="overlay" id="name-overlay">
+  <div class="modal">
+    <h2>Jak ti mám říkat?</h2>
+    <p>Toto jméno se objeví u tvých piv v žebříčku party. Ulož si ho — zůstane v tomhle prohlížeči.</p>
+    <div class="field"><label for="name-input">Tvoje jméno / přezdívka</label><input type="text" id="name-input" placeholder="např. Honza" autocomplete="off" maxlength="30"></div>
+    <div class="modal-actions"><button class="btn btn-primary" id="name-save">Uložit</button></div>
+  </div>
+</div>
+
+<!-- setup modal -->
+<div class="overlay" id="setup-overlay">
+  <div class="modal">
+    <h2>Nastavení sdílení (Supabase)</h2>
+    <p>Aby vám žebříček fungoval společně, potřebujete jednu databázi zdarma. Založí ji jeden z vás a ostatním pošle stejnou appku i klíče.</p>
+    <ol>
+      <li>Založ si účet na <code>supabase.com</code> → New project (zdarma).</li>
+      <li>V projektu otevři <code>SQL Editor</code> a spusť tento skript (vytvoří tabulku a povolí zápis):</li>
+    </ol>
+    <div class="sql">create table piva (
+  id text primary key,
+  osoba text not null,
+  nazev text not null,
+  pivovar text, styl text, abv text,
+  kde text, datum text, poznamka text,
+  hodnoceni int,
+  vytvoreno timestamptz default now()
+);
+alter table piva enable row level security;
+create policy "vsichni cist" on piva for select using (true);
+create policy "vsichni pridat" on piva for insert with check (true);
+create policy "vsichni upravit" on piva for update using (true);
+create policy "vsichni mazat" on piva for delete using (true);</div>
+    <ol start="3">
+      <li>V <code>Settings → API</code> (nebo Connect) zkopíruj <code>Project URL</code> a <code>publishable</code> (nebo <code>anon</code>) klíč.</li>
+      <li>Vlož je sem:</li>
+    </ol>
+    <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
+    <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
+    <p style="font-size:0.72rem; color:var(--text-faint)">Tento klíč je určený do prohlížeče — je bezpečné ho sdílet s kamarády. Nikdy sem nedávej <code>service_role</code> / secret klíč.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="setup-close">Zavřít</button>
+      <button class="btn btn-ghost" id="setup-clear" style="display:none">Odpojit</button>
+      <button class="btn btn-primary" id="setup-save">Připojit a synchronizovat</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 (function(){
   'use strict';
-  const KEY = 'pivni-denik-v1';
-  let beers = [];
+  const LKEY = 'pivni-denik-shared-v1';   // local beer cache
+  const CFG  = 'pivni-denik-cfg-v1';       // { name, url, key }
+  let beers = [];      // all known beers (mine + synced others)
+  let cfg = { name:'', url:'', key:'' };
   let editId = null;
   let currentRating = 0;
+  let online = false;
 
   const $ = s => document.querySelector(s);
-  const el = {
-    name: $('#f-name'), brewery: $('#f-brewery'), style: $('#f-style'),
-    abv: $('#f-abv'), where: $('#f-where'), date: $('#f-date'), note: $('#f-note'),
-    save: $('#save-btn'), cancel: $('#cancel-btn'), list: $('#list'),
-    search: $('#search'), sort: $('#sort'), toast: $('#toast'),
-    rateNum: $('#rate-num'), glassRate: $('#glass-rate'), formTitle: $('#form-title'),
-    countLine: $('#count-line'), styleList: $('#style-list'),
-    statCount: $('#stat-count'), statAvg: $('#stat-avg'), statTop: $('#stat-top')
-  };
-
   const glassSVG = '<svg width="26" height="30" viewBox="0 0 26 30"><path class="glass-fill" d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z"/><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="none" stroke="#3a2c17" stroke-width="1.5"/></svg>';
 
-  function load() {
-    try { beers = JSON.parse(localStorage.getItem(KEY)) || []; }
-    catch(e) { beers = []; }
-  }
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(beers)); }
-    catch(e) { toast('Nepodařilo se uložit'); }
-  }
-  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-  function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+  function esc(s){ const d=document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML; }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
-  function toast(msg) {
-    el.toast.textContent = msg;
-    el.toast.classList.add('show');
-    clearTimeout(el.toast._t);
-    el.toast._t = setTimeout(() => el.toast.classList.remove('show'), 2200);
+  function toast(msg, err){
+    const t=$('#toast'); t.textContent=msg;
+    t.classList.toggle('err', !!err); t.classList.add('show');
+    clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'), 2600);
   }
 
-  // build rating glasses (1-10)
-  function buildGlasses() {
-    for (let i = 1; i <= 10; i++) {
-      const b = document.createElement('button');
-      b.className = 'glass-btn';
-      b.type = 'button';
-      b.dataset.v = i;
-      b.setAttribute('aria-label', 'Hodnocení ' + i);
-      b.innerHTML = glassSVG;
-      b.addEventListener('click', () => setRating(i));
-      el.glassRate.insertBefore(b, el.rateNum);
+  function loadLocal(){
+    try { beers = JSON.parse(localStorage.getItem(LKEY)) || []; } catch(e){ beers=[]; }
+    try { cfg = Object.assign(cfg, JSON.parse(localStorage.getItem(CFG))||{}); } catch(e){}
+  }
+  function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(beers)); } catch(e){ toast('Nelze uložit lokálně', true); } }
+  function saveCfg(){ try { localStorage.setItem(CFG, JSON.stringify(cfg)); } catch(e){} }
+
+  /* ---------- Supabase REST helpers ---------- */
+  function sbHeaders(){
+    return { 'apikey': cfg.key, 'Authorization': 'Bearer '+cfg.key, 'Content-Type':'application/json' };
+  }
+  function sbConfigured(){ return cfg.url && cfg.key; }
+
+  async function sbPull(){
+    if(!sbConfigured()) return;
+    setSync('syncing','Synchronizuji…');
+    try {
+      const r = await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?select=*&order=vytvoreno.desc', { headers: sbHeaders() });
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const rows = await r.json();
+      // map remote -> local shape
+      const remote = rows.map(x => ({
+        id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, style:x.styl,
+        abv:x.abv, where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
+        synced:true
+      }));
+      // keep any local-only (unsynced) records, replace the rest with remote truth
+      const unsynced = beers.filter(b => !b.synced);
+      const remoteIds = new Set(remote.map(r=>r.id));
+      const stillUnsynced = unsynced.filter(b => !remoteIds.has(b.id));
+      beers = remote.concat(stillUnsynced);
+      saveLocal();
+      online = true; setSync('online','Připojeno · '+remote.length+' piv v databázi');
+      // push any records that never made it up
+      for(const b of stillUnsynced){ await sbPush(b); }
+      renderAll();
+    } catch(e){
+      online=false; setSync('offline','Offline — pracuji lokálně'); 
     }
   }
-  function setRating(v) {
-    currentRating = (currentRating === v) ? 0 : v; // click same = clear last
-    paintRating();
+  async function sbPush(b){
+    if(!sbConfigured()) return false;
+    const body = {
+      id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, styl:b.style,
+      abv:b.abv, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0
+    };
+    try {
+      const r = await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?on_conflict=id', {
+        method:'POST',
+        headers: Object.assign(sbHeaders(), { 'Prefer':'resolution=merge-duplicates' }),
+        body: JSON.stringify(body)
+      });
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      b.synced = true; saveLocal(); return true;
+    } catch(e){ b.synced=false; saveLocal(); return false; }
   }
-  function paintRating() {
-    el.glassRate.querySelectorAll('.glass-btn').forEach(b => {
-      b.classList.toggle('on', +b.dataset.v <= currentRating);
-    });
-    el.rateNum.innerHTML = currentRating + '<span class="of">/10</span>';
+  async function sbDelete(id){
+    if(!sbConfigured()) return;
+    try {
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+    } catch(e){}
+  }
+  function setSync(state, text){
+    const dot=$('#sync-dot'); dot.className='dot '+state;
+    $('#sync-text').textContent=text;
+    $('#setup-link').textContent = sbConfigured() ? 'upravit připojení' : 'nastavit sdílení';
   }
 
-  function todayISO() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  /* ---------- rating control ---------- */
+  function buildGlasses(){
+    const gr=$('#glass-rate');
+    for(let i=1;i<=10;i++){
+      const b=document.createElement('button');
+      b.className='glass-btn'; b.type='button'; b.dataset.v=i;
+      b.setAttribute('aria-label','Hodnocení '+i);
+      b.innerHTML=glassSVG;
+      b.addEventListener('click',()=>setRating(i));
+      gr.insertBefore(b,$('#rate-num'));
+    }
+  }
+  function setRating(v){ currentRating = (currentRating===v)?0:v; paintRating(); }
+  function paintRating(){
+    document.querySelectorAll('#glass-rate .glass-btn').forEach(b=>b.classList.toggle('on', +b.dataset.v<=currentRating));
+    $('#rate-num').innerHTML = currentRating+'<span class="of">/10</span>';
   }
 
-  function resetForm() {
-    editId = null; currentRating = 0;
-    ['name','brewery','style','abv','where','note'].forEach(k => el[k].value = '');
-    el.date.value = todayISO();
-    paintRating();
-    el.formTitle.textContent = 'Nový záznam';
-    el.save.textContent = 'Uložit pivo';
-    el.cancel.style.display = 'none';
+  /* ---------- form ---------- */
+  function resetForm(){
+    editId=null; currentRating=0;
+    ['f-name','f-brewery','f-style','f-abv','f-where','f-note'].forEach(id=>$('#'+id).value='');
+    $('#f-date').value=todayISO(); paintRating();
+    $('#form-title').textContent='Nový záznam';
+    $('#save-btn').textContent='Uložit pivo';
+    $('#cancel-btn').style.display='none';
   }
-
-  function saveBeer() {
-    const name = el.name.value.trim();
-    if (!name) { toast('Zadej název piva'); el.name.focus(); return; }
+  async function saveBeer(){
+    const name=$('#f-name').value.trim();
+    if(!name){ toast('Zadej název piva', true); $('#f-name').focus(); return; }
+    if(!cfg.name){ openName(); return; }
     const rec = {
       id: editId || uid(),
+      osoba: cfg.name,
       name,
-      brewery: el.brewery.value.trim(),
-      style: el.style.value.trim(),
-      abv: el.abv.value.trim(),
-      where: el.where.value.trim(),
-      date: el.date.value.trim() || todayISO(),
-      note: el.note.value.trim(),
-      rating: currentRating
+      brewery:$('#f-brewery').value.trim(),
+      style:$('#f-style').value.trim(),
+      abv:$('#f-abv').value.trim(),
+      where:$('#f-where').value.trim(),
+      date:$('#f-date').value.trim()||todayISO(),
+      note:$('#f-note').value.trim(),
+      rating:currentRating,
+      synced:false
     };
-    if (editId) {
-      const i = beers.findIndex(b => b.id === editId);
-      if (i >= 0) beers[i] = rec;
-      toast('Záznam upraven');
+    if(editId){
+      const i=beers.findIndex(b=>b.id===editId);
+      if(i>=0) beers[i]=rec;
     } else {
       beers.unshift(rec);
-      toast('Pivo uloženo · na zdraví!');
     }
-    save(); resetForm(); render();
-  }
-
-  function editBeer(id) {
-    const b = beers.find(x => x.id === id);
-    if (!b) return;
-    editId = id;
-    el.name.value = b.name; el.brewery.value = b.brewery; el.style.value = b.style;
-    el.abv.value = b.abv; el.where.value = b.where; el.date.value = b.date; el.note.value = b.note;
-    currentRating = b.rating || 0; paintRating();
-    el.formTitle.textContent = 'Úprava záznamu';
-    el.save.textContent = 'Uložit změny';
-    el.cancel.style.display = 'inline-block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function delBeer(id) {
-    const b = beers.find(x => x.id === id);
-    if (!b) return;
-    if (!confirm('Smazat „' + b.name + '"?')) return;
-    beers = beers.filter(x => x.id !== id);
-    if (editId === id) resetForm();
-    save(); render(); toast('Smazáno');
-  }
-
-  function miniGlasses(r) {
-    let html = '<div class="mini-glasses" aria-label="'+r+' z 10">';
-    for (let i = 1; i <= 10; i++) {
-      const on = i <= r ? 'var(--amber-bright)' : 'var(--border)';
-      html += '<svg width="9" height="11" viewBox="0 0 26 30"><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="'+on+'"/></svg>';
-    }
-    return html + '</div>';
-  }
-
-  function updateStats() {
-    el.statCount.textContent = beers.length;
-    const rated = beers.filter(b => b.rating > 0);
-    if (rated.length) {
-      const avg = rated.reduce((s,b)=>s+b.rating,0)/rated.length;
-      el.statAvg.textContent = avg.toFixed(1);
-      const top = rated.reduce((a,b)=> b.rating > a.rating ? b : a);
-      el.statTop.textContent = top.rating;
+    saveLocal(); resetForm(); renderAll();
+    if(sbConfigured()){
+      const ok = await sbPush(rec);
+      toast(ok ? 'Uloženo a synchronizováno · na zdraví!' : 'Uloženo lokálně (offline)');
+      renderAll();
     } else {
-      el.statAvg.textContent = '–';
-      el.statTop.textContent = '–';
+      toast('Uloženo lokálně · nastav sdílení pro žebříček');
     }
-    // datalist of styles
-    const styles = [...new Set(beers.map(b=>b.style).filter(Boolean))];
-    el.styleList.innerHTML = styles.map(s=>'<option value="'+esc(s)+'">').join('');
+  }
+  function editBeer(id){
+    const b=beers.find(x=>x.id===id); if(!b) return;
+    if(b.osoba && b.osoba!==cfg.name){ toast('Můžeš upravovat jen svoje piva', true); return; }
+    editId=id;
+    $('#f-name').value=b.name; $('#f-brewery').value=b.brewery||''; $('#f-style').value=b.style||'';
+    $('#f-abv').value=b.abv||''; $('#f-where').value=b.where||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
+    currentRating=b.rating||0; paintRating();
+    $('#form-title').textContent='Úprava záznamu';
+    $('#save-btn').textContent='Uložit změny';
+    $('#cancel-btn').style.display='inline-block';
+    switchView('mine'); window.scrollTo({top:0,behavior:'smooth'});
+  }
+  async function delBeer(id){
+    const b=beers.find(x=>x.id===id); if(!b) return;
+    if(b.osoba && b.osoba!==cfg.name){ toast('Můžeš mazat jen svoje piva', true); return; }
+    if(!confirm('Smazat „'+b.name+'"?')) return;
+    beers=beers.filter(x=>x.id!==id);
+    if(editId===id) resetForm();
+    saveLocal(); renderAll();
+    await sbDelete(id);
+    toast('Smazáno');
   }
 
-  function getFiltered() {
-    const q = el.search.value.trim().toLowerCase();
-    let arr = beers.filter(b => {
-      if (!q) return true;
-      return [b.name,b.brewery,b.style,b.where,b.note].some(f => (f||'').toLowerCase().includes(q));
-    });
-    const s = el.sort.value;
-    arr.sort((a,b) => {
-      switch(s) {
+  /* ---------- rendering ---------- */
+  function miniGlasses(r){
+    let h='<div class="mini-glasses" aria-label="'+r+' z 10">';
+    for(let i=1;i<=10;i++){ const on=i<=r?'var(--amber-bright)':'var(--border)'; h+='<svg width="9" height="11" viewBox="0 0 26 30"><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="'+on+'"/></svg>'; }
+    return h+'</div>';
+  }
+  function beerCard(b, showWho){
+    const mine = b.osoba===cfg.name;
+    const meta=[];
+    if(b.style) meta.push('<span class="tag">'+esc(b.style)+'</span>');
+    if(b.abv) meta.push('<span class="tag">'+esc(b.abv)+' %</span>');
+    if(b.where) meta.push('📍 '+esc(b.where));
+    if(b.date) meta.push('🗓 '+esc(b.date));
+    return '<div class="beer-card'+(mine?' mine':'')+'">'
+      +'<div><div class="beer-head"><span class="beer-name">'+esc(b.name)+'</span>'
+      +(b.brewery?'<span class="beer-brewery">'+esc(b.brewery)+'</span>':'')
+      +(showWho&&b.osoba?'<span class="beer-who">'+esc(b.osoba)+'</span>':'')
+      +'</div>'
+      +(meta.length?'<div class="beer-meta">'+meta.join('')+'</div>':'')
+      +'</div>'
+      +'<div class="beer-right">'
+      +'<div class="beer-score">'+(b.rating||'–')+'<span class="of">/10</span></div>'
+      +(b.rating?miniGlasses(b.rating):'')
+      +'<div class="card-actions'+(mine?'':' locked')+'"><button class="icon-btn" data-edit="'+b.id+'">upravit</button>'
+      +'<button class="icon-btn del" data-del="'+b.id+'">smazat</button></div>'
+      +'</div>'
+      +(b.note?'<div class="beer-note">'+esc(b.note)+'</div>':'')
+      +'</div>';
+  }
+  function sortBeers(arr, mode){
+    return arr.slice().sort((a,b)=>{
+      switch(mode){
         case 'date-asc': return (a.date||'').localeCompare(b.date||'');
         case 'date-desc': return (b.date||'').localeCompare(a.date||'');
         case 'rating-desc': return (b.rating||0)-(a.rating||0);
@@ -583,86 +625,193 @@
         default: return 0;
       }
     });
-    return arr;
   }
+  function matchQ(b,q){ if(!q) return true; return [b.name,b.brewery,b.style,b.where,b.note,b.osoba].some(f=>(f||'').toLowerCase().includes(q)); }
 
-  function render() {
-    updateStats();
-    const arr = getFiltered();
-    if (!arr.length) {
-      const msg = beers.length ? 'Nic neodpovídá hledání.' : 'Zatím žádná piva. Přidej první ochutnávku výše.';
-      el.list.innerHTML = '<div class="empty"><svg width="60" height="60" viewBox="0 0 26 30"><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="none" stroke="#3a2c17" stroke-width="1.5"/></svg><p>'+msg+'</p></div>';
-      el.countLine.textContent = '';
-      return;
+  function renderMine(){
+    const q=$('#search-mine').value.trim().toLowerCase();
+    const mine = beers.filter(b=>b.osoba===cfg.name && matchQ(b,q));
+    const arr = sortBeers(mine, $('#sort-mine').value);
+    const list=$('#list-mine');
+    if(!arr.length){
+      const total = beers.filter(b=>b.osoba===cfg.name).length;
+      list.innerHTML='<div class="empty"><svg width="60" height="60" viewBox="0 0 26 30"><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="none" stroke="#3a2c17" stroke-width="1.5"/></svg><p>'+(total?'Nic neodpovídá hledání.':'Zatím žádná tvoje piva. Přidej první výše.')+'</p></div>';
+      $('#count-mine').textContent='';
+    } else {
+      list.innerHTML=arr.map(b=>beerCard(b,false)).join('');
+      $('#count-mine').textContent=arr.length+' z '+beers.filter(b=>b.osoba===cfg.name).length+' tvých piv';
     }
-    el.list.innerHTML = arr.map(b => {
-      const meta = [];
-      if (b.style) meta.push('<span class="tag">'+esc(b.style)+'</span>');
-      if (b.abv) meta.push('<span class="tag">'+esc(b.abv)+' %</span>');
-      if (b.where) meta.push('📍 '+esc(b.where));
-      if (b.date) meta.push('🗓 '+esc(b.date));
-      return '<div class="beer-card">'
-        + '<div><div class="beer-head"><span class="beer-name">'+esc(b.name)+'</span>'
-        + (b.brewery ? '<span class="beer-brewery">'+esc(b.brewery)+'</span>' : '')
-        + '</div>'
-        + (meta.length ? '<div class="beer-meta">'+meta.join('')+'</div>' : '')
-        + '</div>'
-        + '<div class="beer-right">'
-        + '<div class="beer-score">'+(b.rating||'–')+'<span class="of">/10</span></div>'
-        + (b.rating ? miniGlasses(b.rating) : '')
-        + '<div class="card-actions"><button class="icon-btn" data-edit="'+b.id+'">upravit</button>'
-        + '<button class="icon-btn del" data-del="'+b.id+'">smazat</button></div>'
-        + '</div>'
-        + (b.note ? '<div class="beer-note">'+esc(b.note)+'</div>' : '')
-        + '</div>';
-    }).join('');
-    el.countLine.textContent = arr.length + ' z ' + beers.length + ' záznamů';
+    // datalist styles
+    const styles=[...new Set(beers.map(b=>b.style).filter(Boolean))];
+    $('#style-list').innerHTML=styles.map(s=>'<option value="'+esc(s)+'">').join('');
+  }
+  function renderAll(){
+    // refresh person filter
+    const people=[...new Set(beers.map(b=>b.osoba).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'cs'));
+    const sel=$('#filter-person'); const cur=sel.value;
+    sel.innerHTML='<option value="">Všichni lidé</option>'+people.map(p=>'<option value="'+esc(p)+'">'+esc(p)+'</option>').join('');
+    if(people.includes(cur)) sel.value=cur;
+
+    const q=$('#search-all').value.trim().toLowerCase();
+    const person=sel.value;
+    let arr=beers.filter(b=>matchQ(b,q) && (!person||b.osoba===person));
+    arr=sortBeers(arr,$('#sort-all').value);
+    const list=$('#list-all');
+    if(!arr.length){
+      list.innerHTML='<div class="empty"><p>'+(sbConfigured()?'Zatím tu nic není.':'Nastav sdílení, aby ses viděl s ostatními.')+'</p></div>';
+      $('#count-all').textContent='';
+    } else {
+      list.innerHTML=arr.map(b=>beerCard(b,true)).join('');
+      $('#count-all').textContent=arr.length+' záznamů';
+    }
+    renderMine();
+    renderBoard();
+  }
+  function renderBoard(){
+    // per-person stats
+    const map={};
+    beers.forEach(b=>{
+      const p=b.osoba||'?';
+      if(!map[p]) map[p]={name:p,count:0,sum:0,rated:0,best:0};
+      map[p].count++;
+      if(b.rating>0){ map[p].sum+=b.rating; map[p].rated++; map[p].best=Math.max(map[p].best,b.rating); }
+    });
+    let people=Object.values(map).map(p=>({...p, avg: p.rated?p.sum/p.rated:0}));
+    // podium by count (most active drinkers)
+    const byCount=people.slice().sort((a,b)=>b.count-a.count).slice(0,3);
+    const medals=['gold','','']; const ranks=['🥇 1.','🥈 2.','🥉 3.'];
+    $('#podium').innerHTML = byCount.length ? byCount.map((p,i)=>
+      '<div class="lb-card '+(i===0?'gold':'')+'"><div class="lb-rank">'+ranks[i]+'</div><div class="lb-name">'+esc(p.name)+'</div><div class="lb-stat">'+p.count+'</div><div class="lb-sub">ochutnaných piv · Ø '+(p.avg?p.avg.toFixed(1):'–')+'</div></div>'
+    ).join('') : '<div class="empty" style="width:100%"><p>Zatím žádná data.</p></div>';
+
+    const tbl=people.slice().sort((a,b)=>b.count-a.count);
+    $('#lb-people').innerHTML = tbl.map((p,i)=>
+      '<tr><td class="lb-medal">'+(i+1)+'</td><td>'+esc(p.name)+'</td><td>'+p.count+'</td><td>'+(p.avg?p.avg.toFixed(1):'–')+'</td><td>'+(p.best||'–')+'</td></tr>'
+    ).join('') || '<tr><td colspan="5" style="color:var(--text-faint)">Zatím prázdno.</td></tr>';
+
+    // best beers by name+brewery avg
+    const bmap={};
+    beers.filter(b=>b.rating>0).forEach(b=>{
+      const k=(b.name||'').toLowerCase()+'|'+(b.brewery||'').toLowerCase();
+      if(!bmap[k]) bmap[k]={name:b.name,brewery:b.brewery,sum:0,n:0};
+      bmap[k].sum+=b.rating; bmap[k].n++;
+    });
+    const bb=Object.values(bmap).map(b=>({...b,avg:b.sum/b.n})).sort((a,b)=>b.avg-a.avg||b.n-a.n).slice(0,15);
+    $('#lb-beers').innerHTML = bb.map((b,i)=>
+      '<tr><td class="lb-medal">'+(i+1)+'</td><td>'+esc(b.name)+'</td><td style="color:var(--text-dim)">'+esc(b.brewery||'–')+'</td><td class="lb-beer-score">'+b.avg.toFixed(1)+'</td><td>'+b.n+'×</td></tr>'
+    ).join('') || '<tr><td colspan="5" style="color:var(--text-faint)">Zatím žádná ohodnocená piva.</td></tr>';
   }
 
-  function exportTSV() {
-    if (!beers.length) { toast('Není co exportovat'); return; }
-    const cols = ['name','brewery','style','abv','where','date','rating','note'];
-    const head = ['Nazev','Pivovar','Styl','ABV','Kde','Datum','Hodnoceni','Poznamka'];
-    const rows = [head.join('\t')];
-    beers.forEach(b => rows.push(cols.map(c => String(b[c]||'').replace(/[\t\n\r]/g,' ')).join('\t')));
-    download(rows.join('\n'), 'pivni-denik.tsv', 'text/tab-separated-values');
-    toast('TSV exportováno');
-  }
-  function exportJSON() {
-    if (!beers.length) { toast('Není co exportovat'); return; }
-    download(JSON.stringify(beers,null,2), 'pivni-denik.json', 'application/json');
-    toast('JSON exportováno');
-  }
-  function download(content, fname, type) {
-    const blob = new Blob([content], {type: type+';charset=utf-8'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = fname;
-    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  /* ---------- export ---------- */
+  function exportTSV(){
+    const mine=beers.filter(b=>b.osoba===cfg.name);
+    if(!mine.length){ toast('Není co exportovat', true); return; }
+    const head=['Nazev','Pivovar','Styl','ABV','Kde','Datum','Hodnoceni','Poznamka'];
+    const cols=['name','brewery','style','abv','where','date','rating','note'];
+    const rows=[head.join('\t')];
+    mine.forEach(b=>rows.push(cols.map(c=>String(b[c]||'').replace(/[\t\n\r]/g,' ')).join('\t')));
+    const blob=new Blob([rows.join('\n')],{type:'text/tab-separated-values;charset=utf-8'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='moje-piva.tsv'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000); toast('TSV exportováno');
   }
 
-  // events
-  el.save.addEventListener('click', saveBeer);
-  el.cancel.addEventListener('click', resetForm);
-  el.search.addEventListener('input', render);
-  el.sort.addEventListener('change', render);
-  $('#export-btn').addEventListener('click', exportTSV);
-  $('#export-json').addEventListener('click', exportJSON);
-  el.list.addEventListener('click', e => {
-    const ed = e.target.closest('[data-edit]');
-    const dl = e.target.closest('[data-del]');
-    if (ed) editBeer(ed.dataset.edit);
-    if (dl) delBeer(dl.dataset.del);
-  });
-  // Ctrl+Enter to save
-  document.addEventListener('keydown', e => {
-    if ((e.ctrlKey||e.metaKey) && e.key === 'Enter') { e.preventDefault(); saveBeer(); }
-  });
+  /* ---------- views / modals ---------- */
+  function switchView(v){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));
+    document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
+    $('#view-'+v).classList.add('active');
+  }
+  function openName(){ $('#name-input').value=cfg.name||''; $('#name-overlay').classList.add('show'); setTimeout(()=>$('#name-input').focus(),50); }
+  function openSetup(){
+    $('#sb-url').value=cfg.url||''; $('#sb-key').value=cfg.key||'';
+    $('#setup-clear').style.display = sbConfigured()?'inline-block':'none';
+    $('#setup-overlay').classList.add('show');
+  }
 
-  // init
+  /* ---------- init & events ---------- */
   buildGlasses();
-  load();
+  loadLocal();
+
+  $('#me-name').textContent = cfg.name || '—';
+  if(cfg.name){ /* ok */ } 
   resetForm();
-  render();
+  renderAll();
+
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); }
+  else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
+
+  // first run: ask for name
+  if(!cfg.name) setTimeout(openName, 400);
+
+  // tabs
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
+  // form
+  $('#save-btn').addEventListener('click', saveBeer);
+  $('#cancel-btn').addEventListener('click', resetForm);
+  // search/sort
+  $('#search-mine').addEventListener('input', renderMine);
+  $('#sort-mine').addEventListener('change', renderMine);
+  $('#search-all').addEventListener('input', renderAll);
+  $('#sort-all').addEventListener('change', renderAll);
+  $('#filter-person').addEventListener('change', renderAll);
+  $('#export-btn').addEventListener('click', exportTSV);
+  // list actions (delegated on both lists)
+  ['#list-mine','#list-all'].forEach(sel=>$(sel).addEventListener('click',e=>{
+    const ed=e.target.closest('[data-edit]'); const dl=e.target.closest('[data-del]');
+    if(ed) editBeer(ed.dataset.edit);
+    if(dl) delBeer(dl.dataset.del);
+  }));
+  // name modal
+  $('#change-name').addEventListener('click', openName);
+  $('#name-save').addEventListener('click', ()=>{
+    const n=$('#name-input').value.trim();
+    if(!n){ toast('Zadej jméno', true); return; }
+    const old=cfg.name;
+    cfg.name=n; saveCfg(); $('#me-name').textContent=n;
+    // relabel my local unsynced beers
+    if(old && old!==n){ beers.forEach(b=>{ if(b.osoba===old){ b.osoba=n; b.synced=false; } }); saveLocal(); }
+    $('#name-overlay').classList.remove('show');
+    renderAll();
+    if(sbConfigured()){ beers.filter(b=>!b.synced).forEach(sbPush); }
+    toast('Jméno uloženo');
+  });
+  // setup modal
+  $('#setup-link').addEventListener('click', openSetup);
+  $('#setup-close').addEventListener('click', ()=>$('#setup-overlay').classList.remove('show'));
+  $('#setup-clear').addEventListener('click', ()=>{
+    if(!confirm('Odpojit od databáze? Tvoje piva zůstanou uložená lokálně.')) return;
+    cfg.url=''; cfg.key=''; saveCfg();
+    beers.forEach(b=>b.synced=false); saveLocal();
+    $('#setup-overlay').classList.remove('show');
+    setSync('offline','Odpojeno'); renderAll(); toast('Odpojeno');
+  });
+  $('#setup-save').addEventListener('click', async ()=>{
+    const url=$('#sb-url').value.trim(); const key=$('#sb-key').value.trim();
+    if(!url||!key){ toast('Vyplň URL i klíč', true); return; }
+    if(/service_role|secret/i.test(key) && !/publishable/i.test(key)){
+      if(!confirm('Pozor: vypadá to jako secret klíč. Do prohlížeče patří jen publishable/anon. Přesto pokračovat?')) return;
+    }
+    cfg.url=url; cfg.key=key; saveCfg();
+    $('#setup-overlay').classList.remove('show');
+    setSync('syncing','Připojuji…');
+    await sbPull();
+    // push my local beers up
+    for(const b of beers.filter(x=>x.osoba===cfg.name && !x.synced)){ await sbPush(b); }
+    await sbPull();
+    toast(online?'Připojeno a synchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
+  });
+  // close modals on overlay click
+  ['#name-overlay','#setup-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+    if(e.target===$(sel) && sel==='#setup-overlay') $(sel).classList.remove('show');
+  }));
+  // shortcuts
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+  });
+  // auto re-pull every 30s when configured
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible') sbPull(); }, 30000);
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 </script>
 </body>
