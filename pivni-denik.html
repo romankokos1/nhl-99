@@ -160,6 +160,36 @@
 
   /* beer card */
   .card.beer{padding:var(--s5); margin-bottom:var(--s3); cursor:default; transition:transform .12s;}
+  .card.beer.has-photo{padding-top:0; overflow:hidden;}
+  .beer-photo{margin:0 calc(-1*var(--s5)) var(--s4); cursor:zoom-in; position:relative; background:var(--bg-2);}
+  .beer-photo img{display:block; width:100%; max-height:220px; object-fit:cover;}
+  .photo-picker{margin-top:2px;}
+  .photo-empty{
+    display:flex; align-items:center; gap:10px; justify-content:center;
+    padding:18px; border:1.5px dashed var(--hairline-strong); border-radius:var(--r-sm);
+    color:var(--text-3); font-size:14px; font-weight:600; cursor:pointer; transition:border-color .15s, color .15s;
+    background:var(--bg-2);
+  }
+  .photo-empty:active{border-color:var(--amber-deep); color:var(--text-2);}
+  .photo-empty svg{width:22px; height:22px;}
+  .photo-preview{position:relative; border-radius:var(--r-sm); overflow:hidden; background:var(--bg-2);}
+  .photo-preview img{display:block; width:100%; max-height:280px; object-fit:cover; transition:opacity .2s;}
+  .photo-remove{
+    position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%;
+    background:rgba(10,6,3,0.7); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.15);
+    color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .photo-remove svg{width:16px; height:16px;}
+  .photo-status{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--foam); opacity:0; pointer-events:none; background:rgba(10,6,3,0.4);}
+  .photo-status.show{opacity:1;}
+  .lightbox{align-items:center; justify-content:center; background:rgba(8,5,2,0.92); backdrop-filter:blur(8px);}
+  .lightbox img{max-width:94%; max-height:88%; border-radius:14px; box-shadow:0 20px 60px -20px #000; object-fit:contain;}
+  .lightbox-close{
+    position:absolute; top:calc(env(safe-area-inset-top) + 14px); right:16px; z-index:2;
+    width:42px; height:42px; border-radius:50%; background:rgba(44,32,19,0.8); border:1px solid var(--hairline-strong);
+    color:var(--foam); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .lightbox-close svg{width:20px; height:20px;}
   .card.beer.mine{border-color:var(--hairline-strong);}
   .card.beer.mine::before{content:''; position:absolute;}
   .beer-top{display:flex; align-items:flex-start; gap:var(--s3);}
@@ -648,6 +678,22 @@
         <div class="field"><label for="f-date">Datum</label><input type="text" id="f-date" placeholder="RRRR-MM-DD" autocomplete="off" inputmode="numeric"></div>
         <div class="field"><label for="f-note">Poznámka k chuti</label><textarea id="f-note" placeholder="Nahořklá, plná chuť, jemná pěna…"></textarea></div>
 
+        <div class="field">
+          <label>Fotka etikety / piva</label>
+          <div class="photo-picker" id="photo-picker">
+            <input type="file" id="f-photo" accept="image/*" hidden>
+            <div class="photo-empty" id="photo-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="12.5" r="3.2"/></svg>
+              <span>Přidat fotku</span>
+            </div>
+            <div class="photo-preview" id="photo-preview" style="display:none">
+              <img id="photo-img" alt="Náhled">
+              <button type="button" class="photo-remove" id="photo-remove" aria-label="Odebrat fotku"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+              <div class="photo-status" id="photo-status"></div>
+            </div>
+          </div>
+        </div>
+
         <button class="btn btn-primary" id="save-btn">Uložit pivo</button>
         <div class="btn-row" style="margin-top:var(--s3)"><button class="btn btn-ghost" id="cancel-btn" style="display:none">Zrušit úpravu</button></div>
         <div class="bottom-space"></div>
@@ -828,7 +874,7 @@
   nazev text not null,
   pivovar text, styl text, abv text,
   kde text, datum text, poznamka text,
-  hodnoceni int,
+  hodnoceni int, foto text,
   vytvoreno timestamptz default now()
 );
 alter table piva enable row level security;
@@ -837,10 +883,22 @@ grant select, insert, update, delete
 create policy "cist"   on piva for select using (true);
 create policy "pridat" on piva for insert with check (true);
 create policy "upravit" on piva for update using (true);
-create policy "mazat"  on piva for delete using (true);</div>
+create policy "mazat"  on piva for delete using (true);
+
+-- fotky: úložiště obrázků
+insert into storage.buckets (id, name, public)
+  values ('fotky','fotky',true)
+  on conflict (id) do nothing;
+create policy "fotky cist" on storage.objects
+  for select using (bucket_id = 'fotky');
+create policy "fotky pridat" on storage.objects
+  for insert with check (bucket_id = 'fotky');
+create policy "fotky mazat" on storage.objects
+  for delete using (bucket_id = 'fotky');</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Pak stačí spustit jen tuhle část pro fotky: <code>alter table piva add column if not exists foto text;</code> a zbytek skriptu od komentáře „fotky".</p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -906,6 +964,12 @@ create policy "mazat"  on piva for delete using (true);</div>
       <button class="btn btn-primary" id="goals-save" style="margin-top:var(--s4)">Uložit cíle</button>
       <button class="btn btn-ghost" id="goals-close" style="margin-top:var(--s3)">Zavřít</button>
     </div>
+  </div>
+
+  <!-- photo lightbox -->
+  <div class="overlay lightbox" id="lightbox-overlay">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+    <img id="lightbox-img" alt="Foto piva">
   </div>
 
   <div class="toast" id="toast"></div>
@@ -994,6 +1058,47 @@ create policy "mazat"  on piva for delete using (true);</div>
   }
   function sbConfigured(){ return cfg.url && cfg.key; }
 
+  /* ---------- photo: compress + upload to Supabase Storage ---------- */
+  const BUCKET='fotky';
+  // read file -> downscale to max side ~1000px -> JPEG quality 0.7 -> Blob
+  function compressImage(file, maxSide, quality){
+    return new Promise((resolve,reject)=>{
+      const img=new Image();
+      const url=URL.createObjectURL(file);
+      img.onload=()=>{
+        URL.revokeObjectURL(url);
+        let {width:w,height:h}=img;
+        const scale=Math.min(1, (maxSide||1000)/Math.max(w,h));
+        w=Math.round(w*scale); h=Math.round(h*scale);
+        const canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        canvas.toBlob(b=>{ b?resolve(b):reject(new Error('toBlob failed')); }, 'image/jpeg', quality||0.7);
+      };
+      img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('image load failed')); };
+      img.src=url;
+    });
+  }
+  function storageUrl(path){ return cfg.url.replace(/\/$/,'')+'/storage/v1/object/public/'+BUCKET+'/'+path; }
+  // upload a Blob, returns the storage path (bucket-relative) or throws
+  async function uploadPhoto(blob){
+    if(!sbConfigured()) throw new Error('not configured');
+    const name=(cfg.name||'x').replace(/[^a-zA-Z0-9]/g,'')||'x';
+    const path=name+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)+'.jpg';
+    const r=await fetch(cfg.url.replace(/\/$/,'')+'/storage/v1/object/'+BUCKET+'/'+path, {
+      method:'POST',
+      headers:{ 'apikey':cfg.key, 'Authorization':'Bearer '+cfg.key, 'Content-Type':'image/jpeg', 'x-upsert':'true' },
+      body:blob
+    });
+    if(!r.ok){ let msg='HTTP '+r.status; try{ const j=await r.json(); if(j.message) msg=j.message; }catch(e){} throw new Error(msg); }
+    return path;
+  }
+  async function deletePhoto(path){
+    if(!sbConfigured()||!path) return;
+    try{ await fetch(cfg.url.replace(/\/$/,'')+'/storage/v1/object/'+BUCKET+'/'+path, { method:'DELETE', headers:{ 'apikey':cfg.key, 'Authorization':'Bearer '+cfg.key } }); }catch(e){}
+  }
+
   async function sbPull(){
     if(!sbConfigured()) return;
     setSync('syncing','Synchronizuji…');
@@ -1005,6 +1110,7 @@ create policy "mazat"  on piva for delete using (true);</div>
       const remote = rows.map(x => ({
         id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, style:x.styl,
         abv:x.abv, where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
+        foto:x.foto||'',
         synced:true
       }));
       // keep any local-only (unsynced) records, replace the rest with remote truth
@@ -1025,7 +1131,8 @@ create policy "mazat"  on piva for delete using (true);</div>
     if(!sbConfigured()) return false;
     const body = {
       id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, styl:b.style,
-      abv:b.abv, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0
+      abv:b.abv, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
+      foto:b.foto||''
     };
     try {
       const r = await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?on_conflict=id', {
@@ -1071,10 +1178,24 @@ create policy "mazat"  on piva for delete using (true);</div>
   }
 
   /* ---------- form ---------- */
+  let currentPhoto=''; // storage path of the current form's photo
+  function setPhotoUI(path, uploading){
+    const empty=$('#photo-empty'), prev=$('#photo-preview'), img=$('#photo-img'), status=$('#photo-status');
+    if(!empty) return;
+    if(path || uploading){
+      empty.style.display='none'; prev.style.display='block';
+      if(path && !uploading){ img.src=storageUrl(path); img.style.opacity='1'; status.textContent=''; status.classList.remove('show'); }
+      if(uploading){ img.removeAttribute('src'); img.style.opacity='0.4'; status.textContent='Nahrávám…'; status.classList.add('show'); }
+    } else {
+      empty.style.display='flex'; prev.style.display='none'; img.removeAttribute('src'); status.textContent='';
+    }
+  }
   function resetForm(){
-    editId=null; currentRating=0;
+    editId=null; currentRating=0; currentPhoto='';
     ['f-name','f-brewery','f-style','f-abv','f-where','f-note'].forEach(id=>$('#'+id).value='');
     $('#f-date').value=todayISO(); paintRating();
+    if($('#f-photo')) $('#f-photo').value='';
+    setPhotoUI('', false);
     $('#form-title').textContent='Nový záznam';
     $('#save-btn').textContent='Uložit pivo';
     $('#cancel-btn').style.display='none';
@@ -1108,6 +1229,7 @@ create policy "mazat"  on piva for delete using (true);</div>
       date:$('#f-date').value.trim()||todayISO(),
       note:$('#f-note').value.trim(),
       rating:currentRating,
+      foto:currentPhoto||'',
       synced:false
     };
     if(editId){
@@ -1132,6 +1254,7 @@ create policy "mazat"  on piva for delete using (true);</div>
     $('#f-name').value=b.name; $('#f-brewery').value=b.brewery||''; $('#f-style').value=b.style||'';
     $('#f-abv').value=b.abv||''; $('#f-where').value=b.where||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
     currentRating=b.rating||0; paintRating();
+    currentPhoto=b.foto||''; setPhotoUI(currentPhoto, false);
     $('#form-title').textContent='Úprava záznamu';
     $('#save-btn').textContent='Uložit změny';
     $('#cancel-btn').style.display='inline-flex';
@@ -1168,7 +1291,8 @@ create policy "mazat"  on piva for delete using (true);</div>
     if(b.abv) chips.push('<span class="chip">'+esc(b.abv)+'%</span>');
     if(b.where) chips.push('<span class="chip subtle">'+esc(b.where)+'</span>');
     const dateShort = b.date ? esc(b.date) : '';
-    return '<article class="card beer'+(mine?' mine':'')+'" data-open="'+b.id+'">'
+    return '<article class="card beer'+(mine?' mine':'')+(b.foto?' has-photo':'')+'" data-open="'+b.id+'">'
+      + (b.foto?'<div class="beer-photo" data-photo="'+esc(b.foto)+'"><img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="Foto '+esc(b.name)+'"></div>':'')
       + '<div class="beer-main">'
       +   '<div class="beer-top">'
       +     '<h3 class="beer-name">'+esc(b.name)+'</h3>'
@@ -4084,6 +4208,32 @@ var qrcode = function() {
   }
   // form
   $('#save-btn').addEventListener('click', saveBeer);
+  // photo picker
+  if($('#photo-empty')) $('#photo-empty').addEventListener('click', ()=>{
+    if(!sbConfigured()){ toast('Nejdřív zapni sdílení v Profilu', true); return; }
+    $('#f-photo').click();
+  });
+  if($('#f-photo')) $('#f-photo').addEventListener('change', async e=>{
+    const file=e.target.files&&e.target.files[0]; if(!file) return;
+    if(!/^image\//.test(file.type)){ toast('Vyber obrázek', true); return; }
+    setPhotoUI(null, true);
+    try{
+      const blob=await compressImage(file, 1000, 0.7);
+      const path=await uploadPhoto(blob);
+      // delete previous photo if we're replacing one
+      if(currentPhoto && currentPhoto!==path) deletePhoto(currentPhoto);
+      currentPhoto=path; setPhotoUI(path, false);
+      toast('Fotka nahrána ('+Math.round(blob.size/1024)+' kB)');
+    }catch(err){
+      setPhotoUI(currentPhoto, false);
+      toast('Nahrání selhalo: '+err.message, true);
+    }
+    e.target.value='';
+  });
+  if($('#photo-remove')) $('#photo-remove').addEventListener('click', ()=>{
+    if(currentPhoto) deletePhoto(currentPhoto);
+    currentPhoto=''; setPhotoUI('', false);
+  });
   (function(){
     const inp=$('#f-name'), drop=$('#beer-ac');
     inp.addEventListener('input', refreshBeerAC);
@@ -4117,9 +4267,18 @@ var qrcode = function() {
   // feed actions (delegated)
   $('#feed').addEventListener('click',e=>{
     const ed=e.target.closest('[data-edit]'); const dl=e.target.closest('[data-del]');
+    const ph=e.target.closest('[data-photo]');
     if(ed){ e.stopPropagation(); editBeer(ed.dataset.edit); return; }
     if(dl){ e.stopPropagation(); delBeer(dl.dataset.del); return; }
+    if(ph){ e.stopPropagation(); openLightbox(ph.dataset.photo); return; }
   });
+  function openLightbox(path){
+    if(!path) return;
+    $('#lightbox-img').src=storageUrl(path);
+    $('#lightbox-overlay').classList.add('show');
+  }
+  $('#lightbox-close').addEventListener('click', ()=>$('#lightbox-overlay').classList.remove('show'));
+  $('#lightbox-overlay').addEventListener('click', e=>{ if(e.target===$('#lightbox-overlay')) $('#lightbox-overlay').classList.remove('show'); });
   // change name
   document.querySelectorAll('[data-changename]').forEach(b=>b.addEventListener('click', openName));
   $('#name-save').addEventListener('click', ()=>{
@@ -4229,7 +4388,7 @@ var qrcode = function() {
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible') sbPull(); }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
