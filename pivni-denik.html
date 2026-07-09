@@ -281,39 +281,82 @@
   .list-card{padding:var(--s3) var(--s5); margin-top:var(--s2);}
 
   /* ranking / podium */
-  .podium{display:flex; align-items:flex-end; justify-content:center; gap:var(--s3); margin:var(--s6) 0 var(--s5); min-height:200px;}
-  .pod{display:flex; flex-direction:column; align-items:center; flex:1; max-width:120px;}
+  .podium{display:flex; align-items:flex-end; justify-content:center; gap:var(--s2); margin:var(--s6) 0 var(--s5); min-height:250px;}
+  .pod{
+    display:flex; flex-direction:column; align-items:center; flex:1; max-width:128px; position:relative;
+    padding:var(--s4) 8px var(--s5); border-radius:20px 20px 18px 18px;
+    background:linear-gradient(180deg, var(--surface-2), var(--surface));
+    border:1px solid var(--hairline); box-shadow:var(--shadow-card);
+    opacity:0; transform:translateY(14px); animation:podRise .5s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  @keyframes podRise{to{opacity:1; transform:none;}}
+  .podium-1{align-self:stretch; padding-top:var(--s5);}
+  .podium-2, .podium-3{margin-bottom:6px;}
+  .pod.gold{
+    background:linear-gradient(180deg, rgba(232,163,61,0.16), var(--surface));
+    border-color:var(--hairline-strong); box-shadow:0 0 34px -12px rgba(255,207,107,0.4), var(--shadow-card);
+  }
+  .pod.me{border-color:var(--amber-deep);}
+  .pod-medal-badge{
+    position:absolute; top:-15px; left:50%; transform:translateX(-50%) scale(0);
+    width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; color:#3a2503; z-index:3;
+    box-shadow:0 4px 12px -3px rgba(0,0,0,0.5); border:2px solid var(--bg);
+    animation:medalPop .45s cubic-bezier(.3,1.4,.5,1) forwards; animation-delay:.35s;
+  }
+  .pod-medal-badge span{line-height:1;}
+  @keyframes medalPop{to{transform:translateX(-50%) scale(1);}}
+  .medal-1{background:linear-gradient(150deg,#ffe08a,#e0a53a); box-shadow:0 0 16px -2px rgba(255,207,107,0.7), 0 4px 12px -3px rgba(0,0,0,0.5);}
+  .medal-2{background:linear-gradient(150deg,#e8e8ee,#a9adba);}
+  .medal-3{background:linear-gradient(150deg,#e8b98a,#bd8149);}
   .pod-av{
-    width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:20px; font-weight:800; color:#fff; position:relative; margin-bottom:var(--s2);
-    box-shadow:0 6px 18px -6px rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.08);
+    width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:19px; font-weight:800; color:#fff; position:relative; margin-bottom:10px; margin-top:6px;
+    box-shadow:0 6px 18px -6px rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.1);
   }
-  .pod.gold .pod-av{width:66px; height:66px; font-size:24px; border-color:var(--gold); box-shadow:0 0 30px -6px rgba(255,207,107,0.5);}
-  .crown{position:absolute; top:-16px; left:50%; transform:translateX(-50%); font-size:20px; color:var(--gold);}
+  .pod.gold .pod-av{width:62px; height:62px; font-size:22px; border-color:var(--gold); box-shadow:0 0 26px -6px rgba(255,207,107,0.55);}
+  .crown{position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-size:18px; color:var(--gold); animation:crownGlow 2.4s ease-in-out infinite;}
+  @keyframes crownGlow{50%{filter:drop-shadow(0 0 6px rgba(255,207,107,0.8));}}
   .pod-name{font-size:13.5px; font-weight:700; color:var(--foam); text-align:center; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .pod-count{font-size:12px; color:var(--amber); font-weight:700; margin-top:1px;}
-  .pod-plinth{
-    width:100%; margin-top:var(--s3); border-radius:14px 14px 0 0;
-    background:linear-gradient(180deg, var(--surface-hi), var(--surface));
-    border:1px solid var(--hairline); border-bottom:none;
-    display:flex; align-items:flex-start; justify-content:center; padding-top:var(--s3);
+  .pod-name .you{font-size:9px; background:var(--amber); color:#241703; padding:1px 5px; border-radius:var(--r-pill); font-weight:700; vertical-align:middle;}
+  .pod-sub{font-size:11px; color:var(--text-3); margin-top:3px; text-align:center;}
+  .pod-style{
+    font-size:10.5px; font-weight:600; color:var(--amber); margin-top:6px;
+    background:rgba(232,163,61,0.1); border:1px solid var(--hairline); border-radius:var(--r-pill); padding:2px 9px;
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
-  .podium-1 .pod-plinth{height:96px;}
-  .podium-2 .pod-plinth{height:70px;}
-  .podium-3 .pod-plinth{height:52px;}
-  .pod.gold .pod-plinth{background:linear-gradient(180deg, rgba(232,163,61,0.22), var(--surface)); border-color:var(--hairline-strong);}
-  .pod-medal{font-size:22px; font-weight:800; color:var(--text-3); font-family:'Fraunces',serif;}
-  .pod.gold .pod-medal{color:var(--gold);}
+  .pod .badge-pips{margin-top:8px;}
+  .pod-plinth{display:none;}
+
+  /* badge pips */
+  .badge-pips{display:inline-flex; gap:4px; align-items:center; vertical-align:middle;}
+  .pip{
+    width:19px; height:19px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;
+    flex-shrink:0; box-shadow:0 1px 3px -1px rgba(0,0,0,0.4);
+  }
+  .pip svg{width:12px; height:12px; fill:currentColor; stroke:currentColor; stroke-width:1.4; stroke-linejoin:round;}
+  .pip svg [fill="none"], .pip svg path[stroke]{fill:none;}
+  .pip-pioneer{background:linear-gradient(150deg,#ffe08a,#e0a53a); color:#3a2503;}
+  .pip-connoisseur{background:linear-gradient(150deg,#e8c56a,#c79028); color:#3a2503;}
+  .pip-explorer{background:linear-gradient(150deg,#7fb4d6,#4a7fa0); color:#0a2230;}
+  .pip-collector{background:linear-gradient(150deg,#cbab78,#9a7a4a); color:#2a1c08;}
+  .pip-loyal{background:linear-gradient(150deg,#e08a8a,#b04a4a); color:#2e0a0a;}
+  .pip-critic{background:linear-gradient(150deg,#b0a8c0,#7a6f92); color:#1a1226;}
 
   .lb-row{
     display:flex; align-items:center; gap:var(--s3); padding:13px 0; border-bottom:1px solid var(--hairline);
   }
   .lb-row:last-child{border-bottom:none;}
-  .lb-row.me{margin:0 -12px; padding:13px 12px; background:rgba(232,163,61,0.06); border-radius:var(--r-sm); border-bottom:1px solid transparent;}
+  .lb-row.rich{padding:14px 0; align-items:center;}
+  .lb-row.me{margin:0 -12px; padding:14px 12px; background:linear-gradient(120deg, rgba(232,163,61,0.1), rgba(232,163,61,0.03)); border-radius:var(--r-sm); border-bottom:1px solid transparent; box-shadow:inset 0 0 0 1px var(--hairline-strong);}
   .lb-rank{width:22px; font-size:15px; font-weight:800; color:var(--text-3); text-align:center; font-variant-numeric:tabular-nums;}
-  .lb-av{width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0;}
-  .lb-name{flex:1; font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .lb-row.me .lb-rank{color:var(--amber-bright);}
+  .lb-av{width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; border:1.5px solid rgba(255,255,255,0.1);}
+  .lb-person{flex:1; display:flex; flex-direction:column; gap:4px; overflow:hidden;}
+  .lb-name{font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .lb-name .you{font-size:10px; background:var(--amber); color:#241703; padding:1px 6px; border-radius:var(--r-pill); font-weight:700; vertical-align:middle; margin-left:4px;}
+  .lb-tags{display:flex; align-items:center; gap:7px; overflow:hidden;}
+  .lb-fav{font-size:11px; font-weight:600; color:var(--text-3); background:var(--bg-2); border:1px solid var(--hairline); border-radius:6px; padding:1px 7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;}
   .lb-beerinfo{flex:1; display:flex; flex-direction:column; overflow:hidden;}
   .lb-beerinfo b{font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .lb-beerinfo small{font-size:12px; color:var(--text-3);}
@@ -321,6 +364,27 @@
   .lb-metric b{font-size:15px; font-weight:800; color:var(--foam); font-variant-numeric:tabular-nums;}
   .lb-metric.big b{color:var(--amber-bright);}
   .lb-metric small{font-size:10px; color:var(--text-4); font-weight:500;}
+
+  /* personal standing banner */
+  .standing-card{
+    display:flex; align-items:center; gap:var(--s4); margin:var(--s4) 0 var(--s2);
+    padding:var(--s4) var(--s5); border-radius:var(--r-card);
+    background:linear-gradient(135deg, rgba(232,163,61,0.16), var(--surface));
+    border:1px solid var(--hairline-strong); box-shadow:var(--shadow-card);
+  }
+  .standing-rank{display:flex; flex-direction:column; align-items:center; flex-shrink:0; min-width:52px;}
+  .sr-num{font-size:30px; font-weight:800; color:var(--amber-bright); line-height:1; letter-spacing:-0.03em; font-variant-numeric:tabular-nums;}
+  .sr-of{font-size:11px; color:var(--text-3); margin-top:3px;}
+  .standing-body{flex:1; border-left:1px solid var(--hairline-strong); padding-left:var(--s4);}
+  .standing-msg{font-size:14px; font-weight:600; color:var(--foam); line-height:1.4;}
+  .standing-stats{font-size:12px; color:var(--text-3); margin-top:5px;}
+
+  /* legend */
+  .legend .leg-row{display:flex; align-items:center; gap:var(--s3); padding:11px 0; border-bottom:1px solid var(--hairline);}
+  .legend .leg-row:last-child{border-bottom:none;}
+  .leg-tx{display:flex; flex-direction:column;}
+  .leg-tx b{font-size:14px; font-weight:600; color:var(--text);}
+  .leg-tx small{font-size:12px; color:var(--text-3);}
 
   /* profile */
   .profile-head{display:flex; flex-direction:column; align-items:center; padding:var(--s6) 0 var(--s4); text-align:center;}
@@ -560,11 +624,14 @@
     <section class="screen" id="screen-board">
       <div class="topbar"><div class="tb-title">Žebříček</div></div>
       <div class="pad">
+        <div id="my-standing"></div>
         <div class="sec-sub" style="margin-top:var(--s2)">Kdo z party ochutnal nejvíc</div>
         <div class="podium" id="podium"></div>
 
         <div class="sec-title">Pořadí hodnotitelů</div>
         <div class="card list-card" id="lb-people"></div>
+
+        <div id="badge-legend"></div>
 
         <div class="sec-title">Nejlepší piva party</div>
         <div class="sec-sub">Průměr napříč všemi, kdo ho hodnotili</div>
@@ -1092,16 +1159,59 @@ create policy "mazat"  on piva for delete using (true);</div>
     if($('#stat-empty')) $('#stat-empty').style.display = mine.length?'none':'block';
     if($('#stat-body')) $('#stat-body').style.display = mine.length?'block':'none';
   }
-  function renderBoard(){
+  function computePeopleStats(){
     const map={};
     beers.forEach(b=>{
       const p=b.osoba||'?';
-      if(!map[p]) map[p]={name:p,count:0,sum:0,rated:0,best:0};
+      if(!map[p]) map[p]={name:p,count:0,sum:0,rated:0,best:0,styles:{}};
       map[p].count++;
       if(b.rating>0){ map[p].sum+=b.rating; map[p].rated++; map[p].best=Math.max(map[p].best,b.rating); }
+      if(b.style){ const s=b.style.trim(); map[p].styles[s]=(map[p].styles[s]||0)+1; }
     });
-    let people=Object.values(map).map(p=>({...p, avg: p.rated?p.sum/p.rated:0}));
-    const byCount=people.slice().sort((a,b)=>b.count-a.count);
+    let people=Object.values(map).map(p=>{
+      const styleEntries=Object.entries(p.styles).sort((a,b)=>b[1]-a[1]);
+      const favStyle = styleEntries.length ? styleEntries[0][0] : '';
+      const favShare = styleEntries.length ? styleEntries[0][1]/p.count : 0;
+      return {...p, avg: p.rated?p.sum/p.rated:0, distinctStyles:styleEntries.length, favStyle, favShare};
+    });
+    // assign superlative badges across the party
+    if(people.length){
+      const most = people.slice().sort((a,b)=>b.count-a.count)[0];
+      const qualifiedAvg = people.filter(p=>p.rated>=3);
+      const topAvg = qualifiedAvg.slice().sort((a,b)=>b.avg-a.avg)[0];
+      const lowAvg = qualifiedAvg.slice().sort((a,b)=>a.avg-b.avg)[0];
+      const mostStyles = people.slice().sort((a,b)=>b.distinctStyles-a.distinctStyles)[0];
+      people.forEach(p=>{
+        p.badges=[];
+        if(most && p.name===most.name && p.count>0) p.badges.push({k:'pioneer',t:'Průkopník',d:'Nejvíc ochutnaných piv'});
+        if(topAvg && p.name===topAvg.name && qualifiedAvg.length>1) p.badges.push({k:'connoisseur',t:'Znalec',d:'Nejvyšší průměrné hodnocení'});
+        if(mostStyles && p.name===mostStyles.name && p.distinctStyles>=3) p.badges.push({k:'explorer',t:'Objevitel',d:'Nejvíc různých stylů'});
+        if(p.count>=10) p.badges.push({k:'collector',t:'Sběratel',d:'10+ ochutnaných piv'});
+        if(p.favShare>=0.5 && p.count>=4) p.badges.push({k:'loyal',t:'Věrný '+(p.favStyle||''),d:'Dominantní oblíbený styl'});
+        if(lowAvg && p.name===lowAvg.name && qualifiedAvg.length>2 && lowAvg.avg<topAvg.avg) p.badges.push({k:'critic',t:'Přísný jazyk',d:'Nejpřísnější hodnotitel'});
+      });
+    }
+    return people;
+  }
+  function badgePips(badges, max){
+    if(!badges||!badges.length) return '';
+    const shown=badges.slice(0,max||3);
+    return '<span class="badge-pips">'+shown.map(b=>'<span class="pip pip-'+b.k+'" title="'+esc(b.t)+' — '+esc(b.d)+'">'+badgeIcon(b.k)+'</span>').join('')+'</span>';
+  }
+  function badgeIcon(k){
+    const ic={
+      pioneer:'<svg viewBox="0 0 24 24"><path d="M12 2l2.4 5 5.6.6-4.2 3.8 1.2 5.6L12 20l-5 2.9 1.2-5.6L4 13.6 9.6 13z"/></svg>',
+      connoisseur:'<svg viewBox="0 0 24 24"><path d="M6 3h12l-1 7a5 5 0 0 1-10 0z"/><path d="M12 15v4M8 21h8" stroke-linecap="round"/></svg>',
+      explorer:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18" opacity=".5"/></svg>',
+      collector:'<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M8 8V5h8v3" fill="none" stroke-linecap="round"/></svg>',
+      loyal:'<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>',
+      critic:'<svg viewBox="0 0 24 24"><path d="M4 20l7-7M13 5l6 6-7 7-3 1 1-3z"/></svg>'
+    };
+    return ic[k]||'';
+  }
+  function renderBoard(){
+    const people=computePeopleStats();
+    const byCount=people.slice().sort((a,b)=>b.count-a.count || b.avg-a.avg);
     const top3=byCount.slice(0,3);
     const order=[1,0,2]; // silver, gold, bronze visual order
     const heights=['podium-2','podium-1','podium-3'];
@@ -1109,13 +1219,17 @@ create policy "mazat"  on piva for delete using (true);</div>
     const podEl=$('#podium');
     if(podEl){
       if(top3.length){
-        podEl.innerHTML = order.filter(i=>top3[i]).map((i,pos)=>{
+        podEl.innerHTML = order.filter(i=>top3[i]).map((i)=>{
           const p=top3[i];
-          return '<div class="pod '+heights[order.indexOf(i)]+(i===0?' gold':'')+'">'
+          const isMe=p.name===cfg.name;
+          return '<div class="pod '+heights[order.indexOf(i)]+(i===0?' gold':'')+(isMe?' me':'')+'" style="animation-delay:'+(order.indexOf(i)*0.12)+'s">'
+            + '<div class="pod-medal-badge medal-'+(i+1)+'"><span>'+medals[order.indexOf(i)]+'</span></div>'
             + '<div class="pod-av" style="background:'+avatarColor(p.name)+'">'+esc(initials(p.name))+(i===0?'<span class="crown">♔</span>':'')+'</div>'
-            + '<div class="pod-name">'+esc(p.name)+'</div>'
-            + '<div class="pod-count">'+p.count+'</div>'
-            + '<div class="pod-plinth"><span class="pod-medal">'+medals[order.indexOf(i)]+'</span></div>'
+            + '<div class="pod-name">'+esc(p.name)+(isMe?' <span class="you">ty</span>':'')+'</div>'
+            + '<div class="pod-sub">'+p.count+' piv · Ø '+(p.avg?p.avg.toFixed(1):'–')+'</div>'
+            + (p.favStyle?'<div class="pod-style">'+esc(p.favStyle)+'</div>':'')
+            + badgePips(p.badges,3)
+            + '<div class="pod-plinth"></div>'
             + '</div>';
         }).join('');
       } else {
@@ -1125,10 +1239,13 @@ create policy "mazat"  on piva for delete using (true);</div>
     const pEl=$('#lb-people');
     if(pEl){
       pEl.innerHTML = byCount.map((p,i)=>
-        '<div class="lb-row'+(p.name===cfg.name?' me':'')+'">'
+        '<div class="lb-row rich'+(p.name===cfg.name?' me':'')+'">'
         +'<span class="lb-rank">'+(i+1)+'</span>'
         +'<span class="lb-av" style="background:'+avatarColor(p.name)+'">'+esc(initials(p.name))+'</span>'
-        +'<span class="lb-name">'+esc(p.name)+(p.name===cfg.name?' <span class="you">ty</span>':'')+'</span>'
+        +'<span class="lb-person">'
+        +  '<span class="lb-name">'+esc(p.name)+(p.name===cfg.name?' <span class="you">ty</span>':'')+'</span>'
+        +  '<span class="lb-tags">'+(p.favStyle?'<span class="lb-fav">'+esc(p.favStyle)+'</span>':'')+badgePips(p.badges,3)+'</span>'
+        +'</span>'
         +'<span class="lb-metric"><b>'+p.count+'</b><small>piv</small></span>'
         +'<span class="lb-metric"><b>'+(p.avg?p.avg.toFixed(1):'–')+'</b><small>Ø</small></span>'
         +'</div>'
@@ -1150,6 +1267,34 @@ create policy "mazat"  on piva for delete using (true);</div>
         +'<span class="lb-metric big"><b>'+b.avg.toFixed(1)+'</b><small>'+b.n+'× hodn.</small></span>'
         +'</div>'
       ).join('') || '<p class="muted center">Zatím žádná ohodnocená piva.</p>';
+    }
+    // personal standing banner
+    const meIdx=byCount.findIndex(p=>p.name===cfg.name);
+    const meEl=$('#my-standing');
+    if(meEl){
+      if(meIdx>=0){
+        const me=byCount[meIdx];
+        const rank=meIdx+1, total=byCount.length;
+        let msg;
+        if(rank===1) msg='Vedeš celou partu. Na špici to ale klouže — drž tempo. 🍺';
+        else { const ahead=byCount[meIdx-1]; const diff=ahead.count-me.count; msg = diff>0 ? ('Na '+(rank-1)+'. místo ti chybí '+diff+' '+(diff===1?'pivo':(diff<5?'piva':'piv'))+'.') : 'Jsi krok od posunu výš — stačí přidat.'; }
+        meEl.innerHTML='<div class="standing-card">'
+          +'<div class="standing-rank"><span class="sr-num">'+rank+'.</span><span class="sr-of">z '+total+'</span></div>'
+          +'<div class="standing-body"><div class="standing-msg">'+msg+'</div>'
+          +'<div class="standing-stats">'+me.count+' piv · Ø '+(me.avg?me.avg.toFixed(1):'–')+(me.favStyle?' · '+esc(me.favStyle):'')+'</div></div>'
+          +'</div>';
+      } else meEl.innerHTML='';
+    }
+    // badge legend (only badges actually earned by someone)
+    const legEl=$('#badge-legend');
+    if(legEl){
+      const earned=new Map();
+      people.forEach(p=>(p.badges||[]).forEach(b=>{ if(!earned.has(b.k)) earned.set(b.k,b); }));
+      if(earned.size){
+        legEl.innerHTML='<div class="sec-title">Odznaky</div><div class="card list-card legend">'
+          +[...earned.values()].map(b=>'<div class="leg-row"><span class="pip pip-'+b.k+'">'+badgeIcon(b.k)+'</span><span class="leg-tx"><b>'+esc(b.t)+'</b><small>'+esc(b.d)+'</small></span></div>').join('')
+          +'</div>';
+      } else legEl.innerHTML='';
     }
   }
 
