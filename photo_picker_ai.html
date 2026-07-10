@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Picker AI — výřezy z týmovek</title>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  NÁSTROJ PRO VÝŘEZY Z TÝMOVÝCH FOTEK (photoPos / photoZoom)
+  ───────────────────────────────────────────────────────────────
+  1. Vlož URL fotky (nebo přetáhni soubor z disku)
+  2. Klikni na obličej hráče → výřez se nastaví automaticky
+     (volitelně: tlačítko "Najít obličeje" je označí AI detekcí)
+  3. Dolaď posuvníky, zkontroluj náhledy
+  4. Zkopíruj výstup a pošli / vlož do JSON
+
+  Funguje offline kromě: AI detekce (stahuje model ~190 kB z CDN)
+  a načítání fotek z webu (jde přes images.weserv.nl kvůli CORS).
+  Lokální soubory (drag&drop) fungují bez internetu.
+  ═══════════════════════════════════════════════════════════════
+-->
+<style>
+:root{--blue:#1c4896;--blue3:#0f2f6a;--yellow:#f5c300;--line:#dde4f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,'Segoe UI',sans-serif;background:#f2f5fb;color:#1c2e4a}
+header{background:var(--blue3);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px}
+header h1{font-size:16px;margin:0;font-weight:800}
+header .sub{font-size:11px;opacity:.65}
+.wrap{display:grid;grid-template-columns:1fr 320px;gap:16px;padding:16px;max-width:1400px;margin:0 auto}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#6a82a8;margin:0 0 10px}
+.src-row{display:flex;gap:8px;margin-bottom:10px}
+.src-row input{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px}
+.btn{padding:9px 16px;border:none;border-radius:10px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#153a78}
+.btn.alt{background:#eef2fb;color:var(--blue)}
+.btn.alt:hover{background:#dde6f8}
+.btn:disabled{opacity:.5;cursor:default}
+#stage{position:relative;overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:10px;background:#0a1638;
+  display:flex;align-items:flex-start;justify-content:center;min-height:200px}
+#stage img{max-width:100%;display:block;cursor:crosshair;user-select:none;-webkit-user-drag:none}
+#stage .hint-empty{color:#7d90bb;font-size:13px;padding:60px 20px;text-align:center}
+.facebox{position:absolute;border:2px solid var(--yellow);border-radius:6px;cursor:pointer;
+  box-shadow:0 0 0 2px rgba(10,22,56,.5);transition:border-color .12s}
+.facebox:hover{border-color:#fff}
+.facebox .fb-n{position:absolute;top:-10px;left:-10px;width:20px;height:20px;border-radius:50%;
+  background:var(--yellow);color:var(--blue3);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.cross{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;pointer-events:none}
+.cross::before,.cross::after{content:'';position:absolute;background:var(--yellow)}
+.cross::before{left:8px;top:0;width:2px;height:18px}
+.cross::after{top:8px;left:0;height:2px;width:18px}
+.previews{display:flex;align-items:flex-end;gap:14px;margin:6px 0 14px}
+.pv{text-align:center}
+.pv .circ{border-radius:50%;overflow:hidden;background:#dfe6f2;margin:0 auto;position:relative;isolation:isolate}
+.pv .circ img{width:100%;height:100%;object-fit:cover;display:block}
+.pv .lbl{font-size:10px;color:#8a9ab5;margin-top:4px}
+.slider-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
+.slider-row label{width:52px;color:#6a82a8;flex-shrink:0}
+.slider-row input[type=range]{flex:1}
+.slider-row .val{width:58px;text-align:right;font-variant-numeric:tabular-nums;color:var(--blue3);font-weight:700}
+.name-row{display:flex;gap:8px;margin-bottom:10px}
+.name-row input{flex:1;padding:8px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px}
+#out{width:100%;font-family:ui-monospace,monospace;font-size:11.5px;border:1px solid var(--line);border-radius:10px;
+  padding:10px;background:#f8fafd;resize:vertical;min-height:96px;white-space:pre;color:#1c2e4a}
+.status{font-size:11px;color:#6a82a8;min-height:16px;margin-top:6px}
+.status.ok{color:#2e7d32}.status.err{color:#c62828}
+.drop-over #stage{outline:3px dashed var(--yellow);outline-offset:-3px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎯 Photo Picker AI</h1>
+  <span class="sub">výřezy z týmovek — klikni na obličej, hotovo · HC Motor ČB</span>
+</header>
+
+<div class="wrap">
+  <!-- ── LEVÁ ČÁST: fotka ── -->
+  <div class="panel">
+    <h2>1 · Fotka</h2>
+    <div class="src-row">
+      <input type="text" id="urlInput" placeholder="https://hcmotor.cz/… (URL fotky) — nebo přetáhni soubor kamkoliv na stránku">
+      <button class="btn" onclick="loadFromUrl()">Načíst</button>
+      <button class="btn alt" id="btnDetect" onclick="detectFaces()" disabled>🤖 Najít obličeje</button>
+    </div>
+    <div id="stage">
+      <div class="hint-empty">Vlož URL nebo sem přetáhni fotku z disku.<br><br>
+      Pak <b>klikni na obličej hráče</b> — výřez se spočítá sám.</div>
+    </div>
+    <div class="status" id="stageStatus"></div>
+  </div>
+
+  <!-- ── PRAVÁ ČÁST: náhled + výstup ── -->
+  <div class="panel">
+    <h2>2 · Náhled (přesně jako v mapě)</h2>
+    <div class="previews">
+      <div class="pv"><div class="circ" style="width:24px;height:24px"><img id="pv1"></div><div class="lbl">24 px<br>soupiska</div></div>
+      <div class="pv"><div class="circ" style="width:48px;height:48px"><img id="pv2"></div><div class="lbl">48 px<br>seznam</div></div>
+      <div class="pv"><div class="circ" style="width:120px;height:120px"><img id="pv3"></div><div class="lbl">120 px<br>detail</div></div>
+    </div>
+
+    <h2>3 · Doladění</h2>
+    <div class="slider-row"><label>Zoom</label><input type="range" id="sZoom" min="1.1" max="8" step="0.05" value="2.5" oninput="fromSliders()"><span class="val" id="vZoom">2.50</span></div>
+    <div class="slider-row"><label>Střed X</label><input type="range" id="sX" min="0" max="100" step="0.5" value="50" oninput="fromSliders()"><span class="val" id="vX">50 %</span></div>
+    <div class="slider-row"><label>Střed Y</label><input type="range" id="sY" min="0" max="100" step="0.5" value="50" oninput="fromSliders()"><span class="val" id="vY">50 %</span></div>
+
+    <h2 style="margin-top:14px">4 · Výstup</h2>
+    <div class="name-row">
+      <input type="text" id="nameInput" placeholder="Jméno hráče (jen pro výstup)">
+      <button class="btn" onclick="copyOut()">Kopírovat</button>
+    </div>
+    <textarea id="out" readonly spellcheck="false"></textarea>
+    <div class="status" id="outStatus"></div>
+  </div>
+</div>
+
+<!-- face-api.js — jen pro AI detekci; bez ní nástroj funguje taky (klikání ručně) -->
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+'use strict';
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js/weights';
+
+let img = null;              // <img> ve stage
+let natW = 0, natH = 0;      // přirozené rozměry fotky
+let srcForOutput = '';       // co dát do "photo" v JSON (URL; u lokálního souboru prázdné)
+let centerFx = 0.5, centerFy = 0.5;  // zvolený střed výřezu (zlomek obrázku 0–1)
+let zoom = 2.5;
+let modelsLoaded = false;
+
+// ── Načtení fotky ───────────────────────────────────────────────
+function proxied(u){
+  try{
+    const url = new URL(u);
+    return 'https://images.weserv.nl/?url=' + encodeURIComponent(url.host + url.pathname + url.search);
+  }catch(e){ return u; }
+}
+
+function loadFromUrl(){
+  const u = document.getElementById('urlInput').value.trim();
+  if(!u){ setStatus('stageStatus','Vlož URL fotky.','err'); return; }
+  srcForOutput = u;
+  mountImage(proxied(u), 'URL fotky (přes proxy kvůli detekci)');
+}
+
+document.body.addEventListener('dragover', e=>{e.preventDefault();document.body.classList.add('drop-over');});
+document.body.addEventListener('dragleave', ()=>document.body.classList.remove('drop-over'));
+document.body.addEventListener('drop', e=>{
+  e.preventDefault(); document.body.classList.remove('drop-over');
+  const f = e.dataTransfer.files[0];
+  if(!f || !f.type.startsWith('image/')) return;
+  srcForOutput = '';   // lokální soubor — URL do JSONu doplníš sám
+  mountImage(URL.createObjectURL(f), 'lokální soubor: ' + f.name);
+});
+
+function mountImage(src, label){
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '';
+  img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = ()=>{
+    natW = img.naturalWidth; natH = img.naturalHeight;
+    setStatus('stageStatus', `Načteno ${natW}×${natH} px — ${label}. Klikni na obličej.`, 'ok');
+    document.getElementById('btnDetect').disabled = false;
+    centerFx = 0.5; centerFy = 0.5;
+    refreshPreview();
+  };
+  img.onerror = ()=> setStatus('stageStatus','Fotku se nepodařilo načíst (špatná URL, nebo výpadek proxy).','err');
+  img.src = src;
+  img.addEventListener('click', onImageClick);
+  stage.appendChild(img);
+}
+
+// ── Klik = střed výřezu ─────────────────────────────────────────
+function onImageClick(e){
+  const r = img.getBoundingClientRect();
+  centerFx = (e.clientX - r.left) / r.width;
+  centerFy = (e.clientY - r.top)  / r.height;
+  drawCross(e.clientX - r.left, e.clientY - r.top);
+  recomputePos();
+}
+
+function drawCross(x, y){
+  document.querySelectorAll('#stage .cross').forEach(el=>el.remove());
+  const c = document.createElement('div');
+  c.className = 'cross';
+  c.style.left = x + 'px'; c.style.top = y + 'px';
+  document.getElementById('stage').appendChild(c);
+}
+
+// ── AI detekce obličejů ─────────────────────────────────────────
+async function detectFaces(){
+  if(!img) return;
+  const btn = document.getElementById('btnDetect');
+  btn.disabled = true;
+  try{
+    if(!modelsLoaded){
+      setStatus('stageStatus','Stahuji AI model (~190 kB)…');
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      modelsLoaded = true;
+    }
+    setStatus('stageStatus','Hledám obličeje…');
+    const dets = await faceapi.detectAllFaces(img,
+      new faceapi.TinyFaceDetectorOptions({inputSize: 608, scoreThreshold: 0.3}));
+    document.querySelectorAll('#stage .facebox').forEach(el=>el.remove());
+    if(!dets.length){ setStatus('stageStatus','Žádný obličej nenalezen — klikni ručně.','err'); btn.disabled=false; return; }
+
+    const r = img.getBoundingClientRect();
+    const sx = r.width / natW, sy = r.height / natH;
+    dets.forEach((d, i)=>{
+      const b = d.box;
+      const el = document.createElement('div');
+      el.className = 'facebox';
+      el.style.left   = (b.x * sx) + 'px';
+      el.style.top    = (b.y * sy) + 'px';
+      el.style.width  = (b.width  * sx) + 'px';
+      el.style.height = (b.height * sy) + 'px';
+      el.innerHTML = `<span class="fb-n">${i+1}</span>`;
+      el.title = 'Klikni pro výřez tohoto hráče';
+      el.addEventListener('click', ev=>{
+        ev.stopPropagation();
+        pickFace(b);
+      });
+      document.getElementById('stage').appendChild(el);
+    });
+    setStatus('stageStatus', `Nalezeno ${dets.length} obličejů — klikni na ten správný.`, 'ok');
+  }catch(err){
+    console.error(err);
+    setStatus('stageStatus','AI detekce selhala (CDN nedostupné?). Klikej ručně — funguje to taky.','err');
+  }
+  btn.disabled = false;
+}
+
+// Z obličejového boxu: střed + automatický zoom podle velikosti hlavy
+function pickFace(b){
+  centerFx = (b.x + b.width/2)  / natW;
+  centerFy = (b.y + b.height/2 - b.height*0.12) / natH;  // lehce nahoru kvůli vlasům
+  // Zoom: viditelné okno má být ~2.3× výška obličeje (hlava + ramena)
+  const s0 = Math.max(100/natW, 100/natH);        // cover scale (kontejner = 100)
+  const faceHCover = b.height * s0;
+  zoom = clamp(100 / (faceHCover * 2.3), 1.1, 8);
+  document.getElementById('sZoom').value = zoom.toFixed(2);
+  recomputePos();
+}
+
+// ── Jádro: střed+zoom → photoPos (transform-origin) ────────────
+// Mapa dělá: object-fit:cover (centrováno) + scale(Z) kolem transform-origin.
+// Viditelné okno po scale má šířku 100/Z a začíná na ax·(1−1/Z).
+// Chceme střed okna = zvolený bod → ax = (u − 50/Z) · Z/(Z−1)
+function computePos(){
+  const s0 = Math.max(100/natW, 100/natH);
+  const DW = natW*s0, DH = natH*s0;
+  const ox = (100-DW)/2, oy = (100-DH)/2;
+  const u = ox + centerFx*natW*s0;
+  const v = oy + centerFy*natH*s0;
+  const Z = zoom;
+  const ax = clamp((u - 50/Z) * Z/(Z-1), 0, 100);
+  const ay = clamp((v - 50/Z) * Z/(Z-1), 0, 100);
+  return { x: Math.round(ax*2)/2, y: Math.round(ay*2)/2 };
+}
+
+function recomputePos(){
+  const p = computePos();
+  document.getElementById('sX').value = p.x;
+  document.getElementById('sY').value = p.y;
+  refreshPreview();
+}
+
+// Posuvníky ovládají přímo photoPos/zoom (doladění po auto-výpočtu)
+function fromSliders(){
+  zoom = parseFloat(document.getElementById('sZoom').value);
+  refreshPreview();
+}
+
+function refreshPreview(){
+  if(!img) return;
+  const px = parseFloat(document.getElementById('sX').value);
+  const py = parseFloat(document.getElementById('sY').value);
+  document.getElementById('vZoom').textContent = zoom.toFixed(2);
+  document.getElementById('vX').textContent = px + ' %';
+  document.getElementById('vY').textContent = py + ' %';
+  const style = `transform:scale(${zoom});transform-origin:${px}% ${py}%;`;
+  ['pv1','pv2','pv3'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.src = img.src;
+    el.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;' + style;
+  });
+  writeOutput(px, py);
+}
+
+function writeOutput(px, py){
+  const name = document.getElementById('nameInput').value.trim();
+  const pos = `${px}% ${py}%`;
+  const z = zoom.toFixed(2).replace(/\.?0+$/,'');
+  const jsonPart =
+`"photo": "${srcForOutput || 'DOPLŇ_URL'}",
+"photoPos": "${pos}",
+"photoZoom": ${z}`;
+  const oneLiner = `${name || 'JMÉNO'} | ${srcForOutput || 'URL'} | ${pos} | ${z}`;
+  document.getElementById('out').value = jsonPart + '\n\n' + oneLiner;
+}
+
+function copyOut(){
+  navigator.clipboard.writeText(document.getElementById('out').value)
+    .then(()=> setStatus('outStatus','Zkopírováno ✓','ok'))
+    .catch(()=> setStatus('outStatus','Kopírování selhalo — označ a zkopíruj ručně.','err'));
+}
+
+function setStatus(id, msg, cls){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status' + (cls ? ' '+cls : '');
+}
+
+function clamp(v, a, b){ return Math.min(b, Math.max(a, v)); }
+
+document.getElementById('nameInput').addEventListener('input', refreshPreview);
+document.getElementById('urlInput').addEventListener('keydown', e=>{ if(e.key==='Enter') loadFromUrl(); });
+</script>
+</body>
+</html>
