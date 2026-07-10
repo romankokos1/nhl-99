@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Checker — kontrola odkazů na fotky</title>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  HLÍDAČ MRTVÝCH ODKAZŮ NA FOTKY
+  ───────────────────────────────────────────────────────────────
+  1. Otevři tuto stránku ze složky, kde leží hcmotor_players.json
+     (např. na GitHub Pages: …/photo_checker.html) — načte se sám.
+     NEBO přetáhni JSON soubor kamkoliv na stránku.
+  2. Klikni "Spustit kontrolu" — projede všechny fotky.
+  3. Výsledek: seznam mrtvých odkazů se jmény hráčů + kopírování.
+
+  Kontrola jde přes načítání obrázků prohlížečem (Image objekt),
+  takže funguje i pro cizí domény bez CORS. Doporučené spouštění:
+  jednou za měsíc, nebo po každé větší dávce fotek.
+  ═══════════════════════════════════════════════════════════════
+-->
+<style>
+:root{--blue:#1c4896;--blue3:#0f2f6a;--yellow:#f5c300;--line:#dde4f0;--ok:#2e7d32;--err:#c62828;--warn:#e08a00}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,'Segoe UI',sans-serif;background:#f2f5fb;color:#1c2e4a}
+header{background:var(--blue3);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px}
+header h1{font-size:16px;margin:0;font-weight:800}
+header .sub{font-size:11px;opacity:.65}
+.wrap{max-width:860px;margin:0 auto;padding:16px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{padding:10px 18px;border:none;border-radius:10px;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+.btn:hover{background:#153a78}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.alt{background:#eef2fb;color:var(--blue)}
+.src-info{font-size:12px;color:#6a82a8}
+.progress-wrap{height:10px;background:#e8edf7;border-radius:5px;overflow:hidden;margin:14px 0 6px}
+.progress{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--yellow));transition:width .2s}
+.counters{display:flex;gap:18px;font-size:13px;font-weight:700}
+.counters .c-ok{color:var(--ok)}.counters .c-err{color:var(--err)}.counters .c-to{color:var(--warn)}
+.counters .c-run{color:#6a82a8;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+th{text-align:left;padding:7px 10px;background:#f4f7fd;color:#6a82a8;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td{padding:7px 10px;border-top:1px solid #eef2f8;vertical-align:top}
+td a{color:var(--blue);word-break:break-all;text-decoration:none}
+td a:hover{text-decoration:underline}
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10.5px;font-weight:800}
+.badge.err{background:#fdecea;color:var(--err)}
+.badge.to{background:#fdf3e3;color:var(--warn)}
+.empty{color:#8a9ab5;font-size:13px;text-align:center;padding:24px}
+.drop-over{outline:3px dashed var(--yellow);outline-offset:-3px}
+.note{font-size:11px;color:#8a9ab5;margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+  <h1>🩺 Photo Checker</h1>
+  <span class="sub">kontrola odkazů na fotky hráčů · HC Motor ČB</span>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <div class="row">
+      <button class="btn" id="btnRun" onclick="runCheck()" disabled>Spustit kontrolu</button>
+      <button class="btn alt" id="btnCopy" onclick="copyFails()" disabled>Kopírovat chybné</button>
+      <span class="src-info" id="srcInfo">Načítám hcmotor_players.json…</span>
+    </div>
+    <div class="progress-wrap"><div class="progress" id="prog"></div></div>
+    <div class="counters">
+      <span class="c-run" id="cRun">—</span>
+      <span class="c-ok">✓ <span id="cOk">0</span> OK</span>
+      <span class="c-err">✕ <span id="cErr">0</span> mrtvých</span>
+      <span class="c-to">⏱ <span id="cTo">0</span> timeout</span>
+    </div>
+    <div class="note">Timeout = fotka se do 12 s nenačetla — může to být jen pomalý server; ověř ručně kliknutím.
+    Kontrola běží po 6 fotkách současně, u 400+ fotek počítej s ~2–5 minutami.</div>
+  </div>
+
+  <div class="panel">
+    <table id="failTable" style="display:none">
+      <thead><tr><th style="width:34px">#</th><th style="width:170px">Hráč</th><th style="width:70px">Stav</th><th>URL</th></tr></thead>
+      <tbody id="failBody"></tbody>
+    </table>
+    <div class="empty" id="emptyMsg">Zatím žádné výsledky.</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+let players = [];
+let fails = [];   // {name, url, kind:'err'|'to'}
+let running = false;
+
+// ── Načtení dat: automaticky ze stejné složky, nebo drag&drop ──
+fetch('hcmotor_players.json')
+  .then(r => { if(!r.ok) throw 0; return r.json(); })
+  .then(setData)
+  .catch(() => {
+    document.getElementById('srcInfo').textContent =
+      'hcmotor_players.json nenalezen ve složce — přetáhni ho sem myší.';
+  });
+
+document.body.addEventListener('dragover', e=>{e.preventDefault();document.body.classList.add('drop-over');});
+document.body.addEventListener('dragleave', ()=>document.body.classList.remove('drop-over'));
+document.body.addEventListener('drop', e=>{
+  e.preventDefault(); document.body.classList.remove('drop-over');
+  const f = e.dataTransfer.files[0];
+  if(!f) return;
+  f.text().then(t => {
+    try { setData(JSON.parse(t)); }
+    catch(err){ document.getElementById('srcInfo').textContent = 'Soubor není platný JSON.'; }
+  });
+});
+
+function setData(data){
+  players = Array.isArray(data) ? data : (data.players || []);
+  const withPhoto = players.filter(p => p.photo);
+  document.getElementById('srcInfo').textContent =
+    `Načteno ${players.length} hráčů, z toho ${withPhoto.length} s fotkou.`;
+  document.getElementById('btnRun').disabled = withPhoto.length === 0;
+}
+
+// ── Kontrola: Image() load — funguje cross-origin bez CORS ─────
+function checkOne(url){
+  return new Promise(resolve => {
+    const img = new Image();
+    let done = false;
+    const to = setTimeout(() => { if(!done){done=true; resolve('to');} }, 12000);
+    img.onload  = () => { if(!done){done=true; clearTimeout(to); resolve('ok');} };
+    img.onerror = () => { if(!done){done=true; clearTimeout(to); resolve('err');} };
+    // cache-buster ne — chceme reálný stav včetně CDN cache, a šetříme servery
+    img.src = url;
+  });
+}
+
+async function runCheck(){
+  if(running) return;
+  running = true;
+  fails = [];
+  document.getElementById('btnRun').disabled = true;
+  document.getElementById('btnCopy').disabled = true;
+  document.getElementById('failBody').innerHTML = '';
+  document.getElementById('failTable').style.display = 'none';
+  document.getElementById('emptyMsg').textContent = 'Kontrola běží…';
+  document.getElementById('emptyMsg').style.display = '';
+
+  const items = players
+    .map(p => ({ name: fullNameOf(p), url: p.photo }))
+    .filter(x => x.url);
+
+  let done = 0, ok = 0, err = 0, to = 0;
+  const total = items.length;
+
+  // fronta se 6 paralelními sloty
+  let idx = 0;
+  async function worker(){
+    while(idx < items.length){
+      const item = items[idx++];
+      const res = await checkOne(item.url);
+      done++;
+      if(res === 'ok') ok++;
+      else {
+        if(res === 'err') err++; else to++;
+        fails.push({ ...item, kind: res });
+        appendFailRow(fails.length, item, res);
+      }
+      document.getElementById('prog').style.width = (done/total*100).toFixed(1) + '%';
+      document.getElementById('cRun').textContent = `${done}/${total}`;
+      document.getElementById('cOk').textContent = ok;
+      document.getElementById('cErr').textContent = err;
+      document.getElementById('cTo').textContent = to;
+    }
+  }
+  await Promise.all([worker(), worker(), worker(), worker(), worker(), worker()]);
+
+  document.getElementById('emptyMsg').style.display = fails.length ? 'none' : '';
+  document.getElementById('emptyMsg').textContent = fails.length ? '' : '🎉 Všechny fotky v pořádku!';
+  document.getElementById('btnRun').disabled = false;
+  document.getElementById('btnCopy').disabled = fails.length === 0;
+  running = false;
+}
+
+function appendFailRow(n, item, kind){
+  document.getElementById('failTable').style.display = '';
+  document.getElementById('emptyMsg').style.display = 'none';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${n}</td>
+    <td><b>${escHtml(item.name)}</b></td>
+    <td><span class="badge ${kind==='to'?'to':'err'}">${kind==='to'?'TIMEOUT':'MRTVÝ'}</span></td>
+    <td><a href="${escAttr(item.url)}" target="_blank" rel="noopener">${escHtml(item.url)}</a></td>`;
+  document.getElementById('failBody').appendChild(tr);
+}
+
+function copyFails(){
+  const txt = fails.map(f => `${f.name}\t${f.kind==='to'?'TIMEOUT':'MRTVÝ'}\t${f.url}`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b = document.getElementById('btnCopy');
+    const orig = b.textContent;
+    b.textContent = '✓ Zkopírováno';
+    setTimeout(()=>{ b.textContent = orig; }, 1500);
+  });
+}
+
+function fullNameOf(p){
+  return [(p.surname||''),(p.firstname||'')].filter(Boolean).join(' ') || '(beze jména)';
+}
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
