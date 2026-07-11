@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motor ČB — 100 let hokeje | Interaktivní časová osa</title>
+<meta name="description" content="Interaktivní časová osa historie hokeje v Českých Budějovicích — od kroniky z roku 1911 po současný Banes Motor.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ice:      #0B1120;   /* pozadí — noční led */
+    --panel:    #121B31;   /* karty */
+    --panel-hi: #16213C;
+    --line:     #243352;   /* rámečky */
+    --text:     #E9EEF7;
+    --muted:    #8FA0BF;
+    --red:      #E03131;   /* středová čára kluziště / milníky */
+    --gold:     #F6C445;   /* žlutá z dresů / úspěchy */
+    --blue:     #5B8DEF;   /* ledová modrá / legendy */
+    --grey:     #7C8AA5;   /* názvy klubu */
+    --spine-w:  4px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ice);
+    color:var(--text);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    line-height:1.55;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--red);color:#fff}
+
+  /* ---------- obří rok na pozadí (podpis stránky) ---------- */
+  #watermark{
+    position:fixed;
+    top:50%;right:-0.06em;
+    transform:translateY(-50%);
+    font-family:"Anton",sans-serif;
+    font-size:clamp(9rem,28vw,26rem);
+    line-height:1;
+    color:transparent;
+    -webkit-text-stroke:1px rgba(91,141,239,.14);
+    letter-spacing:.02em;
+    pointer-events:none;
+    user-select:none;
+    z-index:0;
+    transition:opacity .4s;
+    opacity:0;
+  }
+  #watermark.visible{opacity:1}
+
+  main{position:relative;z-index:1}
+
+  /* ---------- hero ---------- */
+  header{
+    min-height:88vh;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:4rem clamp(1.25rem,6vw,6rem) 3rem;
+    position:relative;
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.85rem;letter-spacing:.35em;
+    color:var(--gold);
+    margin-bottom:1.2rem;
+  }
+  h1{
+    font-family:"Anton",sans-serif;
+    font-weight:400;
+    font-size:clamp(3.6rem,13vw,10.5rem);
+    line-height:.95;
+    text-transform:uppercase;
+    letter-spacing:.01em;
+  }
+  h1 .stroke{
+    color:transparent;
+    -webkit-text-stroke:2px var(--red);
+  }
+  .subtitle{
+    max-width:34rem;
+    margin-top:1.6rem;
+    color:var(--muted);
+    font-size:clamp(1rem,1.6vw,1.15rem);
+  }
+  .scroll-hint{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.8rem;color:var(--muted);
+    margin-top:3rem;
+    display:flex;align-items:center;gap:.6rem;
+  }
+  .scroll-hint::after{
+    content:"";display:block;width:1px;height:2.4rem;
+    background:linear-gradient(var(--muted),transparent);
+  }
+
+  /* ---------- filtry ---------- */
+  nav.filters{
+    position:sticky;top:0;z-index:5;
+    display:flex;flex-wrap:wrap;gap:.5rem;
+    padding:.9rem clamp(1.25rem,6vw,6rem);
+    background:rgba(11,17,32,.88);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .chip{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.78rem;letter-spacing:.05em;
+    padding:.45rem .9rem;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:transparent;color:var(--muted);
+    cursor:pointer;
+    transition:color .15s,border-color .15s,background .15s;
+    display:flex;align-items:center;gap:.5rem;
+  }
+  .chip .dot{width:.55rem;height:.55rem;border-radius:50%;background:var(--c,var(--muted))}
+  .chip:hover{color:var(--text);border-color:var(--muted)}
+  .chip.active{color:var(--text);border-color:var(--c,var(--text));background:rgba(255,255,255,.04)}
+  .chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+  /* ---------- časová osa ---------- */
+  #timeline{
+    position:relative;
+    padding:4rem 0 6rem;
+    max-width:72rem;
+    margin:0 auto;
+  }
+  /* středová čára kluziště */
+  #timeline::before{
+    content:"";
+    position:absolute;top:0;bottom:0;left:50%;
+    width:var(--spine-w);
+    transform:translateX(-50%);
+    background:repeating-linear-gradient(
+      to bottom,
+      var(--red) 0 14px,
+      rgba(224,49,49,.35) 14px 20px
+    );
+    border-radius:2px;
+  }
+  .era{
+    font-family:"Anton",sans-serif;
+    font-size:clamp(1.6rem,3.4vw,2.6rem);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--blue);
+    text-align:center;
+    margin:4.5rem 0 2.5rem;
+    position:relative;z-index:2;
+  }
+  .era span{
+    background:var(--ice);
+    padding:0 1.2rem;
+  }
+  .event{
+    position:relative;
+    width:50%;
+    padding:0 3.2rem 3.2rem 0;
+  }
+  .event:nth-child(even){margin-left:50%;padding:0 0 3.2rem 3.2rem}
+  /* bod vhazování */
+  .event::before{
+    content:"";
+    position:absolute;top:.4rem;
+    width:1.05rem;height:1.05rem;
+    border-radius:50%;
+    background:var(--ice);
+    border:3px solid var(--accent,var(--muted));
+    z-index:2;
+  }
+  .event:nth-child(odd)::before{right:calc(-.55rem - var(--spine-w)/2 + 2px)}
+  .event:nth-child(even)::before{left:calc(-.55rem - var(--spine-w)/2 + 2px)}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent,var(--muted));
+    border-radius:10px;
+    padding:1.15rem 1.3rem 1.25rem;
+    transition:transform .2s,background .2s;
+  }
+  .event:nth-child(even) .card{
+    border-left:1px solid var(--line);
+    border-right:3px solid var(--accent,var(--muted));
+  }
+  .card:hover{transform:translateY(-3px);background:var(--panel-hi)}
+  .card .year{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.95rem;font-weight:600;
+    color:var(--accent,var(--text));
+    letter-spacing:.08em;
+  }
+  .card .tag{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.66rem;letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    float:right;margin-top:.25rem;
+  }
+  .card h3{
+    font-size:1.08rem;font-weight:600;
+    margin:.35rem 0 .45rem;
+    clear:both;
+  }
+  .card p{font-size:.92rem;color:var(--muted)}
+
+  /* reveal animace */
+  .event{opacity:0;transform:translateY(26px);transition:opacity .55s ease,transform .55s ease}
+  .event.shown{opacity:1;transform:none}
+  .event.hidden-cat{display:none}
+
+  /* ---------- patička ---------- */
+  footer{
+    border-top:1px solid var(--line);
+    padding:2.5rem clamp(1.25rem,6vw,6rem) 3.5rem;
+    color:var(--muted);
+    font-size:.85rem;
+    position:relative;z-index:1;
+    background:var(--ice);
+  }
+  footer .mono{font-family:"IBM Plex Mono",monospace;font-size:.78rem}
+  footer a{color:var(--blue)}
+
+  /* ---------- mobil ---------- */
+  @media (max-width:760px){
+    #timeline::before{left:1.1rem;transform:none}
+    .event,
+    .event:nth-child(even){
+      width:100%;margin-left:0;
+      padding:0 0 2.4rem 2.9rem;
+    }
+    .event:nth-child(odd)::before,
+    .event:nth-child(even)::before{
+      left:calc(1.1rem - .55rem + var(--spine-w)/2 - 2px);right:auto;
+    }
+    .event:nth-child(even) .card{
+      border-right:1px solid var(--line);
+      border-left:3px solid var(--accent,var(--muted));
+    }
+    .era{text-align:left;padding-left:2.9rem}
+    .era span{padding:0}
+    #watermark{font-size:34vw;opacity:.9}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .event{opacity:1;transform:none;transition:none}
+    .card:hover{transform:none}
+    #watermark{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<div id="watermark" aria-hidden="true">1928</div>
+
+<main>
+  <header>
+    <p class="eyebrow">1911 — dnes · České Budějovice</p>
+    <h1>Motor<br><span class="stroke">sto let</span><br>na ledě</h1>
+    <p class="subtitle">Interaktivní časová osa hokeje na soutoku Vltavy a Malše — od zápisu ve školní kronice přes mistrovský titul, exodus do Hradce až po návrat mezi extraligovou elitu.</p>
+    <p class="scroll-hint">scrolluj dolů</p>
+  </header>
+
+  <nav class="filters" aria-label="Filtr kategorií">
+    <button class="chip active" data-cat="all"><span class="dot" style="--c:var(--text)"></span>Vše</button>
+    <button class="chip" data-cat="milnik" style="--c:var(--red)"><span class="dot"></span>Milníky</button>
+    <button class="chip" data-cat="uspech" style="--c:var(--gold)"><span class="dot"></span>Úspěchy</button>
+    <button class="chip" data-cat="legenda" style="--c:var(--blue)"><span class="dot"></span>Legendy</button>
+    <button class="chip" data-cat="nazev" style="--c:var(--grey)"><span class="dot"></span>Názvy klubu</button>
+  </nav>
+
+  <section id="timeline" aria-label="Časová osa"></section>
+
+  <footer>
+    <p><strong>Zdroje:</strong> hcmotor.cz, hokej.cz, Wikipedie a dobový tisk. Časovou osu sestavil fanoušek pro fanoušky — našel jsi chybu nebo chybějící milník? Napiš, doplním.</p>
+    <p class="mono" style="margin-top:.8rem">Banes Motor České Budějovice · tradice od roku 1928 · Budvar aréna</p>
+  </footer>
+</main>
+
+<script>
+/* =====================================================================
+   DATA ČASOVÉ OSY
+   Novou událost přidáš jedním objektem do pole EVENTS:
+   { year: "1951", sort: 1951, cat: "uspech", title: "…", text: "…" }
+   cat: "milnik" | "uspech" | "legenda" | "nazev"
+   sort určuje pořadí (rok jako číslo), year je zobrazený text.
+   Nadpis éry vložíš objektem { era: "Název éry", sort: 1950 }.
+===================================================================== */
+const EVENTS = [
+  { era: "Průkopníci", sort: 1910 },
+  { year: "1911", sort: 1911, cat: "milnik", title: "První zmínka o hokeji",
+    text: "Kronika SK České Budějovice zaznamenává první hokejové družstvo — tvoří ho sextáni místního gymnázia." },
+  { year: "1913", sort: 1913, cat: "milnik", title: "První zápas v bandy",
+    text: "12. ledna se na kluzišti ČLTC utkají první a druhé mužstvo Hockeyového kroužku, který dal dohromady dr. Zdeněk Černý." },
+  { year: "20. léta", sort: 1922, cat: "milnik", title: "První utkání kanadského hokeje",
+    text: "SK České Budějovice poráží SK Písek 2:1 v historicky prvním domácím utkání kanadského hokeje." },
+
+  { era: "AC Stadion", sort: 1927 },
+  { year: "1928", sort: 1928, cat: "nazev", title: "Vzniká AC Stadion České Budějovice",
+    text: "10. ledna se slučují Viktorie a Slovan. Rok 1928 dodnes nese klubové logo jako rok založení." },
+  { year: "1930", sort: 1930, cat: "uspech", title: "Mistr českého venkova",
+    text: "AC Stadion získává titul mistra českého venkova a etabluje se mezi předními kluby země." },
+  { year: "1936/37", sort: 1936, cat: "milnik", title: "U zrodu celostátní ligy",
+    text: "Stadion hraje hned v prvním ročníku celostátní nejvyšší soutěže — začíná tradice, díky které patří Budějovice k městům s nejvíce prvoligovými sezonami." },
+  { year: "1946", sort: 1946, cat: "milnik", title: "Umělý led u soutoku",
+    text: "27. října se otevírá první kluziště s umělou ledovou plochou. Dnešní Budvar aréna je nejdéle kontinuálně fungujícím zimním stadionem v ČR; střechu dostala v roce 1967." },
+
+  { era: "Zlatá padesátá", sort: 1949 },
+  { year: "1950/51", sort: 1950, cat: "uspech", title: "Mistrovský titul",
+    text: "Pod dobovým názvem SKP České Budějovice získává klub jediný mistrovský titul své historie. Dodnes největší úspěch jihočeského hokeje." },
+  { year: "1952", sort: 1952, cat: "nazev", title: "Éra Slavoje",
+    text: "Po sérii poúnorových přejmenování se název ustaluje na Slavoj České Budějovice — éra spjatá se jmény Hajšman, Španinger, Vodička či Bílek." },
+
+  { era: "Motor", sort: 1964 },
+  { year: "1965", sort: 1965, cat: "nazev", title: "Hokej přebírá Motor",
+    text: "4. října se v kritické ekonomické situaci ujímá klubu národní podnik Motor a pomáhá mu zpět mezi elitu. Rodí se jméno, ke kterému se klub hlásí dodnes." },
+  { year: "70.–80. léta", sort: 1975, cat: "legenda", title: "Líheň reprezentantů",
+    text: "Éra Motoru dává československému hokeji Miroslava Dvořáka, Jaroslava Pouzara, Jiřího Lálu, Vladimíra Caldra nebo Norberta Krále." },
+  { year: "1980/81", sort: 1980, cat: "uspech", title: "Stříbro o dva body",
+    text: "Motor končí druhý, jen dva body za Vítkovicemi. V sezoně experimentálně neplatily remízy — nebýt toho, slavil by se titul." },
+  { year: "1984–87", sort: 1984, cat: "legenda", title: "Pouzar zvedá Stanley Cup",
+    text: "Odchovanec Jaroslav Pouzar vyhrává s Edmontonem po boku Wayna Gretzkyho třikrát Stanley Cup (1984, 1985, 1987)." },
+
+  { era: "Extraliga", sort: 1991 },
+  { year: "1992", sort: 1992, cat: "nazev", title: "HC České Budějovice",
+    text: "21. prosince, v čase rozpadu federace, přijímá klub hlásící se k tradici Stadionu, Slavoje i Motoru název HC České Budějovice." },
+  { year: "1994/95", sort: 1994, cat: "uspech", title: "Bronz v mladé extralize",
+    text: "Třetí místo v samostatné české extralize — nejlepší výsledek klubu v 90. letech." },
+  { year: "1999", sort: 1999, cat: "legenda", title: "Turek se Stanley Cupem",
+    text: "Odchovanec a pozdější spolumajitel klubu Roman Turek vyhrává Stanley Cup s Dallasem. Jihočeský patriot se do Budějovic ještě mnohokrát vrátí." },
+  { year: "2004/05", sort: 2004, cat: "milnik", title: "Sestup a okamžitý návrat",
+    text: "Po nevydařeném ročníku a neúspěšné baráži přichází sestup do 1. ligy. Tým pod Josefem Jandačem se ale hned následující sezonu vrací mezi elitu." },
+  { year: "2006", sort: 2006, cat: "nazev", title: "Éra Mountfieldu",
+    text: "Do klubu vstupuje nový generální partner a začíná období HC Mountfield České Budějovice." },
+  { year: "2007/08", sort: 2007, cat: "uspech", title: "Vítěz základní části",
+    text: "Jihočeši poprvé a zatím naposledy ovládají základní část extraligy. V semifinále play off končí a berou celkově bronz." },
+
+  { era: "Exodus a vzkříšení", sort: 2012 },
+  { year: "2013", sort: 2013, cat: "milnik", title: "Licence odchází do Hradce",
+    text: "Po sporech ve městě stěhuje majitel extraligovou licenci i kádr do Hradce Králové. Z hvězd zůstává jediný Aleš Kotalík — a rodí se velká rivalita." },
+  { year: "2013", sort: 2013.5, cat: "nazev", title: "Fanoušci vrací jméno Motor",
+    text: "Pětice bývalých hráčů — Bednařík, Bělohlav, Kotalík, Sailer a Turek — zakládá nový klub pro 1. ligu. Název HC Motor České Budějovice vybírají fanoušci v hlasování." },
+  { year: "2015–19", sort: 2017, cat: "milnik", title: "Tři marné baráže",
+    text: "Motor patří ke špičce první ligy, ale baráže o extraligu na jaře 2015, 2017 a 2019 končí zklamáním." },
+  { year: "2020", sort: 2020, cat: "milnik", title: "Návrat mezi elitu",
+    text: "V sezoně předčasně ukončené pandemií postupuje Motor do extraligy napřímo, bez baráže. Po sedmi letech je jihočeský hokej zpátky nahoře." },
+
+  { era: "Současnost", sort: 2021 },
+  { year: "2021/22", sort: 2021.5, cat: "uspech", title: "Bronzová jízda",
+    text: "Pod trenérem Jaroslavem Modrým a s lídry Gulašem, Pechem a Vondrkou bere Motor bronz v základní části i play off — největší úspěch obnoveného klubu." },
+  { year: "2023", sort: 2023, cat: "milnik", title: "Turek prezidentem, přichází Banes",
+    text: "Prezidentem klubu se stává Roman Turek a generálním partnerem strojírenská firma Banes — tým nese název Banes Motor České Budějovice." },
+  { year: "2024/25", sort: 2024.5, cat: "milnik", title: "Čtvrtfinále play off",
+    text: "Motor končí ve čtvrtfinále na holích pozdějšího finalisty z Pardubic." },
+  { year: "2025/26", sort: 2025.5, cat: "milnik", title: "Těsné předkolo s Kometou",
+    text: "Vyrovnané předkolo play off s obhájcem titulu z Brna končí přes střeleckou převahu (ve 4. zápase 45:20) porážkou 1:3 na zápasy." },
+];
+
+/* ---------- render ---------- */
+const tl = document.getElementById("timeline");
+EVENTS.sort((a,b)=>a.sort-b.sort);
+
+const CAT_LABEL = {milnik:"Milník", uspech:"Úspěch", legenda:"Legenda", nazev:"Název klubu"};
+const CAT_COLOR = {milnik:"var(--red)", uspech:"var(--gold)", legenda:"var(--blue)", nazev:"var(--grey)"};
+
+for (const ev of EVENTS){
+  if (ev.era){
+    const h = document.createElement("h2");
+    h.className = "era";
+    h.innerHTML = `<span>${ev.era}</span>`;
+    tl.appendChild(h);
+    continue;
+  }
+  const art = document.createElement("article");
+  art.className = "event";
+  art.dataset.cat = ev.cat;
+  art.dataset.year = ev.year;
+  art.style.setProperty("--accent", CAT_COLOR[ev.cat]);
+  art.innerHTML = `
+    <div class="card">
+      <span class="tag">${CAT_LABEL[ev.cat]}</span>
+      <span class="year">${ev.year}</span>
+      <h3>${ev.title}</h3>
+      <p>${ev.text}</p>
+    </div>`;
+  tl.appendChild(art);
+}
+
+/* ---------- reveal + vodoznak roku ---------- */
+const watermark = document.getElementById("watermark");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const revealObs = new IntersectionObserver((entries)=>{
+  for (const e of entries){
+    if (e.isIntersecting) e.target.classList.add("shown");
+  }
+},{threshold:.15});
+
+const yearObs = new IntersectionObserver((entries)=>{
+  for (const e of entries){
+    if (e.isIntersecting){
+      watermark.textContent = e.target.dataset.year.replace("/", "·").split("–")[0].split("·")[0].trim();
+      watermark.classList.add("visible");
+    }
+  }
+},{rootMargin:"-40% 0px -50% 0px"});
+
+document.querySelectorAll(".event").forEach(el=>{
+  if (reduced) el.classList.add("shown");
+  else revealObs.observe(el);
+  yearObs.observe(el);
+});
+
+/* vodoznak schovej mimo osu */
+const tlVisObs = new IntersectionObserver(([e])=>{
+  watermark.classList.toggle("visible", e.isIntersecting);
+});
+tlVisObs.observe(tl);
+
+/* ---------- filtry ---------- */
+document.querySelectorAll(".chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    const cat = chip.dataset.cat;
+    document.querySelectorAll(".event").forEach(ev=>{
+      ev.classList.toggle("hidden-cat", cat !== "all" && ev.dataset.cat !== cat);
+    });
+  });
+});
+</script>
+</body>
+</html>
