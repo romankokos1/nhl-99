@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PES 4 – Tipovačka smyšlených názvů</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:ital,wght@0,500;0,700;1,600;1,800&family=Barlow:wght@400;500;600&display=swap');
+
+:root{
+  --silver:#e9edf0; --steel:#c3ccd3; --plate:#f7f9fa; --ink:#15222d;
+  --pes-blue:#0a56a8; --cyan:#0a90c8; --orange:#f08c1e;
+  --pitch:#1d9e50; --red:#d23c3c; --muted:#5d6c78;
+  --skew:-6deg;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100%;}
+body{
+  background:var(--silver);color:var(--ink);
+  font-family:'Barlow',sans-serif;
+  background-image:
+    repeating-linear-gradient(115deg, rgba(255,255,255,.5) 0 2px, transparent 2px 14px),
+    linear-gradient(180deg,#f2f5f7 0%, #dfe6ea 60%, #cfd8de 100%);
+  background-attachment:fixed;
+  display:flex;justify-content:center;
+}
+.screen{width:100%;max-width:620px;padding:22px 16px 40px;display:none;flex-direction:column;gap:16px;}
+.screen.active{display:flex;}
+
+/* ── LOGO ── */
+.logo{padding:6px 0 2px;}
+.logo-main{
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:800;
+  font-size:clamp(2rem,8vw,2.9rem);line-height:1;letter-spacing:1px;
+  text-transform:uppercase;color:var(--pes-blue);
+  text-shadow:2px 2px 0 #fff, 4px 4px 0 rgba(10,86,168,.15);
+}
+.logo-main span{color:var(--orange);}
+.logo-sub{
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:600;
+  font-size:.85rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:4px;
+}
+
+/* ── PLATES (PES menu look) ── */
+.plate{
+  background:linear-gradient(180deg,#fff, var(--plate) 55%, #e6ebee);
+  border:1px solid var(--steel);
+  border-left:5px solid var(--pes-blue);
+  box-shadow:0 2px 0 rgba(21,34,45,.08);
+  transform:skewX(var(--skew));
+  padding:14px 18px;
+}
+.plate>*{transform:skewX(calc(var(--skew) * -1));}
+.plate-title{
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:700;
+  font-size:.8rem;letter-spacing:3px;text-transform:uppercase;color:var(--pes-blue);
+  margin-bottom:10px;
+}
+
+/* ── CHIP OPTIONS (menu) ── */
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:600;
+  font-size:.9rem;letter-spacing:1.5px;text-transform:uppercase;
+  padding:8px 14px;border:1px solid var(--steel);background:#fff;color:var(--ink);
+  cursor:pointer;transform:skewX(var(--skew));transition:border-color .15s, background .15s;
+}
+.chip>span{display:inline-block;transform:skewX(calc(var(--skew) * -1));}
+.chip:hover{border-color:var(--cyan);}
+.chip.active{background:var(--pes-blue);color:#fff;border-color:var(--pes-blue);}
+.chip.active>span{text-shadow:0 1px 0 rgba(0,0,0,.25);}
+.chip:focus-visible{outline:2px solid var(--orange);outline-offset:2px;}
+
+.start-btn{
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:800;
+  font-size:1.25rem;letter-spacing:4px;text-transform:uppercase;
+  width:100%;padding:16px;border:none;cursor:pointer;
+  background:linear-gradient(180deg,#ffb254,var(--orange) 45%,#d97a10);
+  color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.3);
+  transform:skewX(var(--skew));box-shadow:0 3px 0 #b56408;
+  transition:filter .15s, transform .1s;
+}
+.start-btn>span{display:inline-block;transform:skewX(calc(var(--skew) * -1));}
+.start-btn:hover{filter:brightness(1.06);}
+.start-btn:active{transform:skewX(var(--skew)) translateY(2px);box-shadow:0 1px 0 #b56408;}
+.start-btn:focus-visible{outline:3px solid var(--pes-blue);outline-offset:3px;}
+.best-line{font-size:.85rem;color:var(--muted);text-align:center;}
+
+/* ── GAME HEADER ── */
+.hud{display:flex;gap:8px;}
+.hud-box{
+  flex:1;text-align:center;padding:8px 4px;
+  background:#fff;border:1px solid var(--steel);transform:skewX(var(--skew));
+}
+.hud-box>div{transform:skewX(calc(var(--skew) * -1));}
+.hud-label{font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:600;font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.hud-val{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:1.35rem;line-height:1.1;}
+.hud-val.ok{color:var(--pitch);} .hud-val.no{color:var(--red);} .hud-val.st{color:var(--orange);}
+
+.timer-wrap{height:7px;background:#fff;border:1px solid var(--steel);transform:skewX(var(--skew));overflow:hidden;}
+.timer-fill{height:100%;width:100%;background:var(--pitch);transition:width .1s linear, background .4s;}
+
+/* ── QUESTION PLATE ── */
+.q-plate{
+  background:linear-gradient(180deg,#fdfdfe,#eef2f4 50%,#dde4e9);
+  border:1px solid var(--steel);border-left:6px solid var(--orange);
+  box-shadow:0 3px 0 rgba(21,34,45,.1);
+  transform:skewX(var(--skew));
+  padding:26px 20px 20px;text-align:center;position:relative;
+}
+.q-plate>*{transform:skewX(calc(var(--skew) * -1));}
+.q-label{font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:600;font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.q-fake{
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:800;
+  font-size:clamp(1.7rem,7vw,2.6rem);line-height:1.05;letter-spacing:1px;
+  text-transform:uppercase;color:var(--ink);
+  text-shadow:1px 1px 0 #fff;
+  min-height:2.4em;display:flex;align-items:center;justify-content:center;
+}
+.q-league{
+  display:inline-block;margin-top:10px;padding:3px 12px;
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:600;
+  font-size:.72rem;letter-spacing:2px;text-transform:uppercase;
+  color:#fff;background:var(--pes-blue);
+}
+.q-reveal{margin-top:10px;font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:700;font-size:1rem;letter-spacing:1px;text-transform:uppercase;min-height:1.3em;}
+.q-reveal.ok{color:var(--pitch);} .q-reveal.no{color:var(--red);}
+
+/* ── ANSWER OPTIONS ── */
+.opts{display:flex;flex-direction:column;gap:9px;}
+.opt{
+  position:relative;display:flex;align-items:center;gap:12px;
+  padding:13px 16px 13px 20px;
+  background:linear-gradient(180deg,#fff,var(--plate));
+  border:1px solid var(--steel);cursor:pointer;text-align:left;
+  transform:skewX(var(--skew));transition:border-color .12s, background .12s;
+}
+.opt>*{transform:skewX(calc(var(--skew) * -1));}
+.opt-key{
+  font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:.85rem;
+  color:var(--muted);border:1px solid var(--steel);padding:1px 7px;background:#fff;
+}
+.opt-name{font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:700;font-size:1.15rem;letter-spacing:.5px;text-transform:uppercase;color:var(--ink);}
+.opt::before{ /* PES orange cursor */
+  content:'';position:absolute;left:0;top:0;bottom:0;width:0;
+  background:var(--orange);transition:width .12s;transform:none;
+}
+.opt:hover:not(:disabled)::before,.opt:focus-visible::before{width:6px;}
+.opt:hover:not(:disabled){border-color:var(--orange);}
+.opt:focus-visible{outline:2px solid var(--orange);outline-offset:2px;}
+.opt:disabled{cursor:default;}
+.opt.ans-ok{border-color:var(--pitch);background:linear-gradient(180deg,#eafaf0,#d8f2e2);}
+.opt.ans-ok::before{width:6px;background:var(--pitch);}
+.opt.ans-no{border-color:var(--red);background:linear-gradient(180deg,#fdeeee,#f8dcdc);opacity:.85;}
+.opt.ans-no::before{width:6px;background:var(--red);}
+.opt.dim{opacity:.45;}
+
+.next-btn{
+  display:none;font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:800;
+  font-size:1.05rem;letter-spacing:3px;text-transform:uppercase;
+  width:100%;padding:14px;border:none;cursor:pointer;
+  background:linear-gradient(180deg,#2f7fd0,var(--pes-blue) 50%,#08417e);
+  color:#fff;transform:skewX(var(--skew));box-shadow:0 3px 0 #063361;
+}
+.next-btn>span{display:inline-block;transform:skewX(calc(var(--skew) * -1));}
+.next-btn.show{display:block;}
+.next-btn:focus-visible{outline:3px solid var(--orange);outline-offset:3px;}
+.quit-btn{
+  align-self:flex-end;background:none;border:none;cursor:pointer;
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:600;
+  font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+  padding:6px 4px;
+}
+.quit-btn:hover{color:var(--red);}
+
+/* ── END ── */
+.end-score{
+  font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:800;
+  font-size:2.6rem;color:var(--pes-blue);line-height:1;
+}
+.end-pct{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:1rem;color:var(--orange);letter-spacing:2px;margin-top:2px;}
+.end-msg{font-size:.92rem;color:var(--muted);margin-top:8px;}
+.end-streak{font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:600;font-size:.85rem;letter-spacing:1px;color:var(--ink);margin-top:6px;}
+.wordle{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-top:12px;max-width:320px;margin-left:auto;margin-right:auto;font-size:1.1rem;}
+.share-btn{
+  margin-top:14px;font-family:'Saira Condensed',sans-serif;font-style:italic;font-weight:700;
+  font-size:.9rem;letter-spacing:3px;text-transform:uppercase;
+  padding:11px 26px;background:#fff;border:2px solid var(--pes-blue);color:var(--pes-blue);
+  cursor:pointer;transform:skewX(var(--skew));
+}
+.share-btn>span{display:inline-block;transform:skewX(calc(var(--skew) * -1));}
+.share-btn:hover{background:var(--pes-blue);color:#fff;}
+.share-ok{font-size:.78rem;color:var(--pitch);letter-spacing:1px;margin-top:8px;opacity:0;transition:opacity .3s;}
+.footnote{font-size:.75rem;color:var(--muted);text-align:center;line-height:1.5;}
+
+@keyframes plateIn{from{opacity:0;transform:skewX(var(--skew)) translateX(30px);}to{opacity:1;transform:skewX(var(--skew)) translateX(0);}}
+.anim-in{animation:plateIn .22s ease;}
+@keyframes shake{0%,100%{transform:skewX(var(--skew)) translateX(0);}25%{transform:skewX(var(--skew)) translateX(-6px);}55%{transform:skewX(var(--skew)) translateX(6px);}80%{transform:skewX(var(--skew)) translateX(-3px);}}
+.anim-shake{animation:shake .35s ease;}
+@media (prefers-reduced-motion: reduce){
+  .anim-in,.anim-shake{animation:none;}
+  .opt,.chip,.timer-fill{transition:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ MENU ═══ -->
+<div class="screen active" id="s-menu">
+  <div class="logo">
+    <div class="logo-main">PES 4 <span>Tipovačka</span></div>
+    <div class="logo-sub">Konami neměla licenci · poznáš skutečný klub?</div>
+  </div>
+
+  <div class="plate">
+    <div class="plate-title">Kategorie</div>
+    <div class="chips" id="league-chips">
+      <button class="chip active" data-lg="ALL"><span>Vše</span></button>
+      <button class="chip" data-lg="EN"><span>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglie</span></button>
+      <button class="chip" data-lg="FR"><span>🇫🇷 Francie</span></button>
+      <button class="chip" data-lg="DE"><span>🇩🇪 Německo</span></button>
+      <button class="chip" data-lg="OT"><span>🌍 Ostatní kluby</span></button>
+      <button class="chip" data-lg="ST"><span>🏟️ Stadiony</span></button>
+    </div>
+  </div>
+
+  <div class="plate">
+    <div class="plate-title">Počet otázek</div>
+    <div class="chips" id="count-chips">
+      <button class="chip" data-n="10"><span>10</span></button>
+      <button class="chip active" data-n="20"><span>20</span></button>
+      <button class="chip" data-n="0"><span>Všechny</span></button>
+    </div>
+  </div>
+
+  <div class="plate">
+    <div class="plate-title">Časovač</div>
+    <div class="chips" id="timer-chips">
+      <button class="chip active" data-t="1"><span>⏱ 10 sekund</span></button>
+      <button class="chip" data-t="0"><span>∞ Bez limitu</span></button>
+    </div>
+  </div>
+
+  <button class="start-btn" id="start-btn"><span>▶ Spustit hru</span></button>
+  <div class="best-line" id="best-line"></div>
+  <div class="footnote">Pro Evolution Soccer 4 (2004) neměl licenci na anglickou, francouzskou a německou ligu — Konami si názvy klubů vymyslela. Itálie, Španělsko a Nizozemsko byly licencované.</div>
+</div>
+
+<!-- ═══ GAME ═══ -->
+<div class="screen" id="s-game">
+  <div class="hud">
+    <div class="hud-box"><div><div class="hud-label">Otázka</div><div class="hud-val" id="h-q">1/20</div></div></div>
+    <div class="hud-box"><div><div class="hud-label">Správně</div><div class="hud-val ok" id="h-ok">0</div></div></div>
+    <div class="hud-box"><div><div class="hud-label">Špatně</div><div class="hud-val no" id="h-no">0</div></div></div>
+    <div class="hud-box"><div><div class="hud-label">Série 🔥</div><div class="hud-val st" id="h-streak">0</div></div></div>
+  </div>
+  <div class="timer-wrap" id="timer-wrap"><div class="timer-fill" id="timer-fill"></div></div>
+
+  <div class="q-plate" id="q-plate">
+    <div class="q-label" id="q-label">Jak se tento klub jmenuje doopravdy?</div>
+    <div class="q-fake" id="q-fake">…</div>
+    <span class="q-league" id="q-league"></span>
+    <div class="q-reveal" id="q-reveal"></div>
+  </div>
+
+  <div class="opts" id="opts"></div>
+  <button class="next-btn" id="next-btn"><span>Další →</span></button>
+  <button class="quit-btn" id="quit-btn">✕ Opustit hru</button>
+</div>
+
+<!-- ═══ END ═══ -->
+<div class="screen" id="s-end">
+  <div class="logo">
+    <div class="logo-main">Výsledek</div>
+    <div class="logo-sub" id="e-cat"></div>
+  </div>
+  <div class="q-plate">
+    <div class="end-score" id="e-score">–</div>
+    <div class="end-pct" id="e-pct"></div>
+    <div class="end-streak" id="e-streak"></div>
+    <div class="end-msg" id="e-msg"></div>
+    <div class="wordle" id="e-wordle"></div>
+    <button class="share-btn" id="share-btn"><span>📋 Sdílet výsledek</span></button>
+    <div class="share-ok" id="share-ok">✓ Zkopírováno do schránky</div>
+  </div>
+  <button class="start-btn" id="again-btn"><span>↻ Hrát znovu</span></button>
+  <button class="quit-btn" id="menu-btn" style="align-self:center">← Zpět do menu</button>
+</div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════
+// DATA — PES 4 (2004/05). f = smyšlený název ve hře, r = skutečnost.
+// Zdroje: SuperCheats, Neoseeker (PS2/PC), Mediavida — křížově ověřeno.
+// ═══════════════════════════════════════════════════════
+const LEAGUES={EN:'Anglická liga',FR:'Francouzská liga',DE:'Německá liga',OT:'Ostatní kluby',ST:'Stadion'};
+const DATA=[
+// ── Anglie (Premier League 2004/05) ──
+{f:'North London',r:'Arsenal',lg:'EN'},
+{f:'West Midlands Village',r:'Aston Villa',lg:'EN'},
+{f:'West Midlands City',r:'Birmingham City',lg:'EN'},
+{f:'Lancashire',r:'Blackburn Rovers',lg:'EN'},
+{f:'Middlebrook',r:'Bolton Wanderers',lg:'EN'},
+{f:'South East London',r:'Charlton Athletic',lg:'EN'},
+{f:'West London Blue',r:'Chelsea',lg:'EN'},
+{f:'Crisisbless',r:'Crystal Palace',lg:'EN'},
+{f:'Merseyside Blue',r:'Everton',lg:'EN'},
+{f:'West London White',r:'Fulham',lg:'EN'},
+{f:'Merseyside Red',r:'Liverpool',lg:'EN'},
+{f:'Man Blue',r:'Manchester City',lg:'EN'},
+{f:'Man Red',r:'Manchester United',lg:'EN'},
+{f:'Teesside',r:'Middlesbrough',lg:'EN'},
+{f:'Tyneside',r:'Newcastle United',lg:'EN'},
+{f:'Northluck C',r:'Norwich City',lg:'EN'},
+{f:'Pompy',r:'Portsmouth',lg:'EN'},
+{f:'Soton',r:'Southampton',lg:'EN'},
+{f:'North East London',r:'Tottenham Hotspur',lg:'EN'},
+{f:'Nextbaumedge',r:'West Bromwich Albion',lg:'EN'},
+// ── Francie (Ligue 1 2004/05) ──
+{f:'Corse Sud',r:'AC Ajaccio',lg:'FR'},
+{f:'Azur',r:'AS Monaco',lg:'FR'},
+{f:'Bourgogne',r:'AJ Auxerre',lg:'FR'},
+{f:'Haute Corse',r:'SC Bastia',lg:'FR'},
+{f:'Aquitaine',r:'Girondins Bordeaux',lg:'FR'},
+{f:'Kalm',r:'SM Caen',lg:'FR'},
+{f:'Equpris',r:'FC Istres',lg:'FR'},
+{f:'Pas de Calais',r:'Lille OSC',lg:'FR'},
+{f:'Rhone',r:'Olympique Lyon',lg:'FR'},
+{f:'Moselle',r:'FC Metz',lg:'FR'},
+{f:'Loire Océan',r:'FC Nantes',lg:'FR'},
+{f:'Alpes Maritimes',r:'OGC Nice',lg:'FR'},
+{f:'Bouches du Rhone',r:'Olympique Marseille',lg:'FR'},
+{f:'Ile de France',r:'Paris Saint-Germain',lg:'FR'},
+{f:'Nord',r:'RC Lens',lg:'FR'},
+{f:'Bretagne',r:'Stade Rennes',lg:'FR'},
+{f:'Somesterrine',r:'AS Saint-Étienne',lg:'FR'},
+{f:'Franche-Comté',r:'FC Sochaux',lg:'FR'},
+{f:'Alsace',r:'RC Štrasburk',lg:'FR'},
+{f:'Garonne',r:'Toulouse FC',lg:'FR'},
+// ── Německo (Bundesliga 2004/05) ──
+{f:'Wizland',r:'Arminia Bielefeld',lg:'DE'},
+{f:'Rhein',r:'Bayer Leverkusen',lg:'DE'},
+{f:'Rekordmeister',r:'Bayern Mnichov',lg:'DE'},
+{f:'Pott',r:'VfL Bochum',lg:'DE'},
+{f:'Westfalen',r:'Borussia Dortmund',lg:'DE'},
+{f:'Fohlen',r:'Borussia Mönchengladbach',lg:'DE'},
+{f:'Breisgau',r:'SC Freiburg',lg:'DE'},
+{f:'Hanseaten',r:'Hamburger SV',lg:'DE'},
+{f:'Niedersachsen',r:'Hannover 96',lg:'DE'},
+{f:'Mecklenburg',r:'Hansa Rostock',lg:'DE'},
+{f:'Haupstadt',r:'Hertha Berlín',lg:'DE'},
+{f:'Pfalz',r:'1. FC Kaiserslautern',lg:'DE'},
+{f:'Naunz',r:'Mainz 05',lg:'DE'},
+{f:'Mulenbalok',r:'1. FC Nürnberg',lg:'DE'},
+{f:'Ruhr',r:'Schalke 04',lg:'DE'},
+{f:'Neckar',r:'VfB Stuttgart',lg:'DE'},
+{f:'Autostadt',r:'VfL Wolfsburg',lg:'DE'},
+{f:'Weser',r:'Werder Brémy',lg:'DE'},
+// ── Ostatní kluby ──
+{f:'Patagonia',r:'Boca Juniors',lg:'OT'},
+{f:'Pampas',r:'River Plate',lg:'OT'},
+{f:'FC Belgium',r:'Club Brugge',lg:'OT'},
+{f:'Bruxelles',r:'Anderlecht',lg:'OT'},
+{f:'Belo Horizonte',r:'Cruzeiro',lg:'OT'},
+{f:'Praha',r:'Sparta Praha',lg:'OT'},
+{f:'AC Greek',r:'AEK Atény',lg:'OT'},
+{f:'Peloponnisos',r:'Olympiakos Pireus',lg:'OT'},
+{f:'Athenakos',r:'Panathinaikos',lg:'OT'},
+{f:'Lisbonera',r:'Benfica Lisabon',lg:'OT'},
+{f:'Puerto',r:'FC Porto',lg:'OT'},
+{f:'Esportiva',r:'Sporting Lisabon',lg:'OT'},
+{f:'L.Mossubann',r:'Lokomotiv Moskva',lg:'OT'},
+{f:'Valdai',r:'Spartak Moskva',lg:'OT'},
+{f:'Old Firm Green',r:'Celtic Glasgow',lg:'OT'},
+{f:'Old Firm Blue',r:'Glasgow Rangers',lg:'OT'},
+{f:'Balvidan',r:'Partizan Bělehrad',lg:'OT'},
+{f:'Bejutassle',r:'Besiktas Istanbul',lg:'OT'},
+{f:'Byzantinobul',r:'Galatasaray Istanbul',lg:'OT'},
+// ── Stadiony ──
+{f:'Trad Brick Stadium',r:'Old Trafford (Manchester United)',lg:'ST'},
+{f:'Red Cauldron',r:'Anfield (Liverpool)',lg:'ST'},
+{f:'Blue Bridge Stadium',r:'Stamford Bridge (Chelsea)',lg:'ST'},
+{f:'North East Stadium',r:'Highbury (Arsenal)',lg:'ST'},
+{f:'Magpie Park',r:'St James\u2019 Park (Newcastle)',lg:'ST'},
+{f:'Lombardi Colosseum',r:'San Siro (Milán)',lg:'ST'},
+{f:'Catalonia Stadium',r:'Camp Nou (Barcelona)',lg:'ST'},
+{f:'Old Lady Stadium',r:'Stadio delle Alpi (Juventus)',lg:'ST'},
+{f:'Cesar Stadium',r:'Stadio Olimpico (Řím)',lg:'ST'},
+{f:'Emelia Stadium',r:'Ennio Tardini (Parma)',lg:'ST'},
+{f:'Lutecia Park',r:'Parc des Princes (PSG)',lg:'ST'},
+{f:'Massilia Stadium',r:'Stade Vélodrome (Marseille)',lg:'ST'},
+{f:'Monaco Stadium',r:'Stade Louis II (Monako)',lg:'ST'},
+{f:'Borussia Stadion',r:'Westfalenstadion (Dortmund)',lg:'ST'},
+{f:'Bayern Stadium',r:'Olympiastadion (Mnichov)',lg:'ST'},
+{f:'Orange Arena',r:'Amsterdam Arena (Ajax)',lg:'ST'},
+{f:'Rotterdam Stadion',r:'De Kuip (Feyenoord)',lg:'ST'},
+{f:'Stockholm Arena',r:'Råsunda (Stockholm)',lg:'ST'},
+];
+
+// ═══════════════════════════════════════════════════════
+// ČISTÉ JÁDRO — bez DOMu, testovatelné (viz PES4Core export dole)
+// ═══════════════════════════════════════════════════════
+function shuffled(arr, rng){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(rng()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function buildQueue(cfg, data, rng){
+  const pool=cfg.league==='ALL'?data:data.filter(x=>x.lg===cfg.league);
+  const q=shuffled(pool, rng);
+  return cfg.count>0 ? q.slice(0, Math.min(cfg.count, q.length)) : q;
+}
+// Distraktory ze stejné kategorie (nikdy nejde o správnou odpověď),
+// doplněné z celého datasetu, kdyby kategorie byla malá.
+function makeOptions(cur, data, rng){
+  const same=data.filter(x=>x.lg===cur.lg && x.r!==cur.r);
+  let wrong=shuffled(same, rng).slice(0,3);
+  if(wrong.length<3){
+    const rest=data.filter(x=>x.r!==cur.r && !wrong.includes(x));
+    wrong=wrong.concat(shuffled(rest, rng).slice(0, 3-wrong.length));
+  }
+  return shuffled([cur, ...wrong], rng);
+}
+function scoreAnswer(game, chosenReal, timeout){
+  const cur=game.queue[game.idx];
+  const ok=!timeout && chosenReal===cur.r;
+  if(ok){ game.correct++; game.streak++; game.maxStreak=Math.max(game.maxStreak, game.streak); }
+  else  { game.wrong++;   game.streak=0; }
+  game.results.push(ok);
+  game.idx++;
+  return ok;
+}
+
+// ═══ DOM vrstva — spouští se jen v prohlížeči, jádro výše je importovatelné v nodu ═══
+function initUI(){
+// ═══════════════════════════════════════════════════════
+// STAV — settings (menu) je oddělen od game (běžící hra).
+// startGame() bere snapshot; hra nikdy nečte settings.
+// ═══════════════════════════════════════════════════════
+const settings={league:'ALL', count:20, timer:true};
+let game=null;
+let answered=false, transitioning=false;
+let timerId=null, timerVal=10;
+const TIMER_MAX=10;
+const $=id=>document.getElementById(id);
+const rng=Math.random;
+
+function showScreen(id){
+  ['s-menu','s-game','s-end'].forEach(s=>$(s).classList.toggle('active', s===id));
+}
+
+// ── localStorage (guard proti NaN i výjimkám) ──
+function loadBest(){
+  try{
+    const b=JSON.parse(localStorage.getItem('pes4_best')||'null');
+    return (b && Number.isFinite(b.pct)) ? b : null;
+  }catch(e){ return null; }
+}
+function saveBest(pct, total, cat){
+  try{
+    const b=loadBest();
+    if(!b || pct>b.pct) localStorage.setItem('pes4_best', JSON.stringify({pct, total, cat}));
+  }catch(e){/* quota / private mode — hra běží dál */}
+}
+function renderBest(){
+  const b=loadBest();
+  $('best-line').textContent = b
+    ? `Nejlepší výsledek: ${b.pct} % (${b.cat})`
+    : 'Zatím žádný odehraný zápas.';
+}
+
+// ── MENU ──
+function bindChips(containerId, attr, apply){
+  $(containerId).addEventListener('click', e=>{
+    const btn=e.target.closest('.chip'); if(!btn) return;
+    [...$(containerId).children].forEach(c=>c.classList.toggle('active', c===btn));
+    apply(btn.dataset[attr]);
+  });
+}
+bindChips('league-chips','lg', v=>settings.league=v);
+bindChips('count-chips','n',  v=>settings.count=parseInt(v,10));
+bindChips('timer-chips','t',  v=>settings.timer=v==='1');
+
+function startGame(){
+  const cfg={...settings}; // snapshot — menu už do hry nezasahuje
+  const queue=buildQueue(cfg, DATA, rng);
+  game={cfg, queue, idx:0, correct:0, wrong:0, streak:0, maxStreak:0, results:[]};
+  answered=false; transitioning=false;
+  $('timer-wrap').style.display=cfg.timer?'block':'none';
+  showScreen('s-game');
+  loadQuestion();
+}
+$('start-btn').addEventListener('click', startGame);
+$('again-btn').addEventListener('click', startGame);
+$('menu-btn').addEventListener('click', ()=>{ renderBest(); showScreen('s-menu'); });
+$('quit-btn').addEventListener('click', ()=>{
+  if(game.idx===0 || confirm('Opravdu opustit hru? Průběh se ztratí.')){
+    stopTimer(); renderBest(); showScreen('s-menu');
+  }
+});
+
+// ── TIMER ──
+function startTimer(){
+  stopTimer(); timerVal=TIMER_MAX; paintTimer();
+  timerId=setInterval(()=>{
+    timerVal-=.1;
+    if(timerVal<=0){ timerVal=0; stopTimer(); resolveAnswer(null, true); }
+    else paintTimer();
+  },100);
+}
+function stopTimer(){ clearInterval(timerId); timerId=null; }
+function paintTimer(){
+  const pct=timerVal/TIMER_MAX*100;
+  const fill=$('timer-fill');
+  fill.style.width=pct+'%';
+  fill.style.background = pct>55 ? 'var(--pitch)' : pct>25 ? 'var(--orange)' : 'var(--red)';
+}
+
+// ── OTÁZKA ──
+function loadQuestion(){
+  if(game.idx>=game.queue.length){ showEnd(); return; }
+  const cur=game.queue[game.idx];
+  answered=false; transitioning=false;
+
+  $('h-q').textContent=`${game.idx+1}/${game.queue.length}`;
+  $('h-ok').textContent=game.correct;
+  $('h-no').textContent=game.wrong;
+  $('h-streak').textContent=game.streak;
+
+  $('q-label').textContent = cur.lg==='ST'
+    ? 'Který skutečný stadion se skrývá pod tímto názvem?'
+    : 'Jak se tento klub jmenuje doopravdy?';
+  $('q-fake').textContent=cur.f;
+  $('q-league').textContent=LEAGUES[cur.lg];
+  $('q-reveal').textContent=''; $('q-reveal').className='q-reveal';
+
+  const plate=$('q-plate');
+  plate.classList.remove('anim-in','anim-shake'); void plate.offsetWidth;
+  plate.classList.add('anim-in');
+
+  const box=$('opts'); box.innerHTML='';
+  makeOptions(cur, DATA, rng).forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.dataset.real=o.r; // identita v datech, ne v textu
+    b.innerHTML=`<span class="opt-key">${i+1}</span><span class="opt-name"></span>`;
+    b.querySelector('.opt-name').textContent=o.r;
+    b.addEventListener('click', ()=>resolveAnswer(o.r, false));
+    box.appendChild(b);
+  });
+
+  $('next-btn').classList.remove('show');
+  if(game.cfg.timer) startTimer();
+}
+
+// ── ODPOVĚĎ (jediný handler pro klik i timeout) ──
+function resolveAnswer(chosenReal, timeout){
+  if(answered) return;
+  answered=true; stopTimer();
+  const cur=game.queue[game.idx];
+  const ok=scoreAnswer(game, chosenReal, timeout);
+
+  document.querySelectorAll('.opt').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.real===cur.r) b.classList.add('ans-ok');
+    else if(b.dataset.real===chosenReal) b.classList.add('ans-no');
+    else b.classList.add('dim');
+  });
+
+  const rev=$('q-reveal');
+  if(timeout){ rev.textContent=`⏱ Čas vypršel — ${cur.f} = ${cur.r}`; rev.classList.add('no'); }
+  else if(ok){ rev.textContent=`✓ Správně! ${cur.f} = ${cur.r}`; rev.classList.add('ok'); }
+  else{ rev.textContent=`✗ Špatně — ${cur.f} = ${cur.r}`; rev.classList.add('no');
+        const p=$('q-plate'); p.classList.remove('anim-in'); void p.offsetWidth; p.classList.add('anim-shake'); }
+
+  $('h-ok').textContent=game.correct;
+  $('h-no').textContent=game.wrong;
+  $('h-streak').textContent=game.streak;
+
+  const nb=$('next-btn');
+  nb.querySelector('span').textContent = game.idx>=game.queue.length ? 'Zobrazit výsledky →' : 'Další →';
+  nb.classList.add('show');
+  nb.focus({preventScroll:true});
+}
+$('next-btn').addEventListener('click', nextQuestion);
+function nextQuestion(){
+  if(transitioning || !answered) return;
+  transitioning=true;
+  loadQuestion();
+}
+
+// ── KLÁVESNICE: 1–4 odpověď, Enter/Mezerník další ──
+document.addEventListener('keydown', e=>{
+  if(!$('s-game').classList.contains('active')) return;
+  if(e.key>='1' && e.key<='4' && !answered){
+    const btn=$('opts').children[+e.key-1];
+    if(btn) btn.click();
+  } else if((e.key==='Enter'||e.key===' ') && answered){
+    e.preventDefault(); nextQuestion();
+  }
+});
+
+// ── KONEC ──
+function catLabel(cfg){
+  return {ALL:'Vše',EN:'Anglie',FR:'Francie',DE:'Německo',OT:'Ostatní kluby',ST:'Stadiony'}[cfg.league];
+}
+function showEnd(){
+  stopTimer();
+  const total=game.results.length;
+  const pct=total ? Math.round(game.correct/total*100) : 0;
+  $('e-cat').textContent=`${catLabel(game.cfg)} · ${total} otázek`;
+  $('e-score').textContent=`${game.correct} / ${total}`;
+  $('e-pct').textContent=`${pct} % úspěšnost`;
+  $('e-streak').textContent=`🔥 Nejdelší série: ${game.maxStreak}`;
+  $('e-msg').textContent =
+    pct===100 ? 'Perfektní! Ty jsi u PES 4 fakt seděl.' :
+    pct>=80  ? 'Výborně — Konami by tě neoklamala.' :
+    pct>=60  ? 'Slušný výkon, pár chytáků tě dostalo.' :
+    pct>=40  ? 'Ujde to. Crisisbless zmátl každého.' :
+               'Rekordmeister ví, že příště to bude lepší.';
+  const wg=$('e-wordle'); wg.innerHTML='';
+  game.results.slice(0,60).forEach(r=>{
+    const s=document.createElement('span'); s.textContent=r?'🟩':'🟥'; wg.appendChild(s);
+  });
+  $('share-ok').style.opacity='0';
+  saveBest(pct, total, catLabel(game.cfg));
+  showScreen('s-end');
+}
+
+$('share-btn').addEventListener('click', ()=>{
+  const total=game.results.length;
+  const pct=total ? Math.round(game.correct/total*100) : 0;
+  let rows='';
+  for(let i=0;i<Math.min(game.results.length,60);i+=10)
+    rows+=game.results.slice(i,i+10).map(r=>r?'🟩':'🟥').join('')+'\n';
+  const text=`⚽ PES 4 Tipovačka · ${catLabel(game.cfg)}\n${game.correct}/${total} | ${pct} % | 🔥${game.maxStreak}\n\n${rows.trim()}`;
+  const confirmOk=()=>{ const ok=$('share-ok'); ok.style.opacity='1'; setTimeout(()=>ok.style.opacity='0',2000); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(confirmOk).catch(()=>fallbackCopy(text, confirmOk));
+  } else fallbackCopy(text, confirmOk);
+});
+function fallbackCopy(text, done){
+  const ta=document.createElement('textarea');
+  ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(e){}
+  document.body.removeChild(ta);
+}
+
+// Init
+renderBest();
+} // initUI
+if(typeof document!=='undefined') initUI();
+
+// Export čistého jádra pro jsdom/node testy (v prohlížeči neškodí)
+if(typeof module!=='undefined') module.exports={buildQueue, makeOptions, scoreAnswer, shuffled, DATA};
+</script>
+</body>
+</html>
