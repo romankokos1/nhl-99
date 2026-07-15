@@ -210,25 +210,35 @@
   /* ════════════════ RIGHT — canvas / preview ════════════════ */
   .main{display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--stage)}
   .toolbar{
-    padding:6px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;
-    gap:6px;flex-wrap:nowrap;background:var(--panel);min-height:46px;overflow:hidden;
+    padding:6px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+    gap:5px;flex-wrap:nowrap;background:var(--panel);min-height:46px;overflow:hidden;
   }
-  .tb-zone{display:flex;align-items:center;gap:6px;min-width:0}
-  .tb-left,.tb-right{flex:1 1 0}
-  .tb-right{justify-content:flex-end}
-  .tb-center{flex:0 0 auto;justify-content:center}
-  .toolbar .pillrow{margin:0;flex-wrap:nowrap;background:var(--panel2);border-radius:8px;padding:2px;gap:2px}
-  .toolbar .pill{border:1px solid transparent;background:transparent;padding:4px 9px;border-radius:6px;font-size:11.5px}
+  .tb-zone{display:flex;align-items:center;gap:6px}
+  /* levá/pravá zóna: pevná přirozená šířka, NIKDY se nezmenší pod obsah —
+     díky tomu se tlačítka nikdy nepřekryjí. Prostředek je jediný, kdo se
+     přizpůsobuje; když nezbyde místo ani pro něj, jemně se scrolluje
+     vodorovně místo kolize se sousedy. */
+  .tb-left,.tb-right{flex:0 0 auto;min-width:0}
+  .tb-right{justify-content:flex-end;margin-left:auto}
+  .tb-center{
+    flex:1 1 auto;min-width:0;justify-content:center;
+    overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  }
+  .tb-center::-webkit-scrollbar{display:none}
+  .toolbar .pillrow{margin:0;flex-wrap:nowrap;background:var(--panel2);border-radius:8px;padding:2px;gap:1px}
+  .toolbar .pill{border:1px solid transparent;background:transparent;padding:4px 6px;border-radius:6px;font-size:11px}
   .toolbar .pill:hover{color:var(--ink)}
   .toolbar .pill.on{background:var(--panel);border-color:var(--line-strong);color:var(--accent);box-shadow:var(--shadow-card)}
-  .tb-zoom{display:flex;align-items:center;gap:1px;background:var(--panel2);border-radius:8px;padding:2px}
-  .tb-zoom .btn{border:none;background:transparent;padding:4px 8px;border-radius:6px;font-size:12px}
+  .tb-zoom{display:flex;align-items:center;gap:0;background:var(--panel2);border-radius:8px;padding:2px}
+  .tb-zoom .btn{border:none;background:transparent;padding:4px 5px;border-radius:6px;font-size:12px}
   .tb-zoom .btn:hover{background:var(--panel);color:var(--ink);box-shadow:var(--shadow-card)}
   .tb-zoom .dimnote{margin:0 1px;min-width:38px;text-align:center;color:var(--ink-dim)}
   #dimReadout{max-width:132px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
   .btn .btn-lbl{display:none}
   @media (min-width:1780px){ .btn .btn-lbl{display:inline} #dimReadout{max-width:220px} }
   @media (max-width:1620px){ #dimReadout{display:none} }
+  @media (max-width:1560px){ #zoomReadout,#btnZoomReset{display:none} }
+  @media (max-width:1420px){ #btnAddText .btn-lbl-always{display:none} }
   .toolbar.contextual{
     padding:7px 16px;background:#FBFBF9;display:none;min-height:0;
     border-bottom:1px solid var(--line);
@@ -505,6 +515,16 @@
           <label class="chk"><input type="checkbox" id="oFirstHeader" checked> První řádek je hlavička</label>
           <div id="excelStat" class="hint" style="color:var(--accent)"></div>
         </div>
+        <label class="fl" style="margin-top:12px">Výška řádku</label>
+        <div class="pillrow" id="xlRowHeightPills">
+          <span class="pill on" data-rhm="auto">Automaticky (vyplnit)</span>
+          <span class="pill" data-rhm="fixed">Pevná hodnota</span>
+        </div>
+        <div id="xlRowHeightFixedWrap" style="display:none;margin-top:10px">
+          <label class="fl">Výška řádku <span class="dimnote" id="xlRowHeightPxV">44 px</span></label>
+          <input type="range" id="xlRowHeightPx" min="28" max="120" step="1" value="44">
+        </div>
+        <p class="hint">V pevném rozměru plátna (16:9, Vlastní…) se řádky v režimu „Automaticky" roztáhnou nebo zmenší, aby tabulka přesně vyplnila celou výšku.</p>
       </div>
 
       <!-- rows -->
@@ -660,7 +680,15 @@
   <details class="acc" open data-tab="export">
     <summary><span class="acc-t">Formát pro PowerPoint<span class="acc-sub"><span class="step">Krok 4</span> · Rozměr slidu a ostrost</span></span></summary>
     <div class="body">
-      <p class="hint" style="margin-top:10px">Rozměr slidu (Auto / 16:9 / 4:3 / čtverec) přepneš v liště nad náhledem. 16:9 sedne na celý slide bez ořezu, Auto roste podle počtu řádků.</p>
+      <p class="hint" style="margin-top:10px">Rozměr slidu (Auto / 16:9 / 4:3 / čtverec / <b>Vlastní</b>) přepneš v liště nad náhledem. 16:9 sedne na celý slide bez ořezu, Auto roste podle počtu řádků.</p>
+      <div id="customSizeWrap" style="display:none">
+        <label class="fl">Rozměr místa v prezentaci (px)</label>
+        <div class="row">
+          <div><input type="number" id="fCustomW" min="200" max="4000" step="10" value="1600" placeholder="šířka"></div>
+          <div><input type="number" id="fCustomH" min="200" max="4000" step="10" value="900" placeholder="výška"></div>
+        </div>
+        <p class="hint">Zadej rozměr rámečku, kam obrázek v prezentaci vložíš — nastaví se stejný poměr stran, aby seděl přesně na místo. U tabulky a žebříčku se pak řádky automaticky roztáhnou přes celou výšku (viz „Výška řádku" v Rozložení).</p>
+      </div>
       <label class="chk"><input type="checkbox" id="oTransparent"> Průhledné pozadí (splyne se šablonou klienta)</label>
       <label class="fl">Měřítko exportu (ostrost)</label>
       <div class="row" style="align-items:center">
@@ -698,6 +726,18 @@
         <span class="pill" data-va="top">Nahoru</span>
         <span class="pill on" data-va="middle">Na střed</span>
         <span class="pill" data-va="bottom">Dolů</span>
+      </div>
+      <div id="tableRowHeightBlock" style="display:none">
+        <label class="fl" style="margin-top:12px">Výška řádku</label>
+        <div class="pillrow" id="rowHeightPills">
+          <span class="pill on" data-rhm="auto">Automaticky (vyplnit)</span>
+          <span class="pill" data-rhm="fixed">Pevná hodnota</span>
+        </div>
+        <div id="rowHeightFixedWrap" style="display:none;margin-top:10px">
+          <label class="fl">Výška řádku <span class="dimnote" id="rowHeightPxV">52 px</span></label>
+          <input type="range" id="rowHeightPx" min="28" max="120" step="1" value="52">
+        </div>
+        <p class="hint">V pevném rozměru plátna (16:9, Vlastní…) se řádky v režimu „Automaticky" roztáhnou nebo zmenší, aby tabulka přesně vyplnila celou výšku. „Pevná hodnota" nechá výšku řádku beze změny bez ohledu na plátno.</p>
       </div>
       <p class="hint">Šířku sloupce přetáhneš přímo v náhledu (zapni „Úpravy v obrázku") — táhni za hranici mezi sloupci.</p>
     </div>
@@ -738,8 +778,8 @@
         <button class="btn small" id="btnRedo" title="Znovu (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg></button>
       </div>
       <span class="tool-sep"></span>
-      <button class="btn editToggle" id="btnEdit">✥ Úpravy v obrázku</button>
-      <button class="btn" id="btnAddText" title="Přidat textový popisek na plochu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Text</button>
+      <button class="btn editToggle" id="btnEdit" title="Zapne úpravy přímo v obrázku (přetahování popisků, táhla)">✥ Úpravy</button>
+      <button class="btn" id="btnAddText" title="Přidat textový popisek na plochu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="btn-lbl-always"> Text</span></button>
     </div>
 
     <div class="tb-zone tb-center">
@@ -749,6 +789,7 @@
         <span class="pill" data-ratio="169" title="16:9 · 1920×1080 — celý slide bez ořezu">16:9</span>
         <span class="pill" data-ratio="43" title="4:3 · 1440×1080">4:3</span>
         <span class="pill" data-ratio="sq" title="Čtverec · 1080×1080">1:1</span>
+        <span class="pill" data-ratio="custom" title="Vlastní rozměr — zadej v panelu vlevo (Export) přesnou velikost místa v prezentaci">Vlastní</span>
       </div>
       <div class="tb-zoom">
         <button class="btn small" id="btnZoomOut" title="Oddálit (Ctrl+kolečko)">−</button>
@@ -850,7 +891,7 @@ const Schema = {
   liveFields: [
     'fKicker','fTitle','fSub','cBg','cAccent','cAccent2','cInk','cRow',
     'fFontHead','fFontBody','fKpiVal','fKpiLabel','fKpiNote','fKpiFont',
-    'fN','fSource','fSegA','fSegB',
+    'fN','fSource','fSegA','fSegB','fCustomW','fCustomH',
     'aTopColor','aKicker','aMedalGold','aMedalSilver','aMedalBronze',
   ],
   // checkboxy, jejichž změna má rovnou překreslit náhled
@@ -888,6 +929,8 @@ const State = {
   layoutTracks: {rank:null, table:null, excel:null}, // šířky/zarovnání sloupců podle typu
   rowValign: {rank:'middle', table:'middle'},         // svislé zarovnání obsahu v řádku
   colGap: {rank:0, table:0, excel:0},                 // mezera mezi sloupci (px)
+  rowHeight: {table:'auto', excel:'auto'},   // 'auto' = přizpůsobit výšce plátna, 'fixed' = pevná výška v px
+  rowHeightPx: {table:52, excel:44},         // použije se jen v režimu 'fixed'
   tweak: { font: 1, line: 1, pad: 1 }, // živé multiplikátory z táhel v náhledu
   excel: null,             // naposledy vložená Excel tabulka {rows, cols}
   logoImg: null,           // načtený obrázek loga (Image), nebo null
@@ -953,6 +996,15 @@ const HINTS = {
   kpi:'Vyplň pole „Velké číslo" a popisky nahoře.',
 };
 const FIXED_RATIOS = {169:[1920,1080],43:[1440,1080],sq:[1080,1080]};
+// vrátí [šířka,výška] aktuálně zvoleného pevného poměru stran — u 'custom'
+// čte přímo hodnoty ze vstupů v toolbaru (žádný duplicitní stav k udržování)
+function ratioWH(){
+  if(State.ratio==='custom'){
+    const w=parseFloat($('fCustomW')?.value)||1600, h=parseFloat($('fCustomH')?.value)||900;
+    return [Math.max(50,w),Math.max(50,h)];
+  }
+  return FIXED_RATIOS[State.ratio];
+}
 // tvar pruhu grafu → poměr zaoblení k výšce (0.5 = plná pilulka, dnešní výchozí)
 const TRACK_SHAPE_RATIO = {pill:0.5, rounded:0.18, square:0.05};
 
@@ -1278,7 +1330,7 @@ const History = {
   // patří do stejné historie, ať jde tažení šířky vrátit stejným Ctrl+Z
   // jako přesun objektu
   snapshotState(){
-    return JSON.stringify({objects:Scene.objects, tracks:State.layoutTracks, rowValign:State.rowValign, colGap:State.colGap});
+    return JSON.stringify({objects:Scene.objects, tracks:State.layoutTracks, rowValign:State.rowValign, colGap:State.colGap, rowHeight:State.rowHeight, rowHeightPx:State.rowHeightPx});
   },
   applySnapshot(s){
     const d=JSON.parse(s);
@@ -1286,6 +1338,9 @@ const History = {
     State.layoutTracks=d.tracks||{rank:null,table:null,excel:null};
     State.rowValign=d.rowValign||{rank:'middle',table:'middle'};
     State.colGap=d.colGap||{table:0,excel:0};
+    State.rowHeight=d.rowHeight||{table:'auto',excel:'auto'};
+    State.rowHeightPx=d.rowHeightPx||{table:52,excel:44};
+    UI.syncRowHeightUI();
   },
 
   init(){
@@ -2542,7 +2597,13 @@ const Draw = {
     });
     cx.strokeStyle=Color.alpha(c.ink,.18); cx.lineWidth=1.5;
     cx.beginPath(); cx.moveTo(PAD,y0+22); cx.lineTo(W-PAD,y0+22); cx.stroke();
-    const RH=52, tstyle=c.tableStyle||'striped';
+    const rhMode=State.rowHeight.table||'auto', fixedCanvas=State.ratio!=='auto';
+    const RH = rhMode==='fixed'
+      ? (State.rowHeightPx.table||52)
+      : fixedCanvas
+        ? Math.max(30,Math.min(110,(H-y0-90)/Math.max(1,body.length))) // vyplní celou výšku plátna
+        : ls(52);
+    const tstyle=c.tableStyle||'striped';
     body.forEach((r,ri)=>{
       const y=y0+30+ri*RH;
       const textY = valign==='top' ? y+18 : valign==='bottom' ? y+RH-14 : y+RH/2+8;
@@ -2578,8 +2639,13 @@ const Draw = {
     const restW=firstWide?(tW-firstW)/(cols-1):tW/cols;
     const colX=i=>i===0?PAD:PAD+firstW+(i-1)*restW;
     const colW=i=>i===0?firstW:restW;
+    const rhMode=State.rowHeight.excel||'auto', fixedCanvas=State.ratio!=='auto';
     const avail=H-y0-90;
-    const RH=Math.max(34,Math.min(58, avail/Math.max(1,data.length)));
+    const RH = rhMode==='fixed'
+      ? (State.rowHeightPx.excel||44)
+      : fixedCanvas
+        ? Math.max(30,Math.min(110, avail/Math.max(1,data.length))) // vyplní celou výšku plátna
+        : Math.max(34,Math.min(58, avail/Math.max(1,data.length)));
     let y=y0;
     data.forEach((row,ri)=>{
       const isHead=hasHead&&ri===0;
@@ -2626,14 +2692,36 @@ const Render = {
   measureHeight(W){
     const RGROW=Math.round(92*State.tweak.line), TROW=Math.round(52*State.tweak.line);
     if(State.ratio!=='auto'){
-      const [fw,fh]=FIXED_RATIOS[State.ratio];
-      return Math.round(W*(fh/fw)); // plátno škálované na šířku 1080
+      const [fw,fh]=ratioWH();
+      let H=Math.round(W*(fh/fw)); // plátno škálované na šířku 1080
+      // bezpečnostní pojistka pro tabulku/Excel: hlavička (~220 px) a patička
+      // mají pevnou výšku bez ohledu na zvolený rozměr, takže u extrémně
+      // nízkého vlastního formátu by řádky přetekly přes okraj plátna. Výška
+      // se proto nikdy nesníží pod bezpečné minimum pro aktuální počet
+      // řádků — šířka (a tedy poměr stran) zůstává přesně podle zadání,
+      // jen výška se v krajním případě mírně zvětší.
+      if(State.type==='table'){
+        const n=Math.max(0,Parse.rows().length-1);
+        H=Math.max(H, 310+n*30);
+      }else if(State.type==='excel'){
+        const n=Math.max(0,(State.excel?State.excel.rows.length:1)-1);
+        H=Math.max(H, 310+n*30);
+      }
+      return H;
     }
     const HEAD=250; // výška hlavičky včetně kickeru a odsazení
     let H;
     if(State.type==='kpi') H=560;
-    else if(State.type==='table'){ const r=Parse.rows(); H=HEAD+44+Math.max(0,r.length-1)*TROW+90; }
-    else if(State.type==='excel'){ const n=State.excel?State.excel.rows.length:1; H=HEAD+44+Math.max(0,n-1)*TROW+90; }
+    else if(State.type==='table'){
+      const r=Parse.rows();
+      const rh=(State.rowHeight.table==='fixed')?(State.rowHeightPx.table||52):TROW;
+      H=HEAD+44+Math.max(0,r.length-1)*rh+90;
+    }
+    else if(State.type==='excel'){
+      const n=State.excel?State.excel.rows.length:1;
+      const rh=(State.rowHeight.excel==='fixed')?(State.rowHeightPx.excel||44):TROW;
+      H=HEAD+44+Math.max(0,n-1)*rh+90;
+    }
     else if(State.type==='segments'){ const r=Parse.rows().slice(0,10); H=HEAD+28+r.length*RGROW+88; }
     else { const r=Parse.rows().slice(0,12); H=HEAD+r.length*RGROW+88; }
     return Math.max(H,520);
@@ -2691,9 +2779,11 @@ const Render = {
 
   // aktualizuje textový odečet rozměrů pod náhledem
   updateReadout(W,H,S,c){
-    const dimTxt = State.ratio!=='auto'
-      ? `${FIXED_RATIOS[State.ratio][0]}×${FIXED_RATIOS[State.ratio][1]} (slide)`
-      : `${W} × ${H} px`;
+    const dimTxt = State.ratio==='custom'
+      ? `${Math.round(ratioWH()[0])}×${Math.round(ratioWH()[1])} (vlastní)`
+      : State.ratio!=='auto'
+        ? `${FIXED_RATIOS[State.ratio][0]}×${FIXED_RATIOS[State.ratio][1]} (slide)`
+        : `${W} × ${H} px`;
     $('dimReadout').textContent=`${dimTxt}  ·  export ${W*S} × ${H*S}${c.transparent?' · průhledné':''}`;
   },
 
@@ -2766,7 +2856,7 @@ const Handles = {
     const fx=$('fxLayer'), on=!fx.classList.contains('on');
     fx.classList.toggle('on',on);
     $('btnEdit').style.borderColor = on ? getComputedStyle(document.documentElement).getPropertyValue('--brand-bright') : '';
-    $('btnEdit').textContent = on ? '✓ Úpravy zapnuté' : '✥ Úpravy v obrázku';
+    $('btnEdit').textContent = on ? '✓ Zapnuto' : '✥ Úpravy';
     if(on) refresh();
   },
 };
@@ -2788,6 +2878,7 @@ const Presets = {
       OBJECTS:JSON.parse(JSON.stringify(Scene.objects)), // pozice/zámek objektů scény (např. loga)
       TRACKS:JSON.parse(JSON.stringify(State.layoutTracks)), // šířky/zarovnání sloupců
       ROWVALIGN:{...State.rowValign}, COLGAP:{...State.colGap},
+      ROWHEIGHT:{...State.rowHeight}, ROWHEIGHTPX:{...State.rowHeightPx},
     };
     const allFields=[...Schema.liveFields, ...Object.keys(Schema.sliders), ...Schema.presetExtra];
     allFields.forEach(id=>{ const e=$(id); if(e) s[id]=e.value; });
@@ -2828,6 +2919,8 @@ const Presets = {
     if(s.TRACKS) State.layoutTracks=JSON.parse(JSON.stringify(s.TRACKS));
     if(s.ROWVALIGN) State.rowValign={...State.rowValign, ...s.ROWVALIGN};
     if(s.COLGAP) State.colGap={...State.colGap, ...s.COLGAP};
+    if(s.ROWHEIGHT) State.rowHeight={...State.rowHeight, ...s.ROWHEIGHT};
+    if(s.ROWHEIGHTPX) State.rowHeightPx={...State.rowHeightPx, ...s.ROWHEIGHTPX};
     Object.keys(s).forEach(id=>{
       const el=$(id); if(!el) return;
       if(el.type==='checkbox') el.checked=s[id]; else el.value=s[id];
@@ -2840,8 +2933,10 @@ const Presets = {
     if(s.RATIO){
       State.ratio=s.RATIO;
       document.querySelectorAll('#ratioPills .pill').forEach(p=>p.classList.toggle('on', p.dataset.ratio===State.ratio));
+      if($('customSizeWrap')) $('customSizeWrap').style.display = State.ratio==='custom' ? 'block' : 'none';
     }
     if(s.TYPE) UI.setType(s.TYPE);
+    UI.syncRowHeightUI();
     Selection.clear();
     History.init();
     refresh();
@@ -2931,7 +3026,28 @@ const UI = {
     if(State.rowValign[t]!==undefined){
       document.querySelectorAll('#rowValignPills .pill').forEach(p=>p.classList.toggle('on',p.dataset.va===State.rowValign[t]));
     }
+    if($('tableRowHeightBlock')) $('tableRowHeightBlock').style.display = t==='table' ? 'block' : 'none';
+    UI.syncRowHeightUI();
     refresh();
+  },
+
+  // synchronizuje pilulky/posuvník výšky řádku (tabulka i Excel) s uloženým stavem —
+  // volá se při přepnutí typu, po undo/redo a po načtení předvolby
+  syncRowHeightUI(){
+    const tMode=State.rowHeight.table||'auto';
+    if($('rowHeightPills')){
+      document.querySelectorAll('#rowHeightPills .pill').forEach(p=>p.classList.toggle('on',p.dataset.rhm===tMode));
+      $('rowHeightFixedWrap').style.display = tMode==='fixed' ? 'block' : 'none';
+      $('rowHeightPx').value = State.rowHeightPx.table||52;
+      $('rowHeightPxV').textContent = (State.rowHeightPx.table||52)+' px';
+    }
+    const xMode=State.rowHeight.excel||'auto';
+    if($('xlRowHeightPills')){
+      document.querySelectorAll('#xlRowHeightPills .pill').forEach(p=>p.classList.toggle('on',p.dataset.rhm===xMode));
+      $('xlRowHeightFixedWrap').style.display = xMode==='fixed' ? 'block' : 'none';
+      $('xlRowHeightPx').value = State.rowHeightPx.excel||44;
+      $('xlRowHeightPxV').textContent = (State.rowHeightPx.excel||44)+' px';
+    }
   },
 
   // vykreslí barevné vzorky předvoleb do panelu Styl
@@ -3248,7 +3364,9 @@ const UI = {
     document.querySelectorAll('#ratioPills .pill').forEach(p=>p.onclick=()=>{
       State.ratio=p.dataset.ratio;
       document.querySelectorAll('#ratioPills .pill').forEach(x=>x.classList.remove('on'));
-      p.classList.add('on'); refresh();
+      p.classList.add('on');
+      $('customSizeWrap').style.display = State.ratio==='custom' ? 'block' : 'none';
+      refresh();
     });
 
     // přepínač stylu řádků (karty/ploché/pruhované)
@@ -3284,6 +3402,36 @@ const UI = {
       refresh();
     });
     $('colGap').addEventListener('change', ()=>History.snapshot());
+
+    // výška řádku — tabulka (Automaticky = vyplní plátno / Pevná = ruční px)
+    document.querySelectorAll('#rowHeightPills .pill').forEach(p=>p.onclick=()=>{
+      document.querySelectorAll('#rowHeightPills .pill').forEach(x=>x.classList.remove('on'));
+      p.classList.add('on');
+      State.rowHeight.table=p.dataset.rhm;
+      $('rowHeightFixedWrap').style.display = p.dataset.rhm==='fixed' ? 'block' : 'none';
+      History.snapshot(); refresh();
+    });
+    $('rowHeightPx').addEventListener('input', e=>{
+      $('rowHeightPxV').textContent=e.target.value+' px';
+      State.rowHeightPx.table=+e.target.value;
+      refresh();
+    });
+    $('rowHeightPx').addEventListener('change', ()=>History.snapshot());
+
+    // výška řádku — Z Excelu (stejný vzor jako u tabulky výše)
+    document.querySelectorAll('#xlRowHeightPills .pill').forEach(p=>p.onclick=()=>{
+      document.querySelectorAll('#xlRowHeightPills .pill').forEach(x=>x.classList.remove('on'));
+      p.classList.add('on');
+      State.rowHeight.excel=p.dataset.rhm;
+      $('xlRowHeightFixedWrap').style.display = p.dataset.rhm==='fixed' ? 'block' : 'none';
+      History.snapshot(); refresh();
+    });
+    $('xlRowHeightPx').addEventListener('input', e=>{
+      $('xlRowHeightPxV').textContent=e.target.value+' px';
+      State.rowHeightPx.excel=+e.target.value;
+      refresh();
+    });
+    $('xlRowHeightPx').addEventListener('change', ()=>History.snapshot());
     ['aMedalGold','aMedalSilver','aMedalBronze'].forEach(id=>$(id).addEventListener('input',refresh));
 
     UI.wireSliders();
