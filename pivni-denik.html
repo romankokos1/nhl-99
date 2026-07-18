@@ -190,6 +190,45 @@
     color:var(--foam); display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
   .lightbox-close svg{width:20px; height:20px;}
+  /* beer detail sheet */
+  .detail-sheet{position:relative; max-height:92%; padding-top:calc(var(--s5) + 30px);}
+  .detail-close{
+    position:absolute; top:var(--s4); right:var(--s4); z-index:2;
+    width:34px; height:34px; border-radius:50%; background:var(--surface-2); border:1px solid var(--hairline);
+    color:var(--text-2); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .detail-close svg{width:16px; height:16px;}
+  .detail-photo{margin:calc(-1*var(--s5) - 30px) calc(-1*var(--s5)) var(--s4); cursor:zoom-in; background:var(--bg-2);}
+  .detail-photo img{display:block; width:100%; max-height:260px; object-fit:cover;}
+  .detail-head{padding:0 2px;}
+  .detail-name{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--foam); line-height:1.2;}
+  .detail-brewery{font-size:14.5px; color:var(--text-2); margin-top:4px;}
+  .detail-avg{display:flex; align-items:baseline; gap:6px; margin-top:var(--s4);}
+  .detail-avg .score-num{font-size:32px; font-weight:800; color:var(--amber-bright); letter-spacing:-0.02em;}
+  .detail-avg .score-den{font-size:12.5px; color:var(--text-3); font-weight:600;}
+  .detail-list .lb-row{align-items:flex-start;}
+  .detail-list .lb-row .lb-av{margin-top:2px;}
+  .detail-note{font-size:12.5px; color:var(--text-3); font-style:italic; margin-top:4px; line-height:1.4;}
+  .detail-edit{flex-shrink:0; align-self:center;}
+  /* venue map */
+  .map-sheet{max-height:94%; display:flex; flex-direction:column;}
+  .map-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--s4);}
+  .map-canvas-wrap{position:relative; height:340px; border-radius:var(--r-card); overflow:hidden; border:1px solid var(--hairline); margin-bottom:var(--s2); background:var(--bg-2);}
+  #map-canvas{width:100%; height:100%;}
+  .map-loading{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    background:rgba(25,16,9,0.85); color:var(--text-2); font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .map-loading.show{opacity:1; pointer-events:auto;}
+  .map-spinner{width:26px; height:26px; border-radius:50%; border:3px solid var(--hairline-strong); border-top-color:var(--amber-bright); animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .map-pin-popup{font-family:'Inter',sans-serif; color:#241703;}
+  .map-pin-popup b{display:block; font-size:13.5px; margin-bottom:2px;}
+  .map-pin-popup span{font-size:12px; opacity:.8;}
+  .mf-row{display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--hairline);}
+  .mf-row:last-child{border-bottom:none;}
+  .mf-row b{font-size:14px; font-weight:600; color:var(--text);}
+  .mf-row small{font-size:12px; color:var(--text-3);}
   .card.beer.mine{border-color:var(--hairline-strong);}
   .card.beer.mine::before{content:''; position:absolute;}
   .beer-top{display:flex; align-items:flex-start; gap:var(--s3);}
@@ -817,6 +856,12 @@
             <div class="row-tx"><div class="t">Sloučit duplicity</div><div class="d">Sjednotit piva pod jedním názvem</div></div>
             <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
+
+          <div class="row-item" data-map>
+            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c4-4.5 6.5-8 6.5-11a6.5 6.5 0 0 0-13 0c0 3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div>
+            <div class="row-tx"><div class="t">Mapa podniků</div><div class="d">Kde všude jste ochutnávali</div></div>
+            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
         </div>
         <div class="bottom-space"></div>
       </div>
@@ -970,6 +1015,32 @@ create policy "fotky mazat" on storage.objects
   <div class="overlay lightbox" id="lightbox-overlay">
     <button class="lightbox-close" id="lightbox-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
     <img id="lightbox-img" alt="Foto piva">
+  </div>
+
+  <!-- beer detail sheet -->
+  <div class="overlay" id="detail-overlay">
+    <div class="sheet detail-sheet">
+      <div class="grabber"></div>
+      <button class="detail-close" id="detail-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      <div id="detail-body"></div>
+    </div>
+  </div>
+
+  <!-- venue map -->
+  <div class="overlay" id="map-overlay">
+    <div class="sheet map-sheet">
+      <div class="grabber"></div>
+      <div class="map-head">
+        <div class="sec-title first" style="margin:0">Mapa podniků</div>
+        <button class="detail-close" id="map-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="map-canvas-wrap">
+        <div id="map-canvas"></div>
+        <div class="map-loading" id="map-loading"><div class="map-spinner"></div><span>Hledám podniky…</span></div>
+      </div>
+      <div class="sec-title">Místa bez polohy</div>
+      <div class="card list-card" id="map-fallback"></div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -1309,6 +1380,127 @@ create policy "fotky mazat" on storage.objects
       +   '</div>'
       + '</div>'
       + '</article>';
+  }
+  /* ---------- beer detail sheet ---------- */
+  function beerKey(b){ return norm(b.name)+'|||'+norm(b.brewery||''); }
+  function openBeerDetail(id){
+    const b=beers.find(x=>x.id===id); if(!b) return;
+    const key=beerKey(b);
+    const all=beers.filter(x=>beerKey(x)===key).sort((a,b2)=>(b2.date||'').localeCompare(a.date||''));
+    const rated=all.filter(x=>x.rating>0);
+    const avg=rated.length? rated.reduce((s,x)=>s+x.rating,0)/rated.length : 0;
+    const photoEntry=all.find(x=>x.foto);
+    const chips=[];
+    if(b.style) chips.push('<span class="chip">'+esc(b.style)+'</span>');
+    if(b.abv) chips.push('<span class="chip">'+esc(b.abv)+'%</span>');
+
+    let html='';
+    if(photoEntry) html+='<div class="detail-photo" data-photo="'+esc(photoEntry.foto)+'"><img src="'+esc(storageUrl(photoEntry.foto))+'" alt="'+esc(b.name)+'"></div>';
+    html+='<div class="detail-head">';
+    html+='<h2 class="detail-name">'+esc(b.name)+'</h2>';
+    if(b.brewery) html+='<div class="detail-brewery">'+esc(b.brewery)+'</div>';
+    if(chips.length) html+='<div class="chips" style="margin-top:8px">'+chips.join('')+'</div>';
+    html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
+    html+='</div>';
+    html+='<div class="sec-title" style="margin-top:var(--s5)">Kdo už ho ochutnal ('+all.length+')</div>';
+    html+='<div class="card list-card detail-list">';
+    html+=all.map(x=>{
+      const mine=x.osoba===cfg.name;
+      return '<div class="lb-row rich">'
+        +'<span class="lb-av" style="background:'+avatarColor(x.osoba)+'">'+esc(initials(x.osoba))+'</span>'
+        +'<span class="lb-person">'
+        +  '<span class="lb-name">'+esc(x.osoba)+(mine?' <span class="you">ty</span>':'')+'</span>'
+        +  '<span class="lb-tags"><span class="lb-fav">'+esc(x.date||'')+'</span>'+(x.where?'<span class="lb-fav">'+esc(x.where)+'</span>':'')+'</span>'
+        +  (x.note?'<div class="detail-note">'+esc(x.note)+'</div>':'')
+        +'</span>'
+        +'<span class="lb-metric"><b>'+(x.rating||'–')+'</b><small>/10</small></span>'
+        +(mine?'<button class="row-btn detail-edit" data-detail-edit="'+x.id+'" aria-label="Upravit">Upravit</button>':'')
+        +'</div>';
+    }).join('');
+    html+='</div>';
+
+    $('#detail-body').innerHTML=html;
+    $('#detail-overlay').classList.add('show');
+  }
+
+  /* ---------- venue map (Leaflet + OpenStreetMap Nominatim, no API key) ---------- */
+  const GEOCACHE_KEY='pivni-denik-geocache-v1';
+  let geoCache={};
+  function loadGeoCache(){ try{ geoCache=JSON.parse(localStorage.getItem(GEOCACHE_KEY))||{}; }catch(e){ geoCache={}; } }
+  function saveGeoCache(){ try{ localStorage.setItem(GEOCACHE_KEY, JSON.stringify(geoCache)); }catch(e){} }
+  const PLACE_STOPLIST=new Set(['doma','home','byt','chalupa','chata','u nas','doma u kamarada']);
+  function distinctPlaces(){
+    const map=new Map();
+    beers.forEach(b=>{
+      const raw=(b.where||'').trim(); if(!raw) return;
+      const key=norm(raw); if(PLACE_STOPLIST.has(key)) return;
+      if(!map.has(key)) map.set(key,{key,label:raw,count:0,sum:0,rated:0});
+      const e=map.get(key); e.count++;
+      if(b.rating>0){ e.sum+=b.rating; e.rated++; }
+    });
+    return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
+  }
+  async function geocodePlace(label){
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(label));
+    if(!r.ok) throw new Error('geocode http '+r.status);
+    const j=await r.json();
+    if(!j.length) return null;
+    return { lat:parseFloat(j[0].lat), lng:parseFloat(j[0].lon) };
+  }
+  function loadLeaflet(){
+    if(window.L) return Promise.resolve();
+    if(window.__leafletLoading) return window.__leafletLoading;
+    window.__leafletLoading=new Promise((resolve,reject)=>{
+      const link=document.createElement('link'); link.rel='stylesheet';
+      link.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+      document.head.appendChild(link);
+      const script=document.createElement('script');
+      script.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+      script.onload=()=>resolve();
+      script.onerror=()=>reject(new Error('Leaflet se nepodařilo načíst'));
+      document.body.appendChild(script);
+    });
+    return window.__leafletLoading;
+  }
+  let mapInstance=null;
+  function beerWord(n){ return n===1?'pivo':(n<5?'piva':'piv'); }
+  async function openMap(){
+    $('#map-overlay').classList.add('show');
+    const places=distinctPlaces();
+    if(!places.length){
+      $('#map-canvas').innerHTML='';
+      $('#map-fallback').innerHTML='<p class="muted center">Zatím žádná piva s vyplněným místem.</p>';
+      return;
+    }
+    $('#map-loading').classList.add('show');
+    try{ await loadLeaflet(); }
+    catch(e){ toast('Mapu se nepodařilo načíst — zkontroluj připojení', true); $('#map-loading').classList.remove('show'); return; }
+    loadGeoCache();
+    if(!mapInstance){
+      mapInstance=L.map('map-canvas',{ zoomControl:true }).setView([49.8,15.5],7);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ maxZoom:19, attribution:'© OpenStreetMap contributors' }).addTo(mapInstance);
+    } else {
+      mapInstance.eachLayer(l=>{ if(l instanceof L.Marker) mapInstance.removeLayer(l); });
+    }
+    const bounds=[]; const fallback=[];
+    for(const p of places){
+      let coord=geoCache[p.key];
+      if(coord===undefined){
+        try{ coord=await geocodePlace(p.label); geoCache[p.key]=coord; saveGeoCache(); await new Promise(r=>setTimeout(r,1100)); }
+        catch(e){ coord=null; }
+      }
+      if(coord){
+        const m=L.marker([coord.lat,coord.lng]).addTo(mapInstance);
+        m.bindPopup('<div class="map-pin-popup"><b>'+esc(p.label)+'</b><span>'+p.count+' '+beerWord(p.count)+(p.avg?' · Ø '+p.avg.toFixed(1):'')+'</span></div>');
+        bounds.push([coord.lat,coord.lng]);
+      } else fallback.push(p);
+    }
+    $('#map-loading').classList.remove('show');
+    if(bounds.length) mapInstance.fitBounds(bounds,{padding:[30,30], maxZoom:14});
+    setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),200);
+    $('#map-fallback').innerHTML = fallback.length
+      ? fallback.map(p=>'<div class="mf-row"><b>'+esc(p.label)+'</b><small>'+p.count+' '+beerWord(p.count)+'</small></div>').join('')
+      : '<p class="muted center">Všechna místa se podařilo najít na mapě.</p>';
   }
   function sortBeers(arr, mode){
     return arr.slice().sort((a,b)=>{
@@ -4268,9 +4460,11 @@ var qrcode = function() {
   $('#feed').addEventListener('click',e=>{
     const ed=e.target.closest('[data-edit]'); const dl=e.target.closest('[data-del]');
     const ph=e.target.closest('[data-photo]');
+    const op=e.target.closest('[data-open]');
     if(ed){ e.stopPropagation(); editBeer(ed.dataset.edit); return; }
     if(dl){ e.stopPropagation(); delBeer(dl.dataset.del); return; }
     if(ph){ e.stopPropagation(); openLightbox(ph.dataset.photo); return; }
+    if(op){ openBeerDetail(op.dataset.open); return; }
   });
   function openLightbox(path){
     if(!path) return;
@@ -4279,6 +4473,13 @@ var qrcode = function() {
   }
   $('#lightbox-close').addEventListener('click', ()=>$('#lightbox-overlay').classList.remove('show'));
   $('#lightbox-overlay').addEventListener('click', e=>{ if(e.target===$('#lightbox-overlay')) $('#lightbox-overlay').classList.remove('show'); });
+  // beer detail sheet
+  $('#detail-close').addEventListener('click', ()=>$('#detail-overlay').classList.remove('show'));
+  $('#detail-body').addEventListener('click', e=>{
+    const ph=e.target.closest('[data-photo]'); if(ph){ openLightbox(ph.dataset.photo); return; }
+    const ed=e.target.closest('[data-detail-edit]');
+    if(ed){ $('#detail-overlay').classList.remove('show'); editBeer(ed.dataset.detailEdit); }
+  });
   // change name
   document.querySelectorAll('[data-changename]').forEach(b=>b.addEventListener('click', openName));
   $('#name-save').addEventListener('click', ()=>{
@@ -4321,6 +4522,9 @@ var qrcode = function() {
   // merge tool
   document.querySelectorAll('[data-merge]').forEach(b=>b.addEventListener('click', openMerge));
   $('#merge-close').addEventListener('click', ()=>$('#merge-overlay').classList.remove('show'));
+  // venue map
+  document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click', openMap));
+  $('#map-close').addEventListener('click', ()=>$('#map-overlay').classList.remove('show'));
   // monthly goals
   function openGoals(){
     const g=cfg.goals||{beers:10,styles:4,rated:8};
@@ -4382,13 +4586,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#map-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible') sbPull(); }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
