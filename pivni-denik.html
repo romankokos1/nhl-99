@@ -961,11 +961,27 @@ create policy "fotky cist" on storage.objects
 create policy "fotky pridat" on storage.objects
   for insert with check (bucket_id = 'fotky');
 create policy "fotky mazat" on storage.objects
-  for delete using (bucket_id = 'fotky');</div>
+  for delete using (bucket_id = 'fotky');
+
+-- mista: sdílené polohy podniků na mapě
+create table mista (
+  klic text primary key,
+  nazev text,
+  lat double precision,
+  lng double precision,
+  upraveno timestamptz default now()
+);
+alter table mista enable row level security;
+grant select, insert, update, delete
+  on public.mista to anon;
+create policy "mista cist"   on mista for select using (true);
+create policy "mista pridat" on mista for insert with check (true);
+create policy "mista upravit" on mista for update using (true);
+create policy "mista mazat"  on mista for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Pak stačí spustit jen tuhle část pro fotky: <code>alter table piva add column if not exists foto text;</code> a zbytek skriptu od komentáře „fotky".</p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od komentáře „mista".</p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -1261,6 +1277,29 @@ create policy "fotky mazat" on storage.objects
       await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
     } catch(e){}
   }
+  /* ---------- shared places (geocoded venue positions, synced so corrections reach everyone) ---------- */
+  async function placesPull(){
+    if(!sbConfigured()) return;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/mista?select=*', { headers: sbHeaders() });
+      if(!r.ok) return;
+      const rows=await r.json();
+      rows.forEach(row=>{
+        if(row.klic && row.lat!=null && row.lng!=null) geoCache[row.klic]={ lat:row.lat, lng:row.lng };
+      });
+      saveGeoCache();
+    } catch(e){}
+  }
+  async function placesPush(key, label, coord){
+    if(!sbConfigured() || !coord) return;
+    try {
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/mista?on_conflict=klic', {
+        method:'POST',
+        headers: Object.assign(sbHeaders(), { 'Prefer':'resolution=merge-duplicates' }),
+        body: JSON.stringify({ klic:key, nazev:label, lat:coord.lat, lng:coord.lng })
+      });
+    } catch(e){}
+  }
   function setSync(state, text){
     document.querySelectorAll('.dot').forEach(dot=>dot.className='dot '+state);
     document.querySelectorAll('.sync-text').forEach(t=>t.textContent=text);
@@ -1551,6 +1590,7 @@ create policy "fotky mazat" on storage.objects
     try{ await loadLeaflet(); }
     catch(e){ toast('Mapu se nepodařilo načíst — zkontroluj připojení', true); $('#map-loading').classList.remove('show'); return; }
     loadGeoCache();
+    await placesPull();
     if(!mapInstance){
       mapInstance=L.map('map-canvas',{ zoomControl:true }).setView([49.8,15.5],7);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ maxZoom:19, attribution:'© OpenStreetMap contributors' }).addTo(mapInstance);
@@ -1566,7 +1606,12 @@ create policy "fotky mazat" on storage.objects
     for(const p of places){
       let coord=geoCache[p.key];
       if(coord===undefined){
-        try{ coord=await geocodePlace(p.label); geoCache[p.key]=coord; saveGeoCache(); await new Promise(r=>setTimeout(r,1100)); }
+        try{
+          coord=await geocodePlace(p.label);
+          geoCache[p.key]=coord; saveGeoCache();
+          if(coord) placesPush(p.key, p.label, coord); // share fresh discovery with the party
+          await new Promise(r=>setTimeout(r,1100));
+        }
         catch(e){ coord=null; }
       }
       if(coord){
@@ -1586,8 +1631,10 @@ create policy "fotky mazat" on storage.objects
     m.bindPopup('<div class="map-pin-popup"><b>'+esc(p.label)+'</b><span>'+p.count+' '+beerWord(p.count)+(p.avg?' · Ø '+p.avg.toFixed(1):'')+'</span><button class="pf-btn" data-pf="'+esc(p.key)+'" data-pf-label="'+esc(p.label)+'">Opravit polohu</button></div>');
     m.on('dragend', ()=>{
       const ll=m.getLatLng();
-      geoCache[p.key]={lat:ll.lat,lng:ll.lng}; saveGeoCache();
-      toast('Poloha „'+p.label+'" upravena');
+      const newCoord={lat:ll.lat,lng:ll.lng};
+      geoCache[p.key]=newCoord; saveGeoCache();
+      placesPush(p.key, p.label, newCoord);
+      toast(sbConfigured()?'Poloha „'+p.label+'" upravena a sdílena s partou':'Poloha „'+p.label+'" upravena lokálně');
     });
     return m;
   }
@@ -1624,10 +1671,12 @@ create policy "fotky mazat" on storage.objects
   function pickPlaceFix(i){
     const data=$('#pf-results')._data; if(!data||!data[i]||!pfCtx) return;
     const r=data[i];
-    geoCache[pfCtx.key]={lat:parseFloat(r.lat), lng:parseFloat(r.lon)};
+    const newCoord={lat:parseFloat(r.lat), lng:parseFloat(r.lon)};
+    geoCache[pfCtx.key]=newCoord;
     saveGeoCache();
+    placesPush(pfCtx.key, pfCtx.label, newCoord);
     $('#placefix-overlay').classList.remove('show');
-    toast('Poloha opravena');
+    toast(sbConfigured()?'Poloha opravena a sdílena s partou':'Poloha opravena lokálně');
     openMap();
   }
   function sortBeers(arr, mode){
