@@ -210,6 +210,12 @@
   .detail-list .lb-row .lb-av{margin-top:2px;}
   .detail-note{font-size:12.5px; color:var(--text-3); font-style:italic; margin-top:4px; line-height:1.4;}
   .detail-edit{flex-shrink:0; align-self:center;}
+  .brewery-desc{font-size:13.5px; color:var(--text-2); line-height:1.55; margin-top:var(--s3);}
+  .brewery-web{display:inline-block; font-size:13px; color:var(--amber-bright); margin-top:8px; text-decoration:none; border-bottom:1px solid var(--hairline-strong);}
+  .detail-brewery-actions{display:flex; gap:8px; margin-top:var(--s4); flex-wrap:wrap;}
+  .detail-brewery-actions .row-btn{
+    border:1px solid var(--hairline); border-radius:var(--r-pill); padding:6px 13px; color:var(--text-2);
+  }
   /* venue map */
   .map-sheet{max-height:94%; display:flex; flex-direction:column;}
   .map-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--s4);}
@@ -977,11 +983,27 @@ grant select, insert, update, delete
 create policy "mista cist"   on mista for select using (true);
 create policy "mista pridat" on mista for insert with check (true);
 create policy "mista upravit" on mista for update using (true);
-create policy "mista mazat"  on mista for delete using (true);</div>
+create policy "mista mazat"  on mista for delete using (true);
+
+-- pivovary: sdílený seznam pivovarů (kanonický název, poloha, info)
+create table pivovary (
+  klic text primary key,
+  nazev text not null,
+  mesto text, web text, rok_zalozeni int, popis text,
+  lat double precision, lng double precision,
+  upraveno timestamptz default now()
+);
+alter table pivovary enable row level security;
+grant select, insert, update, delete
+  on public.pivovary to anon;
+create policy "pivovary cist"   on pivovary for select using (true);
+create policy "pivovary pridat" on pivovary for insert with check (true);
+create policy "pivovary upravit" on pivovary for update using (true);
+create policy "pivovary mazat"  on pivovary for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od komentáře „mista".</p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary".</p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -1069,15 +1091,19 @@ create policy "mista mazat"  on mista for delete using (true);</div>
     <div class="sheet map-sheet">
       <div class="grabber"></div>
       <div class="map-head">
-        <div class="sec-title first" style="margin:0">Mapa podniků</div>
+        <div class="sec-title first" style="margin:0" id="map-title">Mapa podniků</div>
         <button class="detail-close" id="map-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="segment" id="map-mode-seg" style="margin-bottom:var(--s3)">
+        <button class="seg-btn active" data-mapmode="venues">Podniky</button>
+        <button class="seg-btn" data-mapmode="breweries">Pivovary</button>
       </div>
       <div class="map-canvas-wrap">
         <div id="map-canvas"></div>
-        <div class="map-loading" id="map-loading"><div class="map-spinner"></div><span>Hledám podniky…</span></div>
+        <div class="map-loading" id="map-loading"><div class="map-spinner"></div><span id="map-loading-text">Hledám podniky…</span></div>
       </div>
       <p class="tiny-note" style="padding:0 2px; margin-bottom:var(--s2)">Pin sedí špatně? Podrž a přetáhni ho, nebo v jeho bublině klepni na „Opravit polohu".</p>
-      <div class="sec-title">Místa bez polohy</div>
+      <div class="sec-title" id="map-fallback-title">Místa bez polohy</div>
       <div class="card list-card" id="map-fallback"></div>
     </div>
   </div>
@@ -1095,6 +1121,21 @@ create policy "mista mazat"  on mista for delete using (true);</div>
       <button class="btn btn-primary" id="pf-search">Hledat</button>
       <div id="pf-results" class="pf-results"></div>
       <button class="btn btn-ghost" id="pf-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
+  <!-- brewery info edit -->
+  <div class="overlay" id="brewery-edit-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Info o pivovaru</h2>
+      <p class="lead" id="be-label">—</p>
+      <div class="field"><label for="be-mesto">Město</label><input type="text" id="be-mesto" placeholder="Praha" autocomplete="off"></div>
+      <div class="field"><label for="be-web">Web</label><input type="text" id="be-web" placeholder="https://…" autocomplete="off"></div>
+      <div class="field"><label for="be-rok">Rok založení</label><input type="number" id="be-rok" placeholder="1795" inputmode="numeric"></div>
+      <div class="field"><label for="be-popis">Popis</label><textarea id="be-popis" placeholder="Pár slov o pivovaru…"></textarea></div>
+      <button class="btn btn-primary" id="be-save">Uložit</button>
+      <button class="btn btn-ghost" id="be-close" style="margin-top:var(--s3)">Zavřít</button>
     </div>
   </div>
 
@@ -1148,6 +1189,7 @@ create policy "mista mazat"  on mista for delete using (true);</div>
     const set=new Map();
     CZ_BREWERIES.forEach(n=>set.set(norm(n),n));
     beers.forEach(b=>{ if(b.brewery){ const k=norm(b.brewery); if(!set.has(k)) set.set(k,b.brewery); } });
+    Object.entries(breweryCache).forEach(([k,v])=>{ if(v&&v.nazev) set.set(k,v.nazev); }); // canonical spelling wins
     return [...set.values()].sort((a,b)=>a.localeCompare(b,'cs'));
   }
   // find similar existing item above threshold, excluding exact-normalized-equal-but-same-string
@@ -1297,6 +1339,42 @@ create policy "mista mazat"  on mista for delete using (true);</div>
         method:'POST',
         headers: Object.assign(sbHeaders(), { 'Prefer':'resolution=merge-duplicates' }),
         body: JSON.stringify({ klic:key, nazev:label, lat:coord.lat, lng:coord.lng })
+      });
+    } catch(e){}
+  }
+  /* ---------- shared brewery info (canonical name, city, web, position) ---------- */
+  const BREWERY_CACHE_KEY='pivni-denik-brewerycache-v1';
+  let breweryCache={};
+  function loadBreweryCache(){ try{ breweryCache=JSON.parse(localStorage.getItem(BREWERY_CACHE_KEY))||{}; }catch(e){ breweryCache={}; } }
+  function saveBreweryCache(){ try{ localStorage.setItem(BREWERY_CACHE_KEY, JSON.stringify(breweryCache)); }catch(e){} }
+  async function breweriesPull(){
+    if(!sbConfigured()) return;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/pivovary?select=*', { headers: sbHeaders() });
+      if(!r.ok) return;
+      const rows=await r.json();
+      rows.forEach(row=>{
+        if(!row.klic) return;
+        breweryCache[row.klic]=Object.assign({}, breweryCache[row.klic]||{}, {
+          nazev:row.nazev||'', mesto:row.mesto||'', web:row.web||'', rok:row.rok_zalozeni||null, popis:row.popis||'',
+          lat: row.lat!=null?row.lat:(breweryCache[row.klic]?breweryCache[row.klic].lat:undefined),
+          lng: row.lng!=null?row.lng:(breweryCache[row.klic]?breweryCache[row.klic].lng:undefined)
+        });
+      });
+      saveBreweryCache();
+    } catch(e){}
+  }
+  async function breweriesPush(key, data){
+    if(!sbConfigured() || !data) return;
+    try {
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/pivovary?on_conflict=klic', {
+        method:'POST',
+        headers: Object.assign(sbHeaders(), { 'Prefer':'resolution=merge-duplicates' }),
+        body: JSON.stringify({
+          klic:key, nazev:data.nazev||key, mesto:data.mesto||null, web:data.web||null,
+          rok_zalozeni:data.rok||null, popis:data.popis||null,
+          lat:data.lat!=null?data.lat:null, lng:data.lng!=null?data.lng:null
+        })
       });
     } catch(e){}
   }
@@ -1506,7 +1584,8 @@ create policy "mista mazat"  on mista for delete using (true);</div>
     const src=boardBeers();
     const mine=src.filter(b=>b.brewery && norm(b.brewery)===brewKey);
     if(!mine.length) return;
-    const label=mine[0].brewery.trim();
+    const info=breweryCache[brewKey]||{};
+    const label=info.nazev || mine[0].brewery.trim();
     const rated=mine.filter(b=>b.rating>0);
     const avg=rated.length? rated.reduce((s,b)=>s+b.rating,0)/rated.length : 0;
     const bmap={};
@@ -1521,7 +1600,17 @@ create policy "mista mazat"  on mista for delete using (true);</div>
     let html='<div class="detail-head">';
     html+='<h2 class="detail-name">'+esc(label)+'</h2>';
     html+='<div class="detail-brewery">'+mine.length+' '+beerWord(mine.length)+' zapsáno v partě</div>';
+    const metaBits=[];
+    if(info.mesto) metaBits.push('<span class="chip">'+esc(info.mesto)+'</span>');
+    if(info.rok) metaBits.push('<span class="chip">od '+esc(String(info.rok))+'</span>');
+    if(metaBits.length) html+='<div class="chips" style="margin-top:8px">'+metaBits.join('')+'</div>';
+    if(info.popis) html+='<p class="brewery-desc">'+esc(info.popis)+'</p>';
+    if(info.web) html+='<a class="brewery-web" href="'+esc(/^https?:\/\//.test(info.web)?info.web:'https://'+info.web)+'" target="_blank" rel="noopener">'+esc(info.web.replace(/^https?:\/\//,''))+'</a>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr piv od pivovaru</span></div>';
+    html+='<div class="detail-brewery-actions">';
+    html+='<button class="row-btn" data-brewery-edit="'+esc(brewKey)+'" data-brewery-label="'+esc(label)+'">Upravit info</button>';
+    html+='<button class="row-btn" data-brewery-locate="'+esc(brewKey)+'" data-brewery-label="'+esc(label)+'">Nastavit polohu</button>';
+    html+='</div>';
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Piva od tohoto pivovaru</div>';
     html+='<div class="card list-card detail-list">';
@@ -1554,6 +1643,17 @@ create policy "mista mazat"  on mista for delete using (true);</div>
     });
     return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
   }
+  function distinctBreweriesForMap(){
+    const map=new Map();
+    beers.forEach(b=>{
+      const raw=(b.brewery||'').trim(); if(!raw) return;
+      const key=norm(raw);
+      if(!map.has(key)) map.set(key,{key,label:(breweryCache[key]&&breweryCache[key].nazev)||raw,count:0,sum:0,rated:0});
+      const e=map.get(key); e.count++;
+      if(b.rating>0){ e.sum+=b.rating; e.rated++; }
+    });
+    return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
+  }
   async function geocodePlace(label){
     const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(label));
     if(!r.ok) throw new Error('geocode http '+r.status);
@@ -1577,45 +1677,64 @@ create policy "mista mazat"  on mista for delete using (true);</div>
     return window.__leafletLoading;
   }
   let mapInstance=null;
+  let mapMode='venues';
   function beerWord(n){ return n===1?'pivo':(n<5?'piva':'piv'); }
-  async function openMap(){
+  async function openMap(mode){
+    mapMode = mode || mapMode || 'venues';
+    document.querySelectorAll('#map-mode-seg .seg-btn').forEach(x=>x.classList.toggle('active', x.dataset.mapmode===mapMode));
+    const isBrew=mapMode==='breweries';
+    $('#map-title').textContent = isBrew ? 'Mapa pivovarů' : 'Mapa podniků';
+    $('#map-loading-text').textContent = isBrew ? 'Hledám pivovary…' : 'Hledám podniky…';
+    $('#map-fallback-title').textContent = isBrew ? 'Pivovary bez polohy' : 'Místa bez polohy';
     $('#map-overlay').classList.add('show');
-    const places=distinctPlaces();
-    if(!places.length){
+    const items = isBrew ? distinctBreweriesForMap() : distinctPlaces();
+    if(!items.length){
       $('#map-canvas').innerHTML='';
-      $('#map-fallback').innerHTML='<p class="muted center">Zatím žádná piva s vyplněným místem.</p>';
+      $('#map-fallback').innerHTML = isBrew
+        ? '<p class="muted center">Zatím žádná piva s vyplněným pivovarem.</p>'
+        : '<p class="muted center">Zatím žádná piva s vyplněným místem.</p>';
       return;
     }
     $('#map-loading').classList.add('show');
     try{ await loadLeaflet(); }
     catch(e){ toast('Mapu se nepodařilo načíst — zkontroluj připojení', true); $('#map-loading').classList.remove('show'); return; }
-    loadGeoCache();
-    await placesPull();
+    if(isBrew){ loadBreweryCache(); await breweriesPull(); }
+    else { loadGeoCache(); await placesPull(); }
     if(!mapInstance){
       mapInstance=L.map('map-canvas',{ zoomControl:true }).setView([49.8,15.5],7);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ maxZoom:19, attribution:'© OpenStreetMap contributors' }).addTo(mapInstance);
       mapInstance.on('popupopen', e=>{
         const node=e.popup.getElement?e.popup.getElement():null; if(!node) return;
         const btn=node.querySelector('[data-pf]');
-        if(btn) btn.addEventListener('click', ()=>{ mapInstance.closePopup(); openPlaceFix(btn.dataset.pf, btn.dataset.pfLabel); });
+        if(btn) btn.addEventListener('click', ()=>{ mapInstance.closePopup(); openPlaceFix(btn.dataset.pf, btn.dataset.pfLabel, btn.dataset.pfKind||'place'); });
+        const openBtn=node.querySelector('[data-pf-open]');
+        if(openBtn) openBtn.addEventListener('click', ()=>{ mapInstance.closePopup(); $('#map-overlay').classList.remove('show'); openBreweryDetail(openBtn.dataset.pfOpen); });
       });
     } else {
       mapInstance.eachLayer(l=>{ if(l instanceof L.Marker) mapInstance.removeLayer(l); });
     }
     const bounds=[]; const fallback=[];
-    for(const p of places){
-      let coord=geoCache[p.key];
+    for(const p of items){
+      let coord = isBrew
+        ? (breweryCache[p.key] && breweryCache[p.key].lat!=null ? {lat:breweryCache[p.key].lat,lng:breweryCache[p.key].lng} : undefined)
+        : geoCache[p.key];
       if(coord===undefined){
         try{
           coord=await geocodePlace(p.label);
-          geoCache[p.key]=coord; saveGeoCache();
-          if(coord) placesPush(p.key, p.label, coord); // share fresh discovery with the party
+          if(isBrew){
+            const cur=breweryCache[p.key]||{nazev:p.label};
+            breweryCache[p.key]=Object.assign({}, cur, coord||{}); saveBreweryCache();
+            if(coord) breweriesPush(p.key, breweryCache[p.key]);
+          } else {
+            geoCache[p.key]=coord; saveGeoCache();
+            if(coord) placesPush(p.key, p.label, coord);
+          }
           await new Promise(r=>setTimeout(r,1100));
         }
         catch(e){ coord=null; }
       }
       if(coord){
-        placeMarker(p, coord);
+        placeMarker(p, coord, mapMode);
         bounds.push([coord.lat,coord.lng]);
       } else fallback.push(p);
     }
@@ -1623,32 +1742,45 @@ create policy "mista mazat"  on mista for delete using (true);</div>
     if(bounds.length) mapInstance.fitBounds(bounds,{padding:[30,30], maxZoom:14});
     setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),200);
     $('#map-fallback').innerHTML = fallback.length
-      ? fallback.map(p=>'<div class="mf-row"><div class="mf-info"><b>'+esc(p.label)+'</b><small>'+p.count+' '+beerWord(p.count)+'</small></div><button class="mf-fix" data-fix="'+esc(p.key)+'" data-fix-label="'+esc(p.label)+'">Najít</button></div>').join('')
-      : '<p class="muted center">Všechna místa se podařilo najít na mapě.</p>';
+      ? fallback.map(p=>'<div class="mf-row"><div class="mf-info"><b>'+esc(p.label)+'</b><small>'+p.count+' '+beerWord(p.count)+'</small></div><button class="mf-fix" data-fix="'+esc(p.key)+'" data-fix-label="'+esc(p.label)+'" data-fix-kind="'+mapMode+'">Najít</button></div>').join('')
+      : '<p class="muted center">'+(isBrew?'Všechny pivovary se podařilo najít na mapě.':'Všechna místa se podařilo najít na mapě.')+'</p>';
   }
-  function placeMarker(p, coord){
+  function placeMarker(p, coord, mode){
+    const isBrew=mode==='breweries';
     const m=L.marker([coord.lat,coord.lng], { draggable:true }).addTo(mapInstance);
-    m.bindPopup('<div class="map-pin-popup"><b>'+esc(p.label)+'</b><span>'+p.count+' '+beerWord(p.count)+(p.avg?' · Ø '+p.avg.toFixed(1):'')+'</span><button class="pf-btn" data-pf="'+esc(p.key)+'" data-pf-label="'+esc(p.label)+'">Opravit polohu</button></div>');
+    let html='<div class="map-pin-popup"><b>'+esc(p.label)+'</b><span>'+p.count+' '+beerWord(p.count)+(p.avg?' · Ø '+p.avg.toFixed(1):'')+'</span>';
+    if(isBrew) html+='<button class="pf-btn" data-pf-open="'+esc(p.key)+'">Detail pivovaru</button>';
+    html+='<button class="pf-btn" data-pf="'+esc(p.key)+'" data-pf-label="'+esc(p.label)+'" data-pf-kind="'+(isBrew?'brewery':'place')+'">Opravit polohu</button></div>';
+    m.bindPopup(html);
     m.on('dragend', ()=>{
       const ll=m.getLatLng();
       const newCoord={lat:ll.lat,lng:ll.lng};
-      geoCache[p.key]=newCoord; saveGeoCache();
-      placesPush(p.key, p.label, newCoord);
-      toast(sbConfigured()?'Poloha „'+p.label+'" upravena a sdílena s partou':'Poloha „'+p.label+'" upravena lokálně');
+      if(isBrew){
+        const cur=breweryCache[p.key]||{nazev:p.label};
+        breweryCache[p.key]=Object.assign({}, cur, newCoord); saveBreweryCache();
+        breweriesPush(p.key, breweryCache[p.key]);
+        toast(sbConfigured()?'Poloha pivovaru upravena a sdílena':'Poloha pivovaru upravena lokálně');
+      } else {
+        geoCache[p.key]=newCoord; saveGeoCache();
+        placesPush(p.key, p.label, newCoord);
+        toast(sbConfigured()?'Poloha „'+p.label+'" upravena a sdílena s partou':'Poloha „'+p.label+'" upravena lokálně');
+      }
     });
     return m;
   }
 
   /* ---------- place correction: search Nominatim and pick the right result ---------- */
-  let pfCtx=null; // {key, label}
+  let pfCtx=null; // {kind:'place'|'brewery', key, label}
   async function geocodeSearch(query, limit){
     const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit='+(limit||6)+'&q='+encodeURIComponent(query));
     if(!r.ok) throw new Error('http '+r.status);
     return r.json();
   }
-  function openPlaceFix(key, label){
-    pfCtx={key, label};
-    $('#pf-label').textContent='Hledáš přesnou polohu pro „'+label+'".';
+  function openPlaceFix(key, label, kind){
+    pfCtx={kind: kind||'place', key, label};
+    $('#pf-label').textContent = pfCtx.kind==='brewery'
+      ? 'Hledáš přesnou polohu pivovaru „'+label+'".'
+      : 'Hledáš přesnou polohu pro „'+label+'".';
     $('#pf-query').value=label;
     $('#pf-results').innerHTML='';
     $('#placefix-overlay').classList.add('show');
@@ -1672,12 +1804,20 @@ create policy "mista mazat"  on mista for delete using (true);</div>
     const data=$('#pf-results')._data; if(!data||!data[i]||!pfCtx) return;
     const r=data[i];
     const newCoord={lat:parseFloat(r.lat), lng:parseFloat(r.lon)};
-    geoCache[pfCtx.key]=newCoord;
-    saveGeoCache();
-    placesPush(pfCtx.key, pfCtx.label, newCoord);
     $('#placefix-overlay').classList.remove('show');
-    toast(sbConfigured()?'Poloha opravena a sdílena s partou':'Poloha opravena lokálně');
-    openMap();
+    if(pfCtx.kind==='brewery'){
+      const cur=breweryCache[pfCtx.key]||{nazev:pfCtx.label};
+      breweryCache[pfCtx.key]=Object.assign({}, cur, newCoord); saveBreweryCache();
+      breweriesPush(pfCtx.key, breweryCache[pfCtx.key]);
+      toast(sbConfigured()?'Poloha opravena a sdílena s partou':'Poloha opravena lokálně');
+      openMap('breweries');
+    } else {
+      geoCache[pfCtx.key]=newCoord;
+      saveGeoCache();
+      placesPush(pfCtx.key, pfCtx.label, newCoord);
+      toast(sbConfigured()?'Poloha opravena a sdílena s partou':'Poloha opravena lokálně');
+      openMap('venues');
+    }
   }
   function sortBeers(arr, mode){
     return arr.slice().sort((a,b)=>{
@@ -4499,6 +4639,7 @@ var qrcode = function() {
   /* ---------- init & events ---------- */
   buildGlasses();
   loadLocal();
+  loadBreweryCache();
 
   // if opened via invite link, adopt those credentials
   const invite = parseInvite();
@@ -4519,7 +4660,7 @@ var qrcode = function() {
   resetForm();
   renderAll();
 
-  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); }
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); }
   else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
 
   if(!cfg.name) setTimeout(openName, 400);
@@ -4656,6 +4797,10 @@ var qrcode = function() {
     const ph=e.target.closest('[data-photo]'); if(ph){ openLightbox(ph.dataset.photo); return; }
     const ed=e.target.closest('[data-detail-edit]');
     if(ed){ $('#detail-overlay').classList.remove('show'); editBeer(ed.dataset.detailEdit); return; }
+    const beedit=e.target.closest('[data-brewery-edit]');
+    if(beedit){ openBreweryEdit(beedit.dataset.breweryEdit, beedit.dataset.breweryLabel); return; }
+    const beloc=e.target.closest('[data-brewery-locate]');
+    if(beloc){ openPlaceFix(beloc.dataset.breweryLocate, beloc.dataset.breweryLabel, 'brewery'); return; }
     const beerRow=e.target.closest('[data-open-beer-name]');
     if(beerRow){
       const nameKey=beerRow.dataset.openBeerName, brewKey=beerRow.dataset.openBeerBrewery;
@@ -4717,12 +4862,13 @@ var qrcode = function() {
   document.querySelectorAll('[data-merge]').forEach(b=>b.addEventListener('click', openMerge));
   $('#merge-close').addEventListener('click', ()=>$('#merge-overlay').classList.remove('show'));
   // venue map
-  document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click', openMap));
+  document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click', ()=>openMap('venues')));
+  document.querySelectorAll('#map-mode-seg .seg-btn').forEach(b=>b.addEventListener('click', ()=>openMap(b.dataset.mapmode)));
   $('#map-close').addEventListener('click', ()=>$('#map-overlay').classList.remove('show'));
   // place correction
   $('#map-fallback').addEventListener('click', e=>{
     const btn=e.target.closest('[data-fix]'); if(!btn) return;
-    openPlaceFix(btn.dataset.fix, btn.dataset.fixLabel);
+    openPlaceFix(btn.dataset.fix, btn.dataset.fixLabel, btn.dataset.fixKind||'place');
   });
   $('#pf-search').addEventListener('click', runPlaceFix);
   $('#pf-query').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); runPlaceFix(); } });
@@ -4731,6 +4877,35 @@ var qrcode = function() {
     pickPlaceFix(+row.dataset.i);
   });
   $('#pf-close').addEventListener('click', ()=>$('#placefix-overlay').classList.remove('show'));
+  // brewery info edit
+  let beCtx=null;
+  function openBreweryEdit(key,label){
+    beCtx={key,label};
+    const info=breweryCache[key]||{};
+    $('#be-label').textContent='Doplň info o pivovaru „'+label+'".';
+    $('#be-mesto').value=info.mesto||'';
+    $('#be-web').value=info.web||'';
+    $('#be-rok').value=info.rok||'';
+    $('#be-popis').value=info.popis||'';
+    $('#brewery-edit-overlay').classList.add('show');
+  }
+  $('#be-save').addEventListener('click', ()=>{
+    if(!beCtx) return;
+    const cur=breweryCache[beCtx.key]||{};
+    const next=Object.assign({}, cur, {
+      nazev: cur.nazev || beCtx.label,
+      mesto: $('#be-mesto').value.trim(),
+      web: $('#be-web').value.trim(),
+      rok: parseInt($('#be-rok').value,10)||null,
+      popis: $('#be-popis').value.trim()
+    });
+    breweryCache[beCtx.key]=next; saveBreweryCache();
+    breweriesPush(beCtx.key, next);
+    $('#brewery-edit-overlay').classList.remove('show');
+    toast(sbConfigured()?'Info uloženo a sdíleno s partou':'Info uloženo lokálně');
+    openBreweryDetail(beCtx.key);
+  });
+  $('#be-close').addEventListener('click', ()=>$('#brewery-edit-overlay').classList.remove('show'));
   // monthly goals
   function openGoals(){
     const g=cfg.goals||{beers:10,styles:4,rated:8};
@@ -4792,15 +4967,15 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#map-overlay','#placefix-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#map-overlay','#placefix-overlay','#brewery-edit-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
-  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible') sbPull(); }, 30000);
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 
