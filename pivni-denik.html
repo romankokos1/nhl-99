@@ -159,10 +159,30 @@
   .search-wrap input:focus{outline:none; border-color:var(--hairline-strong); box-shadow:0 0 0 4px rgba(232,163,61,0.08);}
 
   /* beer card */
-  .card.beer{padding:var(--s5); margin-bottom:var(--s3); cursor:default; transition:transform .12s;}
-  .card.beer.has-photo{padding-top:0; overflow:hidden;}
-  .beer-photo{margin:0 calc(-1*var(--s5)) var(--s4); cursor:zoom-in; position:relative; background:var(--bg-2);}
-  .beer-photo img{display:block; width:100%; max-height:220px; object-fit:cover;}
+  .card.beer{
+    padding:var(--s5); margin-bottom:var(--s3); cursor:default; transition:transform .12s; position:relative;
+    background:linear-gradient(180deg, #2a201b, #241a13);
+    border-color:rgba(217,180,107,0.15);
+  }
+  .card.beer.has-photo{padding-top:var(--s5);}
+  .beer-photo{
+    margin:calc(-1*var(--s5) + 2px) 0 var(--s4); border-radius:16px; overflow:hidden;
+    cursor:zoom-in; position:relative; background:var(--bg-2);
+  }
+  .beer-photo img{display:block; width:100%; max-height:210px; object-fit:cover;}
+  .card-menu-btn{
+    width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0;
+  }
+  .beer-photo .card-menu-btn{
+    position:absolute; top:10px; right:10px; z-index:2; width:30px; height:30px;
+    background:rgba(10,6,3,0.55); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.14); color:#fff;
+  }
+  .beer-top .card-menu-btn{
+    background:none; border:none; color:#a48e7a; margin-top:1px;
+  }
+  .beer-top .card-menu-btn:active{ color:#f4efea; }
+  .card-menu-btn svg{width:15px; height:15px;}
   .photo-picker{margin-top:2px;}
   .photo-empty{
     display:flex; align-items:center; gap:10px; justify-content:center;
@@ -190,6 +210,23 @@
     color:var(--foam); display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
   .lightbox-close svg{width:20px; height:20px;}
+  /* floating card action menu */
+  .cardmenu-pop{
+    position:fixed; z-index:95; display:none;
+    background:var(--surface-hi); border:1px solid var(--hairline-strong); border-radius:14px;
+    box-shadow:0 14px 34px -10px rgba(0,0,0,0.75); overflow:hidden; min-width:168px;
+  }
+  .cardmenu-pop.show{display:block; animation:fade .14s;}
+  .cardmenu-pop button{
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    padding:12px 15px; background:none; border:none; border-bottom:1px solid var(--hairline);
+    font-family:inherit; font-size:14px; font-weight:600; color:var(--text); cursor:pointer;
+  }
+  .cardmenu-pop button:last-child{border-bottom:none;}
+  .cardmenu-pop button:active{background:var(--surface-2);}
+  .cardmenu-pop button svg{width:16px; height:16px; flex-shrink:0; color:var(--text-3);}
+  .cardmenu-pop button.danger{color:var(--red);}
+  .cardmenu-pop button.danger svg{color:var(--red);}
   /* beer detail sheet */
   .detail-sheet{position:relative; max-height:92%; padding-top:calc(var(--s5) + 30px);}
   .detail-close{
@@ -258,17 +295,17 @@
   .card.beer.mine{border-color:var(--hairline-strong);}
   .card.beer.mine::before{content:''; position:absolute;}
   .beer-top{display:flex; align-items:flex-start; gap:var(--s3);}
-  .beer-name{font-size:17.5px; font-weight:700; color:var(--foam); letter-spacing:-0.01em; flex:1; line-height:1.25;}
-  .score-badge{
-    flex-shrink:0; display:flex; align-items:baseline; gap:1px;
-    background:linear-gradient(160deg, rgba(232,163,61,0.18), rgba(232,163,61,0.06));
-    border:1px solid var(--hairline-strong); border-radius:var(--r-sm);
-    padding:5px 10px; box-shadow:0 0 20px -8px rgba(232,163,61,0.4);
-  }
-  .score-num{font-size:19px; font-weight:800; color:var(--amber-bright); font-variant-numeric:tabular-nums; letter-spacing:-0.02em;}
-  .score-den{font-size:11px; color:var(--text-3); font-weight:600;}
-  .beer-brewery{font-size:13.5px; color:var(--text-2); margin-top:2px;}
-  .glass-row{display:flex; gap:2.5px; margin-top:var(--s3);}
+  .beer-name{font-size:22px; font-weight:700; color:#f4efea; letter-spacing:-0.015em; flex:1; line-height:1.2;}
+  .score-plain{flex-shrink:0; display:flex; align-items:baseline; gap:1px; padding-top:2px;}
+  .score-num{font-size:22px; font-weight:800; color:#d9b46b; font-variant-numeric:tabular-nums; letter-spacing:-0.02em;}
+  .score-den{font-size:12.5px; color:#a48e7a; font-weight:600;}
+  .beer-brewery{display:flex; align-items:center; gap:6px; font-size:16px; font-weight:600; color:#c9b299; margin-top:5px;}
+  .beer-brewery svg{width:15px; height:15px; flex-shrink:0; color:#d9b46b; opacity:0.85;}
+  .beer-meta-row{display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:14px; font-weight:500; color:#a48e7a;}
+  .bm-item{display:inline-flex; align-items:center; gap:5px;}
+  .bm-item svg{width:14px; height:14px; flex-shrink:0; opacity:0.8;}
+  .bm-dot{opacity:0.5;}
+  .glass-row{display:flex; gap:2.5px; margin-top:var(--s4);}
   .glass-row .gm path{fill:var(--surface-hi);}
   .glass-row .gm.on path{fill:var(--amber);}
   .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:var(--s3);}
@@ -277,13 +314,15 @@
     background:var(--bg-2); border:1px solid var(--hairline); border-radius:8px; padding:3px 9px;
   }
   .chip.subtle{color:var(--text-3); font-weight:500;}
-  .beer-note{font-size:13.5px; color:var(--text-2); margin-top:var(--s3); line-height:1.5; font-style:italic; opacity:0.92;}
-  .beer-foot{display:flex; align-items:center; gap:var(--s3); margin-top:var(--s4); padding-top:var(--s3); border-top:1px solid var(--hairline);}
-  .byline{display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-2); font-weight:600;}
-  .byline.dim{color:var(--text-3); font-weight:500;}
-  .mini-avatar{width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; flex-shrink:0;}
-  .foot-date{font-size:12px; color:var(--text-4); margin-left:auto; font-variant-numeric:tabular-nums;}
-  .row-actions{display:flex; gap:6px; margin-left:auto;}
+  .beer-note{
+    font-size:15px; color:#d8c9b8; line-height:1.55; font-style:italic; opacity:0.95;
+    margin-top:var(--s4); padding-top:var(--s3); border-top:1px solid rgba(217,180,107,0.14);
+  }
+  .beer-foot{display:flex; align-items:center; gap:var(--s3); margin-top:var(--s3); padding-top:10px; border-top:1px solid rgba(217,180,107,0.14);}
+  .byline{display:flex; align-items:center; gap:6px; font-size:13.5px; color:#c9b299; font-weight:600;}
+  .byline.dim{color:#a48e7a; font-weight:500;}
+  .mini-avatar{width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9.5px; font-weight:700; color:#fff; flex-shrink:0;}
+  .foot-date{font-size:12.5px; color:#a48e7a; margin-left:auto; font-variant-numeric:tabular-nums;}
   .row-btn{
     font-family:inherit; font-size:12.5px; font-weight:600; color:var(--text-3);
     background:none; border:none; padding:4px 4px; cursor:pointer;
@@ -1077,6 +1116,9 @@ create policy "pivovary mazat"  on pivovary for delete using (true);</div>
     <img id="lightbox-img" alt="Foto piva">
   </div>
 
+  <!-- floating card action menu -->
+  <div class="cardmenu-pop" id="cardmenu-pop"></div>
+
   <!-- beer detail sheet -->
   <div class="overlay" id="detail-overlay">
     <div class="sheet detail-sheet">
@@ -1512,33 +1554,65 @@ create policy "pivovary mazat"  on pivovary for delete using (true);</div>
     let h=0; for(const c of (name||'')) h=(h*31+c.charCodeAt(0))%360;
     return 'hsl('+h+' 45% 42%)';
   }
+  function breweryIcon2(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4.5 21V9.5l7.5-5 7.5 5V21"/><path d="M9 21v-6h6v6"/><path d="M4.5 9.5h15"/></svg>'; }
+  function metaStyleIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3.2c2.5 1.9 4.1 4.3 4.1 6.8a4.1 4.1 0 0 1-8.2 0c0-2.5 1.6-4.9 4.1-6.8z"/></svg>'; }
+  function metaPinIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21c3.3-3.7 5.3-6.6 5.3-9a5.3 5.3 0 0 0-10.6 0c0 2.4 2 5.3 5.3 9z"/><circle cx="12" cy="11.6" r="1.9"/></svg>'; }
+  function cardMenuDots(){ return '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>'; }
   function beerCard(b, showWho){
     const mine = b.osoba===cfg.name;
-    const chips=[];
-    if(b.style) chips.push('<span class="chip">'+esc(b.style)+'</span>');
-    if(b.abv) chips.push('<span class="chip">'+esc(b.abv)+'%</span>');
-    if(b.where) chips.push('<span class="chip subtle">'+esc(b.where)+'</span>');
+    const metaBits=[];
+    if(b.style) metaBits.push('<span class="bm-item">'+metaStyleIcon()+'<span>'+esc(b.style)+'</span></span>');
+    if(b.abv) metaBits.push('<span class="bm-item plain">'+esc(b.abv)+'%</span>');
+    if(b.where) metaBits.push('<span class="bm-item">'+metaPinIcon()+'<span>'+esc(b.where)+'</span></span>');
     const dateShort = b.date ? esc(b.date) : '';
+    const menuBtn = mine ? '<button class="card-menu-btn" data-cardmenu="'+b.id+'" aria-label="Možnosti">'+cardMenuDots()+'</button>' : '';
     return '<article class="card beer'+(mine?' mine':'')+(b.foto?' has-photo':'')+'" data-open="'+b.id+'">'
-      + (b.foto?'<div class="beer-photo" data-photo="'+esc(b.foto)+'"><img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="Foto '+esc(b.name)+'"></div>':'')
+      + (b.foto?('<div class="beer-photo" data-photo="'+esc(b.foto)+'"><img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="Foto '+esc(b.name)+'">'+menuBtn+'</div>'):'')
       + '<div class="beer-main">'
       +   '<div class="beer-top">'
       +     '<h3 class="beer-name">'+esc(b.name)+'</h3>'
-      +     '<div class="score-badge"><span class="score-num">'+(b.rating||'–')+'</span><span class="score-den">/10</span></div>'
+      +     '<div class="score-plain"><span class="score-num">'+(b.rating||'–')+'</span><span class="score-den">/10</span></div>'
+      +     (!b.foto?menuBtn:'')
       +   '</div>'
-      +   (b.brewery?'<div class="beer-brewery">'+esc(b.brewery)+'</div>':'')
+      +   (b.brewery?'<div class="beer-brewery">'+breweryIcon2()+'<span>'+esc(b.brewery)+'</span></div>':'')
+      +   (metaBits.length?'<div class="beer-meta-row">'+metaBits.join('<span class="bm-dot">·</span>')+'</div>':'')
       +   (b.rating?glassRow(b.rating, 11):'')
-      +   (chips.length?'<div class="chips">'+chips.join('')+'</div>':'')
       +   (b.note?'<p class="beer-note">'+esc(b.note)+'</p>':'')
       +   '<div class="beer-foot">'
       +     (showWho&&b.osoba?'<span class="byline"><span class="mini-avatar" style="background:'+avatarColor(b.osoba)+'">'+esc(initials(b.osoba))+'</span>'+esc(b.osoba)+'</span>':'<span class="byline dim">'+dateShort+'</span>')
       +     (showWho&&dateShort?'<span class="foot-date">'+dateShort+'</span>':'')
-      +     (mine?'<span class="row-actions"><button class="row-btn" data-edit="'+b.id+'" aria-label="Upravit">Upravit</button><button class="row-btn del" data-del="'+b.id+'" aria-label="Smazat">Smazat</button></span>':'')
       +   '</div>'
       + '</div>'
       + '</article>';
   }
   /* ---------- beer detail sheet ---------- */
+  /* ---------- floating card menu (Upravit / Smazat) ---------- */
+  function cmIconEdit(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>'; }
+  function cmIconDelete(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>'; }
+  function closeCardMenu(){ const pop=$('#cardmenu-pop'); if(!pop) return; pop.classList.remove('show'); pop.dataset.owner=''; }
+  function openCardMenu(btn){
+    const id=btn.dataset.cardmenu;
+    const pop=$('#cardmenu-pop');
+    pop.innerHTML =
+      '<button data-cm-action="edit" data-cm-id="'+id+'">'+cmIconEdit()+'<span>Upravit</span></button>'
+      +'<button class="danger" data-cm-action="delete" data-cm-id="'+id+'">'+cmIconDelete()+'<span>Smazat</span></button>';
+    pop.dataset.owner=id;
+    pop.classList.add('show');
+    const r=btn.getBoundingClientRect();
+    const pr=pop.getBoundingClientRect();
+    const appEl=document.querySelector('.app'); const ar=appEl.getBoundingClientRect();
+    let top=r.bottom+6, left=r.right-pr.width;
+    if(left<ar.left+8) left=ar.left+8;
+    if(left+pr.width>ar.right-8) left=ar.right-8-pr.width;
+    if(top+pr.height>ar.bottom-8) top=r.top-pr.height-6;
+    pop.style.top=Math.round(top)+'px';
+    pop.style.left=Math.round(left)+'px';
+  }
+  function toggleCardMenu(btn){
+    const pop=$('#cardmenu-pop');
+    if(pop.classList.contains('show') && pop.dataset.owner===btn.dataset.cardmenu){ closeCardMenu(); return; }
+    openCardMenu(btn);
+  }
   function beerKey(b){ return norm(b.name)+'|||'+norm(b.brewery||''); }
   function openBeerDetail(id){
     const b=beers.find(x=>x.id===id); if(!b) return;
@@ -4776,11 +4850,10 @@ var qrcode = function() {
   if($('#export-btn')) $('#export-btn').addEventListener('click', exportTSV);
   // feed actions (delegated)
   $('#feed').addEventListener('click',e=>{
-    const ed=e.target.closest('[data-edit]'); const dl=e.target.closest('[data-del]');
+    const cm=e.target.closest('[data-cardmenu]');
+    if(cm){ e.stopPropagation(); toggleCardMenu(cm); return; }
     const ph=e.target.closest('[data-photo]');
     const op=e.target.closest('[data-open]');
-    if(ed){ e.stopPropagation(); editBeer(ed.dataset.edit); return; }
-    if(dl){ e.stopPropagation(); delBeer(dl.dataset.del); return; }
     if(ph){ e.stopPropagation(); openLightbox(ph.dataset.photo); return; }
     if(op){ openBeerDetail(op.dataset.open); return; }
   });
@@ -4973,7 +5046,19 @@ var qrcode = function() {
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+  });
+  document.addEventListener('click', e=>{
+    if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
+    const act=e.target.closest('[data-cm-action]');
+    if(act){
+      const id=act.dataset.cmId, action=act.dataset.cmAction;
+      closeCardMenu();
+      if(action==='edit') editBeer(id);
+      else if(action==='delete') delBeer(id);
+      return;
+    }
+    if(!e.target.closest('.cardmenu-pop')) closeCardMenu();
   });
   setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
