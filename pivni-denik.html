@@ -196,6 +196,20 @@
   .photo-empty:active{border-color:var(--amber-deep); color:var(--text-2);}
   .photo-empty svg{width:22px; height:22px;}
   .photo-preview{position:relative; border-radius:var(--r-sm); overflow:hidden; background:var(--bg-2);}
+  /* Instagram-style grid view */
+  #feed.feed-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:3px;}
+  #feed.feed-grid .empty{grid-column:1 / -1;}
+  .grid-tile{position:relative; aspect-ratio:1/1; overflow:hidden; cursor:pointer; border-radius:5px; background:var(--bg-2);}
+  .grid-tile img{width:100%; height:100%; object-fit:cover; display:block;}
+  .grid-tile.no-photo{display:flex;}
+  .gt-noimg{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8px; height:100%; width:100%; gap:3px;}
+  .gt-name{font-size:11.5px; font-weight:700; color:#f4efea; line-height:1.25; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;}
+  .gt-brewery{font-size:9.5px; color:#a48e7a; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;}
+  .gt-score{
+    position:absolute; top:5px; right:5px; z-index:2;
+    background:rgba(10,6,3,0.6); backdrop-filter:blur(4px); border-radius:6px; padding:1px 5px;
+    font-size:11px; font-weight:800; color:#ffc35a; font-variant-numeric:tabular-nums;
+  }
   .photo-preview img{display:block; width:100%; max-height:280px; object-fit:cover; transition:opacity .2s;}
   .photo-remove{
     position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%;
@@ -728,6 +742,9 @@
         <div style="flex:1">
           <div class="tb-title">Pivní deník</div>
         </div>
+        <button class="icon-round" id="view-toggle" aria-label="Přepnout zobrazení">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="view-toggle-icon"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        </button>
         <button class="icon-round" id="sort-toggle" aria-label="Řazení">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 4l3 3"/><path d="M17 4v16M17 4l-3 3M17 20l3-3" opacity="0.5"/></svg>
         </button>
@@ -1195,7 +1212,7 @@ create policy "pivovary mazat"  on pivovary for delete using (true);</div>
   const LKEY = 'pivni-denik-shared-v1';   // local beer cache
   const CFG  = 'pivni-denik-cfg-v1';       // { name, url, key }
   let beers = [];      // all known beers (mine + synced others)
-  let cfg = { name:'', url:'', key:'', goals:{ beers:10, styles:4, rated:8 } };
+  let cfg = { name:'', url:'', key:'', goals:{ beers:10, styles:4, rated:8 }, viewMode:'list' };
   let editId = null;
   let currentRating = 0;
   let online = false;
@@ -1561,6 +1578,23 @@ create policy "pivovary mazat"  on pivovary for delete using (true);</div>
   function metaStyleIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3.2c2.5 1.9 4.1 4.3 4.1 6.8a4.1 4.1 0 0 1-8.2 0c0-2.5 1.6-4.9 4.1-6.8z"/></svg>'; }
   function metaPinIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21c3.3-3.7 5.3-6.6 5.3-9a5.3 5.3 0 0 0-10.6 0c0 2.4 2 5.3 5.3 9z"/><circle cx="12" cy="11.6" r="1.9"/></svg>'; }
   function cardMenuDots(){ return '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>'; }
+  function gridFallbackGradient(b){
+    let h=0; for(const c of (b.name||'?')) h=(h*31+c.charCodeAt(0))%360;
+    return 'linear-gradient(160deg, hsl('+h+' 32% 22%), hsl('+h+' 28% 13%))';
+  }
+  function gridTile(b){
+    const scoreHtml = b.rating ? '<span class="gt-score">'+b.rating+'</span>' : '';
+    if(b.foto){
+      return '<div class="grid-tile" data-open="'+b.id+'">'
+        +'<img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.name)+'">'
+        +scoreHtml
+        +'</div>';
+    }
+    return '<div class="grid-tile no-photo" data-open="'+b.id+'" style="background:'+gridFallbackGradient(b)+'">'
+      +'<div class="gt-noimg"><span class="gt-name">'+esc(b.name)+'</span>'+(b.brewery?'<span class="gt-brewery">'+esc(b.brewery)+'</span>':'')+'</div>'
+      +scoreHtml
+      +'</div>';
+  }
   function beerCard(b, showWho){
     const mine = b.osoba===cfg.name;
     const metaBits=[];
@@ -1923,13 +1957,15 @@ create policy "pivovary mazat"  on pivovary for delete using (true);</div>
     arr=sortBeers(arr, homeSort);
     const list=$('#feed');
     if(!list) return;
+    const isGrid = cfg.viewMode==='grid';
+    list.classList.toggle('feed-grid', isGrid);
     if(!arr.length){
       const msg = mineOnly
         ? 'Zatím žádná tvoje piva.<br>Klepni na ➕ a přidej první.'
         : (sbConfigured()?'Zatím tu nic není.<br>Buď první, kdo něco naleje.':'Přidej první pivo — a v Profilu zapni sdílení,<br>ať vidíš i kamarády.');
       list.innerHTML='<div class="empty"><div class="empty-glass">'+bigGlass()+'</div><p>'+msg+'</p></div>';
     } else {
-      list.innerHTML=arr.map(b=>beerCard(b, true)).join('');
+      list.innerHTML = isGrid ? arr.map(b=>gridTile(b)).join('') : arr.map(b=>beerCard(b, true)).join('');
     }
     // hero + counts
     const mine=beers.filter(b=>b.osoba===cfg.name);
@@ -4845,6 +4881,17 @@ var qrcode = function() {
     const next=SORT_CYCLE[(i+1)%SORT_CYCLE.length];
     homeSort=next[0]; toast('Řazení: '+next[1]); renderHome();
   });
+  function updateViewToggleIcon(){
+    const icon=$('#view-toggle-icon'); if(!icon) return;
+    icon.innerHTML = cfg.viewMode==='grid'
+      ? '<path d="M4 6h16M4 12h16M4 18h16"/>'
+      : '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
+  }
+  if($('#view-toggle')) $('#view-toggle').addEventListener('click', ()=>{
+    cfg.viewMode = cfg.viewMode==='grid' ? 'list' : 'grid';
+    saveCfg(); updateViewToggleIcon(); renderHome();
+  });
+  updateViewToggleIcon();
   document.querySelectorAll('.seg-btn[data-scope]').forEach(b=>b.addEventListener('click',()=>{
     homeScope=b.dataset.scope;
     document.querySelectorAll('.seg-btn[data-scope]').forEach(x=>x.classList.toggle('active',x===b));
