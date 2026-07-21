@@ -337,6 +337,19 @@
   }
   .beer-foot{display:flex; align-items:center; gap:var(--s3); margin-top:var(--s3); padding-top:10px; border-top:1px solid rgba(217,180,107,0.14);}
   .byline{display:flex; align-items:center; gap:6px; font-size:13.5px; color:#c9b299; font-weight:600;}
+  .like-btn{
+    display:flex; align-items:center; gap:5px; margin-left:auto;
+    background:none; border:none; cursor:pointer; padding:2px 4px; color:#a48e7a;
+    transition:transform .15s;
+  }
+  .like-btn:active{transform:scale(0.88);}
+  .like-btn .like-icon{width:19px; height:19px; flex-shrink:0;}
+  .like-btn .like-count{font-size:12.5px; font-weight:700; color:#a48e7a; font-variant-numeric:tabular-nums; min-width:5px;}
+  .like-btn.liked{color:#e0567a;}
+  .like-btn.liked .like-icon{fill:#e0567a; stroke:#e0567a;}
+  .like-btn.liked .like-count{color:#e0567a;}
+  .like-btn.self{opacity:0.55;}
+  .foot-date{font-size:12.5px; color:#a48e7a; font-variant-numeric:tabular-nums;}
   .byline.dim{color:#a48e7a; font-weight:500;}
   .mini-avatar{width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9.5px; font-weight:700; color:#fff; flex-shrink:0;}
   .foot-date{font-size:12.5px; color:#a48e7a; margin-left:auto; font-variant-numeric:tabular-nums;}
@@ -529,6 +542,8 @@
   .lb-name{font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .lb-name .you{font-size:10px; background:var(--amber); color:#241703; padding:1px 6px; border-radius:var(--r-pill); font-weight:700; vertical-align:middle; margin-left:4px;}
   .lb-tags{display:flex; align-items:center; gap:7px; overflow:hidden;}
+  .lb-row .like-btn{margin-left:0;}
+  .lb-row .like-btn .like-icon{width:17px; height:17px;}
   .lb-fav{font-size:11px; font-weight:600; color:var(--text-3); background:var(--bg-2); border:1px solid var(--hairline); border-radius:6px; padding:1px 7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;}
   .lb-beerinfo{flex:1; display:flex; flex-direction:column; overflow:hidden;}
   .lb-beerinfo b{font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -1058,11 +1073,25 @@ grant select, insert, update, delete
 create policy "pivovary cist"   on pivovary for select using (true);
 create policy "pivovary pridat" on pivovary for insert with check (true);
 create policy "pivovary upravit" on pivovary for update using (true);
-create policy "pivovary mazat"  on pivovary for delete using (true);</div>
+create policy "pivovary mazat"  on pivovary for delete using (true);
+
+-- liky: lajky na jednotlivé zápisy piv
+create table liky (
+  pivo_id text not null,
+  osoba text not null,
+  vytvoreno timestamptz default now(),
+  primary key (pivo_id, osoba)
+);
+alter table liky enable row level security;
+grant select, insert, update, delete
+  on public.liky to anon;
+create policy "liky cist"   on liky for select using (true);
+create policy "liky pridat" on liky for insert with check (true);
+create policy "liky mazat"  on liky for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary".</p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary"; pro lajky blok od „liky".</p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -1440,6 +1469,77 @@ create policy "pivovary mazat"  on pivovary for delete using (true);</div>
       });
     } catch(e){}
   }
+  /* ---------- likes (per-entry, from the party) ---------- */
+  let likesMap={}; // { [beerId]: Set<osoba> }
+  async function likesPull(){
+    if(!sbConfigured()){ likesMap={}; return; }
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/liky?select=*', { headers: sbHeaders() });
+      if(!r.ok) return;
+      const rows=await r.json();
+      const map={};
+      rows.forEach(row=>{
+        if(!row.pivo_id||!row.osoba) return;
+        if(!map[row.pivo_id]) map[row.pivo_id]=new Set();
+        map[row.pivo_id].add(row.osoba);
+      });
+      likesMap=map;
+    } catch(e){}
+  }
+  async function likeAdd(pivoId){
+    if(!sbConfigured()) return false;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/liky', {
+        method:'POST',
+        headers: Object.assign(sbHeaders(), { 'Prefer':'resolution=merge-duplicates' }),
+        body: JSON.stringify({ pivo_id:pivoId, osoba:cfg.name })
+      });
+      return r.ok;
+    } catch(e){ return false; }
+  }
+  async function likeRemove(pivoId){
+    if(!sbConfigured()) return false;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/liky?pivo_id=eq.'+encodeURIComponent(pivoId)+'&osoba=eq.'+encodeURIComponent(cfg.name), {
+        method:'DELETE', headers: sbHeaders()
+      });
+      return r.ok;
+    } catch(e){ return false; }
+  }
+  function likeIcon(){
+    return '<svg viewBox="0 0 24 24" class="like-icon" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 20.5s-7.2-4.4-9.6-8.7C.7 8.6 2.2 5 5.8 4.5c2-.3 3.7.8 6.2 3.3 2.5-2.5 4.2-3.6 6.2-3.3 3.6.5 5.1 4.1 3.4 7.3C19.2 16.1 12 20.5 12 20.5z"/></svg>';
+  }
+  function likeButtonHtml(b){
+    const set=likesMap[b.id]; const count=set?set.size:0;
+    const mine=b.osoba===cfg.name;
+    const iLiked=!!(cfg.name && set && set.has(cfg.name));
+    const cls='like-btn'+(iLiked?' liked':'')+(mine?' self':'');
+    return '<button class="'+cls+'" data-like-btn="'+b.id+'" data-like-owner="'+esc(b.osoba||'')+'" aria-label="Lajk">'+likeIcon()+'<span class="like-count">'+(count>0?count:'')+'</span></button>';
+  }
+  function refreshLikeUI(pivoId){
+    const set=likesMap[pivoId]; const count=set?set.size:0;
+    const mine=!!(cfg.name && set && set.has(cfg.name));
+    document.querySelectorAll('.like-btn').forEach(btn=>{
+      if(btn.dataset.likeBtn!==pivoId) return;
+      btn.classList.toggle('liked', mine);
+      const c=btn.querySelector('.like-count');
+      if(c) c.textContent = count>0 ? String(count) : '';
+    });
+  }
+  async function toggleLike(pivoId, ownerName){
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš lajkovat', true); return; }
+    if(ownerName===cfg.name){ toast('Vlastní pivo lajkovat nejde 😄'); return; }
+    const set = likesMap[pivoId] || (likesMap[pivoId]=new Set());
+    const already = set.has(cfg.name);
+    if(already) set.delete(cfg.name); else set.add(cfg.name);
+    refreshLikeUI(pivoId);
+    const ok = already ? await likeRemove(pivoId) : await likeAdd(pivoId);
+    if(!ok){
+      if(already) set.add(cfg.name); else set.delete(cfg.name);
+      refreshLikeUI(pivoId);
+      toast('Lajk se nepodařilo uložit', true);
+    }
+  }
   function setSync(state, text){
     document.querySelectorAll('.dot').forEach(dot=>dot.className='dot '+state);
     document.querySelectorAll('.sync-text').forEach(t=>t.textContent=text);
@@ -1617,6 +1717,7 @@ create policy "pivovary mazat"  on pivovary for delete using (true);</div>
       +   (b.note?'<p class="beer-note">'+esc(b.note)+'</p>':'')
       +   '<div class="beer-foot">'
       +     (showWho&&b.osoba?'<span class="byline"><span class="mini-avatar" style="background:'+avatarColor(b.osoba)+'">'+esc(initials(b.osoba))+'</span>'+esc(b.osoba)+'</span>':'<span class="byline dim">'+dateShort+'</span>')
+      +     likeButtonHtml(b)
       +     (showWho&&dateShort?'<span class="foot-date">'+dateShort+'</span>':'')
       +   '</div>'
       + '</div>'
@@ -1682,6 +1783,7 @@ create policy "pivovary mazat"  on pivovary for delete using (true);</div>
         +  (x.note?'<div class="detail-note">'+esc(x.note)+'</div>':'')
         +'</span>'
         +'<span class="lb-metric"><b>'+(x.rating||'–')+'</b><small>/10</small></span>'
+        + likeButtonHtml(x)
         +(mine?'<button class="row-btn detail-edit" data-detail-edit="'+x.id+'" aria-label="Upravit">Upravit</button>':'')
         +'</div>';
     }).join('');
@@ -4773,7 +4875,7 @@ var qrcode = function() {
   resetForm();
   renderAll();
 
-  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); }
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(renderHome); }
   else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
 
   if(!cfg.name) setTimeout(openName, 400);
@@ -4902,6 +5004,8 @@ var qrcode = function() {
   $('#feed').addEventListener('click',e=>{
     const cm=e.target.closest('[data-cardmenu]');
     if(cm){ e.stopPropagation(); toggleCardMenu(cm); return; }
+    const lk=e.target.closest('[data-like-btn]');
+    if(lk){ e.stopPropagation(); toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
     const ph=e.target.closest('[data-photo]');
     const op=e.target.closest('[data-open]');
     if(ph){ e.stopPropagation(); openLightbox(ph.dataset.photo); return; }
@@ -4917,6 +5021,8 @@ var qrcode = function() {
   // beer detail sheet
   $('#detail-close').addEventListener('click', ()=>$('#detail-overlay').classList.remove('show'));
   $('#detail-body').addEventListener('click', e=>{
+    const lk=e.target.closest('[data-like-btn]');
+    if(lk){ toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
     const ph=e.target.closest('[data-photo]'); if(ph){ openLightbox(ph.dataset.photo); return; }
     const ed=e.target.closest('[data-detail-edit]');
     if(ed){ $('#detail-overlay').classList.remove('show'); editBeer(ed.dataset.detailEdit); return; }
@@ -5110,7 +5216,7 @@ var qrcode = function() {
     }
     if(!e.target.closest('.cardmenu-pop')) closeCardMenu();
   });
-  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); } }, 30000);
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(renderHome); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 
