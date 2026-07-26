@@ -329,6 +329,15 @@
     border:1px solid var(--hairline); border-radius:var(--r-pill); padding:6px 13px; color:var(--text-2);
   }
   .detail-brewery-actions .row-btn.del{color:var(--red); border-color:rgba(224,86,122,0.3);}
+  .share-btn{
+    display:flex; align-items:center; justify-content:center; gap:9px; width:100%;
+    margin-top:var(--s4); padding:13px 18px; border-radius:var(--r-pill);
+    background:linear-gradient(150deg, var(--amber-bright), var(--amber));
+    color:#241703; border:none; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer;
+    box-shadow:0 6px 20px -8px rgba(232,163,61,0.6);
+  }
+  .share-btn:active{filter:brightness(0.94); transform:translateY(1px);}
+  .share-btn svg{width:18px; height:18px;}
   .brl-thumb{
     width:42px; height:42px; border-radius:10px; overflow:hidden; flex-shrink:0;
     background:var(--bg-2); display:flex; align-items:center; justify-content:center;
@@ -2056,6 +2065,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(b.brewery) html+='<button class="detail-brewery linkish" data-open-brewery="'+esc(norm(b.brewery))+'">'+esc(b.brewery)+'</button>';
     if(chips.length) html+='<div class="chips" style="margin-top:8px">'+chips.join('')+'</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
+    html+='<button class="share-btn" data-share-beer="'+esc(b.id)+'">'+shareIcon()+'<span>Sdílet jako obrázek</span></button>';
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Kdo už ho ochutnal ('+all.length+')</div>';
     html+='<div class="card list-card detail-list">';
@@ -3108,6 +3118,215 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     renderBrewMerge();
     renderBreweriesList();
   }
+  /* ---------- shareable image ---------- */
+  function shareIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4L8 8M12 4l4 4"/><path d="M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"/></svg>'; }
+  const SHARE_W=1080, SHARE_H=1350;
+  function roundRectPath(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+  }
+  // the same glass silhouette the app uses, drawn at an arbitrary size
+  function drawGlass(ctx,x,y,w,h,fill){
+    const sx=w/26, sy=h/30;
+    ctx.save(); ctx.translate(x,y); ctx.scale(sx,sy);
+    ctx.beginPath();
+    ctx.moveTo(4,3); ctx.lineTo(22,3); ctx.lineTo(20,25);
+    ctx.quadraticCurveTo(19.7,28,17,28); ctx.lineTo(9,28);
+    ctx.quadraticCurveTo(6.3,28,6,25); ctx.closePath();
+    ctx.fillStyle=fill; ctx.fill(); ctx.restore();
+  }
+  function wrapLines(ctx,text,maxW,maxLines){
+    const words=String(text||'').split(/\s+/).filter(Boolean);
+    const lines=[]; let cur='';
+    for(const w of words){
+      const test=cur?cur+' '+w:w;
+      if(ctx.measureText(test).width>maxW && cur){ lines.push(cur); cur=w; if(lines.length===maxLines-1&&maxLines>0){} }
+      else cur=test;
+      if(lines.length>=maxLines) break;
+    }
+    if(cur && lines.length<maxLines) lines.push(cur);
+    if(lines.length===maxLines){
+      let last=lines[maxLines-1];
+      const remaining=words.join(' ');
+      if(ctx.measureText(remaining).width>maxW*maxLines){
+        while(last.length>1 && ctx.measureText(last+'…').width>maxW) last=last.slice(0,-1);
+        if(!remaining.endsWith(last)) lines[maxLines-1]=last+'…';
+      }
+    }
+    return lines;
+  }
+  function loadShareImage(src){
+    return new Promise(resolve=>{
+      const img=new Image();
+      img.crossOrigin='anonymous';
+      img.onload=()=>resolve(img);
+      img.onerror=()=>resolve(null); // fall back to the photoless layout
+      img.src=src;
+    });
+  }
+  async function ensureShareFonts(){
+    try{
+      if(document.fonts){
+        await Promise.all([
+          document.fonts.load('700 72px Fraunces'),
+          document.fonts.load('800 92px Fraunces'),
+          document.fonts.load('600 36px Inter'),
+          document.fonts.load('500 32px Inter'),
+          document.fonts.load('italic 500 34px Inter')
+        ]);
+        await document.fonts.ready;
+      }
+    }catch(e){}
+  }
+  async function buildBeerShareCanvas(b){
+    await ensureShareFonts();
+    const cv=document.createElement('canvas');
+    cv.width=SHARE_W; cv.height=SHARE_H;
+    const ctx=cv.getContext('2d');
+    const PAD=72;
+
+    // base background
+    const bg=ctx.createLinearGradient(0,0,0,SHARE_H);
+    bg.addColorStop(0,'#2a201b'); bg.addColorStop(1,'#140d07');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,SHARE_W,SHARE_H);
+
+    const photo = b.foto ? await loadShareImage(storageUrl(b.foto)) : null;
+    let panelTop;
+    if(photo){
+      const ph=760;
+      // cover-fit the photo into the top band
+      const scale=Math.max(SHARE_W/photo.width, ph/photo.height);
+      const dw=photo.width*scale, dh=photo.height*scale;
+      ctx.save(); ctx.beginPath(); ctx.rect(0,0,SHARE_W,ph); ctx.clip();
+      ctx.drawImage(photo,(SHARE_W-dw)/2,(ph-dh)/2,dw,dh);
+      ctx.restore();
+      const fade=ctx.createLinearGradient(0,ph-260,0,ph);
+      fade.addColorStop(0,'rgba(20,13,7,0)'); fade.addColorStop(1,'rgba(20,13,7,0.85)');
+      ctx.fillStyle=fade; ctx.fillRect(0,ph-260,SHARE_W,260);
+      panelTop=ph-40; // the panel overlaps the photo, like the card in the app
+    } else {
+      // photoless: warm radial with an oversized glass mark
+      const rg=ctx.createRadialGradient(SHARE_W/2,300,60,SHARE_W/2,300,700);
+      rg.addColorStop(0,'#3a2810'); rg.addColorStop(1,'#1a1109');
+      ctx.fillStyle=rg; ctx.fillRect(0,0,SHARE_W,560);
+      ctx.globalAlpha=0.22; drawGlass(ctx,SHARE_W/2-130,110,260,300,'#e8a33d'); ctx.globalAlpha=1;
+      panelTop=520;
+    }
+
+    // content panel
+    const pg=ctx.createLinearGradient(0,panelTop,0,SHARE_H);
+    pg.addColorStop(0,'#2a201b'); pg.addColorStop(1,'#241a13');
+    ctx.fillStyle=pg;
+    roundRectPath(ctx,0,panelTop,SHARE_W,SHARE_H-panelTop,48); ctx.fill();
+
+    let y=panelTop+96;
+
+    // rating first so the name knows how much room it has
+    const ratingTxt=String(b.rating||'–');
+    ctx.font='800 92px Fraunces, Georgia, serif'; ctx.textAlign='right'; ctx.textBaseline='alphabetic';
+    const ratingW=ctx.measureText(ratingTxt).width;
+    ctx.font='600 34px Inter, sans-serif';
+    const denW=ctx.measureText('/10').width;
+    ctx.fillStyle='#d9b46b'; ctx.font='800 92px Fraunces, Georgia, serif';
+    ctx.fillText(ratingTxt, SHARE_W-PAD-denW-6, y+18);
+    ctx.fillStyle='#a48e7a'; ctx.font='600 34px Inter, sans-serif';
+    ctx.fillText('/10', SHARE_W-PAD, y+18);
+
+    // name
+    ctx.textAlign='left'; ctx.fillStyle='#f7edd6';
+    ctx.font='700 72px Fraunces, Georgia, serif';
+    const nameMax=SHARE_W-PAD*2-ratingW-denW-40;
+    const nameLines=wrapLines(ctx,b.name,nameMax,2);
+    nameLines.forEach((ln,i)=>ctx.fillText(ln,PAD,y+i*82));
+    y+=(nameLines.length-1)*82;
+
+    // brewery
+    if(b.brewery){
+      y+=68;
+      ctx.fillStyle='#c9b299'; ctx.font='600 38px Inter, sans-serif';
+      ctx.fillText(wrapLines(ctx,b.brewery,SHARE_W-PAD*2,1)[0]||'',PAD,y);
+    }
+
+    // meta line
+    const meta=[b.style,b.abv?b.abv+' %':'',b.where].filter(Boolean).join('  ·  ');
+    if(meta){
+      y+=56;
+      ctx.fillStyle='#a48e7a'; ctx.font='500 32px Inter, sans-serif';
+      ctx.fillText(wrapLines(ctx,meta,SHARE_W-PAD*2,1)[0]||'',PAD,y);
+    }
+
+    // glasses
+    if(b.rating){
+      y+=54;
+      const gw=52, gap=10;
+      for(let i=0;i<10;i++){
+        drawGlass(ctx,PAD+i*(gw+gap),y,gw,gw*1.18, i<b.rating?'#e8a33d':'#3a2c1f');
+      }
+      y+=gw*1.18;
+    }
+
+    // note
+    if(b.note){
+      y+=64;
+      ctx.strokeStyle='rgba(217,180,107,0.18)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(PAD,y-38); ctx.lineTo(SHARE_W-PAD,y-38); ctx.stroke();
+      ctx.fillStyle='#d8c9b8'; ctx.font='italic 500 36px Inter, sans-serif';
+      wrapLines(ctx,b.note,SHARE_W-PAD*2,3).forEach((ln,i)=>ctx.fillText(ln,PAD,y+i*50));
+    }
+
+    // footer: who + date
+    const footY=SHARE_H-96;
+    ctx.strokeStyle='rgba(217,180,107,0.18)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(PAD,footY-58); ctx.lineTo(SHARE_W-PAD,footY-58); ctx.stroke();
+    if(b.osoba){
+      ctx.beginPath(); ctx.arc(PAD+26,footY-12,26,0,Math.PI*2);
+      ctx.fillStyle=avatarColor(b.osoba); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font='700 24px Inter, sans-serif'; ctx.textAlign='center';
+      ctx.fillText(initials(b.osoba),PAD+26,footY-4);
+      ctx.textAlign='left'; ctx.fillStyle='#c9b299'; ctx.font='700 32px Inter, sans-serif';
+      ctx.fillText(b.osoba,PAD+68,footY-2);
+    }
+    if(b.date){
+      ctx.textAlign='right'; ctx.fillStyle='#8d7a66';
+      ctx.font='500 30px Inter, sans-serif';
+      ctx.fillText(b.date,SHARE_W-PAD,footY-2);
+    }
+    // watermark
+    ctx.textAlign='center'; ctx.fillStyle='rgba(217,180,107,0.5)'; ctx.font='600 26px Inter, sans-serif';
+    ctx.fillText('Pivní deník',SHARE_W/2,SHARE_H-30);
+    return cv;
+  }
+  function canvasToBlob(cv){
+    return new Promise((resolve,reject)=>{
+      try{ cv.toBlob(b=>b?resolve(b):reject(new Error('prázdný obrázek')),'image/png',0.95); }
+      catch(e){ reject(e); }
+    });
+  }
+  async function shareBeerImage(id){
+    const b=beers.find(x=>x.id===id); if(!b) return;
+    toast('Připravuji obrázek…');
+    try{
+      const cv=await buildBeerShareCanvas(b);
+      const blob=await canvasToBlob(cv);
+      const file=new File([blob], (norm(b.name)||'pivo').replace(/\s+/g,'-')+'.png', {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({ files:[file], title:b.name });
+        return;
+      }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=file.name; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),4000);
+      toast('Obrázek stažen');
+    }catch(e){
+      if(e && e.name==='AbortError') return; // user dismissed the share sheet
+      toast('Obrázek se nepodařilo vytvořit', true);
+    }
+  }
+
   /* ---------- brewery photo ---------- */
   let breweryPhotoKey=null, breweryPhotoLabel='';
   function startBreweryPhoto(key, label){
@@ -5693,6 +5912,8 @@ var qrcode = function() {
   $('#detail-body').addEventListener('click', e=>{
     const bw=e.target.closest('[data-open-brewery]');
     if(bw){ openBreweryDetail(bw.dataset.openBrewery); return; }
+    const sh=e.target.closest('[data-share-beer]');
+    if(sh){ shareBeerImage(sh.dataset.shareBeer); return; }
     const lk=e.target.closest('[data-like-btn]');
     if(lk){ toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
     const ct=e.target.closest('[data-comment-toggle]');
