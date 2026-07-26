@@ -310,6 +310,11 @@
   .detail-head{padding:0 2px;}
   .detail-name{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--foam); line-height:1.2;}
   .detail-brewery{font-size:14.5px; color:var(--text-2); margin-top:4px;}
+  .detail-brewery.linkish{
+    background:none; border:none; padding:2px 0; font-family:inherit; cursor:pointer; display:inline-block;
+    color:var(--amber-bright); border-bottom:1px solid var(--hairline-strong);
+  }
+  .detail-brewery.linkish:active{opacity:0.7;}
   .detail-avg{display:flex; align-items:baseline; gap:6px; margin-top:var(--s4);}
   .detail-avg .score-num{font-size:32px; font-weight:800; color:var(--amber-bright); letter-spacing:-0.02em;}
   .detail-avg .score-den{font-size:12.5px; color:var(--text-3); font-weight:600;}
@@ -323,6 +328,13 @@
   .detail-brewery-actions .row-btn{
     border:1px solid var(--hairline); border-radius:var(--r-pill); padding:6px 13px; color:var(--text-2);
   }
+  .detail-brewery-actions .row-btn.del{color:var(--red); border-color:rgba(224,86,122,0.3);}
+  .brl-thumb{
+    width:42px; height:42px; border-radius:10px; overflow:hidden; flex-shrink:0;
+    background:var(--bg-2); display:flex; align-items:center; justify-content:center;
+  }
+  .brl-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .brl-thumb.empty svg{width:19px; height:19px; color:var(--amber-deep); opacity:0.5;}
   /* venue map */
   .map-sheet{max-height:94%; display:flex; flex-direction:column;}
   .map-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--s4);}
@@ -369,7 +381,11 @@
   .score-plain{flex-shrink:0; display:flex; align-items:baseline; gap:1px; padding-top:2px;}
   .score-num{font-size:22px; font-weight:800; color:#d9b46b; font-variant-numeric:tabular-nums; letter-spacing:-0.02em;}
   .score-den{font-size:12.5px; color:#a48e7a; font-weight:600;}
-  .beer-brewery{display:flex; align-items:center; gap:6px; font-size:16px; font-weight:600; color:#c9b299; margin-top:5px;}
+  .beer-brewery{
+    display:flex; align-items:center; gap:6px; font-size:16px; font-weight:600; color:#c9b299; margin-top:5px;
+    background:none; border:none; padding:2px 0; font-family:inherit; cursor:pointer; text-align:left;
+  }
+  .beer-brewery:active{color:#e8a33d;}
   .beer-brewery svg{width:15px; height:15px; flex-shrink:0; color:#d9b46b; opacity:0.85;}
   .beer-meta-row{display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:14px; font-weight:500; color:#a48e7a;}
   .bm-item{display:inline-flex; align-items:center; gap:5px;}
@@ -1083,6 +1099,12 @@
             <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
 
+          <div class="row-item" data-breweries>
+            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M4.5 21V9.5l7.5-5 7.5 5V21"/><path d="M9 21v-6h6v6"/><path d="M4.5 9.5h15"/></svg></div>
+            <div class="row-tx"><div class="t">Pivovary</div><div class="d">Všechny, co jste ochutnali</div></div>
+            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+
           <div class="row-item" data-map>
             <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c4-4.5 6.5-8 6.5-11a6.5 6.5 0 0 0-13 0c0 3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div>
             <div class="row-tx"><div class="t">Mapa podniků</div><div class="d">Kde všude jste ochutnávali</div></div>
@@ -1187,7 +1209,7 @@ create policy "mista mazat"  on mista for delete using (true);
 create table pivovary (
   klic text primary key,
   nazev text not null,
-  mesto text, web text, rok_zalozeni int, popis text,
+  mesto text, web text, rok_zalozeni int, popis text, foto text,
   lat double precision, lng double precision,
   upraveno timestamptz default now()
 );
@@ -1230,7 +1252,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary"; pro lajky blok od „liky"; pro komentáře blok od „komentare".</p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary"; pro lajky blok od „liky"; pro komentáře blok od „komentare"; pro fotky pivovarů <code>alter table pivovary add column if not exists foto text;</code></p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -1369,6 +1391,39 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     </div>
   </div>
 
+  <!-- all breweries, searchable -->
+  <div class="overlay" id="breweries-overlay">
+    <div class="sheet map-sheet">
+      <div class="grabber"></div>
+      <div class="map-head">
+        <div class="sec-title first" style="margin:0">Pivovary</div>
+        <button class="detail-close" id="brl-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="search-wrap" style="margin-bottom:var(--s3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+        <input type="text" id="brl-search" placeholder="Hledat pivovar…" autocomplete="off">
+      </div>
+      <div class="segment" id="brl-sort-seg" style="margin-bottom:var(--s3)">
+        <button class="seg-btn active" data-brlsort="count">Nejvíc piv</button>
+        <button class="seg-btn" data-brlsort="rating">Nejlepší</button>
+        <button class="seg-btn" data-brlsort="name">Podle názvu</button>
+      </div>
+      <div class="card list-card" id="brl-list"></div>
+      <button class="btn btn-ghost" id="brl-dedup" style="margin-top:var(--s4)">Najít duplicitní pivovary</button>
+    </div>
+  </div>
+
+  <!-- brewery duplicate merge -->
+  <div class="overlay" id="brewmerge-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Duplicitní pivovary</h2>
+      <p class="lead">Stejný pivovar zapsaný různě? Vyber správný název a zbytek se pod něj sloučí.</p>
+      <div id="brewmerge-body"></div>
+      <button class="btn btn-ghost" id="brewmerge-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
   <!-- yearly / monthly wrapped -->
   <div class="overlay wrapped-overlay" id="wrapped-overlay">
     <div class="wrapped-shell">
@@ -1380,6 +1435,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <div class="wrapped-slides" id="wrapped-slides"></div>
     </div>
   </div>
+
+  <input type="file" id="brewery-photo-input" accept="image/*" hidden>
 
   <div class="toast" id="toast"></div>
 </div>
@@ -1605,6 +1662,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         if(!row.klic) return;
         breweryCache[row.klic]=Object.assign({}, breweryCache[row.klic]||{}, {
           nazev:row.nazev||'', mesto:row.mesto||'', web:row.web||'', rok:row.rok_zalozeni||null, popis:row.popis||'',
+          foto:row.foto||'',
           lat: row.lat!=null?row.lat:(breweryCache[row.klic]?breweryCache[row.klic].lat:undefined),
           lng: row.lng!=null?row.lng:(breweryCache[row.klic]?breweryCache[row.klic].lng:undefined)
         });
@@ -1620,7 +1678,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         headers: Object.assign(sbHeaders(), { 'Prefer':'resolution=merge-duplicates' }),
         body: JSON.stringify({
           klic:key, nazev:data.nazev||key, mesto:data.mesto||null, web:data.web||null,
-          rok_zalozeni:data.rok||null, popis:data.popis||null,
+          rok_zalozeni:data.rok||null, popis:data.popis||null, foto:data.foto||null,
           lat:data.lat!=null?data.lat:null, lng:data.lng!=null?data.lng:null
         })
       });
@@ -1939,7 +1997,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +     '<div class="score-plain"><span class="score-num">'+(b.rating||'–')+'</span><span class="score-den">/10</span></div>'
       +     (!b.foto?menuBtn:'')
       +   '</div>'
-      +   (b.brewery?'<div class="beer-brewery">'+breweryIcon2()+'<span>'+esc(b.brewery)+'</span></div>':'')
+      +   (b.brewery?'<button class="beer-brewery" data-open-brewery="'+esc(norm(b.brewery))+'">'+breweryIcon2()+'<span>'+esc(b.brewery)+'</span></button>':'')
       +   (metaBits.length?'<div class="beer-meta-row">'+metaBits.join('<span class="bm-dot">·</span>')+'</div>':'')
       +   (b.rating?glassRow(b.rating, 11):'')
       +   (b.note?'<p class="beer-note">'+esc(b.note)+'</p>':'')
@@ -1995,7 +2053,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(photoEntry) html+='<div class="detail-photo" data-photo="'+esc(photoEntry.foto)+'"><img src="'+esc(storageUrl(photoEntry.foto))+'" alt="'+esc(b.name)+'"></div>';
     html+='<div class="detail-head">';
     html+='<h2 class="detail-name">'+esc(b.name)+'</h2>';
-    if(b.brewery) html+='<div class="detail-brewery">'+esc(b.brewery)+'</div>';
+    if(b.brewery) html+='<button class="detail-brewery linkish" data-open-brewery="'+esc(norm(b.brewery))+'">'+esc(b.brewery)+'</button>';
     if(chips.length) html+='<div class="chips" style="margin-top:8px">'+chips.join('')+'</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
     html+='</div>';
@@ -2041,7 +2099,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     });
     const list=Object.values(bmap).map(x=>({...x, avg: x.rated? x.sum/x.rated : 0})).sort((a,b)=>b.avg-a.avg || b.n-a.n);
 
-    let html='<div class="detail-head">';
+    let html='';
+    if(info.foto) html+='<div class="detail-photo" data-photo="'+esc(info.foto)+'"><img src="'+esc(storageUrl(info.foto))+'" alt="'+esc(label)+'"></div>';
+    html+='<div class="detail-head">';
     html+='<h2 class="detail-name">'+esc(label)+'</h2>';
     html+='<div class="detail-brewery">'+mine.length+' '+beerWord(mine.length)+' zapsáno v partě</div>';
     const metaBits=[];
@@ -2054,6 +2114,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='<div class="detail-brewery-actions">';
     html+='<button class="row-btn" data-brewery-edit="'+esc(brewKey)+'" data-brewery-label="'+esc(label)+'">Upravit info</button>';
     html+='<button class="row-btn" data-brewery-locate="'+esc(brewKey)+'" data-brewery-label="'+esc(label)+'">Nastavit polohu</button>';
+    html+='<button class="row-btn" data-brewery-photo="'+esc(brewKey)+'" data-brewery-label="'+esc(label)+'">'+(info.foto?'Změnit fotku':'Přidat fotku')+'</button>';
+    if(info.foto) html+='<button class="row-btn del" data-brewery-photo-del="'+esc(brewKey)+'">Smazat fotku</button>';
     html+='</div>';
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Piva od tohoto pivovaru</div>';
@@ -2216,9 +2278,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   /* ---------- place correction: search Nominatim and pick the right result ---------- */
   let pfCtx=null; // {kind:'place'|'brewery', key, label}
   async function geocodeSearch(query, limit){
-    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit='+(limit||6)+'&q='+encodeURIComponent(query));
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit='+(limit||6)+'&q='+encodeURIComponent(query));
     if(!r.ok) throw new Error('http '+r.status);
     return r.json();
+  }
+  // Nominatim returns the municipality under one of several keys depending on place size.
+  function cityFromResult(r){
+    const a=(r&&r.address)||{};
+    return a.city || a.town || a.village || a.municipality || a.hamlet || a.suburb || '';
   }
   function openPlaceFix(key, label, kind){
     pfCtx={kind: kind||'place', key, label};
@@ -2251,9 +2318,12 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#placefix-overlay').classList.remove('show');
     if(pfCtx.kind==='brewery'){
       const cur=breweryCache[pfCtx.key]||{nazev:pfCtx.label};
-      breweryCache[pfCtx.key]=Object.assign({}, cur, newCoord); saveBreweryCache();
+      const patch=Object.assign({}, newCoord);
+      const city=cityFromResult(r);
+      if(city && !cur.mesto) patch.mesto=city; // only fill in, never overwrite what you typed
+      breweryCache[pfCtx.key]=Object.assign({}, cur, patch); saveBreweryCache();
       breweriesPush(pfCtx.key, breweryCache[pfCtx.key]);
-      toast(sbConfigured()?'Poloha opravena a sdílena s partou':'Poloha opravena lokálně');
+      toast(city && !cur.mesto ? 'Poloha i město doplněny' : (sbConfigured()?'Poloha opravena a sdílena s partou':'Poloha opravena lokálně'));
       openMap('breweries');
     } else {
       geoCache[pfCtx.key]=newCoord;
@@ -2924,6 +2994,182 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'</div>';
     }).join('');
     // store clusters for handlers
+    box._clusters=clusters;
+  }
+  /* ---------- all breweries, searchable ---------- */
+  let brlSort='count';
+  function openBreweriesList(){
+    $('#breweries-overlay').classList.add('show');
+    $('#brl-search').value='';
+    renderBreweriesList();
+  }
+  function renderBreweriesList(){
+    const box=$('#brl-list'); if(!box) return;
+    const q=($('#brl-search').value||'').trim().toLowerCase();
+    let list=distinctBreweriesForMap();
+    if(q) list=list.filter(x=>{
+      const city=((breweryCache[x.key]&&breweryCache[x.key].mesto)||'').toLowerCase();
+      return x.label.toLowerCase().includes(q) || city.includes(q);
+    });
+    list.sort((a,b)=>{
+      if(brlSort==='rating') return b.avg-a.avg || b.count-a.count;
+      if(brlSort==='name') return a.label.localeCompare(b.label,'cs');
+      return b.count-a.count || b.avg-a.avg;
+    });
+    if(!list.length){ box.innerHTML='<p class="muted center">'+(q?'Nic nenalezeno.':'Zatím žádné pivovary.')+'</p>'; return; }
+    box.innerHTML=list.map(x=>{
+      const info=breweryCache[x.key]||{};
+      let sub=x.count+' '+beerWord(x.count);
+      if(info.mesto) sub+=' · '+esc(info.mesto);
+      const thumb = info.foto
+        ? '<span class="brl-thumb"><img loading="lazy" src="'+esc(storageUrl(info.foto))+'" alt=""></span>'
+        : '<span class="brl-thumb empty">'+breweryIcon2()+'</span>';
+      return '<div class="lb-row clickable" data-open-brewery="'+esc(x.key)+'">'
+        +thumb
+        +'<span class="lb-beerinfo"><b>'+esc(x.label)+'</b><small>'+sub+'</small></span>'
+        +'<span class="lb-metric big"><b>'+(x.avg?x.avg.toFixed(1):'–')+'</b><small>Ø</small></span>'
+        +'</div>';
+    }).join('');
+  }
+
+  /* ---------- brewery duplicates ---------- */
+  // Plain Levenshtein rates "Matuška" vs "Pivovar Matuška" far apart, yet they are the
+  // same brewer. Containment and a stripped common prefix/suffix catch the real-world cases.
+  function brewSim(a,b){
+    const A=norm(a), B=norm(b);
+    if(!A||!B) return 0;
+    if(A===B) return 1;
+    if(A.includes(B) || B.includes(A)) return 0.95;
+    const strip=s=>s.replace(/^(pivovar|pivovary|rodinny pivovar|mestansky pivovar|brewery|brewing)\s+/,'')
+                    .replace(/\s+(pivovar|brewery|brewing co|brewing|a\.s\.|s\.r\.o\.)$/,'').trim();
+    const A2=strip(A), B2=strip(B);
+    if(A2 && A2===B2) return 0.97;
+    return sim(A2||A, B2||B);
+  }
+  function findBreweryDupClusters(){
+    const variants=new Map();
+    beers.forEach(b=>{
+      const raw=(b.brewery||'').trim(); if(!raw) return;
+      if(!variants.has(raw)) variants.set(raw,{name:raw, count:0});
+      variants.get(raw).count++;
+    });
+    const list=[...variants.values()];
+    const clusters=[]; const used=new Set();
+    for(let i=0;i<list.length;i++){
+      if(used.has(i)) continue;
+      const group=[list[i]]; used.add(i);
+      for(let j=i+1;j<list.length;j++){
+        if(used.has(j)) continue;
+        if(brewSim(list[i].name, list[j].name)>=0.8 && norm(list[i].name)!==norm(list[j].name)){
+          group.push(list[j]); used.add(j);
+        }
+      }
+      if(group.length>1) clusters.push(group);
+    }
+    return clusters;
+  }
+  async function breweryDelete(key){
+    if(!sbConfigured()) return;
+    try {
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/pivovary?klic=eq.'+encodeURIComponent(key), { method:'DELETE', headers: sbHeaders() });
+    } catch(e){}
+  }
+  async function applyBreweryMerge(cluster, canonicalName){
+    const clusterKeys=new Set(cluster.map(v=>norm(v.name)));
+    const canonKey=norm(canonicalName);
+    let changed=0;
+    beers.forEach(b=>{
+      if(b.brewery && clusterKeys.has(norm(b.brewery)) && b.brewery!==canonicalName){
+        b.brewery=canonicalName; b.synced=false; changed++;
+      }
+    });
+    // fold any info the duplicates carried into the surviving record
+    const merged=Object.assign({}, breweryCache[canonKey]||{}, {nazev:canonicalName});
+    cluster.forEach(v=>{
+      const k=norm(v.name);
+      if(k===canonKey) return;
+      const src=breweryCache[k];
+      if(src){
+        ['mesto','web','rok','popis','lat','lng','foto'].forEach(f=>{
+          if((merged[f]==null || merged[f]==='') && src[f]!=null && src[f]!=='') merged[f]=src[f];
+        });
+        delete breweryCache[k];
+      }
+    });
+    breweryCache[canonKey]=merged;
+    saveBreweryCache();
+    saveLocal(); renderAll();
+    if(sbConfigured()){
+      for(const b of beers.filter(x=>!x.synced)) await sbPush(b);
+      breweriesPush(canonKey, merged);
+      for(const v of cluster){ const k=norm(v.name); if(k!==canonKey) await breweryDelete(k); }
+    }
+    toast(changed?('Sloučeno · '+changed+' piv převedeno'):'Nic ke sloučení');
+    renderBrewMerge();
+    renderBreweriesList();
+  }
+  /* ---------- brewery photo ---------- */
+  let breweryPhotoKey=null, breweryPhotoLabel='';
+  function startBreweryPhoto(key, label){
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš nahrát fotku', true); return; }
+    breweryPhotoKey=key;
+    breweryPhotoLabel=label||'';
+    const input=$('#brewery-photo-input');
+    input.value=''; // allow picking the same file twice in a row
+    input.click();
+  }
+  async function handleBreweryPhotoPicked(file){
+    const key=breweryPhotoKey; if(!key||!file) return;
+    const info=breweryCache[key]||{};
+    const previous=info.foto;
+    toast('Nahrávám fotku…');
+    try {
+      const blob=await compressImage(file, 1000, 0.7);
+      const path=await uploadPhoto(blob);
+      const next=Object.assign({}, info, {foto:path});
+      if(!next.nazev) next.nazev=breweryPhotoLabel||key; // keep the readable spelling, not the lookup key
+      breweryCache[key]=next; saveBreweryCache();
+      breweriesPush(key, next);
+      if(previous && previous!==path) deletePhoto(previous); // don't orphan the old one
+      openBreweryDetail(key);
+      toast('Fotka přidána');
+    } catch(e){
+      toast('Fotku se nepodařilo nahrát: '+(e.message||'chyba'), true);
+    }
+  }
+  async function removeBreweryPhoto(key){
+    const info=breweryCache[key]; if(!info||!info.foto) return;
+    if(!confirm('Smazat fotku pivovaru?')) return;
+    const path=info.foto;
+    const next=Object.assign({}, info); next.foto='';
+    breweryCache[key]=next; saveBreweryCache();
+    breweriesPush(key, next);
+    deletePhoto(path);
+    openBreweryDetail(key);
+    toast('Fotka smazána');
+  }
+  function openBrewMerge(){ $('#brewmerge-overlay').classList.add('show'); renderBrewMerge(); }
+  function renderBrewMerge(){
+    const box=$('#brewmerge-body'); if(!box) return;
+    const clusters=findBreweryDupClusters();
+    if(!clusters.length){
+      box.innerHTML='<div class="empty" style="padding:32px 0"><p>Žádné podezřelé duplicity pivovarů. 🎉</p></div>';
+      return;
+    }
+    box.innerHTML=clusters.map((cl,ci)=>{
+      const canonical=cl.slice().sort((a,b)=>b.count-a.count || b.name.length-a.name.length)[0];
+      const opts=cl.map((v,vi)=>{
+        const checked=(v.name===canonical.name)?'checked':'';
+        return '<label class="merge-opt"><input type="radio" name="bm'+ci+'" data-ci="'+ci+'" data-vi="'+vi+'" '+checked+'>'
+          +'<span class="mo-txt"><b>'+esc(v.name)+'</b></span>'
+          +'<span class="mo-count">'+v.count+'×</span></label>';
+      }).join('');
+      return '<div class="merge-cluster" data-ci="'+ci+'">'
+        +'<div class="mc-head">Vyber správný název pivovaru:</div>'
+        +opts
+        +'<button class="btn btn-primary btn-sm brewmerge-go" data-ci="'+ci+'" style="width:100%; margin-top:10px">Sloučit do vybraného</button>'
+        +'</div>';
+    }).join('');
     box._clusters=clusters;
   }
   function openSetup(){
@@ -5428,6 +5674,8 @@ var qrcode = function() {
     if(cm){ e.stopPropagation(); toggleCardMenu(cm); return; }
     const lk=e.target.closest('[data-like-btn]');
     if(lk){ e.stopPropagation(); toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
+    const bw=e.target.closest('[data-open-brewery]');
+    if(bw){ e.stopPropagation(); openBreweryDetail(bw.dataset.openBrewery); return; }
     const ph=e.target.closest('[data-photo]');
     const op=e.target.closest('[data-open]');
     if(ph){ e.stopPropagation(); openLightbox(ph.dataset.photo); return; }
@@ -5443,6 +5691,8 @@ var qrcode = function() {
   // beer detail sheet
   $('#detail-close').addEventListener('click', ()=>$('#detail-overlay').classList.remove('show'));
   $('#detail-body').addEventListener('click', e=>{
+    const bw=e.target.closest('[data-open-brewery]');
+    if(bw){ openBreweryDetail(bw.dataset.openBrewery); return; }
     const lk=e.target.closest('[data-like-btn]');
     if(lk){ toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
     const ct=e.target.closest('[data-comment-toggle]');
@@ -5460,6 +5710,10 @@ var qrcode = function() {
     if(ed){ $('#detail-overlay').classList.remove('show'); editBeer(ed.dataset.detailEdit); return; }
     const beedit=e.target.closest('[data-brewery-edit]');
     if(beedit){ openBreweryEdit(beedit.dataset.breweryEdit, beedit.dataset.breweryLabel); return; }
+    const bphoto=e.target.closest('[data-brewery-photo]');
+    if(bphoto){ startBreweryPhoto(bphoto.dataset.breweryPhoto, bphoto.dataset.breweryLabel); return; }
+    const bphotodel=e.target.closest('[data-brewery-photo-del]');
+    if(bphotodel){ removeBreweryPhoto(bphotodel.dataset.breweryPhotoDel); return; }
     const beloc=e.target.closest('[data-brewery-locate]');
     if(beloc){ openPlaceFix(beloc.dataset.breweryLocate, beloc.dataset.breweryLabel, 'brewery'); return; }
     const beerRow=e.target.closest('[data-open-beer-name]');
@@ -5653,6 +5907,34 @@ var qrcode = function() {
     const canonical=clusters[ci][+sel.dataset.vi];
     applyMerge(clusters[ci], canonical);
   });
+  // breweries list
+  document.querySelectorAll('[data-breweries]').forEach(b=>b.addEventListener('click', openBreweriesList));
+  $('#brl-close').addEventListener('click', ()=>$('#breweries-overlay').classList.remove('show'));
+  $('#brl-search').addEventListener('input', renderBreweriesList);
+  document.querySelectorAll('#brl-sort-seg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{
+    brlSort=b.dataset.brlsort;
+    document.querySelectorAll('#brl-sort-seg .seg-btn').forEach(x=>x.classList.toggle('active', x===b));
+    renderBreweriesList();
+  }));
+  $('#brl-list').addEventListener('click', e=>{
+    const row=e.target.closest('[data-open-brewery]'); if(!row) return;
+    $('#breweries-overlay').classList.remove('show');
+    openBreweryDetail(row.dataset.openBrewery);
+  });
+  $('#brewery-photo-input').addEventListener('change', e=>{
+    const f=e.target.files&&e.target.files[0];
+    if(f) handleBreweryPhotoPicked(f);
+  });
+  $('#brl-dedup').addEventListener('click', openBrewMerge);
+  $('#brewmerge-close').addEventListener('click', ()=>$('#brewmerge-overlay').classList.remove('show'));
+  $('#brewmerge-body').addEventListener('click', e=>{
+    const go=e.target.closest('.brewmerge-go'); if(!go) return;
+    const ci=+go.dataset.ci;
+    const clusters=$('#brewmerge-body')._clusters; if(!clusters||!clusters[ci]) return;
+    const sel=$('#brewmerge-body').querySelector('input[name="bm'+ci+'"]:checked');
+    if(!sel){ toast('Vyber správný název', true); return; }
+    applyBreweryMerge(clusters[ci], clusters[ci][+sel.dataset.vi].name);
+  });
   $('#invite-close').addEventListener('click', ()=>$('#invite-overlay').classList.remove('show'));
   $('#invite-copy').addEventListener('click', async ()=>{
     const url=$('#invite-url').value;
@@ -5686,13 +5968,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#map-overlay','#placefix-overlay','#brewery-edit-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#map-overlay','#placefix-overlay','#brewery-edit-overlay','#breweries-overlay','#brewmerge-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#breweries-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
