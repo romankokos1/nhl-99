@@ -375,9 +375,16 @@
   .bm-item{display:inline-flex; align-items:center; gap:5px;}
   .bm-item svg{width:14px; height:14px; flex-shrink:0; opacity:0.8;}
   .bm-dot{opacity:0.5;}
-  .glass-row{display:flex; gap:2.5px; margin-top:var(--s4);}
-  .glass-row .gm path{fill:var(--surface-hi);}
-  .glass-row .gm.on path{fill:var(--amber);}
+  .glass-row{position:relative; display:block; height:calc(var(--gs, 10px) * 1.18); width:calc(var(--gs, 10px) * 10 + 2.5px * 9); margin-top:var(--s4);}
+  .gbar{
+    position:absolute; top:0; left:0; height:100%; width:100%;
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 30'%3E%3Cpath d='M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z'/%3E%3C/svg%3E");
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 30'%3E%3Cpath d='M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z'/%3E%3C/svg%3E");
+    -webkit-mask-repeat:repeat-x; mask-repeat:repeat-x;
+    -webkit-mask-size:calc(var(--gs, 10px) + 2.5px) 100%; mask-size:calc(var(--gs, 10px) + 2.5px) 100%;
+  }
+  .gbar-off{background:var(--surface-hi);}
+  .gbar-on{background:var(--amber);}
   .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:var(--s3);}
   .chip{
     font-size:11.5px; font-weight:600; color:var(--text-2);
@@ -698,6 +705,33 @@
   .tr-shine{position:absolute; inset:0; border-radius:50%; overflow:hidden; pointer-events:none;}
   .tr-shine::after{content:''; position:absolute; top:-60%; left:-60%; width:60%; height:220%; transform:rotate(25deg); background:linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent); animation:shineSweep 4.5s ease-in-out infinite;}
   @keyframes shineSweep{0%,70%{left:-60%;} 85%{left:120%;} 100%{left:120%;}}
+  /* tiered medal colors */
+  .trophy.tier-bronze{
+    border-color:rgba(193,127,69,0.5);
+    background:linear-gradient(180deg, rgba(193,127,69,0.14), var(--surface));
+    box-shadow:0 0 22px -12px rgba(193,127,69,0.45);
+  }
+  .trophy.tier-bronze .tr-medal{
+    background:radial-gradient(circle at 38% 30%, #e8b98a 0%, #c17f45 30%, #8f5a28 65%, #6b3f18 100%);
+    box-shadow:0 4px 14px -4px rgba(139,90,40,0.7), inset 0 1px 2px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(80,40,10,0.4);
+  }
+  .trophy.tier-bronze .tr-medal svg{color:#4a2810;}
+  .trophy.tier-silver{
+    border-color:rgba(190,190,198,0.5);
+    background:linear-gradient(180deg, rgba(190,190,198,0.14), var(--surface));
+    box-shadow:0 0 22px -12px rgba(190,190,198,0.4);
+  }
+  .trophy.tier-silver .tr-medal{
+    background:radial-gradient(circle at 38% 30%, #f5f5f7 0%, #d8d8dc 30%, #a8a8b0 65%, #7a7a82 100%);
+    box-shadow:0 4px 14px -4px rgba(120,120,130,0.6), inset 0 1px 2px rgba(255,255,255,0.7), inset 0 -3px 6px rgba(60,60,66,0.35);
+  }
+  .trophy.tier-silver .tr-medal svg{color:#3a3a40;}
+  .tr-dots{display:flex; gap:4px; margin-bottom:6px;}
+  .tr-dot{width:5px; height:5px; border-radius:50%; background:var(--bg-2); border:1px solid var(--hairline);}
+  .tr-dot.on{background:var(--amber); border-color:var(--amber);}
+  .trophy.tier-bronze .tr-dot.on{background:#c17f45; border-color:#c17f45;}
+  .trophy.tier-silver .tr-dot.on{background:#b8b8c0; border-color:#b8b8c0;}
+  .trophy.tier-gold .tr-dot.on{background:#e0a53a; border-color:#e0a53a;}
   .tr-title{font-size:12.5px; font-weight:700; color:var(--foam); line-height:1.25; margin-bottom:2px;}
   .tr-desc{font-size:10.5px; color:var(--text-3); line-height:1.3; margin-bottom:8px; min-height:26px;}
   .tr-unlocked{font-size:10px; font-weight:700; color:var(--amber-bright); text-transform:uppercase; letter-spacing:0.06em;}
@@ -1361,12 +1395,18 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   let cfg = { name:'', url:'', key:'', goals:{ beers:10, styles:4, rated:8 }, viewMode:'list' };
   let editId = null;
   let currentRating = 0;
+  let activeView = 'home';
+  const dirty = { home:false, board:false, stats:false, trophies:false };
   let online = false;
 
   const $ = s => document.querySelector(s);
   const glassSVG = '<svg width="26" height="30" viewBox="0 0 26 30"><path class="glass-fill" d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z"/><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="none" stroke="#3a2c17" stroke-width="1.5"/></svg>';
 
-  function esc(s){ const d=document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML; }
+  function esc(s){
+    return s==null ? '' : String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
   function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
   function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
@@ -1838,19 +1878,23 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const b=beers.find(x=>x.id===id); if(!b) return;
     if(b.osoba && b.osoba!==cfg.name){ toast('Můžeš mazat jen svoje piva', true); return; }
     if(!confirm('Smazat „'+b.name+'"?')) return;
+    const photoPath=b.foto; // remember before removing the record
     beers=beers.filter(x=>x.id!==id);
     if(editId===id) resetForm();
     saveLocal(); renderAll();
     await sbDelete(id);
+    if(photoPath) deletePhoto(photoPath); // clean up storage so it doesn't orphan
     toast('Smazáno');
   }
 
   /* ---------- rendering ---------- */
   function glassRow(r, size){
     const s=size||10;
-    let h='<div class="glass-row" aria-label="'+r+' z 10">';
-    for(let i=1;i<=10;i++){ const on=i<=r; h+='<svg class="gm'+(on?' on':'')+'" width="'+s+'" height="'+Math.round(s*1.18)+'" viewBox="0 0 26 30"><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z"/></svg>'; }
-    return h+'</div>';
+    const pct=Math.max(0, Math.min(10, r))*10;
+    return '<div class="glass-row" style="--gs:'+s+'px" aria-label="'+r+' z 10">'
+      +'<div class="gbar gbar-off"></div>'
+      +'<div class="gbar gbar-on" style="width:'+pct+'%"></div>'
+      +'</div>';
   }
   function miniGlasses(r){ return glassRow(r,10); }
   function initials(name){ return (name||'?').trim().slice(0,2).toUpperCase(); }
@@ -2273,7 +2317,20 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   function bigGlass(){ return '<svg width="64" height="76" viewBox="0 0 26 30"><path d="M4 3h18l-2 22a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L4 3z" fill="none" stroke="var(--hairline-strong)" stroke-width="1.4"/></svg>'; }
 
-  function renderAll(){ renderHome(); renderBoard(); renderStats(); renderTrophies(); }
+  // After likes arrive from sync, refresh whatever screen shows them; flag the rest.
+  function onLikesUpdated(){
+    dirty.home = dirty.board = true;
+    if(activeView==='home'){ renderHome(); dirty.home=false; }
+    else if(activeView==='board'){ renderBoard(); dirty.board=false; }
+  }
+  // Re-render only the screen currently visible; flag the rest to refresh when next shown.
+  function renderAll(){
+    dirty.home = dirty.board = dirty.stats = dirty.trophies = true;
+    if(activeView==='home'){ renderHome(); dirty.home=false; }
+    else if(activeView==='board'){ renderBoard(); dirty.board=false; }
+    else if(activeView==='stats'){ renderStats(); dirty.stats=false; }
+    else if(activeView==='profile'){ renderTrophies(); dirty.trophies=false; }
+  }
 
   /* ---------- achievements (personal trophies) ---------- */
   // count beers whose style matches a keyword (fuzzy contains, diacritics-insensitive)
@@ -2287,35 +2344,53 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const distinctBreweries=new Set(mine.map(b=>b.brewery&&b.brewery.trim().toLowerCase()).filter(Boolean)).size;
     const notes=mine.filter(b=>b.note&&b.note.trim().length>0).length;
     const perfect=rated.filter(b=>b.rating>=10).length;
-    const harsh=rated.filter(b=>b.rating>0 && b.rating<=2).length;
     const ipa=styleCount(mine,'ipa');
     const stout=styleCount(mine,'stout');
     const lager=styleCount(mine,'ležák')+styleCount(mine,'lager');
-    // brewery loyalty: max beers from a single brewery
     const brewMap={}; mine.forEach(b=>{ if(b.brewery){ const k=norm(b.brewery); brewMap[k]=(brewMap[k]||0)+1; } });
     const topBrew=Object.values(brewMap).reduce((a,b)=>Math.max(a,b),0);
-    // distinct months active (proxy for consistency)
+    const placeMap={}; mine.forEach(b=>{ if(b.where){ const k=norm(b.where); placeMap[k]=(placeMap[k]||0)+1; } });
+    const topPlace=Object.values(placeMap).reduce((a,b)=>Math.max(a,b),0);
     const months=new Set(mine.map(b=>(b.date||'').slice(0,7)).filter(Boolean)).size;
+    const photoCount=mine.filter(b=>b.foto).length;
+    const likesReceived=mine.reduce((s,b)=>s+((likesMap[b.id]&&likesMap[b.id].size)||0),0);
+    let commentsWritten=0;
+    Object.values(commentsMap).forEach(list=>{ list.forEach(c=>{ if(c.osoba===cfg.name) commentsWritten++; }); });
+    const strongBeers=mine.filter(b=>parseFloat(b.abv)>7).length;
 
-    // def: {key, title, desc, icon, cur, goal}  — unlocked when cur>=goal
-    const A=[
-      {key:'first',    t:'První pivo',      d:'Zapiš svoje první pivo',            i:'mug',    cur:total, goal:1},
-      {key:'b10',      t:'Deset piv',       d:'Ochutnej 10 piv',                   i:'mug',    cur:total, goal:10},
-      {key:'b50',      t:'Padesát piv',     d:'Ochutnej 50 piv',                   i:'barrel', cur:total, goal:50},
-      {key:'b100',     t:'Sto piv',         d:'Ochutnej 100 piv',                  i:'barrel', cur:total, goal:100},
-      {key:'ipa',      t:'IPA Lover',       d:'Zapiš 10 piv stylu IPA',            i:'hop',    cur:ipa, goal:10},
-      {key:'stout',    t:'Stout Master',    d:'Zapiš 10 stoutů',                   i:'glass',  cur:stout, goal:10},
-      {key:'explorer', t:'World Explorer',  d:'Ochutnej 10 různých stylů',         i:'globe',  cur:distinctStyles, goal:10},
-      {key:'crawler',  t:'Pub Crawler',     d:'Zapiš piva z 10 různých míst',      i:'pin',    cur:distinctPlaces, goal:10},
-      {key:'critic',   t:'Beer Critic',     d:'Ohodnoť 25 piv',                    i:'quill',  cur:rated.length, goal:25},
-      {key:'perfect',  t:'Perfekcionista',  d:'Dej pivu plných 10/10',             i:'star',   cur:perfect, goal:1},
-      {key:'chron',    t:'Kronikář',        d:'Napiš poznámku k 25 pivům',         i:'book',   cur:notes, goal:25},
-      {key:'loyal',    t:'Věrný pivovaru',  d:'10 piv od jednoho pivovaru',        i:'ribbon', cur:topBrew, goal:10},
-      {key:'taster',   t:'Degustátor',      d:'Ochutnej z 10 různých pivovarů',    i:'flight', cur:distinctBreweries, goal:10},
-      {key:'lager',    t:'Ležákový znalec', d:'Zapiš 15 ležáků',                   i:'mug',    cur:lager, goal:15},
-      {key:'endurance',t:'Vytrvalec',       d:'Zapisuj piva ve 3 různých měsících',i:'flame',  cur:months, goal:3},
+    // tiered trophies: {key, title, desc, icon, cur, tiers:[bronze,silver,gold]}
+    const T=[
+      {key:'total',     t:'Sběratel piv',    d:'Ochutnej piva',                    i:'mug',    cur:total,          tiers:[1,25,100]},
+      {key:'ipa',       t:'IPA Lover',       d:'Zapiš piva stylu IPA',             i:'hop',    cur:ipa,            tiers:[5,15,30]},
+      {key:'stout',     t:'Stout Master',    d:'Zapiš stoutů',                     i:'glass',  cur:stout,          tiers:[5,15,30]},
+      {key:'lager',     t:'Ležákový znalec', d:'Zapiš ležáků',                     i:'mug',    cur:lager,          tiers:[5,15,30]},
+      {key:'explorer',  t:'Objevitel stylů', d:'Ochutnej různých stylů',           i:'globe',  cur:distinctStyles, tiers:[5,10,20]},
+      {key:'crawler',   t:'Pub Crawler',     d:'Zapiš piva z různých míst',        i:'pin',    cur:distinctPlaces, tiers:[5,10,20]},
+      {key:'venueloyal',t:'Věrný host',      d:'Nejvíc piv na jednom místě',       i:'ribbon', cur:topPlace,       tiers:[5,10,20]},
+      {key:'critic',    t:'Kritik',          d:'Ohodnoť piva',                     i:'quill',  cur:rated.length,   tiers:[10,25,50]},
+      {key:'chron',     t:'Kronikář',        d:'Napiš poznámku k pivům',           i:'book',   cur:notes,          tiers:[10,25,50]},
+      {key:'loyal',     t:'Věrný pivovaru',  d:'Piv od jednoho pivovaru',          i:'ribbon', cur:topBrew,        tiers:[5,10,20]},
+      {key:'taster',    t:'Degustátor',      d:'Ochutnej z různých pivovarů',      i:'flight', cur:distinctBreweries, tiers:[5,10,20]},
+      {key:'endurance', t:'Vytrvalec',       d:'Aktivní v různých měsících',       i:'flame',  cur:months,         tiers:[3,6,12]},
+      {key:'photog',    t:'Fotograf',        d:'Piva doplněná o fotku',            i:'camera', cur:photoCount,     tiers:[5,15,40]},
+      {key:'popular',   t:'Oblíbenec party', d:'Lajky posbírané od party',         i:'heart',  cur:likesReceived,  tiers:[5,20,50]},
+      {key:'chatty',    t:'Diskutér',        d:'Komentáře napsané pod piva',       i:'chat',   cur:commentsWritten, tiers:[5,20,50]},
+      {key:'strong',    t:'Silák',           d:'Piva se stupněm nad 7 %',          i:'flame',  cur:strongBeers,    tiers:[3,10,25]},
     ];
-    return A.map(a=>({...a, done:a.cur>=a.goal, pct:Math.min(1,a.cur/a.goal)}));
+    const tiered=T.map(a=>{
+      const [bronze,silver,gold]=a.tiers;
+      let tier=0, tierName=null, nextGoal=bronze;
+      if(a.cur>=gold){ tier=3; tierName='gold'; nextGoal=null; }
+      else if(a.cur>=silver){ tier=2; tierName='silver'; nextGoal=gold; }
+      else if(a.cur>=bronze){ tier=1; tierName='bronze'; nextGoal=silver; }
+      const pct = nextGoal ? Math.min(1, a.cur/nextGoal) : 1;
+      return {...a, tiered:true, tier, tierName, nextGoal, pct, done:tier>0};
+    });
+    // flat one-off achievement (unchanged behavior)
+    const flat=[
+      {key:'perfect', t:'Perfekcionista', d:'Dej pivu plných 10/10', i:'star', cur:perfect, goal:1, tiered:false, done:perfect>=1, pct:Math.min(1,perfect/1)},
+    ];
+    return tiered.concat(flat);
   }
   // luxury minimalist gold SVG icons (line + subtle fill), inherit currentColor
   function trophyIcon(name){
@@ -2332,8 +2407,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       ribbon:'<circle cx="12" cy="9" r="5.5"/><path d="M9 13.5L7 21l5-2.5L17 21l-2-7.5" /><path d="M12 6.5l1 2 2 .2-1.5 1.4.4 2L12 13l-1.9 1 .4-2L9 10.7l2-.2z" opacity=".5"/>',
       flight:'<path d="M4 8h16l-1.5 9a2 2 0 0 1-2 1.8H7.5a2 2 0 0 1-2-1.8z"/><path d="M8 8V5M12 8V5M16 8V5" stroke-linecap="round" opacity=".7"/>',
       flame:'<path d="M12 3c3 3.5 5 6.5 5 9.5a5 5 0 0 1-10 0c0-1.5.6-3 1.6-4.3.4 1 1.2 1.8 2 2.1-.4-2.4.3-5 1.4-7.3z"/>',
+      camera:'<path d="M4 8h3.2l1.4-2.2h6.8L16.8 8H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.2" r="3.6"/>',
+      heart:'<path d="M12 20.2s-7-4.3-9.3-8.4C1.1 8.7 2.5 5.3 5.9 4.8c1.9-.3 3.5.7 6.1 3.2 2.6-2.5 4.2-3.5 6.1-3.2 3.4.5 4.8 3.9 3.2 7-2.3 4.1-9.3 8.4-9.3 8.4z"/>',
+      chat:'<path d="M4 5h16v11H8l-4 4V5z"/><path d="M8 9h8M8 12.5h5" opacity=".6" stroke-linecap="round"/>',
     };
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">'+(P[name]||P.mug)+'</svg>';
+  }
+  function trophyDots(tier){
+    return '<div class="tr-dots">'+[1,2,3].map(i=>'<span class="tr-dot'+(tier>=i?' on':'')+'"></span>').join('')+'</div>';
   }
   function renderTrophies(){
     const box=$('#trophy-grid'); if(!box) return;
@@ -2341,6 +2422,20 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const done=list.filter(a=>a.done).length;
     const cntEl=$('#trophy-count'); if(cntEl) cntEl.textContent=done+' / '+list.length;
     box.innerHTML=list.map(a=>{
+      if(a.tiered){
+        const tierCls = a.tier===3?'tier-gold':(a.tier===2?'tier-silver':(a.tier===1?'tier-bronze':''));
+        const cls='trophy'+(a.done?' done '+tierCls:' locked');
+        const prog = a.tier===3
+          ? '<div class="tr-unlocked">Zlato</div>'
+          : '<div class="tr-prog"><div class="tr-bar"><div class="tr-fill" style="width:'+Math.round(a.pct*100)+'%"></div></div><span class="tr-pct">'+a.cur+'/'+a.nextGoal+'</span></div>';
+        return '<div class="'+cls+'">'
+          +'<div class="tr-medal">'+trophyIcon(a.i)+(a.done?'<span class="tr-shine"></span>':'')+'</div>'
+          +trophyDots(a.tier)
+          +'<div class="tr-title">'+esc(a.t)+'</div>'
+          +'<div class="tr-desc">'+esc(a.d)+'</div>'
+          +prog
+          +'</div>';
+      }
       const cls=a.done?'trophy done':'trophy locked';
       const prog = a.done ? '<div class="tr-unlocked">Odemčeno</div>'
         : '<div class="tr-prog"><div class="tr-bar"><div class="tr-fill" style="width:'+Math.round(a.pct*100)+'%"></div></div><span class="tr-pct">'+a.cur+'/'+a.goal+'</span></div>';
@@ -2739,12 +2834,16 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
 
   /* ---------- views / modals ---------- */
   function switchView(v){
+    activeView = v;
     document.querySelectorAll('.navitem').forEach(t=>t.classList.toggle('active',t.dataset.view===v));
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     const scr=$('#screen-'+v); if(scr){ scr.classList.add('active'); }
     const scroller=$('#scroller'); if(scroller) scroller.scrollTo({top:0,behavior:'instant'});
-    if(v==='stats') renderStats();
-    if(v==='profile') renderTrophies();
+    // refresh the screen we're switching to if data changed while it was hidden
+    if(v==='home' && dirty.home){ renderHome(); dirty.home=false; }
+    if(v==='board' && dirty.board){ renderBoard(); dirty.board=false; }
+    if(v==='stats'){ renderStats(); dirty.stats=false; }
+    if(v==='profile'){ renderTrophies(); dirty.trophies=false; }
   }
   function openName(){ $('#name-input').value=cfg.name||''; $('#name-overlay').classList.add('show'); setTimeout(()=>$('#name-input').focus(),50); }
 
@@ -5198,7 +5297,7 @@ var qrcode = function() {
   resetForm();
   renderAll();
 
-  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(renderHome); commentsPull(); }
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); }
   else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
 
   if(!cfg.name) setTimeout(openName, 400);
@@ -5607,7 +5706,7 @@ var qrcode = function() {
     }
     if(!e.target.closest('.cardmenu-pop')) closeCardMenu();
   });
-  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(renderHome); commentsPull(); } }, 30000);
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 
