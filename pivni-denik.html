@@ -1014,6 +1014,22 @@
   .sm-d-row span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .sm-d-row b{color:var(--amber-bright); font-variant-numeric:tabular-nums; flex-shrink:0;}
   .sm-d-more{font-size:11.5px; color:var(--text-4); padding-top:4px;}
+  /* taste profile */
+  .taste-insight{
+    font-size:13.5px; color:var(--text-2); line-height:1.55; margin-bottom:var(--s3);
+    padding:11px 14px; border-radius:var(--r-sm);
+    background:linear-gradient(150deg, rgba(232,163,61,0.13), rgba(232,163,61,0.04));
+    border:1px solid var(--hairline);
+  }
+  .taste-insight b{color:var(--amber-bright); font-weight:700;}
+  .taste-row{padding:11px 0; border-bottom:1px solid var(--hairline);}
+  .taste-row:last-of-type{border-bottom:none;}
+  .taste-top{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
+  .taste-name{font-size:14px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .taste-avg{font-family:'Fraunces',serif; font-size:17px; font-weight:700; color:var(--amber-bright); flex-shrink:0; font-variant-numeric:tabular-nums;}
+  .taste-bar{height:5px; border-radius:99px; background:var(--bg-2); overflow:hidden; margin-top:6px;}
+  .taste-fill{height:100%; background:linear-gradient(90deg,var(--amber-deep),var(--amber-bright)); border-radius:99px;}
+  .taste-sub{font-size:11.5px; color:var(--text-3); margin-top:5px;}
 </style>
 </head>
 <body>
@@ -1169,7 +1185,12 @@
           <div class="sec-title">Rozložení hodnocení</div>
           <div class="card dist" id="dist"></div>
 
-          <div class="sec-title">Nejčastější styly</div>
+          <div class="sec-title">Co ti chutná</div>
+          <div class="segment" id="taste-seg" style="margin-bottom:var(--s3)">
+            <button class="seg-btn active" data-tastesort="rating">Podle chuti</button>
+            <button class="seg-btn" data-tastesort="count">Podle četnosti</button>
+          </div>
+          <div id="taste-insight"></div>
           <div class="card list-card" id="top-styles"></div>
 
           <div class="btn-row"><button class="btn btn-ghost" id="export-btn">Exportovat moje piva (TSV)</button></div>
@@ -3261,15 +3282,66 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       bars+='<div class="dist-row"><span class="dist-k">'+i+'</span><div class="dist-track"><div class="dist-fill" style="width:'+(dist[i]?Math.max(w,7):0)+'%"></div></div><span class="dist-v">'+(dist[i]||'')+'</span></div>';
     }
     if($('#dist')) $('#dist').innerHTML = rated.length?bars:'<p class="muted center">Ohodnoť pár piv a uvidíš rozložení.</p>';
-    // top styles
-    const smap={}; mine.forEach(b=>{ if(!b.style) return; smap[b.style]=(smap[b.style]||0)+1; });
-    const top=Object.entries(smap).sort((a,b)=>b[1]-a[1]).slice(0,5);
-    if($('#top-styles')) $('#top-styles').innerHTML = top.length
-      ? top.map(([s,n])=>'<div class="ts-row"><span class="chip">'+esc(s)+'</span><span class="ts-n">'+n+'×</span></div>').join('')
-      : '<p class="muted center">Zatím žádné styly.</p>';
+    renderTasteProfile();
     // recent activity sparkline-ish: last 6 months count
     if($('#stat-empty')) $('#stat-empty').style.display = mine.length?'none':'block';
     if($('#stat-body')) $('#stat-body').style.display = mine.length?'block':'none';
+  }
+  /* ---------- taste profile: what you actually enjoy, not just what you drink ---------- */
+  let tasteSort='rating';
+  const TASTE_MIN=2; // one lucky 10/10 shouldn't crown a style
+  function tasteByStyle(){
+    const mine=beers.filter(b=>b.osoba===cfg.name && b.style && b.style.trim());
+    const m={};
+    mine.forEach(b=>{
+      const st=matchStyle(b.style);            // merges "IPA" and "India Pale Ale"
+      const key=st?st.n:b.style.trim();        // unknown styles keep their own name
+      if(!m[key]) m[key]={name:key,count:0,sum:0,rated:0};
+      m[key].count++;
+      if(b.rating>0){ m[key].sum+=b.rating; m[key].rated++; }
+    });
+    return Object.values(m).map(x=>Object.assign(x,{avg: x.rated? x.sum/x.rated : 0}));
+  }
+  function renderTasteProfile(){
+    const box=$('#top-styles'); if(!box) return;
+    const all=tasteByStyle();
+    const ins=$('#taste-insight');
+    if(!all.length){
+      box.innerHTML='<p class="muted center">Zatím žádné styly.</p>';
+      if(ins) ins.innerHTML='';
+      return;
+    }
+    // the headline: what you reach for vs what you actually score highest
+    const mostDrunk=all.slice().sort((a,b)=>b.count-a.count)[0];
+    const eligible=all.filter(x=>x.rated>=TASTE_MIN);
+    const bestRated=eligible.slice().sort((a,b)=>b.avg-a.avg)[0];
+    if(ins){
+      if(bestRated && mostDrunk && bestRated.name!==mostDrunk.name){
+        ins.innerHTML='<div class="taste-insight">Nejčastěji piješ <b>'+esc(mostDrunk.name)+'</b>, ale nejvýš hodnotíš <b>'+esc(bestRated.name)+'</b> ('+bestRated.avg.toFixed(1)+').</div>';
+      } else if(bestRated){
+        ins.innerHTML='<div class="taste-insight">Nejčastěji piješ <b>'+esc(mostDrunk.name)+'</b> — a shodou okolností ti chutná nejvíc.</div>';
+      } else ins.innerHTML='';
+    }
+    let list, note='';
+    if(tasteSort==='rating'){
+      list=eligible.slice().sort((a,b)=>b.avg-a.avg || b.count-a.count);
+      if(!list.length){
+        box.innerHTML='<p class="muted center">Zatím nemá žádný styl aspoň '+TASTE_MIN+' hodnocená piva.<br>Zkus řazení podle četnosti.</p>';
+        return;
+      }
+      note='Jen styly s aspoň '+TASTE_MIN+' hodnocenými pivy.';
+    } else {
+      list=all.slice().sort((a,b)=>b.count-a.count || b.avg-a.avg);
+    }
+    box.innerHTML=list.slice(0,10).map(x=>{
+      const w=x.avg?Math.round(x.avg*10):0;
+      return '<div class="taste-row">'
+        +'<div class="taste-top"><span class="taste-name">'+esc(x.name)+'</span>'
+        +'<span class="taste-avg">'+(x.avg?x.avg.toFixed(1):'–')+'</span></div>'
+        +'<div class="taste-bar"><div class="taste-fill" style="width:'+w+'%"></div></div>'
+        +'<div class="taste-sub">'+x.count+'× zapsáno'+(x.rated<x.count?' · '+x.rated+' hodnoceno':'')+'</div>'
+        +'</div>';
+    }).join('') + (note?'<p class="tiny-note" style="margin-top:10px">'+note+'</p>':'');
   }
   let boardPeriod='all'; // 'all' | 'year' | 'month'
   function boardBeers(){
@@ -6483,6 +6555,12 @@ var qrcode = function() {
     const f=e.target.files&&e.target.files[0];
     if(f) handleBreweryPhotoPicked(f);
   });
+  // taste profile sort
+  document.querySelectorAll('#taste-seg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{
+    tasteSort=b.dataset.tastesort;
+    document.querySelectorAll('#taste-seg .seg-btn').forEach(x=>x.classList.toggle('active', x===b));
+    renderTasteProfile();
+  }));
   // style map
   document.querySelectorAll('[data-stylemap]').forEach(b=>b.addEventListener('click', openStyleMap));
   $('#sm-close').addEventListener('click', ()=>$('#stylemap-overlay').classList.remove('show'));
