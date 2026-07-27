@@ -983,6 +983,37 @@
     *{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
   }
   @page{size:A4; margin:14mm;}
+  /* style map */
+  .sm-progress{margin:var(--s3) 0 var(--s5);}
+  .sm-prog-top{display:flex; align-items:baseline; gap:8px; margin-bottom:8px;}
+  .sm-prog-top b{font-family:'Fraunces',serif; font-size:34px; font-weight:700; color:var(--amber-bright); line-height:1;}
+  .sm-prog-top span{font-size:13.5px; color:var(--text-2);}
+  .sm-bar{height:7px; border-radius:99px; background:var(--bg-2); overflow:hidden; border:1px solid var(--hairline);}
+  .sm-fill{height:100%; background:linear-gradient(90deg,var(--amber),var(--amber-bright)); border-radius:99px; transition:width .4s;}
+  .sm-fam{margin-bottom:var(--s5);}
+  .sm-fam-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:9px;}
+  .sm-fam-head span{font-size:12.5px; font-weight:700; color:var(--text-2); text-transform:uppercase; letter-spacing:0.05em;}
+  .sm-fam-head b{font-size:12px; font-weight:700; color:var(--text-4); font-variant-numeric:tabular-nums;}
+  .sm-pills{display:flex; flex-wrap:wrap; gap:6px;}
+  .sm-pill{
+    display:inline-flex; align-items:center; gap:5px; font-family:inherit; cursor:pointer;
+    font-size:12.5px; font-weight:600; padding:9px 13px; border-radius:var(--r-pill);
+    background:var(--bg-2); border:1px solid var(--hairline); color:var(--text-4);
+  }
+  .sm-pill.got{background:linear-gradient(150deg, rgba(232,163,61,0.22), rgba(232,163,61,0.08)); border-color:var(--amber-deep); color:var(--foam);}
+  .sm-pill.sel{outline:2px solid var(--amber); outline-offset:1px;}
+  .sm-tick{color:var(--amber-bright); font-weight:800;}
+  .sm-n{font-size:10.5px; color:var(--amber-bright); background:rgba(0,0,0,0.25); border-radius:99px; padding:1px 5px; font-variant-numeric:tabular-nums;}
+  .sm-detail{margin-top:10px; padding:13px 15px; border-radius:var(--r-sm); background:var(--surface-2); border:1px solid var(--hairline);}
+  .sm-d-name{font-size:15px; font-weight:700; color:var(--foam);}
+  .sm-d-desc{font-size:13px; color:var(--text-2); line-height:1.5; margin-top:4px;}
+  .sm-d-todo{font-size:12.5px; color:var(--text-3); font-style:italic; margin-top:9px;}
+  .sm-d-list{margin-top:11px; border-top:1px solid var(--hairline); padding-top:6px;}
+  .sm-d-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0; cursor:pointer; font-size:13px; color:var(--text-2);}
+  .sm-d-row:active{color:var(--foam);}
+  .sm-d-row span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .sm-d-row b{color:var(--amber-bright); font-variant-numeric:tabular-nums; flex-shrink:0;}
+  .sm-d-more{font-size:11.5px; color:var(--text-4); padding-top:4px;}
 </style>
 </head>
 <body>
@@ -1195,6 +1226,12 @@
 
         <div class="sec-title">Prozkoumat</div>
         <div class="row-list">
+          <div class="row-item" data-stylemap>
+            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.5 2V6L9 4l6 2 5.5-2v16L15 22z"/><path d="M9 4v16M15 6v16"/></svg></div>
+            <div class="row-tx"><div class="t">Mapa stylů</div><div class="d" id="stylemap-sub">Co jsi ochutnal a co tě čeká</div></div>
+            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+
           <div class="row-item" data-wrapped>
             <div class="row-ic wrapped-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="3.5"/></svg></div>
             <div class="row-tx"><div class="t">Tvůj přehled</div><div class="d">Roční i měsíční shrnutí tvého pití</div></div>
@@ -1568,6 +1605,18 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     </div>
   </div>
 
+  <!-- style map -->
+  <div class="overlay" id="stylemap-overlay">
+    <div class="sheet map-sheet">
+      <div class="grabber"></div>
+      <div class="map-head">
+        <div class="sec-title first" style="margin:0">Mapa stylů</div>
+        <button class="detail-close" id="sm-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      </div>
+      <div id="stylemap-body"></div>
+    </div>
+  </div>
+
   <!-- all trophies -->
   <div class="overlay" id="trophies-overlay">
     <div class="sheet map-sheet">
@@ -1652,6 +1701,73 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
   /* ---------- catalog: built-in CZ breweries + fuzzy matching ---------- */
+  /* ---------- style map: a built-in catalogue to tick off ---------- */
+  const STYLE_MAP=[
+    {f:'České a německé ležáky', s:[
+      {n:'Světlý ležák',      d:'Zlatá klasika, 11–12°, výrazná chmelová hořkost.', a:['svetly lezak','lezak','pilsner','plzensky','dvanactka','pils']},
+      {n:'Výčepní světlé',    d:'Desítka — lehčí, svěží, na žízeň.',                a:['vycepni','desitka','svetle vycepni']},
+      {n:'Polotmavý ležák',   d:'Mezi světlým a tmavým, karamelová sladkost.',      a:['polotmavy','polotmave','granat']},
+      {n:'Tmavý ležák',       d:'Praženy slad, tóny kávy a karamelu.',              a:['tmavy lezak','tmave','tmavy','cerne pivo']},
+      {n:'Helles',            d:'Bavorský sladový protějšek pilsneru.',             a:['helles','hell']},
+      {n:'Märzen',            d:'Jantarový říjnovkový ležák, sladově plný.',        a:['marzen','maerzen','oktoberfest']},
+      {n:'Schwarzbier',       d:'Německé černé, překvapivě lehké.',                 a:['schwarzbier','schwarz']},
+      {n:'Bock',              d:'Silný sladový ležák, 6–7 %.',                      a:['bock','maibock']},
+      {n:'Doppelbock',        d:'Ještě silnější bock, tekutý chléb.',               a:['doppelbock','dopplebock']},
+      {n:'Kellerbier',        d:'Nefiltrovaný, kvasnicový, ze sklepa.',             a:['kellerbier','keller','nefiltrovane','nefiltrovany','kvasnicove','kvasnicovy']},
+    ]},
+    {f:'Chmelové ale', s:[
+      {n:'Pale Ale',          d:'Vyvážené svrchně kvašené, mírně chmelové.',        a:['pale ale','pa']},
+      {n:'APA',               d:'Americká pale ale — citrusový chmel.',             a:['apa','american pale ale']},
+      {n:'IPA',               d:'India Pale Ale, chmelová hořkost naplno.',         a:['ipa','india pale ale']},
+      {n:'NEIPA',             d:'Zakalená, šťavnatá, málo hořká.',                  a:['neipa','ne ipa','hazy','new england ipa','juicy ipa']},
+      {n:'Double IPA',        d:'Zdvojený chmel i alkohol, 8 %+.',                  a:['double ipa','dipa','imperial ipa']},
+      {n:'Session IPA',       d:'Chuť IPA při nízkém alkoholu.',                    a:['session ipa','session']},
+      {n:'Black IPA',         d:'Tmavá, ale chmelová — protimluv, co funguje.',     a:['black ipa','cerna ipa','india black ale']},
+      {n:'West Coast IPA',    d:'Suchá, hořká, průzračná kalifornská škola.',       a:['west coast ipa','wcipa','west coast']},
+      {n:'Cold IPA',          d:'Nová škola — čistá, ostrá, spodně kvašená.',       a:['cold ipa']},
+    ]},
+    {f:'Pšeničná piva', s:[
+      {n:'Weizen',            d:'Bavorské pšeničné, banán a hřebíček.',             a:['weizen','psenicne','psenicny','hefeweizen','weissbier','weisse']},
+      {n:'Witbier',           d:'Belgické bílé s koriandrem a pomerančem.',         a:['witbier','wit','bile pivo','blanche']},
+      {n:'Weizenbock',        d:'Silné pšeničné, tmavé a sladové.',                 a:['weizenbock','weizen bock']},
+      {n:'Kristallweizen',    d:'Filtrované pšeničné, čiré.',                       a:['kristallweizen','kristall']},
+    ]},
+    {f:'Belgická piva', s:[
+      {n:'Blond ale',         d:'Zlaté, jemně kořenité, klamně silné.',             a:['blond','blonde','belgian blond']},
+      {n:'Dubbel',            d:'Tmavé, sušené ovoce a karamel.',                   a:['dubbel','double belgian']},
+      {n:'Tripel',            d:'Zlaté, silné, suché — klášterní klasika.',         a:['tripel','triple']},
+      {n:'Quadrupel',         d:'Nejsilnější z trapistů, 10 %+.',                   a:['quadrupel','quad']},
+      {n:'Saison',            d:'Farmářské, suché, kořenité, osvěžující.',          a:['saison','farmhouse']},
+      {n:'Belgian Strong',    d:'Silné světlé i tmavé, ovocné kvasnice.',           a:['belgian strong','belgian dark strong','belgian golden']},
+    ]},
+    {f:'Tmavá a pražená', s:[
+      {n:'Stout',             d:'Praženy ječmen, káva a čokoláda.',                 a:['stout','dry stout','irish stout']},
+      {n:'Milk Stout',        d:'Stout s laktózou — sametově sladký.',              a:['milk stout','sweet stout','laktozovy']},
+      {n:'Oatmeal Stout',     d:'Ovesný stout, hedvábná plnost.',                   a:['oatmeal stout','ovesny']},
+      {n:'Imperial Stout',    d:'Hutný, silný, 9 %+, na dlouhé večery.',            a:['imperial stout','ris','russian imperial stout']},
+      {n:'Porter',            d:'Předchůdce stoutu, jemnější pražení.',             a:['porter']},
+      {n:'Baltic Porter',     d:'Spodně kvašený silný porter.',                     a:['baltic porter','baltsky porter']},
+      {n:'Brown Ale',         d:'Ořechové, karamelové, nenápadně dobré.',           a:['brown ale','hnede']},
+    ]},
+    {f:'Kyselá a divoká', s:[
+      {n:'Gose',              d:'Slané a kyselé s koriandrem.',                     a:['gose']},
+      {n:'Berliner Weisse',   d:'Lehce kyselé pšeničné, osvěžující.',               a:['berliner weisse','berliner']},
+      {n:'Lambic',            d:'Spontánně kvašené, belgická divočina.',            a:['lambic','lambik']},
+      {n:'Gueuze',            d:'Míchané lambiky — šampaňské mezi pivy.',           a:['gueuze','geuze']},
+      {n:'Kriek / ovocné',    d:'Kyselé s ovocem, nejčastěji višní.',               a:['kriek','framboise','ovocne','fruit sour','ovocny sour']},
+      {n:'Sour ale',          d:'Moderní kyselé, ovocné a svěží.',                  a:['sour','kysele','kyselé','wild ale']},
+    ]},
+    {f:'Speciály a silná', s:[
+      {n:'Amber / Red ale',   d:'Jantarové, karamelová sladovost.',                 a:['amber','red ale','cervene','jantarove']},
+      {n:'Kölsch',            d:'Kolínské — čisté, jemné, mezi ale a ležákem.',     a:['kolsch','koelsch']},
+      {n:'Altbier',           d:'Düsseldorfské tmavší svrchně kvašené.',            a:['altbier','alt']},
+      {n:'Bitter / ESB',      d:'Anglická hospodská klasika, nízký alkohol.',       a:['bitter','esb','english bitter','best bitter']},
+      {n:'Scotch Ale',        d:'Sladové, karamelové, hřejivé.',                    a:['scotch ale','wee heavy','skotske']},
+      {n:'Barleywine',        d:'Ječné víno — 10 %+, k uležení.',                   a:['barleywine','barley wine','jecne vino']},
+      {n:'Rauchbier',         d:'Uzený slad — slanina v pivu.',                     a:['rauchbier','rauch','uzene','kourove','smoked']},
+      {n:'Nealko',            d:'Pod 0,5 %, dnes už často dobré.',                  a:['nealko','nealkoholicke','non alcoholic','0 0','bez alkoholu']},
+    ]},
+  ];
   const CZ_BREWERIES = ["Plzeňský Prazdroj","Budějovický Budvar","Pivovar Staropramen","Pivovar Kozel","Pivovar Gambrinus","Pivovar Radegast","Pivovar Velké Popovice","Pivovar Nošovice","Bernard","Pivovar Svijany","Pivovar Krušovice","Pivovar Starobrno","Pivovar Litovel","Pivovar Zubr","Pivovar Holba","Pivovar Chodovar","Pivovar Ferdinand","Pivovar Herold","Pivovar Klášter","Pivovar Kout na Šumavě","Pivovar Únětice","Pivovar Matuška","Pivovar Clock","Pivovar Zichovec","Pivovar Cvikov","Pivovar Falkon","Pivovar Antoš","Pivovar Raven","Pivovar Chroust","Pivovar Sibeeria","Pivovar Nomád","Pivovar Permon","Pivovar Vinohradský","Pivovar Kunc","Pivovar Zhůřák","Pivovar Wild Creatures","Pivovar Lucky Bastard","Pivovar Rambousek","Pivovar Kocour","Pivovar Nachmelená opice","Pivovar Břevnovský klášterní","Pivovar Strahov","Pivovar U Fleků","Pivovar Novoměstský","Pivovar Pivovarský dům","Pivovar Zlý časy","Pivovar Bad Flash","Pivovar Zimage","Pivovar Wywar","Pivovar Beskydský","Pivovar Rohozec","Pivovar Nová Paka","Pivovar Primátor","Pivovar Náchod","Pivovar Trautenberk","Pivovar Krakonoš","Pivovar Poutník","Pivovar Bohemia Regent","Pivovar Samson","Pivovar Platan","Pivovar Protivín","Pivovar Strakonice","Pivovar Dudák","Pivovar Vysoký Chlumec","Pivovar Konrad","Pivovar Vratislav","Pivovar Broumov","Pivovar Opat","Pivovar Černá Hora","Pivovar Pegas","Pivovar Richard","Pivovar Únětický","Pivovar Krušovice","Pivovar Hostivar","Pivovar Marina","Pivovar Kytín","Pivovar Podkováň","Pivovar Vyškov","Pivovar Jihlava","Pivovar Havlíčkův Brod","Pivovar Rebel","Pivovar Dačický","Pivovar Pardubice","Pivovar Rychtář","Pivovar Hlinsko","Pivovar Polička","Pivovar Svijany","Pivovar Vratislavice","Pivovar Ježek","Pivovar Bakalář","Pivovar Rakovník","Pivovar Berounský medvěd","Pivovar Proud","Pivovar Zbraslav","Pivovar Kohout","Pivovar Two Tales","Pivovar Zázvorka","Pivovar Obora","Pivovar Nachmelený jelen","Pivovar Chříč","Pivovar Modrá hvězda","Pivovar Bombarďák","Pivovar Clock Potštejn"];
 
   // strip diacritics + lowercase for comparison
@@ -2046,6 +2162,92 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       empty.style.display='flex'; prev.style.display='none'; img.removeAttribute('src'); status.textContent='';
     }
   }
+  /* ---------- style map ---------- */
+  let styleIndexCache=null, smSelected=null;
+  function styleIndex(){
+    if(styleIndexCache) return styleIndexCache;
+    const pairs=[];
+    STYLE_MAP.forEach(fam=>fam.s.forEach(st=>{
+      [st.n].concat(st.a||[]).forEach(al=>{
+        const a=norm(al); if(a) pairs.push({a, st, fam:fam.f});
+      });
+    }));
+    // longest alias first, so "session ipa" wins over "ipa"
+    pairs.sort((x,y)=>y.a.length-x.a.length);
+    styleIndexCache=pairs;
+    return pairs;
+  }
+  function matchStyle(text){
+    if(!text) return null;
+    const t=' '+norm(text)+' ';
+    for(const p of styleIndex()){ if(t.indexOf(' '+p.a+' ')>=0) return p.st; }
+    return null;
+  }
+  function computeStyleMap(){
+    const mine=beers.filter(b=>b.osoba===cfg.name && b.style && b.style.trim());
+    const hits={}; let unmatched=0;
+    mine.forEach(b=>{
+      const st=matchStyle(b.style);
+      if(st){ (hits[st.n]=hits[st.n]||[]).push(b); } else unmatched++;
+    });
+    const total=STYLE_MAP.reduce((n,f)=>n+f.s.length,0);
+    const done=Object.keys(hits).length;
+    return {hits, done, total, unmatched};
+  }
+  function openStyleMap(){
+    smSelected=null;
+    renderStyleMap();
+    $('#stylemap-overlay').classList.add('show');
+    const sc=$('#stylemap-overlay .sheet'); if(sc) sc.scrollTop=0;
+  }
+  function renderStyleMap(){
+    const box=$('#stylemap-body'); if(!box) return;
+    const {hits, done, total, unmatched}=computeStyleMap();
+    const pct=Math.round(100*done/total);
+    let html='<div class="sm-progress">'
+      +'<div class="sm-prog-top"><b>'+done+'</b><span>z '+total+' stylů ochutnáno</span></div>'
+      +'<div class="sm-bar"><div class="sm-fill" style="width:'+pct+'%"></div></div>'
+      +'</div>';
+    STYLE_MAP.forEach((fam,fi)=>{
+      const famDone=fam.s.filter(st=>hits[st.n]).length;
+      html+='<div class="sm-fam">'
+        +'<div class="sm-fam-head"><span>'+esc(fam.f)+'</span><b>'+famDone+'/'+fam.s.length+'</b></div>'
+        +'<div class="sm-pills">'
+        + fam.s.map((st,si)=>{
+            const got=!!hits[st.n];
+            const sel=smSelected===st.n;
+            return '<button class="sm-pill'+(got?' got':'')+(sel?' sel':'')+'" data-sm-style="'+esc(st.n)+'">'
+              +(got?'<span class="sm-tick">✓</span>':'')
+              +esc(st.n)
+              +(got?'<span class="sm-n">'+hits[st.n].length+'</span>':'')
+              +'</button>';
+          }).join('')
+        +'</div>';
+      // detail panel appears inside the family the selected style belongs to
+      const selHere=fam.s.find(st=>st.n===smSelected);
+      if(selHere){
+        const list=hits[selHere.n]||[];
+        html+='<div class="sm-detail">'
+          +'<div class="sm-d-name">'+esc(selHere.n)+'</div>'
+          +'<div class="sm-d-desc">'+esc(selHere.d)+'</div>';
+        if(list.length){
+          const sorted=list.slice().sort((a,b)=>(b.rating||0)-(a.rating||0));
+          html+='<div class="sm-d-list">'+sorted.slice(0,6).map(b=>
+              '<div class="sm-d-row" data-sm-beer="'+esc(b.id)+'"><span>'+esc(b.name)+'</span><b>'+(b.rating||'–')+'</b></div>'
+            ).join('')
+            +(sorted.length>6?'<div class="sm-d-more">a další '+(sorted.length-6)+'…</div>':'')
+            +'</div>';
+        } else {
+          html+='<div class="sm-d-todo">Ještě nezkoušeno — máš se na co těšit.</div>';
+        }
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+    if(unmatched) html+='<p class="tiny-note" style="margin-top:var(--s4)">'+unmatched+' '+(unmatched===1?'tvoje pivo má styl':'tvých piv má styl')+', který katalog nezná — do počtu se nezapočítává.</p>';
+    box.innerHTML=html;
+  }
+
   /* ---------- yearbook ---------- */
   let ybYear=null;
   function openYearbook(){
@@ -2856,6 +3058,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +'</div>';
   }
   function renderTrophies(){
+    // profile is the only place this runs, so refresh the style-map teaser here too
+    const smEl=$('#stylemap-sub');
+    if(smEl){ const sm=computeStyleMap(); smEl.textContent='Ochutnáno '+sm.done+' z '+sm.total+' stylů'; }
     const list=computeAchievements();
     const done=list.filter(a=>a.done).length;
     const label=done+' / '+list.length;
@@ -6278,6 +6483,15 @@ var qrcode = function() {
     const f=e.target.files&&e.target.files[0];
     if(f) handleBreweryPhotoPicked(f);
   });
+  // style map
+  document.querySelectorAll('[data-stylemap]').forEach(b=>b.addEventListener('click', openStyleMap));
+  $('#sm-close').addEventListener('click', ()=>$('#stylemap-overlay').classList.remove('show'));
+  $('#stylemap-body').addEventListener('click', e=>{
+    const beer=e.target.closest('[data-sm-beer]');
+    if(beer){ $('#stylemap-overlay').classList.remove('show'); openBeerDetail(beer.dataset.smBeer); return; }
+    const pill=e.target.closest('[data-sm-style]');
+    if(pill){ smSelected = (smSelected===pill.dataset.smStyle) ? null : pill.dataset.smStyle; renderStyleMap(); }
+  });
   // trophies
   $('#trophy-open').addEventListener('click', ()=>{ renderTrophies(); $('#trophies-overlay').classList.add('show'); });
   $('#trophies-close').addEventListener('click', ()=>$('#trophies-overlay').classList.remove('show'));
@@ -6344,13 +6558,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#map-overlay','#placefix-overlay','#brewery-edit-overlay','#breweries-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#map-overlay','#placefix-overlay','#brewery-edit-overlay','#breweries-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#breweries-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#breweries-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
