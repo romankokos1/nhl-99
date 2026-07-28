@@ -775,6 +775,12 @@
   .tr-title{font-size:12.5px; font-weight:700; color:var(--foam); line-height:1.25; margin-bottom:2px;}
   .tr-desc{font-size:10.5px; color:var(--text-3); line-height:1.3; margin-bottom:8px; min-height:26px;}
   .tr-unlocked{font-size:10px; font-weight:700; color:var(--amber-bright); text-transform:uppercase; letter-spacing:0.06em;}
+  .tr-unlocked.gold{display:flex; align-items:center; justify-content:center; gap:5px;}
+  .tr-goldnum{
+    font-size:10.5px; font-weight:800; color:#241703; letter-spacing:0;
+    background:linear-gradient(150deg,#ffd274,#e0a53a); border-radius:99px; padding:1px 7px;
+    font-variant-numeric:tabular-nums;
+  }
   .tr-prog{display:flex; align-items:center; gap:6px; width:100%; padding:0 2px;}
   .tr-bar{flex:1; height:5px; border-radius:99px; background:var(--bg-2); overflow:hidden;}
   .tr-fill{height:100%; border-radius:99px; background:linear-gradient(90deg, var(--amber-deep), var(--amber-bright));}
@@ -1030,6 +1036,15 @@
   .taste-bar{height:5px; border-radius:99px; background:var(--bg-2); overflow:hidden; margin-top:6px;}
   .taste-fill{height:100%; background:linear-gradient(90deg,var(--amber-deep),var(--amber-bright)); border-radius:99px;}
   .taste-sub{font-size:11.5px; color:var(--text-3); margin-top:5px;}
+  /* habits */
+  .habit-row{display:flex; align-items:center; gap:var(--s3); padding:11px 0; border-bottom:1px solid var(--hairline);}
+  .habit-row:last-child{border-bottom:none;}
+  .habit-tx{flex:1; min-width:0;}
+  .habit-place{font-size:11.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .habit-beer{font-size:14.5px; font-weight:600; color:var(--text); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .habit-n{flex-shrink:0; text-align:right;}
+  .habit-n b{display:block; font-family:'Fraunces',serif; font-size:19px; font-weight:700; color:var(--amber-bright); line-height:1; font-variant-numeric:tabular-nums;}
+  .habit-n span{display:block; font-size:11px; color:var(--text-3); margin-top:3px;}
 </style>
 </head>
 <body>
@@ -1192,6 +1207,9 @@
           </div>
           <div id="taste-insight"></div>
           <div class="card list-card" id="top-styles"></div>
+
+          <div class="sec-title">Štamgastství</div>
+          <div class="card list-card" id="habits"></div>
 
           <div class="btn-row"><button class="btn btn-ghost" id="export-btn">Exportovat moje piva (TSV)</button></div>
         </div>
@@ -3058,7 +3076,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const tierCls = a.tier===3?'tier-gold':(a.tier===2?'tier-silver':(a.tier===1?'tier-bronze':''));
       const cls='trophy'+(a.done?' done '+tierCls:' locked');
       const prog = a.tier===3
-        ? '<div class="tr-unlocked">Zlato</div>'
+        ? '<div class="tr-unlocked gold">Zlato<span class="tr-goldnum">'+a.cur+'</span></div>'
         : '<div class="tr-prog"><div class="tr-bar"><div class="tr-fill" style="width:'+Math.round(a.pct*100)+'%"></div></div><span class="tr-pct">'+a.cur+'/'+a.nextGoal+'</span></div>';
       return '<div class="'+cls+'">'
         +'<div class="tr-medal">'+trophyIcon(a.i)+(a.done?'<span class="tr-shine"></span>':'')+'</div>'
@@ -3283,6 +3301,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }
     if($('#dist')) $('#dist').innerHTML = rated.length?bars:'<p class="muted center">Ohodnoť pár piv a uvidíš rozložení.</p>';
     renderTasteProfile();
+    renderHabits();
     // recent activity sparkline-ish: last 6 months count
     if($('#stat-empty')) $('#stat-empty').style.display = mine.length?'none':'block';
     if($('#stat-body')) $('#stat-body').style.display = mine.length?'block':'none';
@@ -3342,6 +3361,37 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'<div class="taste-sub">'+x.count+'× zapsáno'+(x.rated<x.count?' · '+x.rated+' hodnoceno':'')+'</div>'
         +'</div>';
     }).join('') + (note?'<p class="tiny-note" style="margin-top:10px">'+note+'</p>':'');
+  }
+  /* ---------- habits: the same beer, in the same place, over and over ---------- */
+  const HABIT_MIN=3;
+  function renderHabits(){
+    const box=$('#habits'); if(!box) return;
+    const mine=beers.filter(b=>b.osoba===cfg.name && b.where && b.where.trim() && b.name && b.name.trim());
+    const m={};
+    mine.forEach(b=>{
+      const key=norm(b.where)+'|||'+norm(b.name);
+      if(!m[key]) m[key]={place:b.where.trim(), beer:b.name.trim(), count:0, sum:0, rated:0};
+      const e=m[key];
+      e.count++;
+      if(b.rating>0){ e.sum+=b.rating; e.rated++; }
+    });
+    const list=Object.values(m)
+      .filter(x=>x.count>=HABIT_MIN)
+      .map(x=>Object.assign(x,{avg: x.rated? x.sum/x.rated : 0}))
+      .sort((a,b)=>b.count-a.count || b.avg-a.avg);
+    if(!list.length){
+      box.innerHTML='<p class="muted center">Zatím žádný ustálený zvyk.<br>Objeví se tu, až si dáš stejné pivo na stejném místě '+HABIT_MIN+'×.</p>';
+      return;
+    }
+    box.innerHTML=list.slice(0,8).map(x=>
+      '<div class="habit-row">'
+      +'<div class="habit-tx">'
+      +  '<div class="habit-place">'+esc(x.place)+'</div>'
+      +  '<div class="habit-beer">'+esc(x.beer)+'</div>'
+      +'</div>'
+      +'<div class="habit-n"><b>'+x.count+'×</b>'+(x.avg?'<span>Ø '+x.avg.toFixed(1)+'</span>':'')+'</div>'
+      +'</div>'
+    ).join('');
   }
   let boardPeriod='all'; // 'all' | 'year' | 'month'
   function boardBeers(){
