@@ -1045,6 +1045,15 @@
   .habit-n{flex-shrink:0; text-align:right;}
   .habit-n b{display:block; font-family:'Fraunces',serif; font-size:19px; font-weight:700; color:var(--amber-bright); line-height:1; font-variant-numeric:tabular-nums;}
   .habit-n span{display:block; font-size:11px; color:var(--text-3); margin-top:3px;}
+  /* collaborations */
+  .collab-toggle{
+    background:none; border:none; font-family:inherit; font-size:12.5px; font-weight:600;
+    color:var(--amber-deep); cursor:pointer; padding:0 0 var(--s3); margin-top:calc(-1*var(--s2));
+  }
+  .collab-toggle:active{color:var(--amber-bright);}
+  .collab-x{font-style:normal; color:var(--amber-deep); font-weight:400; padding:0 1px;}
+  .collab-x-sep{color:var(--text-4); margin:0 7px; font-size:13px;}
+  .collab-tag{color:var(--amber-deep);}
 </style>
 </head>
 <body>
@@ -1126,6 +1135,11 @@
         </div>
         <div class="field"><label for="f-name">Název piva</label><div class="ac-wrap"><input type="text" id="f-name" placeholder="Světlý ležák" autocomplete="off"><div class="ac-drop" id="beer-ac"></div></div></div>
         <div class="field"><label for="f-brewery">Pivovar</label><input type="text" id="f-brewery" placeholder="Budějovický Budvar" autocomplete="off" list="brewery-list"><datalist id="brewery-list"></datalist></div>
+        <button type="button" class="collab-toggle" id="collab-toggle">+ Spolupráce dvou pivovarů</button>
+        <div class="field" id="collab-field" style="display:none">
+          <label for="f-collab">Spolupráce s</label>
+          <input type="text" id="f-collab" placeholder="Druhý pivovar" autocomplete="off" list="brewery-list">
+        </div>
         <div class="field-row">
           <div class="field"><label for="f-style">Styl</label><input type="text" id="f-style" placeholder="Ležák, IPA…" autocomplete="off" list="style-list"><datalist id="style-list"></datalist></div>
           <div class="field" style="max-width:120px"><label for="f-abv">Alkohol %</label><input type="number" id="f-abv" placeholder="4.8" step="0.1" min="0" max="70" inputmode="decimal"></div>
@@ -1385,7 +1399,8 @@
   id text primary key,
   osoba text not null,
   nazev text not null,
-  pivovar text, styl text, abv text,
+  pivovar text,
+  spolupivovar text, styl text, abv text,
   kde text, datum text, poznamka text,
   hodnoceni int, foto text,
   vytvoreno timestamptz default now()
@@ -1472,7 +1487,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary"; pro lajky blok od „liky"; pro komentáře blok od „komentare"; pro fotky pivovarů <code>alter table pivovary add column if not exists foto text;</code></p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary"; pro lajky blok od „liky"; pro komentáře blok od „komentare"; pro fotky pivovarů <code>alter table pivovary add column if not exists foto text;</code>; pro spolupráce <code>alter table piva add column if not exists spolupivovar text;</code></p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -1829,10 +1844,29 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     beers.forEach(b=>{ if(!b.name) return; const k=norm(b.name); if(!m.has(k)) m.set(k,{name:b.name,brewery:b.brewery||'',style:b.style||'',abv:b.abv||''}); });
     return [...m.values()];
   }
+  /* ---------- collaborations: one beer, two brewers ----------
+     A collab counts for BOTH breweries wherever we ask "what did this brewery make",
+     because both actually brewed it. It is deliberately NOT counted towards the
+     "Věrný pivovaru" trophy, which measures loyalty to a single brewer. */
+  function beerBreweries(b){
+    const out=[];
+    if(b.brewery && b.brewery.trim()) out.push(b.brewery.trim());
+    if(b.collab && b.collab.trim()) out.push(b.collab.trim());
+    return out;
+  }
+  function isCollab(b){ return !!(b.collab && b.collab.trim()); }
+  function beerHasBrewery(b, key){ return beerBreweries(b).some(n=>norm(n)===key); }
+  function collabPartner(b, key){
+    // the other brewer, seen from a given brewery's page
+    const list=beerBreweries(b);
+    if(list.length<2) return '';
+    const other=list.find(n=>norm(n)!==key);
+    return other||'';
+  }
   function knownBreweries(){
     const set=new Map();
     CZ_BREWERIES.forEach(n=>set.set(norm(n),n));
-    beers.forEach(b=>{ if(b.brewery){ const k=norm(b.brewery); if(!set.has(k)) set.set(k,b.brewery); } });
+    beers.forEach(b=>beerBreweries(b).forEach(n=>{ const k=norm(n); if(!set.has(k)) set.set(k,n); }));
     Object.entries(breweryCache).forEach(([k,v])=>{ if(v&&v.nazev) set.set(k,v.nazev); }); // canonical spelling wins
     return [...set.values()].sort((a,b)=>a.localeCompare(b,'cs'));
   }
@@ -1921,7 +1955,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const rows = await r.json();
       // map remote -> local shape
       const remote = rows.map(x => ({
-        id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, style:x.styl,
+        id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, collab:x.spolupivovar||'', style:x.styl,
         abv:x.abv, where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
         foto:x.foto||'',
         synced:true
@@ -1943,7 +1977,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   async function sbPush(b){
     if(!sbConfigured()) return false;
     const body = {
-      id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, styl:b.style,
+      id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, spolupivovar:b.collab||null, styl:b.style,
       abv:b.abv, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
       foto:b.foto||''
     };
@@ -2317,7 +2351,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const styles={}, brews={}, places={}, months={};
     mine.forEach(b=>{
       if(b.style) styles[b.style.trim()]=(styles[b.style.trim()]||0)+1;
-      if(b.brewery) brews[b.brewery.trim()]=(brews[b.brewery.trim()]||0)+1;
+      beerBreweries(b).forEach(n=>{ brews[n]=(brews[n]||0)+1; });
       if(b.where) places[b.where.trim()]=(places[b.where.trim()]||0)+1;
       const m=parseInt(b.date.slice(5,7),10); months[m]=(months[m]||0)+1;
     });
@@ -2377,7 +2411,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       if(i===0){ html+='<div class="yb-h2">Všechna piva</div><div class="yb-sub">'+mine.length+' '+beerWord(mine.length)+' v pořadí, jak jsi je pil</div>'; }
       html+='<div class="yb-list">';
       html+=chunk.map(b=>{
-        const meta=[b.brewery,b.style,b.where].filter(Boolean).join(' · ');
+        const meta=[beerBreweries(b).join(' × '),b.style,b.where].filter(Boolean).join(' · ');
         const thumb = b.foto
           ? '<img class="yb-thumb" src="'+esc(storageUrl(b.foto))+'" alt="">'
           : '<div class="yb-thumb-empty">'+glassMark()+'</div>';
@@ -2442,7 +2476,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   function resetForm(){
     editId=null; currentRating=0; currentPhoto='';
-    ['f-name','f-brewery','f-style','f-abv','f-where','f-note'].forEach(id=>$('#'+id).value='');
+    ['f-name','f-brewery','f-collab','f-style','f-abv','f-where','f-note'].forEach(id=>$('#'+id).value='');
+    $('#collab-field').style.display='none';
     $('#f-date').value=todayISO(); paintRating();
     if(tasting){ $('#f-where').value=tasting.where; $('#f-date').value=tasting.date; }
     if($('#f-photo')) $('#f-photo').value='';
@@ -2474,6 +2509,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       osoba: cfg.name,
       name: (overrideName!=null?overrideName:$('#f-name').value.trim()),
       brewery:(overrideBrewery!=null?overrideBrewery:$('#f-brewery').value.trim()),
+      collab:$('#f-collab').value.trim(),
       style:$('#f-style').value.trim(),
       abv:$('#f-abv').value.trim(),
       where:$('#f-where').value.trim(),
@@ -2509,6 +2545,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(b.osoba && b.osoba!==cfg.name){ toast('Můžeš upravovat jen svoje piva', true); return; }
     editId=id;
     $('#f-name').value=b.name; $('#f-brewery').value=b.brewery||''; $('#f-style').value=b.style||'';
+    $('#f-collab').value=b.collab||'';
+    $('#collab-field').style.display = b.collab ? 'block' : 'none';
     $('#f-abv').value=b.abv||''; $('#f-where').value=b.where||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
     currentRating=b.rating||0; paintRating();
     currentPhoto=b.foto||''; setPhotoUI(currentPhoto, false);
@@ -2582,7 +2620,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +     '<div class="score-plain"><span class="score-num">'+(b.rating||'–')+'</span><span class="score-den">/10</span></div>'
       +     (!b.foto?menuBtn:'')
       +   '</div>'
-      +   (b.brewery?'<button class="beer-brewery" data-open-brewery="'+esc(norm(b.brewery))+'">'+breweryIcon2()+'<span>'+esc(b.brewery)+'</span></button>':'')
+      +   (b.brewery?'<button class="beer-brewery" data-open-brewery="'+esc(norm(b.brewery))+'">'+breweryIcon2()+'<span>'+esc(b.brewery)+(isCollab(b)?' <em class="collab-x">×</em> '+esc(b.collab):'')+'</span></button>':'')
       +   (metaBits.length?'<div class="beer-meta-row">'+metaBits.join('<span class="bm-dot">·</span>')+'</div>':'')
       +   (b.rating?glassRow(b.rating, 11):'')
       +   (b.note?'<p class="beer-note">'+esc(b.note)+'</p>':'')
@@ -2638,7 +2676,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(photoEntry) html+='<div class="detail-photo" data-photo="'+esc(photoEntry.foto)+'"><img src="'+esc(storageUrl(photoEntry.foto))+'" alt="'+esc(b.name)+'"></div>';
     html+='<div class="detail-head">';
     html+='<h2 class="detail-name">'+esc(b.name)+'</h2>';
-    if(b.brewery) html+='<button class="detail-brewery linkish" data-open-brewery="'+esc(norm(b.brewery))+'">'+esc(b.brewery)+'</button>';
+    if(b.brewery){
+      html+='<button class="detail-brewery linkish" data-open-brewery="'+esc(norm(b.brewery))+'">'+esc(b.brewery)+'</button>';
+      if(isCollab(b)) html+='<span class="collab-x-sep">×</span><button class="detail-brewery linkish" data-open-brewery="'+esc(norm(b.collab))+'">'+esc(b.collab)+'</button>';
+    }
     if(chips.length) html+='<div class="chips" style="margin-top:8px">'+chips.join('')+'</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
     html+='</div>';
@@ -2669,7 +2710,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   function openBreweryDetail(brewKey){
     if(!brewKey) return;
     const src=boardBeers();
-    const mine=src.filter(b=>b.brewery && norm(b.brewery)===brewKey);
+    const mine=src.filter(b=>beerHasBrewery(b, brewKey));
     if(!mine.length) return;
     const info=breweryCache[brewKey]||{};
     const label=info.nazev || mine[0].brewery.trim();
@@ -2678,8 +2719,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const bmap={};
     mine.forEach(b=>{
       const k=norm(b.name);
-      if(!bmap[k]) bmap[k]={name:b.name,sum:0,n:0,rated:0};
+      if(!bmap[k]) bmap[k]={name:b.name,sum:0,n:0,rated:0,partner:''};
       bmap[k].n++;
+      if(!bmap[k].partner) bmap[k].partner=collabPartner(b, brewKey);
       if(b.rating>0){ bmap[k].sum+=b.rating; bmap[k].rated++; }
     });
     const list=Object.values(bmap).map(x=>({...x, avg: x.rated? x.sum/x.rated : 0})).sort((a,b)=>b.avg-a.avg || b.n-a.n);
@@ -2707,7 +2749,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='<div class="card list-card detail-list">';
     html+=list.map(x=>
       '<div class="lb-row clickable" data-open-beer-name="'+esc(norm(x.name))+'" data-open-beer-brewery="'+esc(brewKey)+'">'
-      +'<span class="lb-beerinfo"><b>'+esc(x.name)+'</b><small>'+x.n+'× zapsáno</small></span>'
+      +'<span class="lb-beerinfo"><b>'+esc(x.name)+'</b><small>'+x.n+'× zapsáno'+(x.partner?' · <span class="collab-tag">spolupráce s '+esc(x.partner)+'</span>':'')+'</small></span>'
       +'<span class="lb-metric big"><b>'+(x.avg?x.avg.toFixed(1):'–')+'</b><small>Ø</small></span>'
       +'</div>'
     ).join('');
@@ -2736,13 +2778,12 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   function distinctBreweriesForMap(){
     const map=new Map();
-    beers.forEach(b=>{
-      const raw=(b.brewery||'').trim(); if(!raw) return;
+    beers.forEach(b=>beerBreweries(b).forEach(raw=>{
       const key=norm(raw);
       if(!map.has(key)) map.set(key,{key,label:(breweryCache[key]&&breweryCache[key].nazev)||raw,count:0,sum:0,rated:0});
       const e=map.get(key); e.count++;
       if(b.rating>0){ e.sum+=b.rating; e.rated++; }
-    });
+    }));
     return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
   }
   async function geocodePlace(label){
@@ -2930,7 +2971,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       }
     });
   }
-  function matchQ(b,q){ if(!q) return true; return [b.name,b.brewery,b.style,b.where,b.note,b.osoba].some(f=>(f||'').toLowerCase().includes(q)); }
+  function matchQ(b,q){ if(!q) return true; return [b.name,b.brewery,b.collab,b.style,b.where,b.note,b.osoba].some(f=>(f||'').toLowerCase().includes(q)); }
 
   let homeScope = 'all'; // 'all' | 'mine'
   let homeSort = 'date-desc';
@@ -2996,13 +3037,15 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const rated=mine.filter(b=>b.rating>0);
     const distinctStyles=new Set(mine.map(b=>b.style&&b.style.trim()).filter(Boolean)).size;
     const distinctPlaces=new Set(mine.map(b=>b.where&&b.where.trim().toLowerCase()).filter(Boolean)).size;
-    const distinctBreweries=new Set(mine.map(b=>b.brewery&&b.brewery.trim().toLowerCase()).filter(Boolean)).size;
+    // Degustátor counts how many different brewers you've tried — collabs count for both
+    const distinctBreweries=new Set([].concat(...mine.map(b=>beerBreweries(b).map(n=>norm(n)))).filter(Boolean)).size;
     const notes=mine.filter(b=>b.note&&b.note.trim().length>0).length;
     const perfect=rated.filter(b=>b.rating>=10).length;
     const ipa=styleCount(mine,'ipa');
     const stout=styleCount(mine,'stout');
     const lager=styleCount(mine,'ležák')+styleCount(mine,'lager');
-    const brewMap={}; mine.forEach(b=>{ if(b.brewery){ const k=norm(b.brewery); brewMap[k]=(brewMap[k]||0)+1; } });
+    // Věrný pivovaru measures loyalty to ONE brewer, so a shared beer doesn't prove it
+    const brewMap={}; mine.forEach(b=>{ if(b.brewery && !isCollab(b)){ const k=norm(b.brewery); brewMap[k]=(brewMap[k]||0)+1; } });
     const topBrew=Object.values(brewMap).reduce((a,b)=>Math.max(a,b),0);
     const placeMap={}; mine.forEach(b=>{ if(b.where){ const k=norm(b.where); placeMap[k]=(placeMap[k]||0)+1; } });
     const topPlace=Object.values(placeMap).reduce((a,b)=>Math.max(a,b),0);
@@ -3134,11 +3177,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const styleEntries=Object.entries(styleCounts).sort((a,b)=>b[1]-a[1]);
     const favStyle=styleEntries[0]||null;
     const brewCounts={}, brewSum={}, brewN={};
-    mine.forEach(b=>{
-      if(!b.brewery) return; const k=b.brewery.trim();
+    mine.forEach(b=>beerBreweries(b).forEach(k=>{
       brewCounts[k]=(brewCounts[k]||0)+1;
       if(b.rating>0){ brewSum[k]=(brewSum[k]||0)+b.rating; brewN[k]=(brewN[k]||0)+1; }
-    });
+    }));
     const brewEntries=Object.entries(brewCounts).sort((a,b)=>b[1]-a[1]);
     const favBrewery=brewEntries[0]?{ name:brewEntries[0][0], count:brewEntries[0][1], avg: brewN[brewEntries[0][0]]? brewSum[brewEntries[0][0]]/brewN[brewEntries[0][0]] : 0 }:null;
     const bestBeer=rated.slice().sort((a,b)=>b.rating-a.rating || (b.date||'').localeCompare(a.date||''))[0]||null;
@@ -3509,12 +3551,12 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const bb=Object.values(bmap).map(b=>({...b,avg:b.sum/b.n})).sort((a,b)=>b.avg-a.avg||b.n-a.n).slice(0,15);
     // brewery leaderboard: aggregate rated beers by brewery
     const wmap={};
-    src.filter(b=>b.brewery && b.brewery.trim()).forEach(b=>{
-      const k=norm(b.brewery);
-      if(!wmap[k]) wmap[k]={name:b.brewery.trim(),sum:0,rated:0,count:0};
+    src.forEach(b=>beerBreweries(b).forEach(raw=>{
+      const k=norm(raw);
+      if(!wmap[k]) wmap[k]={name:raw,sum:0,rated:0,count:0};
       wmap[k].count++;
       if(b.rating>0){ wmap[k].sum+=b.rating; wmap[k].rated++; }
-    });
+    }));
     const ww=Object.values(wmap).map(w=>({...w,avg:w.rated?w.sum/w.rated:0}))
       .sort((a,b)=>b.avg-a.avg || b.count-a.count).slice(0,15);
     const wEl=$('#lb-breweries');
@@ -3726,11 +3768,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   function findBreweryDupClusters(){
     const variants=new Map();
-    beers.forEach(b=>{
-      const raw=(b.brewery||'').trim(); if(!raw) return;
+    beers.forEach(b=>beerBreweries(b).forEach(raw=>{
       if(!variants.has(raw)) variants.set(raw,{name:raw, count:0});
       variants.get(raw).count++;
-    });
+    }));
     const list=[...variants.values()];
     const clusters=[]; const used=new Set();
     for(let i=0;i<list.length;i++){
@@ -6642,6 +6683,12 @@ var qrcode = function() {
   $('#tasting-end').addEventListener('click', ()=>{
     if(tasting && tasting.count && !confirm('Ukončit degustaci? Zapsáno '+tasting.count+' '+beerWord(tasting.count)+'.')) return;
     endTasting();
+  });
+  $('#collab-toggle').addEventListener('click', ()=>{
+    const f=$('#collab-field');
+    const showing = f.style.display!=='none';
+    f.style.display = showing ? 'none' : 'block';
+    if(showing) $('#f-collab').value=''; else setTimeout(()=>$('#f-collab').focus(),60);
   });
   $('#brl-dedup').addEventListener('click', openBrewMerge);
   $('#brewmerge-close').addEventListener('click', ()=>$('#brewmerge-overlay').classList.remove('show'));
