@@ -1844,6 +1844,103 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     beers.forEach(b=>{ if(!b.name) return; const k=norm(b.name); if(!m.has(k)) m.set(k,{name:b.name,brewery:b.brewery||'',style:b.style||'',abv:b.abv||''}); });
     return [...m.values()];
   }
+  /* ---------- read the capture date out of a photo (EXIF) ----------
+     Only the file header is read, and only enough of it to find DateTimeOriginal.
+     Plenty of photos carry no EXIF at all (screenshots, anything through a chat app),
+     so every failure path just returns null and the form keeps today's date. */
+  async function maybeUseExifDate(file){
+    // A tasting session owns the date, and a date the user typed themselves is theirs to keep.
+    if(tasting) return null;
+    const field=$('#f-date'); if(!field) return null;
+    if(field.value.trim() && field.value.trim()!==todayISO()) return null;
+    const d=await readPhotoDate(file);
+    if(!d || d===field.value.trim()) return null;
+    field.value=d;
+    return d;   // the caller folds this into the upload toast so it isn't drowned out
+  }
+  function czDate(iso){
+    const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');
+    return m ? (+m[3])+'. '+(+m[2])+'. '+m[1] : iso;
+  }
+  function readPhotoDate(file){
+    return new Promise(resolve=>{
+      try{
+        const reader=new FileReader();
+        reader.onerror=()=>resolve(null);
+        reader.onload=()=>{
+          try{ resolve(parseExifDate(reader.result)); }catch(e){ resolve(null); }
+        };
+        reader.readAsArrayBuffer(file.slice(0, 256*1024));
+      }catch(e){ resolve(null); }
+    });
+  }
+  function parseExifDate(buf){
+    const v=new DataView(buf);
+    if(v.byteLength<16 || v.getUint16(0,false)!==0xFFD8) return null; // not a JPEG
+    let off=2;
+    while(off+4<=v.byteLength){
+      const marker=v.getUint16(off,false);
+      if((marker & 0xFF00)!==0xFF00) return null;
+      const size=v.getUint16(off+2,false);
+      if(marker===0xFFE1){
+        const start=off+4;
+        if(start+6>v.byteLength) return null;
+        if(v.getUint32(start,false)!==0x45786966) return null; // "Exif"
+        return readExifIFDs(v, start+6);
+      }
+      if(marker===0xFFDA) return null; // image data begins; no EXIF found
+      off+=2+size;
+    }
+    return null;
+  }
+  function readExifIFDs(v, tiff){
+    if(tiff+8>v.byteLength) return null;
+    const le = v.getUint16(tiff,false)===0x4949;
+    if(v.getUint16(tiff+2,le)!==0x002A) return null;
+    const ifd0=tiff+v.getUint32(tiff+4,le);
+    const want={0x9003:1, 0x9004:2, 0x0132:3}; // taken > digitised > file changed
+    let best=null, bestRank=99;
+    const scan=(dirStart)=>{
+      if(dirStart+2>v.byteLength) return null;
+      const n=v.getUint16(dirStart,le);
+      let exifPtr=null;
+      for(let i=0;i<n;i++){
+        const e=dirStart+2+i*12;
+        if(e+12>v.byteLength) break;
+        const tag=v.getUint16(e,le);
+        if(tag===0x8769){ exifPtr=tiff+v.getUint32(e+8,le); continue; }
+        if(want[tag]){
+          const count=v.getUint32(e+4,le);
+          const val=(count>4)? tiff+v.getUint32(e+8,le) : e+8;
+          const str=readAscii(v,val,Math.min(count,20));
+          const d=exifToISO(str);
+          if(d && want[tag]<bestRank){ best=d; bestRank=want[tag]; }
+        }
+      }
+      return exifPtr;
+    };
+    const ptr=scan(ifd0);
+    if(ptr) scan(ptr);
+    return best;
+  }
+  function readAscii(v, at, len){
+    let out='';
+    for(let i=0;i<len && at+i<v.byteLength;i++){
+      const c=v.getUint8(at+i);
+      if(c===0) break;
+      out+=String.fromCharCode(c);
+    }
+    return out;
+  }
+  function exifToISO(str){
+    // EXIF stores "YYYY:MM:DD HH:MM:SS"
+    const m=/^(\d{4}):(\d{2}):(\d{2})/.exec(str||'');
+    if(!m) return null;
+    const y=+m[1], mo=+m[2], d=+m[3];
+    if(y<1990 || y>2100 || mo<1 || mo>12 || d<1 || d>31) return null;
+    return m[1]+'-'+m[2]+'-'+m[3];
+  }
+
   /* ---------- collaborations: one beer, two brewers ----------
      A collab counts for BOTH breweries wherever we ask "what did this brewery make",
      because both actually brewed it. It is deliberately NOT counted towards the
@@ -6331,13 +6428,15 @@ var qrcode = function() {
     const file=e.target.files&&e.target.files[0]; if(!file) return;
     if(!/^image\//.test(file.type)){ toast('Vyber obrázek', true); return; }
     setPhotoUI(null, true);
+    const datePromise=maybeUseExifDate(file);   // runs alongside the upload, never blocks it
     try{
       const blob=await compressImage(file, 1000, 0.7);
       const path=await uploadPhoto(blob);
       // delete previous photo if we're replacing one
       if(currentPhoto && currentPhoto!==path) deletePhoto(currentPhoto);
       currentPhoto=path; setPhotoUI(path, false);
-      toast('Fotka nahrána ('+Math.round(blob.size/1024)+' kB)');
+      const usedDate=await datePromise;
+      toast('Fotka nahrána ('+Math.round(blob.size/1024)+' kB)'+(usedDate?' · datum '+czDate(usedDate):''));
     }catch(err){
       setPhotoUI(currentPhoto, false);
       toast('Nahrání selhalo: '+err.message, true);
