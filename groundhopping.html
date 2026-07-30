@@ -125,8 +125,8 @@
   .search-wrap input::placeholder{color:var(--text-4);}
 
   /* signature element — visits are either a full-bleed photographic "spread"
-     with a pinned passport stamp, or a quiet single-line "manifest" entry.
-     No card boxes, no shadows-as-default, no repeating grid unit. */
+     with a pinned passport stamp, or (no photo) a compact editorial "brief" —
+     two variants of one system, sharing type, spacing, stamp and info-bar. */
   .spread{ position:relative; margin:0 0 46px; cursor:pointer; }
   .spread:active .spread-photo img{ transform:scale(1.015); }
   .spread-photo{ position:relative; width:100%; aspect-ratio:4/5; border-radius:4px; overflow:hidden; background:var(--surface-2); }
@@ -142,30 +142,39 @@
   .spread-sub .meta-stadion{ color:rgba(242,239,233,0.85); text-decoration-color:rgba(242,239,233,0.4); }
   .spread-stamp{ position:absolute; right:18px; bottom:-24px; width:76px; height:76px; border-radius:50%;
     background:var(--bg); border:1px dashed rgba(200,167,75,0.55); display:flex; flex-direction:column; align-items:center; justify-content:center;
-    box-shadow:0 10px 22px -10px rgba(0,0,0,0.7), 0 0 0 5px var(--bg); }
+    box-shadow:0 10px 22px -10px rgba(0,0,0,0.7), 0 0 0 5px var(--bg); z-index:2; }
   .stamp-day{ font-family:'Fraunces',serif; font-weight:500; font-size:22px; color:var(--text); line-height:1;}
   .stamp-sub{ font-family:'Manrope',sans-serif; font-size:8px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--light); margin-top:2px;}
-  .spread-margin{ display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-left:2px; }
-  .margin-who{ display:flex; align-items:center; gap:7px; font-family:'Manrope',sans-serif; font-size:11.5px; color:var(--text-3); }
+
+  /* shared bottom info bar — one aligned row, grouped left (who+rating) / right (social) */
+  .info-bar{ display:flex; align-items:center; gap:12px; margin-top:16px; }
+  .spread .info-bar{ padding-left:2px; }
+  .info-who{ display:flex; align-items:center; gap:7px; font-family:'Manrope',sans-serif; font-size:11.5px; color:var(--text-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .avatar{width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8.5px; font-weight:700; color:#0C1014; flex-shrink:0;}
-  .margin-right{ display:flex; align-items:center; gap:14px; }
-  .margin-dots{ display:flex; gap:4px; }
-  .margin-dots span{ width:4px; height:4px; border-radius:50%; background:var(--hairline-strong); display:block; }
-  .margin-dots span.on{ background:var(--light); }
+  .info-div{ width:1px; height:12px; background:var(--hairline-strong); flex-shrink:0; }
+  .info-dots{ display:flex; gap:4px; flex-shrink:0; }
+  .info-dots span{ width:4px; height:4px; border-radius:50%; background:var(--hairline-strong); display:block; }
+  .info-dots span.on{ background:var(--light); }
+  .info-social{ display:flex; align-items:center; gap:14px; margin-left:auto; flex-shrink:0; }
   .soc-btn{display:flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-3); background:none; border:none; padding:0;}
   .soc-btn svg{width:12px; height:12px;}
   .soc-btn.liked{color:var(--red);}
 
-  /* photo-less visits: a quiet manifest line, not a card */
-  .ledger{ display:flex; align-items:flex-start; gap:16px; padding:15px 2px; border-bottom:1px solid var(--hairline); cursor:pointer; }
-  .ledger:last-child{ border-bottom:none; }
-  .ledger-date{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--light); width:50px; flex-shrink:0; padding-top:3px; letter-spacing:0.02em;}
-  .ledger-main{ flex:1; min-width:0; }
-  .ledger-title{ font-family:'Fraunces',serif; font-weight:500; font-size:16.5px; color:var(--text); line-height:1.3; }
-  .ledger-title .vs{ font-family:'IBM Plex Mono',monospace; color:var(--light-bright); font-size:0.72em; margin:0 6px; font-weight:600;}
-  .ledger-sub{ font-family:'Manrope',sans-serif; font-size:11px; color:var(--text-3); margin-top:4px; }
-  .ledger-foot{ display:flex; align-items:center; gap:14px; margin-top:8px; }
-  .ledger-tag{ font-family:'Manrope',sans-serif; font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-4); flex-shrink:0; padding-top:4px; white-space:nowrap; }
+  /* photo-less visits: a compact editorial "brief" card — same system, no photo */
+  .brief{ position:relative; background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-sm);
+    padding:18px 20px; margin-bottom:22px; overflow:hidden; cursor:pointer; }
+  .brief:active{ transform:scale(0.99); }
+  .brief-graphic{ position:absolute; right:-18px; top:-18px; width:150px; height:150px; opacity:0.06; color:var(--light); pointer-events:none; }
+  .brief-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+  .brief-eyebrow{ font-family:'Manrope',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--light-bright); padding-top:4px; }
+  .brief-stamp{ flex-shrink:0; width:46px; height:46px; border-radius:50%; border:1px dashed rgba(200,167,75,0.5);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .brief-stamp .stamp-day{ font-size:14px; }
+  .brief-stamp .stamp-sub{ font-size:6.5px; margin-top:1px; }
+  .brief-title{ font-family:'Fraunces',serif; font-weight:500; font-size:19px; line-height:1.22; color:var(--text); position:relative; z-index:1; }
+  .brief-title .vs{ font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--light-bright); font-size:0.72em; margin:0 7px; }
+  .brief-sub{ font-family:'Manrope',sans-serif; font-size:11.5px; color:var(--text-3); margin-top:6px; position:relative; z-index:1; }
+  .brief .info-bar{ position:relative; z-index:1; padding-top:12px; margin-top:14px; border-top:1px solid var(--hairline); }
 
   .fab-add{position:fixed;}
   .empty-state{text-align:center; padding:var(--s8) var(--s5); color:var(--text-3);}
@@ -1362,6 +1371,13 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         +'<button class="soc-btn" data-open="'+v.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/></svg>'+commN+'</button>'
       : '';
     const whoHtml = showWho ? '<span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba) : '';
+    // one shared bottom bar for both card variants: [who · rating] ......... [likes comments]
+    const infoBar = '<div class="info-bar">'
+      +(whoHtml?'<div class="info-who">'+whoHtml+'</div>':'')
+      +(whoHtml?'<span class="info-div"></span>':'')
+      +'<div class="info-dots">'+dots+'</div>'
+      +(socialHtml?'<div class="info-social">'+socialHtml+'</div>':'')
+    +'</div>';
 
     if(v.foto && sbConfigured()){
       // full-bleed photographic spread with a pinned passport stamp
@@ -1371,22 +1387,20 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         +menuBtn
         +'<div class="spread-caption"><div class="spread-title">'+titleHtml+'</div><div class="spread-sub">'+subParts.join(' · ')+'</div></div>'
         +'<div class="spread-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(d.d)+'</div><div class="stamp-sub">'+esc(d.m)+' '+esc(String(d.y).slice(-2))+'</div></div>'
-        +'<div class="spread-margin">'
-          +'<div class="margin-who">'+whoHtml+'</div>'
-          +'<div class="margin-right"><div class="margin-dots">'+dots+'</div>'+(socialHtml?'<div style="display:flex; gap:12px">'+socialHtml+'</div>':'')+'</div>'
-        +'</div>'
+        +infoBar
       +'</article>';
     }
 
-    // no photo: a quiet single-line manifest entry
-    return '<div class="ledger" data-open="'+v.id+'">'
-      +'<div class="ledger-date">'+esc(d.d)+' '+esc(d.m)+'</div>'
-      +'<div class="ledger-main">'
-        +'<div class="ledger-title">'+titleHtml+'</div>'
-        +'<div class="ledger-sub">'+subParts.join(' · ')+(showWho?' · '+esc(v.osoba):'')+'</div>'
-        +'<div class="ledger-foot"><div class="margin-dots">'+dots+'</div>'+(socialHtml?'<div style="display:flex; gap:12px">'+socialHtml+'</div>':'')+'</div>'
+    // no photo: a compact editorial "brief" card — same system, same stamp, no image
+    return '<div class="brief" data-open="'+v.id+'">'
+      +'<svg class="brief-graphic" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M8 62c0-24 20-44 44-44s44 20 44 44"/><path d="M18 62c0-18 15-33 34-33s34 15 34 33"/><path d="M8 62h84M50 18v8M50 62V40"/></svg>'
+      +'<div class="brief-top"><div class="brief-eyebrow">'+(isTour?'Prohlídka':'Zápas')+'</div>'
+        +'<div class="brief-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(d.d)+'</div><div class="stamp-sub">'+esc(d.m)+' '+esc(String(d.y).slice(-2))+'</div></div>'
       +'</div>'
-      +'<div class="ledger-tag">'+(isTour?'Prohlídka':'Zápas')+'</div>'
+      +menuBtn
+      +'<div class="brief-title">'+titleHtml+'</div>'
+      +'<div class="brief-sub">'+subParts.join(' · ')+'</div>'
+      +infoBar
     +'</div>';
   }
   function gridTile(v){
@@ -1710,7 +1724,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       +'</div>' : '')
       +'<div class="detail-chips">'+chips.map(c=>c===v.stadion ? '<span class="chip meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(c)+'</span>' : '<span class="chip">'+esc(c)+'</span>').join('')+'</div>'
       +(v.poznamka ? '<div class="detail-note">'+esc(v.poznamka)+'</div>' : '')
-      +'<div class="margin-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
+      +'<div class="info-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
       +(sbConfigured() ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'" style="margin-bottom:var(--s3)"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg> Líbí se ('+(likesMap[v.id]?likesMap[v.id].size:0)+')</button>' : '')
       +'<button class="btn btn-ghost btn-sm" id="detail-share" style="margin-bottom:var(--s4)">Sdílet jako obrázek</button>'
       +'<div id="comment-thread">'+comments.map(c=>'<div class="comment-row"><span class="avatar" style="background:'+avatarColor(c.osoba)+'">'+esc(initials(c.osoba))+'</span><div class="comment-bubble"><div class="who">'+esc(c.osoba)+'</div>'+esc(c.text)+'</div>'+(c.osoba===cfg.name?'<button data-delcomment="'+c.id+'" style="background:none; border:none; color:var(--text-4); flex-shrink:0; padding:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M6 6l12 12M18 6L6 18"/></svg></button>':'')+'</div>').join('')+'</div>'
