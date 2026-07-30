@@ -1848,33 +1848,56 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
      Only the file header is read, and only enough of it to find DateTimeOriginal.
      Plenty of photos carry no EXIF at all (screenshots, anything through a chat app),
      so every failure path just returns null and the form keeps today's date. */
-  async function maybeUseExifDate(file){
-    // A tasting session owns the date, and a date the user typed themselves is theirs to keep.
-    if(tasting) return null;
-    const field=$('#f-date'); if(!field) return null;
-    if(field.value.trim() && field.value.trim()!==todayISO()) return null;
-    const d=await readPhotoDate(file);
-    if(!d || d===field.value.trim()) return null;
-    field.value=d;
-    return d;   // the caller folds this into the upload toast so it isn't drowned out
+  // Reads EXIF once and fills whichever of date/where is still empty. A tasting
+  // session owns both fields already, so it's left alone entirely.
+  async function applyExifMeta(file){
+    if(tasting) return {};
+    const meta=await readPhotoMeta(file);
+    if(!meta) return {};
+    const out={};
+    const dateField=$('#f-date');
+    if(dateField && meta.date && meta.date!==dateField.value.trim()
+       && (!dateField.value.trim() || dateField.value.trim()===todayISO())){
+      dateField.value=meta.date; out.date=meta.date;
+    }
+    const whereField=$('#f-where');
+    if(whereField && !whereField.value.trim() && meta.gps){
+      const place=await reverseGeocode(meta.gps.lat, meta.gps.lon);
+      if(place && !whereField.value.trim()){ whereField.value=place; out.place=place; }
+    }
+    return out;
+  }
+  async function reverseGeocode(lat, lon){
+    try{
+      const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lon+'&zoom=17&addressdetails=1');
+      if(!r.ok) return null;
+      const j=await r.json();
+      if(!j) return null;
+      const a=j.address||{};
+      const city=a.city||a.town||a.village||a.municipality||a.suburb||'';
+      const venue=(j.name && !/^\d/.test(j.name)) ? j.name : (a.amenity||a.shop||a.tourism||'');
+      if(venue && city && norm(venue)!==norm(city)) return venue+', '+city;
+      return venue || city || null;
+    }catch(e){ return null; }
   }
   function czDate(iso){
     const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');
     return m ? (+m[3])+'. '+(+m[2])+'. '+m[1] : iso;
   }
-  function readPhotoDate(file){
+  // Reads EXIF date + GPS in a single pass over the same file slice.
+  function readPhotoMeta(file){
     return new Promise(resolve=>{
       try{
         const reader=new FileReader();
         reader.onerror=()=>resolve(null);
         reader.onload=()=>{
-          try{ resolve(parseExifDate(reader.result)); }catch(e){ resolve(null); }
+          try{ resolve(parseExifData(reader.result)); }catch(e){ resolve(null); }
         };
         reader.readAsArrayBuffer(file.slice(0, 256*1024));
       }catch(e){ resolve(null); }
     });
   }
-  function parseExifDate(buf){
+  function parseExifData(buf){
     const v=new DataView(buf);
     if(v.byteLength<16 || v.getUint16(0,false)!==0xFFD8) return null; // not a JPEG
     let off=2;
@@ -1899,16 +1922,17 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(v.getUint16(tiff+2,le)!==0x002A) return null;
     const ifd0=tiff+v.getUint32(tiff+4,le);
     const want={0x9003:1, 0x9004:2, 0x0132:3}; // taken > digitised > file changed
-    let best=null, bestRank=99;
+    let best=null, bestRank=99, gps=null;
     const scan=(dirStart)=>{
       if(dirStart+2>v.byteLength) return null;
       const n=v.getUint16(dirStart,le);
-      let exifPtr=null;
+      let exifPtr=null, gpsPtr=null;
       for(let i=0;i<n;i++){
         const e=dirStart+2+i*12;
         if(e+12>v.byteLength) break;
         const tag=v.getUint16(e,le);
         if(tag===0x8769){ exifPtr=tiff+v.getUint32(e+8,le); continue; }
+        if(tag===0x8825){ gpsPtr=tiff+v.getUint32(e+8,le); continue; }
         if(want[tag]){
           const count=v.getUint32(e+4,le);
           const val=(count>4)? tiff+v.getUint32(e+8,le) : e+8;
@@ -1917,11 +1941,35 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
           if(d && want[tag]<bestRank){ best=d; bestRank=want[tag]; }
         }
       }
+      if(gpsPtr) gps=readGPSIFD(v, tiff, gpsPtr, le);
       return exifPtr;
     };
     const ptr=scan(ifd0);
     if(ptr) scan(ptr);
-    return best;
+    return (best||gps) ? {date:best, gps} : null;
+  }
+  function readGPSIFD(v, tiff, gpsPtr, le){
+    if(gpsPtr+2>v.byteLength) return null;
+    const n=v.getUint16(gpsPtr,le);
+    let latRef=null, lonRef=null, lat=null, lon=null;
+    const rat3=(off)=>{
+      const one=(i)=>{ const num=v.getUint32(off+i*8,le), den=v.getUint32(off+i*8+4,le); return den? num/den : 0; };
+      return one(0) + one(1)/60 + one(2)/3600; // degrees, minutes, seconds -> decimal
+    };
+    for(let i=0;i<n;i++){
+      const e=gpsPtr+2+i*12;
+      if(e+12>v.byteLength) break;
+      const tag=v.getUint16(e,le), type=v.getUint16(e+2,le), count=v.getUint32(e+4,le);
+      if(tag===1) latRef=String.fromCharCode(v.getUint8(e+8));
+      else if(tag===3) lonRef=String.fromCharCode(v.getUint8(e+8));
+      else if(tag===2 && type===5 && count===3) lat=rat3(tiff+v.getUint32(e+8,le));
+      else if(tag===4 && type===5 && count===3) lon=rat3(tiff+v.getUint32(e+8,le));
+    }
+    if(lat==null || lon==null) return null;
+    if(latRef==='S') lat=-lat;
+    if(lonRef==='W') lon=-lon;
+    if(!isFinite(lat) || !isFinite(lon) || Math.abs(lat)>90 || Math.abs(lon)>180) return null;
+    return {lat, lon};
   }
   function readAscii(v, at, len){
     let out='';
@@ -6428,15 +6476,18 @@ var qrcode = function() {
     const file=e.target.files&&e.target.files[0]; if(!file) return;
     if(!/^image\//.test(file.type)){ toast('Vyber obrázek', true); return; }
     setPhotoUI(null, true);
-    const datePromise=maybeUseExifDate(file);   // runs alongside the upload, never blocks it
+    const metaPromise=applyExifMeta(file);   // runs alongside the upload, never blocks it
     try{
       const blob=await compressImage(file, 1000, 0.7);
       const path=await uploadPhoto(blob);
       // delete previous photo if we're replacing one
       if(currentPhoto && currentPhoto!==path) deletePhoto(currentPhoto);
       currentPhoto=path; setPhotoUI(path, false);
-      const usedDate=await datePromise;
-      toast('Fotka nahrána ('+Math.round(blob.size/1024)+' kB)'+(usedDate?' · datum '+czDate(usedDate):''));
+      const used=await metaPromise;
+      const bits=[];
+      if(used.date) bits.push('datum '+czDate(used.date));
+      if(used.place) bits.push('místo „'+used.place+'"');
+      toast('Fotka nahrána ('+Math.round(blob.size/1024)+' kB)'+(bits.length?' · '+bits.join(', '):''));
     }catch(err){
       setPhotoUI(currentPhoto, false);
       toast('Nahrání selhalo: '+err.message, true);
