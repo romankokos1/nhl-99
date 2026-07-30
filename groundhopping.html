@@ -250,6 +250,7 @@
   .sheet code{background:var(--surface-2); padding:1px 5px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
   .sql-box{background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:var(--s3); font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-2); white-space:pre-wrap; max-height:180px; overflow-y:auto; margin-bottom:var(--s3); line-height:1.55;}
   .tiny-note{font-size:11px; color:var(--text-4); margin-top:var(--s2); line-height:1.5;}
+  .qr-frame{display:flex; justify-content:center; padding:16px; background:#fff; border-radius:20px; margin:var(--s4) 0;}
   .toast{position:fixed; left:50%; bottom:130px; transform:translateX(-50%) translateY(20px); background:var(--surface-hi); border:1px solid var(--hairline-strong); color:var(--text); padding:11px 20px; border-radius:var(--r-pill); font-size:13px; z-index:80; opacity:0; transition:.25s; pointer-events:none; box-shadow:var(--shadow-float);}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
   .toast.err{border-color:rgba(227,91,69,0.4); color:#ffb5a6;}
@@ -576,6 +577,8 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
         <button class="btn btn-primary" id="invite-copy">Zkopírovat odkaz</button>
         <button class="btn btn-ghost" id="invite-share" style="display:none; width:auto; padding:15px 20px">Sdílet…</button>
       </div>
+      <p class="tiny-note" style="margin-top:var(--s4)">Nebo ať naskenují QR kód telefonem:</p>
+      <div class="qr-frame" id="qr-box"></div>
       <p class="tiny-note">Odkaz nese publishable klíč — posílej ho jen lidem, které chceš mít v žebříčku.</p>
       <button class="btn btn-ghost" id="invite-close" style="margin-top:var(--s4)">Zavřít</button>
     </div>
@@ -1081,6 +1084,26 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     if(openBtn && !e.target.closest('[data-menu]')){ openVisitDetail(openBtn.dataset.open); return; }
   });
 
+  /* ---------- QR code (davidshimjs/qrcodejs via CDN) ---------- */
+  function loadQRLib(){
+    if(window.QRCode) return Promise.resolve();
+    if(window.__qrLoading) return window.__qrLoading;
+    window.__qrLoading=new Promise((resolve,reject)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      s.onload=()=>resolve(); s.onerror=()=>reject(new Error('QR se nepodařilo načíst'));
+      document.body.appendChild(s);
+    });
+    return window.__qrLoading;
+  }
+  async function renderQR(text, box){
+    box.innerHTML='';
+    try{
+      await loadQRLib();
+      new QRCode(box, { text, width:180, height:180, colorDark:'#0a0e12', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.L });
+    }catch(e){ box.innerHTML='<span style="color:#900;font-size:12px">QR se nepodařilo načíst</span>'; }
+  }
+
   /* ---------- geocoding + map ---------- */
   function loadLeaflet(){
     if(window.L) return Promise.resolve();
@@ -1163,8 +1186,10 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
 
   function openInvite(){
     if(!sbConfigured()){ toast('Nejdřív nastav sdílení', true); return; }
-    const url=location.origin+location.pathname+'#gh='+encodeURIComponent(cfg.url)+'|'+encodeURIComponent(cfg.key);
+    const payload=btoa(JSON.stringify({u:cfg.url, k:cfg.key}));
+    const url=location.origin+location.pathname+'#gh='+encodeURIComponent(payload);
     $('#invite-url').value=url;
+    renderQR(url, $('#qr-box'));
     $('#invite-share').style.display=navigator.share?'inline-flex':'none';
     $('#invite-overlay').classList.add('show');
   }
@@ -1179,9 +1204,9 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     try{ await navigator.share({title:'Groundhopping deník', text:'Přidej se do našeho žebříčku navštívených stadionů:', url:$('#invite-url').value}); }catch(e){}
   });
   function parseInvite(){
-    const m=location.hash.match(/gh=([^|]+)\|(.+)$/);
+    const m=location.hash.match(/gh=([^&]+)/);
     if(!m) return null;
-    try{ return {url:decodeURIComponent(m[1]), key:decodeURIComponent(m[2])}; }catch(e){ return null; }
+    try{ const payload=JSON.parse(atob(decodeURIComponent(m[1]))); return {url:payload.u, key:payload.k}; }catch(e){ return null; }
   }
 
   /* ---------- navigation ---------- */
