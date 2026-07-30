@@ -142,8 +142,6 @@
   .stub-year{font-size:9.5px; color:var(--text-4); margin-top:3px;}
   .ticket-body{flex:1; padding:var(--s3) var(--s4); min-width:0;}
   .ticket-teams{font-family:'Oswald',sans-serif; font-weight:500; font-size:15.5px; color:var(--text); display:flex; align-items:center; gap:8px; text-transform:uppercase;}
-  .club-badge{width:22px; height:22px; border-radius:50%; object-fit:contain; background:#fff; flex-shrink:0; padding:2px;}
-  .club-badge-fallback{display:flex; align-items:center; justify-content:center; font-family:'Oswald',sans-serif; font-size:11px; font-weight:700; color:#fff; padding:0;}
   .ticket-score{font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--light-bright); flex-shrink:0;}
   .ticket-meta{font-size:12px; color:var(--text-3); margin-top:3px; display:flex; align-items:center; gap:5px; flex-wrap:wrap;}
   .ticket-meta .dotsep{width:3px; height:3px; border-radius:50%; background:var(--text-4);}
@@ -813,13 +811,12 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
 
-  const LKEY='gh_navstevy', CFG='gh_cfg', STAD_CACHE='gh_stadion_cache', GEOCACHE='gh_geocache', WISH='gh_wishlist', DUPDISMISS='gh_dup_dismiss', LASTSEEN='gh_lastseen', LOGOCACHE='gh_logo_cache';
+  const LKEY='gh_navstevy', CFG='gh_cfg', STAD_CACHE='gh_stadion_cache', GEOCACHE='gh_geocache', WISH='gh_wishlist', DUPDISMISS='gh_dup_dismiss', LASTSEEN='gh_lastseen';
   const BUCKET='fotky';
 
   let visits = [];
   let wishlist = [];
   let lastSeenAt = null;
-  let clubLogoCache = {}; // norm(club name) -> badge URL | null (not found)
   let cfg = { url:'', key:'', name:'' };
   let stadionCache = {};
   let geoCache = {};
@@ -861,7 +858,6 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     try { geoCache = JSON.parse(localStorage.getItem(GEOCACHE))||{}; } catch(e){ geoCache={}; }
     try { wishlist = JSON.parse(localStorage.getItem(WISH))||[]; } catch(e){ wishlist=[]; }
     try { lastSeenAt = localStorage.getItem(LASTSEEN)||null; } catch(e){ lastSeenAt=null; }
-    try { clubLogoCache = JSON.parse(localStorage.getItem(LOGOCACHE))||{}; } catch(e){ clubLogoCache={}; }
   }
   function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(visits)); } catch(e){ toast('Nelze uložit lokálně', true); } }
   function saveCfg(){ try { localStorage.setItem(CFG, JSON.stringify(cfg)); } catch(e){} }
@@ -869,7 +865,6 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   function saveGeoCache(){ try { localStorage.setItem(GEOCACHE, JSON.stringify(geoCache)); } catch(e){} }
   function saveWishlist(){ try { localStorage.setItem(WISH, JSON.stringify(wishlist)); } catch(e){} }
   function saveLastSeen(ts){ lastSeenAt=ts; try { localStorage.setItem(LASTSEEN, ts); } catch(e){} }
-  function saveLogoCache(){ try { localStorage.setItem(LOGOCACHE, JSON.stringify(clubLogoCache)); } catch(e){} }
   function getDismissed(){ try { return new Set(JSON.parse(localStorage.getItem(DUPDISMISS))||[]); } catch(e){ return new Set(); } }
   function saveDismissed(set){ try { localStorage.setItem(DUPDISMISS, JSON.stringify([...set])); } catch(e){} }
 
@@ -1329,30 +1324,6 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     return [c,c];
   }
 
-  /* ---------- club logo lookup (TheSportsDB, best-effort) ---------- */
-  async function ensureClubLogo(name){
-    const key=norm(name);
-    if(!key || key in clubLogoCache) return clubLogoCache[key];
-    try{
-      const r=await fetch('https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t='+encodeURIComponent(name));
-      const j=await r.json();
-      const badge = (j && j.teams && j.teams[0] && j.teams[0].strTeamBadge) ? j.teams[0].strTeamBadge : null;
-      clubLogoCache[key]=badge;
-    }catch(e){ clubLogoCache[key]=null; }
-    saveLogoCache();
-    return clubLogoCache[key];
-  }
-  function prefetchLogosFor(arr){
-    const names=[...new Set(arr.map(v=>v.domaci).filter(Boolean))];
-    const todo=names.filter(n=>!(norm(n) in clubLogoCache));
-    if(!todo.length) return;
-    Promise.all(todo.map(ensureClubLogo)).then(()=>{ renderFeed(); renderProfile(); renderStats(); });
-  }
-  function clubBadgeHtml(name, colors){
-    const url=clubLogoCache[norm(name)];
-    if(url) return '<img class="club-badge" src="'+url+'" alt="" loading="lazy">';
-    return '<span class="club-badge club-badge-fallback" style="background:'+(colors?colors[0]:avatarColor(name))+'">'+esc((name||'?').trim().slice(0,1).toUpperCase())+'</span>';
-  }
   function initials(name){ return (name||'?').trim().slice(0,2).toUpperCase(); }
   function ticketCard(v, showWho){
     const d=czShortDate(v.datum);
@@ -1368,7 +1339,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     if(stadionLabel) metaParts.push('<span class="meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(stadionLabel)+'</span>');
     const teamsHtml = isTour
       ? '<span>'+(v.domaci?esc(v.domaci):'Prohlídka stadionu')+'</span><span class="chip" style="margin-left:8px; font-size:10px">PROHLÍDKA</span>'
-      : clubBadgeHtml(v.domaci, clubColors(v.domaci))+'<span>'+esc(v.domaci)+'</span>'+(score?'<span class="ticket-score">'+esc(score)+'</span>':'<span style="color:var(--text-4)">–</span>')+(v.hoste?'<span>'+esc(v.hoste)+'</span>':'');
+      : '<span>'+esc(v.domaci)+'</span>'+(score?'<span class="ticket-score">'+esc(score)+'</span>':'<span style="color:var(--text-4)">–</span>')+(v.hoste?'<span>'+esc(v.hoste)+'</span>':'');
     const cc=clubColors(v.domaci)||['var(--light)','var(--pitch)'];
     return '<div class="ticket" data-open="'+v.id+'">'
       +'<div class="ticket-accent" style="background:linear-gradient(180deg,'+cc[0]+' 50%,'+cc[1]+' 50%)"></div>'
@@ -1416,7 +1387,6 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     } else {
       feed.innerHTML=arr.map(v=>ticketCard(v, feedScope==='all')).join('');
     }
-    prefetchLogosFor(arr);
   }
 
   /* ---------- "co je nového od party" banner ---------- */
@@ -1568,7 +1538,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     $('#prof-matches').textContent=mine.length;
     const feed=$('#profile-feed');
     if(!mine.length){ feed.innerHTML='<div class="empty-state"><div class="t">Zatím žádné návštěvy</div></div>'; }
-    else { feed.innerHTML=sortVisits(mine).map(v=>ticketCard(v,false)).join(''); prefetchLogosFor(mine); }
+    else feed.innerHTML=sortVisits(mine).map(v=>ticketCard(v,false)).join('');
     $('#invite-btn2').style.display=sbConfigured()?'flex':'none';
   }
 
@@ -1699,7 +1669,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const comments = commentsMap[v.id]||[];
     const teamsHtml = isTour
       ? '<span>'+(v.domaci?esc(v.domaci):'Prohlídka stadionu')+'</span><span class="chip" style="margin-left:8px">PROHLÍDKA</span>'
-      : clubBadgeHtml(v.domaci, clubColors(v.domaci))+'<span>'+esc(v.domaci)+'</span><span class="detail-score">'+esc(score)+'</span><span>'+esc(v.hoste||'')+'</span>';
+      : '<span>'+esc(v.domaci)+'</span><span class="detail-score">'+esc(score)+'</span><span>'+esc(v.hoste||'')+'</span>';
     $('#detail-sheet-content').innerHTML =
       '<div class="grabber"></div>'
       +(v.foto && sbConfigured() ? '<img class="detail-photo" src="'+storageUrl(v.foto)+'" id="detail-photo-img">' : '')
