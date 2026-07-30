@@ -1862,10 +1862,40 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }
     const whereField=$('#f-where');
     if(whereField && !whereField.value.trim() && meta.gps){
-      const place=await reverseGeocode(meta.gps.lat, meta.gps.lon);
+      let place=await findNearbyVenue(meta.gps.lat, meta.gps.lon);
+      if(!place) place=await reverseGeocode(meta.gps.lat, meta.gps.lon);
       if(place && !whereField.value.trim()){ whereField.value=place; out.place=place; }
     }
     return out;
+  }
+  function haversineM(lat1,lon1,lat2,lon2){
+    const R=6371000, toRad=x=>x*Math.PI/180;
+    const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+    const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(a));
+  }
+  // Looks for the nearest pub / restaurant / brewery within ~200m using OpenStreetMap's
+  // Overpass API (a proper "what's near this point" search — Nominatim alone mostly just
+  // resolves to a street address, not a venue name).
+  async function findNearbyVenue(lat, lon){
+    try{
+      const q='[out:json][timeout:8];('
+        +'node["amenity"~"^(pub|bar|restaurant|biergarten)$"](around:200,'+lat+','+lon+');'
+        +'node["craft"="brewery"](around:200,'+lat+','+lon+');'
+        +'node["shop"="beer"](around:200,'+lat+','+lon+');'
+        +');out body 15;';
+      const r=await fetch('https://overpass-api.de/api/interpreter', {
+        method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'data='+encodeURIComponent(q)
+      });
+      if(!r.ok) return null;
+      const j=await r.json();
+      const els=(j.elements||[]).filter(e=>e.tags && e.tags.name && e.lat!=null && e.lon!=null);
+      if(!els.length) return null;
+      els.forEach(e=>{ e._d=haversineM(lat,lon,e.lat,e.lon); });
+      els.sort((a,b)=>a._d-b._d);
+      return els[0].tags.name;
+    }catch(e){ return null; }
   }
   async function reverseGeocode(lat, lon){
     try{
