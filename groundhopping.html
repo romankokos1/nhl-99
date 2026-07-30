@@ -130,6 +130,7 @@
     margin-bottom:var(--s3); box-shadow:var(--shadow-card); overflow:hidden; cursor:pointer; position:relative;
   }
   .ticket:active{transform:scale(0.99);}
+  .ticket-accent{width:5px; flex-shrink:0; align-self:stretch;}
   .ticket-stub{
     width:64px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
     background:var(--surface-2); border-right:1px dashed var(--hairline-strong); padding:var(--s2) 4px; gap:2px; position:relative;
@@ -1279,6 +1280,47 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     let h=0; for(const c of (name||'?')) h=(h*31+c.charCodeAt(0))>>>0;
     return colors[h%colors.length];
   }
+  const CLUB_COLOR_RULES=[
+    {all:['dynamo','budejovice'], colors:['#111111','#ffffff']},
+    {all:['slavia'], colors:['#e2001a','#0033a0']},
+    {all:['sparta'], colors:['#96072a','#1a1a1a']},
+    {all:['plzen'], colors:['#00338d','#e2001a']},
+    {all:['banik'], colors:['#003da5','#ffffff']},
+    {all:['ostrava'], colors:['#003da5','#ffffff']},
+    {all:['zbrojovka'], colors:['#e2001a','#0033a0']},
+    {all:['sigma'], colors:['#003da5','#ffd400']},
+    {all:['olomouc'], colors:['#003da5','#ffd400']},
+    {all:['liberec'], colors:['#003da5','#ffffff']},
+    {all:['jablonec'], colors:['#2e7d32','#ffffff']},
+    {all:['teplice'], colors:['#ffd400','#003da5']},
+    {all:['boleslav'], colors:['#003da5','#ffffff']},
+    {all:['hradec'], colors:['#e2001a','#ffffff']},
+    {all:['pardubice'], colors:['#ffd400','#003da5']},
+    {all:['zlin'], colors:['#ffd400','#003da5']},
+    {all:['karvina'], colors:['#003da5','#ffffff']},
+    {all:['bohemians'], colors:['#1a7a3c','#ffffff']},
+    {all:['real','madrid'], colors:['#ffffff','#febe10']},
+    {all:['barcelona'], colors:['#a50044','#004d98']},
+    {all:['juventus'], colors:['#000000','#ffffff']},
+    {all:['milan'], colors:['#fb090b','#000000']},
+    {all:['inter'], colors:['#0068a8','#000000']},
+    {all:['liverpool'], colors:['#c8102e','#c8102e']},
+    {all:['manchester','united'], colors:['#da020e','#ffe500']},
+    {all:['manchester','city'], colors:['#6cabdd','#1c2c5b']},
+    {all:['arsenal'], colors:['#ef0107','#ffffff']},
+    {all:['chelsea'], colors:['#034694','#034694']},
+    {all:['tottenham'], colors:['#ffffff','#132257']},
+    {all:['bayern'], colors:['#dc052d','#0066b2']},
+    {all:['dortmund'], colors:['#fde100','#000000']},
+    {all:['paris','saint'], colors:['#004170','#da291c']}
+  ];
+  function clubColors(name){
+    if(!name) return null;
+    const n=norm(name);
+    for(const rule of CLUB_COLOR_RULES){ if(rule.all.every(k=>n.includes(k))) return rule.colors; }
+    const c=avatarColor(name);
+    return [c,c];
+  }
   function initials(name){ return (name||'?').trim().slice(0,2).toUpperCase(); }
   function ticketCard(v, showWho){
     const d=czShortDate(v.datum);
@@ -1293,7 +1335,9 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const teamsHtml = isTour
       ? '<span>'+(v.domaci?esc(v.domaci):'Prohlídka stadionu')+'</span><span class="chip" style="margin-left:8px; font-size:10px">PROHLÍDKA</span>'
       : '<span>'+esc(v.domaci)+'</span>'+(score?'<span class="ticket-score">'+esc(score)+'</span>':'<span style="color:var(--text-4)">–</span>')+(v.hoste?'<span>'+esc(v.hoste)+'</span>':'');
+    const cc=clubColors(v.domaci)||['var(--light)','var(--pitch)'];
     return '<div class="ticket" data-open="'+v.id+'">'
+      +'<div class="ticket-accent" style="background:linear-gradient(180deg,'+cc[0]+' 50%,'+cc[1]+' 50%)"></div>'
       +'<div class="ticket-stub"><div class="stub-day">'+esc(d.d)+'</div><div class="stub-mon">'+esc(d.m)+'</div><div class="stub-year">'+esc(d.y)+'</div></div>'
       +'<div class="ticket-body">'
         +'<div class="ticket-teams">'+teamsHtml+'</div>'
@@ -1314,9 +1358,10 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   function gridTile(v){
     const d=czShortDate(v.datum);
     const hasPhoto = v.foto && sbConfigured();
+    const cc=clubColors(v.domaci)||[avatarColor(v.domaci),avatarColor(v.domaci)];
     return '<div class="grid-tile" data-open="'+v.id+'">'
       +(hasPhoto ? '<img src="'+storageUrl(v.foto)+'" loading="lazy">'
-        : '<div class="gt-fallback" style="background:linear-gradient(155deg,'+avatarColor(v.domaci)+'44,var(--surface-2))"><div class="t">'+esc(v.domaci)+(v.hoste?'<br>vs '+esc(v.hoste):'')+'</div></div>')
+        : '<div class="gt-fallback" style="background:linear-gradient(155deg,'+cc[0]+'55,'+cc[1]+'22)"><div class="t">'+esc(v.domaci)+(v.hoste?'<br>vs '+esc(v.hoste):'')+'</div></div>')
       +'<div class="gt-badge">'+esc(d.d)+'.'+esc(String(MONTHS.indexOf(d.m)+1))+'.</div>'
     +'</div>';
   }
