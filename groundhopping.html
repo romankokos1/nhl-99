@@ -318,6 +318,12 @@
   .year-pick::-webkit-scrollbar{display:none;}
   .year-chip{flex-shrink:0; background:var(--surface-2); border:1px solid var(--hairline); border-radius:var(--r-pill); padding:8px 16px; font-size:13px; font-weight:600; color:var(--text-2);}
   .year-chip.active{background:var(--surface-hi); color:var(--light); border-color:var(--hairline-strong);}
+
+  /* activity banner */
+  .activity-banner{display:none; align-items:center; gap:10px; background:rgba(244,211,94,0.10); border:1px solid rgba(244,211,94,0.28); border-radius:var(--r-sm); padding:11px 14px; margin-bottom:var(--s4); font-size:12.5px; color:var(--light-bright); line-height:1.4;}
+  .activity-banner .activity-text{flex:1;}
+  .activity-banner button{background:none; border:none; color:var(--text-3); flex-shrink:0; padding:2px;}
+  .activity-banner svg{width:14px; height:14px; display:block;}
 </style>
 </head>
 <body>
@@ -345,6 +351,8 @@
 
       <div class="pad">
         <div class="syncline"><span class="dot" id="sync-dot"></span><span class="sync-text" id="sync-text">—</span></div>
+
+        <div class="activity-banner" id="activity-banner"></div>
 
         <div class="hero">
           <div class="hero-hello" id="hero-hello">Vítej</div>
@@ -774,11 +782,12 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
 
-  const LKEY='gh_navstevy', CFG='gh_cfg', STAD_CACHE='gh_stadion_cache', GEOCACHE='gh_geocache', WISH='gh_wishlist', DUPDISMISS='gh_dup_dismiss';
+  const LKEY='gh_navstevy', CFG='gh_cfg', STAD_CACHE='gh_stadion_cache', GEOCACHE='gh_geocache', WISH='gh_wishlist', DUPDISMISS='gh_dup_dismiss', LASTSEEN='gh_lastseen';
   const BUCKET='fotky';
 
   let visits = [];
   let wishlist = [];
+  let lastSeenAt = null;
   let cfg = { url:'', key:'', name:'' };
   let stadionCache = {};
   let geoCache = {};
@@ -819,12 +828,14 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     try { stadionCache = JSON.parse(localStorage.getItem(STAD_CACHE))||{}; } catch(e){ stadionCache={}; }
     try { geoCache = JSON.parse(localStorage.getItem(GEOCACHE))||{}; } catch(e){ geoCache={}; }
     try { wishlist = JSON.parse(localStorage.getItem(WISH))||[]; } catch(e){ wishlist=[]; }
+    try { lastSeenAt = localStorage.getItem(LASTSEEN)||null; } catch(e){ lastSeenAt=null; }
   }
   function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(visits)); } catch(e){ toast('Nelze uložit lokálně', true); } }
   function saveCfg(){ try { localStorage.setItem(CFG, JSON.stringify(cfg)); } catch(e){} }
   function saveStadionCache(){ try { localStorage.setItem(STAD_CACHE, JSON.stringify(stadionCache)); } catch(e){} }
   function saveGeoCache(){ try { localStorage.setItem(GEOCACHE, JSON.stringify(geoCache)); } catch(e){} }
   function saveWishlist(){ try { localStorage.setItem(WISH, JSON.stringify(wishlist)); } catch(e){} }
+  function saveLastSeen(ts){ lastSeenAt=ts; try { localStorage.setItem(LASTSEEN, ts); } catch(e){} }
   function getDismissed(){ try { return new Set(JSON.parse(localStorage.getItem(DUPDISMISS))||[]); } catch(e){ return new Set(); } }
   function saveDismissed(set){ try { localStorage.setItem(DUPDISMISS, JSON.stringify([...set])); } catch(e){} }
 
@@ -963,7 +974,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       const remote=rows.map(x=>({
         id:x.id, osoba:x.osoba, typ:x.typ||'zapas', domaci:x.domaci, hoste:x.hoste||'', skoreD:x.skore_d, skoreH:x.skore_h,
         soutez:x.soutez||'', stadion:x.stadion||'', mesto:x.mesto||'', zeme:x.zeme||'',
-        datum:x.datum, divaku:x.divaku, poznamka:x.poznamka||'', hodnoceni:x.hodnoceni||0, pivo:x.pivo||0, klobasa:x.klobasa||0, foto:x.foto||'', synced:true
+        datum:x.datum, divaku:x.divaku, poznamka:x.poznamka||'', hodnoceni:x.hodnoceni||0, pivo:x.pivo||0, klobasa:x.klobasa||0, foto:x.foto||'', vytvoreno:x.vytvoreno, synced:true
       }));
       const unsynced=visits.filter(v=>!v.synced);
       const remoteIds=new Set(remote.map(r=>r.id));
@@ -1241,6 +1252,25 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     }
   }
 
+  /* ---------- "co je nového od party" banner ---------- */
+  function renderActivityBanner(){
+    const box=$('#activity-banner');
+    if(!sbConfigured() || !cfg.name || !lastSeenAt){ box.style.display='none'; box.innerHTML=''; return; }
+    const newItems=visits.filter(v=> v.osoba && v.osoba!==cfg.name && v.vytvoreno && v.vytvoreno>lastSeenAt);
+    if(!newItems.length){ box.style.display='none'; box.innerHTML=''; return; }
+    const byPerson={};
+    newItems.forEach(v=>{ (byPerson[v.osoba]=byPerson[v.osoba]||[]).push(v); });
+    const parts=Object.entries(byPerson).map(([osoba,items])=>
+      items.length===1
+        ? esc(osoba)+' přidal(a): '+esc(items[0].stadion||'nová návštěva')
+        : esc(osoba)+' přidal(a) '+items.length+' nových návštěv'
+    );
+    box.innerHTML='<div class="activity-text">'+parts.join(' · ')+'</div><button id="activity-dismiss" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+    box.style.display='flex';
+    const dismiss=$('#activity-dismiss');
+    if(dismiss) dismiss.addEventListener('click', ()=>{ saveLastSeen(new Date().toISOString()); renderActivityBanner(); });
+  }
+
   function renderHero(){
     let arr=visits;
     if(feedScope==='mine') arr=arr.filter(v=>v.osoba===cfg.name);
@@ -1312,7 +1342,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     $('#invite-btn2').style.display=sbConfigured()?'flex':'none';
   }
 
-  function renderAll(){ renderHero(); renderFeed(); renderStats(); renderBoard(); renderProfile(); renderWishlist(); renderDupOverlay(); renderChallenge(); }
+  function renderAll(){ renderHero(); renderFeed(); renderStats(); renderBoard(); renderProfile(); renderWishlist(); renderDupOverlay(); renderChallenge(); renderActivityBanner(); }
 
   /* ---------- yearly wrapped ---------- */
   function wrappedYearsList(){ return [...new Set(visits.map(v=>(v.datum||'').slice(0,4)).filter(y=>y.length===4))].sort().reverse(); }
@@ -1875,6 +1905,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
 
   /* ---------- boot ---------- */
   loadLocal();
+  if(!lastSeenAt) saveLastSeen(new Date().toISOString());
   const invite=parseInvite();
   if(invite && (invite.url!==cfg.url || invite.key!==cfg.key)){ cfg.url=invite.url; cfg.key=invite.key; saveCfg(); history.replaceState(null,'',location.pathname+location.search); }
   $('#f-datum').value=todayISO();
