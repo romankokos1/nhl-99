@@ -389,16 +389,21 @@
           <input type="file" id="photo-input" accept="image/*" style="display:none">
         </div>
 
-        <div class="vs-row">
-          <div class="field"><label>Domácí</label><input type="text" id="f-domaci" placeholder="např. SK Dynamo" autocomplete="off"></div>
-          <div class="field" style="flex:0 0 56px"><label>Skóre</label><input type="number" min="0" class="score-input" id="f-skoreD" placeholder="–"></div>
-          <div class="vs-mid">:</div>
-          <div class="field" style="flex:0 0 56px"><label>&nbsp;</label><input type="number" min="0" class="score-input" id="f-skoreH" placeholder="–"></div>
+        <div class="segment" id="type-segment">
+          <button class="seg-btn active" data-vtype="zapas">Zápas</button>
+          <button class="seg-btn" data-vtype="prohlidka">Prohlídka stadionu</button>
         </div>
-        <div class="field"><label>Hosté</label><input type="text" id="f-hoste" placeholder="např. FC Slovan" autocomplete="off"></div>
+
+        <div class="vs-row">
+          <div class="field"><label id="domaci-label">Domácí</label><input type="text" id="f-domaci" placeholder="např. SK Dynamo" autocomplete="off"></div>
+          <div class="field" id="score-d-field" style="flex:0 0 56px"><label>Skóre</label><input type="number" min="0" class="score-input" id="f-skoreD" placeholder="–"></div>
+          <div class="vs-mid" id="vs-mid-sep">:</div>
+          <div class="field" id="score-h-field" style="flex:0 0 56px"><label>&nbsp;</label><input type="number" min="0" class="score-input" id="f-skoreH" placeholder="–"></div>
+        </div>
+        <div class="field" id="hoste-field"><label>Hosté</label><input type="text" id="f-hoste" placeholder="např. FC Slovan" autocomplete="off"></div>
 
         <div class="field-row">
-          <div class="field"><label>Soutěž</label><input type="text" id="f-soutez" placeholder="např. FORTUNA:LIGA" autocomplete="off"></div>
+          <div class="field" id="soutez-field"><label>Soutěž</label><input type="text" id="f-soutez" placeholder="např. FORTUNA:LIGA" autocomplete="off"></div>
           <div class="field"><label>Datum</label><input type="date" id="f-datum"></div>
         </div>
 
@@ -407,7 +412,7 @@
           <div class="field"><label>Město</label><input type="text" id="f-mesto" placeholder="město" autocomplete="off"></div>
           <div class="field"><label>Země</label><input type="text" id="f-zeme" placeholder="země" autocomplete="off"></div>
         </div>
-        <div class="field"><label>Návštěvnost (nepovinné)</label><input type="number" min="0" id="f-divaku" placeholder="počet diváků"></div>
+        <div class="field" id="divaku-field"><label>Návštěvnost (nepovinné)</label><input type="number" min="0" id="f-divaku" placeholder="počet diváků"></div>
 
         <div class="field">
           <label>Atmosféra</label>
@@ -434,6 +439,7 @@
           <div class="stat-card"><div class="n" id="st-matches">0</div><div class="l">zápasů</div></div>
           <div class="stat-card"><div class="n" id="st-countries">0</div><div class="l">zemí</div></div>
           <div class="stat-card"><div class="n" id="st-avg">–</div><div class="l">průměrná atmosféra</div></div>
+          <div class="stat-card"><div class="n" id="st-tours">0</div><div class="l">prohlídek (bez zápasu)</div></div>
         </div>
         <div class="section-title">Nejčastější soutěže</div>
         <div class="barlist" id="bar-soutez"></div>
@@ -558,6 +564,7 @@
       <div class="sql-box">create table navstevy (
   id text primary key,
   osoba text not null,
+  typ text default 'zapas',
   domaci text not null, hoste text,
   skore_d int, skore_h int,
   soutez text, stadion text, mesto text, zeme text,
@@ -614,6 +621,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška (bez rozlišení zápas/prohlídka)? Stačí spustit: <code>alter table navstevy add column if not exists typ text default 'zapas';</code></p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -730,6 +738,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   let online = false;
   let currentRating = 0;
   let editingId = null;
+  let formType = 'zapas';
   let feedScope = 'all';
   let viewMode = 'list';
   let statScope = 'all';
@@ -902,7 +911,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       if(!r.ok) throw new Error('HTTP '+r.status);
       const rows=await r.json();
       const remote=rows.map(x=>({
-        id:x.id, osoba:x.osoba, domaci:x.domaci, hoste:x.hoste||'', skoreD:x.skore_d, skoreH:x.skore_h,
+        id:x.id, osoba:x.osoba, typ:x.typ||'zapas', domaci:x.domaci, hoste:x.hoste||'', skoreD:x.skore_d, skoreH:x.skore_h,
         soutez:x.soutez||'', stadion:x.stadion||'', mesto:x.mesto||'', zeme:x.zeme||'',
         datum:x.datum, divaku:x.divaku, poznamka:x.poznamka||'', hodnoceni:x.hodnoceni||0, foto:x.foto||'', synced:true
       }));
@@ -919,7 +928,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   }
   async function sbPush(v){
     if(!sbConfigured()) return false;
-    const body={ id:v.id, osoba:v.osoba||cfg.name, domaci:v.domaci, hoste:v.hoste||null,
+    const body={ id:v.id, osoba:v.osoba||cfg.name, typ:v.typ||'zapas', domaci:v.domaci, hoste:v.hoste||null,
       skore_d:(v.skoreD===''||v.skoreD==null)?null:v.skoreD, skore_h:(v.skoreH===''||v.skoreH==null)?null:v.skoreH,
       soutez:v.soutez||null, stadion:v.stadion||null, mesto:v.mesto||null, zeme:v.zeme||null,
       datum:v.datum, divaku:(v.divaku===''||v.divaku==null)?null:v.divaku, poznamka:v.poznamka||null,
@@ -1000,6 +1009,11 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     refreshDetailIfOpen(id);
     try{ await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/komentare', {method:'POST', headers:sbHeaders(), body:JSON.stringify(c)}); }catch(e){}
   }
+  async function commentDelete(visitId, commentId){
+    if(commentsMap[visitId]) commentsMap[visitId]=commentsMap[visitId].filter(c=>c.id!==commentId);
+    refreshDetailIfOpen(visitId);
+    try{ await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/komentare?id=eq.'+encodeURIComponent(commentId), {method:'DELETE', headers:sbHeaders()}); }catch(e){}
+  }
 
   /* ---------- rating widget ---------- */
   function ballIcon(filled){
@@ -1021,30 +1035,44 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
 
   /* ---------- add / edit ---------- */
   let pendingPhotoBlob=null, pendingPhotoLocalUrl='';
+  function setFormType(t){
+    formType = t==='prohlidka' ? 'prohlidka' : 'zapas';
+    $$('#type-segment .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.vtype===formType));
+    const isTour = formType==='prohlidka';
+    $('#domaci-label').textContent = isTour ? 'Klub (nepovinné)' : 'Domácí';
+    ['#score-d-field','#vs-mid-sep','#score-h-field','#hoste-field','#soutez-field','#divaku-field'].forEach(sel=>{ $(sel).style.display = isTour ? 'none' : ''; });
+  }
   function resetForm(){
     editingId=null; currentRating=0; pendingPhotoBlob=null; pendingPhotoLocalUrl='';
     ['f-domaci','f-hoste','f-soutez','f-stadion','f-mesto','f-zeme','f-poznamka','f-skoreD','f-skoreH','f-divaku'].forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
     $('#f-datum').value=todayISO();
     $('#add-title').textContent='Nová návštěva';
     $('#photo-drop').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-4-5 4M13 15l2-2 6 6"/></svg><div>Přidat fotku ze stadionu</div>';
+    setFormType('zapas');
     buildRatingRow();
   }
   async function saveVisit(){
+    const isTour = formType==='prohlidka';
     const domaci=$('#f-domaci').value.trim();
     const stadion=$('#f-stadion').value.trim();
-    if(!domaci || !stadion){ toast('Vyplň aspoň domácí tým a stadion', true); return; }
+    if(!stadion || (!isTour && !domaci)){ toast(isTour ? 'Vyplň aspoň stadion' : 'Vyplň aspoň domácí tým a stadion', true); return; }
     if(!cfg.name){ openName(true); return; }
     const btn=$('#save-visit'); btn.disabled=true; btn.textContent='Ukládám…';
     let v;
     if(editingId){ v=visits.find(x=>x.id===editingId); if(!v){ editingId=null; } }
     if(!v){ v={ id:uid(), osoba:cfg.name }; visits.unshift(v); }
-    v.domaci=domaci; v.hoste=$('#f-hoste').value.trim();
-    v.skoreD=$('#f-skoreD').value===''?null:parseInt($('#f-skoreD').value,10);
-    v.skoreH=$('#f-skoreH').value===''?null:parseInt($('#f-skoreH').value,10);
-    v.soutez=$('#f-soutez').value.trim();
+    v.typ=formType;
+    v.domaci=domaci;
+    if(isTour){ v.hoste=''; v.skoreD=null; v.skoreH=null; v.soutez=''; v.divaku=null; }
+    else {
+      v.hoste=$('#f-hoste').value.trim();
+      v.skoreD=$('#f-skoreD').value===''?null:parseInt($('#f-skoreD').value,10);
+      v.skoreH=$('#f-skoreH').value===''?null:parseInt($('#f-skoreH').value,10);
+      v.soutez=$('#f-soutez').value.trim();
+      v.divaku=$('#f-divaku').value===''?null:parseInt($('#f-divaku').value,10);
+    }
     v.stadion=stadion; v.mesto=$('#f-mesto').value.trim(); v.zeme=$('#f-zeme').value.trim();
     v.datum=$('#f-datum').value||todayISO();
-    v.divaku=$('#f-divaku').value===''?null:parseInt($('#f-divaku').value,10);
     v.poznamka=$('#f-poznamka').value.trim();
     v.hodnoceni=currentRating;
     v.synced=false;
@@ -1065,6 +1093,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   function editVisit(id){
     const v=visits.find(x=>x.id===id); if(!v) return;
     editingId=id; currentRating=v.hodnoceni||0;
+    setFormType(v.typ||'zapas');
     $('#f-domaci').value=v.domaci||''; $('#f-hoste').value=v.hoste||'';
     $('#f-skoreD').value=v.skoreD==null?'':v.skoreD; $('#f-skoreH').value=v.skoreH==null?'':v.skoreH;
     $('#f-soutez').value=v.soutez||''; $('#f-stadion').value=v.stadion||'';
@@ -1092,15 +1121,21 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   function initials(name){ return (name||'?').trim().slice(0,2).toUpperCase(); }
   function ticketCard(v, showWho){
     const d=czShortDate(v.datum);
-    const score=(v.skoreD!=null && v.skoreH!=null) ? (v.skoreD+':'+v.skoreH) : '';
+    const isTour = v.typ==='prohlidka';
+    const score=(!isTour && v.skoreD!=null && v.skoreH!=null) ? (v.skoreD+':'+v.skoreH) : '';
     const liked = likesMap[v.id] && cfg.name && likesMap[v.id].has(cfg.name);
     const likeN = likesMap[v.id] ? likesMap[v.id].size : 0;
     const commN = commentsMap[v.id] ? commentsMap[v.id].length : 0;
-    const meta=[v.soutez, [v.stadion,v.mesto].filter(Boolean).join(', ')].filter(Boolean);
+    const meta = isTour
+      ? [[v.stadion,v.mesto].filter(Boolean).join(', ')].filter(Boolean)
+      : [v.soutez, [v.stadion,v.mesto].filter(Boolean).join(', ')].filter(Boolean);
+    const teamsHtml = isTour
+      ? '<span>'+(v.domaci?esc(v.domaci):'Prohlídka stadionu')+'</span><span class="chip" style="margin-left:8px; font-size:10px">PROHLÍDKA</span>'
+      : '<span>'+esc(v.domaci)+'</span>'+(score?'<span class="ticket-score">'+esc(score)+'</span>':'<span style="color:var(--text-4)">–</span>')+(v.hoste?'<span>'+esc(v.hoste)+'</span>':'');
     return '<div class="ticket" data-open="'+v.id+'">'
       +'<div class="ticket-stub"><div class="stub-day">'+esc(d.d)+'</div><div class="stub-mon">'+esc(d.m)+'</div><div class="stub-year">'+esc(d.y)+'</div></div>'
       +'<div class="ticket-body">'
-        +'<div class="ticket-teams"><span>'+esc(v.domaci)+'</span>'+(score?'<span class="ticket-score">'+esc(score)+'</span>':'<span style="color:var(--text-4)">–</span>')+(v.hoste?'<span>'+esc(v.hoste)+'</span>':'')+'</div>'
+        +'<div class="ticket-teams">'+teamsHtml+'</div>'
         +'<div class="ticket-meta">'+meta.map(esc).join('<span class="dotsep"></span>')+'</div>'
         +(v.foto && sbConfigured() ? '<img class="ticket-photo" src="'+storageUrl(v.foto)+'" loading="lazy">' : '')
         +'<div class="ticket-foot">'
@@ -1150,7 +1185,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     const countries=new Set(arr.map(v=>norm(v.zeme)).filter(Boolean));
     $('#hero-hello').textContent = cfg.name ? ('Ahoj, '+cfg.name) : 'Vítej';
     $('#hero-count').textContent=stadiums.size;
-    $('#hero-matches').textContent=arr.length;
+    $('#hero-matches').textContent=arr.filter(v=>v.typ!=='prohlidka').length;
     $('#hero-countries').textContent=countries.size;
   }
 
@@ -1162,9 +1197,10 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     const rated=arr.filter(v=>v.hodnoceni>0);
     const avg=rated.length? (rated.reduce((s,v)=>s+v.hodnoceni,0)/rated.length).toFixed(1) : '–';
     $('#st-stadiums').textContent=stadiums.size;
-    $('#st-matches').textContent=arr.length;
+    $('#st-matches').textContent=arr.filter(v=>v.typ!=='prohlidka').length;
     $('#st-countries').textContent=countries.size;
     $('#st-avg').textContent=avg;
+    $('#st-tours').textContent=arr.filter(v=>v.typ==='prohlidka').length;
 
     function topBars(getKey, limit){
       const counts={};
@@ -1278,16 +1314,23 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     ctx.beginPath(); ctx.moveTo(cardX+30, cardY+120); ctx.lineTo(cardX+cardW-30, cardY+120); ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.font='600 52px Oswald, sans-serif'; ctx.fillStyle='#eef3ee';
-    ctx.fillText((v.domaci||'').toUpperCase(), W/2, cardY+230);
-    const score=(v.skoreD!=null && v.skoreH!=null) ? (v.skoreD+' : '+v.skoreH) : 'vs';
-    ctx.font='700 74px "IBM Plex Mono", monospace'; ctx.fillStyle='#ffe27a';
-    ctx.fillText(score, W/2, cardY+330);
-    if(v.hoste){ ctx.font='600 52px Oswald, sans-serif'; ctx.fillStyle='#eef3ee'; ctx.fillText(v.hoste.toUpperCase(), W/2, cardY+420); }
+    const isTour = v.typ==='prohlidka';
+    if(isTour){
+      if(v.domaci){ ctx.font='600 50px Oswald, sans-serif'; ctx.fillStyle='#eef3ee'; ctx.fillText(v.domaci.toUpperCase(), W/2, cardY+250); }
+      ctx.font='700 40px Oswald, sans-serif'; ctx.fillStyle='#ffe27a';
+      ctx.fillText('PROHLÍDKA STADIONU', W/2, v.domaci?cardY+330:cardY+280);
+    } else {
+      ctx.font='600 52px Oswald, sans-serif'; ctx.fillStyle='#eef3ee';
+      ctx.fillText((v.domaci||'').toUpperCase(), W/2, cardY+230);
+      const score=(v.skoreD!=null && v.skoreH!=null) ? (v.skoreD+' : '+v.skoreH) : 'vs';
+      ctx.font='700 74px "IBM Plex Mono", monospace'; ctx.fillStyle='#ffe27a';
+      ctx.fillText(score, W/2, cardY+330);
+      if(v.hoste){ ctx.font='600 52px Oswald, sans-serif'; ctx.fillStyle='#eef3ee'; ctx.fillText(v.hoste.toUpperCase(), W/2, cardY+420); }
+    }
 
     ctx.font='400 28px Inter, sans-serif'; ctx.fillStyle='#a6b6ad';
     ctx.fillText([v.stadion, [v.mesto,v.zeme].filter(Boolean).join(', ')].filter(Boolean).join(' · '), W/2, cardY+490);
-    if(v.soutez){ ctx.font='500 26px Inter, sans-serif'; ctx.fillStyle='#72857c'; ctx.fillText(v.soutez, W/2, cardY+530); }
+    if(!isTour && v.soutez){ ctx.font='500 26px Inter, sans-serif'; ctx.fillStyle='#72857c'; ctx.fillText(v.soutez, W/2, cardY+530); }
 
     const n=v.hodnoceni||0, ballR=18, gap=46, startX=W/2-(gap*2);
     for(let i=0;i<5;i++){
@@ -1296,7 +1339,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       ctx.fillStyle = i<n ? '#f4d35e' : 'rgba(255,255,255,0.10)';
       ctx.fill();
     }
-    if(v.divaku){ ctx.font='400 26px "IBM Plex Mono", monospace'; ctx.fillStyle='#72857c'; ctx.fillText(v.divaku+' diváků', W/2, cardY+700); }
+    if(!isTour && v.divaku){ ctx.font='400 26px "IBM Plex Mono", monospace'; ctx.fillStyle='#72857c'; ctx.fillText(v.divaku+' diváků', W/2, cardY+700); }
 
     ctx.font='500 24px Inter, sans-serif'; ctx.fillStyle='#6b7d74';
     ctx.fillText(v.osoba||'', W/2, cardY+cardH-40);
@@ -1320,21 +1363,27 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   /* ---------- visit detail ---------- */
   function openVisitDetail(id){
     const v=visits.find(x=>x.id===id); if(!v) return;
-    const score=(v.skoreD!=null && v.skoreH!=null) ? (v.skoreD+' : '+v.skoreH) : '–';
-    const chips=[v.soutez, v.stadion, [v.mesto,v.zeme].filter(Boolean).join(', '), v.divaku?v.divaku+' diváků':''].filter(Boolean);
+    const isTour = v.typ==='prohlidka';
+    const score=(!isTour && v.skoreD!=null && v.skoreH!=null) ? (v.skoreD+' : '+v.skoreH) : '–';
+    const chips=isTour
+      ? [v.stadion, [v.mesto,v.zeme].filter(Boolean).join(', ')].filter(Boolean)
+      : [v.soutez, v.stadion, [v.mesto,v.zeme].filter(Boolean).join(', '), v.divaku?v.divaku+' diváků':''].filter(Boolean);
     const liked = likesMap[v.id] && cfg.name && likesMap[v.id].has(cfg.name);
     const comments = commentsMap[v.id]||[];
+    const teamsHtml = isTour
+      ? '<span>'+(v.domaci?esc(v.domaci):'Prohlídka stadionu')+'</span><span class="chip" style="margin-left:8px">PROHLÍDKA</span>'
+      : '<span>'+esc(v.domaci)+'</span><span class="detail-score">'+esc(score)+'</span><span>'+esc(v.hoste||'')+'</span>';
     $('#detail-sheet-content').innerHTML =
       '<div class="grabber"></div>'
       +(v.foto && sbConfigured() ? '<img class="detail-photo" src="'+storageUrl(v.foto)+'" id="detail-photo-img">' : '')
-      +'<div class="detail-teams"><span>'+esc(v.domaci)+'</span><span class="detail-score">'+esc(score)+'</span><span>'+esc(v.hoste||'')+'</span></div>'
+      +'<div class="detail-teams">'+teamsHtml+'</div>'
       +'<div style="margin:8px 0"><div class="rating-row" style="gap:4px">'+miniRating(v.hodnoceni||0)+'</div></div>'
       +'<div class="detail-chips">'+chips.map(c=>'<span class="chip">'+esc(c)+'</span>').join('')+'</div>'
       +(v.poznamka ? '<div class="detail-note">'+esc(v.poznamka)+'</div>' : '')
       +'<div class="ticket-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
       +(sbConfigured() ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'" style="margin-bottom:var(--s3)"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg> Líbí se ('+(likesMap[v.id]?likesMap[v.id].size:0)+')</button>' : '')
       +'<button class="btn btn-ghost btn-sm" id="detail-share" style="margin-bottom:var(--s4)">Sdílet jako obrázek</button>'
-      +'<div id="comment-thread">'+comments.map(c=>'<div class="comment-row"><span class="avatar" style="background:'+avatarColor(c.osoba)+'">'+esc(initials(c.osoba))+'</span><div class="comment-bubble"><div class="who">'+esc(c.osoba)+'</div>'+esc(c.text)+'</div></div>').join('')+'</div>'
+      +'<div id="comment-thread">'+comments.map(c=>'<div class="comment-row"><span class="avatar" style="background:'+avatarColor(c.osoba)+'">'+esc(initials(c.osoba))+'</span><div class="comment-bubble"><div class="who">'+esc(c.osoba)+'</div>'+esc(c.text)+'</div>'+(c.osoba===cfg.name?'<button data-delcomment="'+c.id+'" style="background:none; border:none; color:var(--text-4); flex-shrink:0; padding:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M6 6l12 12M18 6L6 18"/></svg></button>':'')+'</div>').join('')+'</div>'
       +(sbConfigured() && cfg.name ? '<div class="comment-input-row"><input type="text" id="comment-input" placeholder="Napiš komentář…" autocomplete="off"><button id="comment-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 12l16-8-6 8 6 8-16-8z"/></svg></button></div>' : '')
       +(v.osoba===cfg.name ? '<div class="btn-row"><button class="btn btn-ghost btn-sm" id="detail-edit">Upravit</button><button class="btn btn-danger btn-sm" id="detail-delete">Smazat</button></div>' : '');
     $('#detail-overlay').classList.add('show');
@@ -1345,6 +1394,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     const delBtn=$('#detail-delete'); if(delBtn) delBtn.addEventListener('click', ()=>{ if(confirm('Opravdu smazat tuto návštěvu?')) delVisit(v.id); });
     const sendBtn=$('#comment-send'); if(sendBtn) sendBtn.addEventListener('click', ()=>{ const inp=$('#comment-input'); if(inp.value.trim()){ commentAdd(v.id, inp.value); inp.value=''; } });
     const inp=$('#comment-input'); if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter' && inp.value.trim()){ commentAdd(v.id, inp.value); inp.value=''; } });
+    $$('#comment-thread [data-delcomment]').forEach(btn=>btn.addEventListener('click', ()=>commentDelete(v.id, btn.dataset.delcomment)));
   }
   function refreshDetailIfOpen(id){ if($('#detail-overlay').classList.contains('show')) openVisitDetail(id); }
 
@@ -1646,6 +1696,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   $$('[data-goadd]').forEach(b=>b.addEventListener('click', ()=>{ editingId=null; resetForm(); goView('add'); }));
   $$('[data-goback]').forEach(b=>b.addEventListener('click', ()=>goView('home')));
   $('#save-visit').addEventListener('click', saveVisit);
+  $$('#type-segment .seg-btn').forEach(b=>b.addEventListener('click', ()=>setFormType(b.dataset.vtype)));
 
   $$('.seg-btn[data-scope]').forEach(b=>b.addEventListener('click', ()=>{ feedScope=b.dataset.scope; $$('.seg-btn[data-scope]').forEach(x=>x.classList.toggle('active',x===b)); renderHero(); renderFeed(); }));
   $$('.seg-btn[data-statscope]').forEach(b=>b.addEventListener('click', ()=>{ statScope=b.dataset.statscope; $$('.seg-btn[data-statscope]').forEach(x=>x.classList.toggle('active',x===b)); renderStats(); }));
