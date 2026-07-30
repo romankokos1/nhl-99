@@ -905,26 +905,46 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     try{ await fetch(cfg.url.replace(/\/$/,'')+'/storage/v1/object/'+BUCKET+'/'+path, {method:'DELETE', headers:{'apikey':cfg.key,'Authorization':'Bearer '+cfg.key}}); }catch(e){}
   }
 
-  /* ---------- read capture date out of a photo (EXIF), best-effort ---------- */
-  async function maybeUseExifDate(file){
-    const field=$('#f-datum'); if(!field) return null;
-    if(field.value.trim() && field.value.trim()!==todayISO()) return null;
-    const d=await readPhotoDate(file);
-    if(!d || d===field.value.trim()) return null;
-    field.value=d;
-    return d;
+  /* ---------- read capture date + GPS out of a photo (EXIF), best-effort ---------- */
+  async function applyPhotoMeta(file){
+    const meta=await readPhotoMeta(file);
+    if(!meta) return { date:null, located:false };
+    let dateApplied=null;
+    const dateField=$('#f-datum');
+    if(dateField && meta.date && (!dateField.value.trim() || dateField.value.trim()===todayISO()) && meta.date!==dateField.value.trim()){
+      dateField.value=meta.date; dateApplied=meta.date;
+    }
+    let located=false;
+    if(meta.lat!=null && meta.lng!=null){
+      const mestoField=$('#f-mesto'), zemeField=$('#f-zeme'), stadionField=$('#f-stadion');
+      const wantMesto = mestoField && !mestoField.value.trim();
+      const wantZeme = zemeField && !zemeField.value.trim();
+      const wantStadion = stadionField && !stadionField.value.trim();
+      if(wantMesto || wantZeme){
+        const loc=await reverseGeocode(meta.lat, meta.lng);
+        if(loc){
+          if(wantMesto && loc.mesto){ mestoField.value=loc.mesto; located=true; }
+          if(wantZeme && loc.zeme){ zemeField.value=loc.zeme; located=true; }
+        }
+      }
+      if(wantStadion){
+        const name=await findNearbyStadium(meta.lat, meta.lng);
+        if(name){ stadionField.value=name; located=true; }
+      }
+    }
+    return { date:dateApplied, located };
   }
-  function readPhotoDate(file){
+  function readPhotoMeta(file){
     return new Promise(resolve=>{
       try{
         const reader=new FileReader();
         reader.onerror=()=>resolve(null);
-        reader.onload=()=>{ try{ resolve(parseExifDate(reader.result)); }catch(e){ resolve(null); } };
+        reader.onload=()=>{ try{ resolve(parseExifMeta(reader.result)); }catch(e){ resolve(null); } };
         reader.readAsArrayBuffer(file.slice(0, 256*1024));
       }catch(e){ resolve(null); }
     });
   }
-  function parseExifDate(buf){
+  function parseExifMeta(buf){
     const v=new DataView(buf);
     if(v.byteLength<16 || v.getUint16(0,false)!==0xFFD8) return null;
     let off=2;
@@ -936,21 +956,21 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         const start=off+4;
         if(start+6>v.byteLength) return null;
         if(v.getUint32(start,false)!==0x45786966) return null;
-        return readExifIFDs(v, start+6);
+        return readExifMetaIFDs(v, start+6);
       }
       if(marker===0xFFDA) return null;
       off+=2+size;
     }
     return null;
   }
-  function readExifIFDs(v, tiff){
+  function readExifMetaIFDs(v, tiff){
     if(tiff+8>v.byteLength) return null;
     const le = v.getUint16(tiff,false)===0x4949;
     if(v.getUint16(tiff+2,le)!==0x002A) return null;
     const ifd0=tiff+v.getUint32(tiff+4,le);
-    const want={0x9003:1, 0x9004:2, 0x0132:3};
-    let best=null, bestRank=99;
-    const scan=(dirStart)=>{
+    const wantDate={0x9003:1, 0x9004:2, 0x0132:3};
+    let bestDate=null, bestRank=99, gpsIFD=null;
+    const scanMain=(dirStart)=>{
       if(dirStart+2>v.byteLength) return null;
       const n=v.getUint16(dirStart,le);
       let exifPtr=null;
@@ -959,19 +979,41 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         if(e+12>v.byteLength) break;
         const tag=v.getUint16(e,le);
         if(tag===0x8769){ exifPtr=tiff+v.getUint32(e+8,le); continue; }
-        if(want[tag]){
+        if(tag===0x8825){ gpsIFD=tiff+v.getUint32(e+8,le); continue; }
+        if(wantDate[tag]){
           const count=v.getUint32(e+4,le);
           const val=(count>4)? tiff+v.getUint32(e+8,le) : e+8;
           const str=readAscii(v,val,Math.min(count,20));
           const d=exifToISO(str);
-          if(d && want[tag]<bestRank){ best=d; bestRank=want[tag]; }
+          if(d && wantDate[tag]<bestRank){ bestDate=d; bestRank=wantDate[tag]; }
         }
       }
       return exifPtr;
     };
-    const ptr=scan(ifd0);
-    if(ptr) scan(ptr);
-    return best;
+    const ptr=scanMain(ifd0);
+    if(ptr) scanMain(ptr);
+
+    let lat=null, lng=null;
+    if(gpsIFD!=null && gpsIFD+2<=v.byteLength){
+      const n=v.getUint16(gpsIFD,le);
+      let latRef=null, lngRef=null, latVal=null, lngVal=null;
+      for(let i=0;i<n;i++){
+        const e=gpsIFD+2+i*12;
+        if(e+12>v.byteLength) break;
+        const tag=v.getUint16(e,le);
+        const count=v.getUint32(e+4,le);
+        if(tag===1){ latRef=String.fromCharCode(v.getUint8(e+8)); }
+        else if(tag===3){ lngRef=String.fromCharCode(v.getUint8(e+8)); }
+        else if(tag===2 && count===3){ const at=tiff+v.getUint32(e+8,le); if(at+24<=v.byteLength) latVal=readGPSCoord(v,at,le); }
+        else if(tag===4 && count===3){ const at=tiff+v.getUint32(e+8,le); if(at+24<=v.byteLength) lngVal=readGPSCoord(v,at,le); }
+      }
+      if(latVal!=null && lngVal!=null){ lat = latRef==='S' ? -latVal : latVal; lng = lngRef==='W' ? -lngVal : lngVal; }
+    }
+    return { date:bestDate, lat, lng };
+  }
+  function readGPSCoord(v, at, le){
+    const readRat=o=>{ const num=v.getUint32(o,le), den=v.getUint32(o+4,le); return den? num/den : 0; };
+    return readRat(at) + readRat(at+8)/60 + readRat(at+16)/3600;
   }
   function readAscii(v, at, len){
     let out='';
@@ -988,6 +1030,25 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const y=+m[1], mo=+m[2], d=+m[3];
     if(y<1990 || y>2100 || mo<1 || mo>12 || d<1 || d>31) return null;
     return m[1]+'-'+m[2]+'-'+m[3];
+  }
+  async function reverseGeocode(lat,lng){
+    try{
+      const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+lat+'&lon='+lng+'&zoom=14&addressdetails=1');
+      const j=await r.json();
+      if(!j || !j.address) return null;
+      const a=j.address;
+      return { mesto:a.city||a.town||a.village||a.municipality||a.county||'', zeme:a.country||'' };
+    }catch(e){ return null; }
+  }
+  async function findNearbyStadium(lat,lng){
+    try{
+      const q='[out:json][timeout:8];(way["leisure"="stadium"](around:300,'+lat+','+lng+');node["leisure"="stadium"](around:300,'+lat+','+lng+');relation["leisure"="stadium"](around:300,'+lat+','+lng+'););out center 1;';
+      const r=await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:'data='+encodeURIComponent(q)});
+      const j=await r.json();
+      const el=(j.elements||[])[0];
+      if(el && el.tags && el.tags.name) return el.tags.name;
+    }catch(e){}
+    return null;
   }
 
   async function sbPull(){
@@ -1966,11 +2027,13 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   $('#photo-input').addEventListener('change', async e=>{
     const file=e.target.files[0]; if(!file) return;
     try{
-      const exifDate=await maybeUseExifDate(file);
       pendingPhotoBlob=await compressImage(file, 1200, 0.75);
       pendingPhotoLocalUrl=URL.createObjectURL(pendingPhotoBlob);
       $('#photo-drop').innerHTML='<img src="'+pendingPhotoLocalUrl+'" class="photo-preview" style="height:100px">';
-      if(exifDate) toast('Datum doplněno z fotky: '+exifDate);
+      const meta=await applyPhotoMeta(file);
+      if(meta.date && meta.located) toast('Doplněno z fotky: datum i místo');
+      else if(meta.date) toast('Datum doplněno z fotky: '+meta.date);
+      else if(meta.located) toast('Místo doplněno z polohy ve fotce');
     }catch(err){ toast('Fotku se nepodařilo zpracovat', true); }
   });
 
