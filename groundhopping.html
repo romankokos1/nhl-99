@@ -418,6 +418,14 @@
           <label>Atmosféra</label>
           <div class="rating-row" id="rating-row"></div>
         </div>
+        <div class="field">
+          <label>Pivo na stadionu</label>
+          <div class="rating-row" id="rating-row-beer"></div>
+        </div>
+        <div class="field">
+          <label>Klobása / občerstvení</label>
+          <div class="rating-row" id="rating-row-klobasa"></div>
+        </div>
 
         <div class="field"><label>Poznámka</label><textarea id="f-poznamka" placeholder="jak to bylo, kdo skóroval, atmosféra…"></textarea></div>
 
@@ -440,6 +448,8 @@
           <div class="stat-card"><div class="n" id="st-countries">0</div><div class="l">zemí</div></div>
           <div class="stat-card"><div class="n" id="st-avg">–</div><div class="l">průměrná atmosféra</div></div>
           <div class="stat-card"><div class="n" id="st-tours">0</div><div class="l">prohlídek (bez zápasu)</div></div>
+          <div class="stat-card"><div class="n" id="st-beer">–</div><div class="l">průměr piva</div></div>
+          <div class="stat-card"><div class="n" id="st-klobasa">–</div><div class="l">průměr klobásy</div></div>
         </div>
         <div class="section-title">Nejčastější soutěže</div>
         <div class="barlist" id="bar-soutez"></div>
@@ -569,7 +579,7 @@
   skore_d int, skore_h int,
   soutez text, stadion text, mesto text, zeme text,
   datum text, divaku int, poznamka text,
-  hodnoceni int, foto text,
+  hodnoceni int, pivo int, klobasa int, foto text,
   vytvoreno timestamptz default now()
 );
 alter table navstevy enable row level security;
@@ -621,7 +631,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška (bez rozlišení zápas/prohlídka)? Stačí spustit: <code>alter table navstevy add column if not exists typ text default 'zapas';</code></p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Podle toho, co ti chybí, spusť: <code>alter table navstevy add column if not exists typ text default 'zapas';</code> a/nebo <code>alter table navstevy add column if not exists pivo int; alter table navstevy add column if not exists klobasa int;</code></p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -737,6 +747,8 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   let geoCache = {};
   let online = false;
   let currentRating = 0;
+  let currentBeer = 0;
+  let currentKlobasa = 0;
   let editingId = null;
   let formType = 'zapas';
   let feedScope = 'all';
@@ -913,7 +925,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       const remote=rows.map(x=>({
         id:x.id, osoba:x.osoba, typ:x.typ||'zapas', domaci:x.domaci, hoste:x.hoste||'', skoreD:x.skore_d, skoreH:x.skore_h,
         soutez:x.soutez||'', stadion:x.stadion||'', mesto:x.mesto||'', zeme:x.zeme||'',
-        datum:x.datum, divaku:x.divaku, poznamka:x.poznamka||'', hodnoceni:x.hodnoceni||0, foto:x.foto||'', synced:true
+        datum:x.datum, divaku:x.divaku, poznamka:x.poznamka||'', hodnoceni:x.hodnoceni||0, pivo:x.pivo||0, klobasa:x.klobasa||0, foto:x.foto||'', synced:true
       }));
       const unsynced=visits.filter(v=>!v.synced);
       const remoteIds=new Set(remote.map(r=>r.id));
@@ -932,7 +944,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       skore_d:(v.skoreD===''||v.skoreD==null)?null:v.skoreD, skore_h:(v.skoreH===''||v.skoreH==null)?null:v.skoreH,
       soutez:v.soutez||null, stadion:v.stadion||null, mesto:v.mesto||null, zeme:v.zeme||null,
       datum:v.datum, divaku:(v.divaku===''||v.divaku==null)?null:v.divaku, poznamka:v.poznamka||null,
-      hodnoceni:v.hodnoceni||0, foto:v.foto||'' };
+      hodnoceni:v.hodnoceni||0, pivo:v.pivo||0, klobasa:v.klobasa||0, foto:v.foto||'' };
     try {
       const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navstevy?on_conflict=id', {
         method:'POST', headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates'}), body:JSON.stringify(body)
@@ -1019,18 +1031,29 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   function ballIcon(filled){
     return '<svg viewBox="0 0 24 24" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 6l3.6 2.6-1.4 4.2H9.8L8.4 8.6 12 6z" '+(filled?'fill="var(--bg-2)"':'')+'/><path d="M3 12h4M17 12h4M12 3v4M12 17v4"/></svg>';
   }
-  function buildRatingRow(){
-    const row=$('#rating-row'); row.innerHTML='';
+  function beerIcon(filled){
+    return '<svg viewBox="0 0 24 24" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.6"><path d="M5 8h11v10.5a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 18.5V8z"/><path d="M16 10.5h1.5A2.5 2.5 0 0 1 20 13v1a2.5 2.5 0 0 1-2.5 2.5H16"/><path d="M5 8V5.8C5 4.8 5.8 4 6.8 4h7.4c1 0 1.8.8 1.8 1.8V8"/></svg>';
+  }
+  function klobasaIcon(filled){
+    return '<svg viewBox="0 0 24 24" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.6"><path d="M4.5 15c-1-3 1-8 6-9.5s10 .5 9 4-6 3.5-9 5.5-5 3-6 0z"/><path d="M8 8.5c1 .5 1 4 0 5M12.5 7c1 .5 1 5 0 6"/></svg>';
+  }
+  function buildRatingWidget(elId, getVal, setVal, iconFn){
+    const row=$('#'+elId); row.innerHTML='';
     for(let i=1;i<=5;i++){
       const el=document.createElement('span'); el.style.color='var(--light)';
-      el.innerHTML=ballIcon(i<=currentRating);
-      el.addEventListener('click', ()=>{ currentRating=(currentRating===i)?0:i; paintRating(); });
+      el.innerHTML=iconFn(i<=getVal());
+      el.addEventListener('click', ()=>{ setVal((getVal()===i)?0:i); buildRatingWidget(elId,getVal,setVal,iconFn); });
       row.appendChild(el);
     }
   }
-  function paintRating(){ $$('#rating-row > span').forEach((el,i)=>{ el.innerHTML=ballIcon(i+1<=currentRating); }); }
-  function miniRating(n){
-    let h=''; for(let i=1;i<=5;i++){ h+='<span style="color:'+(i<=n?'var(--light)':'var(--text-4)')+'">'+ballIcon(i<=n)+'</span>'; } return h;
+  function buildRatingRow(){
+    buildRatingWidget('rating-row', ()=>currentRating, v=>currentRating=v, ballIcon);
+    buildRatingWidget('rating-row-beer', ()=>currentBeer, v=>currentBeer=v, beerIcon);
+    buildRatingWidget('rating-row-klobasa', ()=>currentKlobasa, v=>currentKlobasa=v, klobasaIcon);
+  }
+  function miniRating(n, iconFn){
+    iconFn=iconFn||ballIcon;
+    let h=''; for(let i=1;i<=5;i++){ h+='<span style="color:'+(i<=n?'var(--light)':'var(--text-4)')+'">'+iconFn(i<=n)+'</span>'; } return h;
   }
 
   /* ---------- add / edit ---------- */
@@ -1043,7 +1066,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     ['#score-d-field','#vs-mid-sep','#score-h-field','#hoste-field','#soutez-field','#divaku-field'].forEach(sel=>{ $(sel).style.display = isTour ? 'none' : ''; });
   }
   function resetForm(){
-    editingId=null; currentRating=0; pendingPhotoBlob=null; pendingPhotoLocalUrl='';
+    editingId=null; currentRating=0; currentBeer=0; currentKlobasa=0; pendingPhotoBlob=null; pendingPhotoLocalUrl='';
     ['f-domaci','f-hoste','f-soutez','f-stadion','f-mesto','f-zeme','f-poznamka','f-skoreD','f-skoreH','f-divaku'].forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
     $('#f-datum').value=todayISO();
     $('#add-title').textContent='Nová návštěva';
@@ -1075,6 +1098,8 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     v.datum=$('#f-datum').value||todayISO();
     v.poznamka=$('#f-poznamka').value.trim();
     v.hodnoceni=currentRating;
+    v.pivo=currentBeer;
+    v.klobasa=currentKlobasa;
     v.synced=false;
 
     if(pendingPhotoBlob && sbConfigured()){
@@ -1092,7 +1117,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   }
   function editVisit(id){
     const v=visits.find(x=>x.id===id); if(!v) return;
-    editingId=id; currentRating=v.hodnoceni||0;
+    editingId=id; currentRating=v.hodnoceni||0; currentBeer=v.pivo||0; currentKlobasa=v.klobasa||0;
     setFormType(v.typ||'zapas');
     $('#f-domaci').value=v.domaci||''; $('#f-hoste').value=v.hoste||'';
     $('#f-skoreD').value=v.skoreD==null?'':v.skoreD; $('#f-skoreH').value=v.skoreH==null?'':v.skoreH;
@@ -1201,6 +1226,9 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     $('#st-countries').textContent=countries.size;
     $('#st-avg').textContent=avg;
     $('#st-tours').textContent=arr.filter(v=>v.typ==='prohlidka').length;
+    const beerRated=arr.filter(v=>v.pivo>0), klobasaRated=arr.filter(v=>v.klobasa>0);
+    $('#st-beer').textContent = beerRated.length ? (beerRated.reduce((s,v)=>s+v.pivo,0)/beerRated.length).toFixed(1) : '–';
+    $('#st-klobasa').textContent = klobasaRated.length ? (klobasaRated.reduce((s,v)=>s+v.klobasa,0)/klobasaRated.length).toFixed(1) : '–';
 
     function topBars(getKey, limit){
       const counts={};
@@ -1378,6 +1406,10 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       +(v.foto && sbConfigured() ? '<img class="detail-photo" src="'+storageUrl(v.foto)+'" id="detail-photo-img">' : '')
       +'<div class="detail-teams">'+teamsHtml+'</div>'
       +'<div style="margin:8px 0"><div class="rating-row" style="gap:4px">'+miniRating(v.hodnoceni||0)+'</div></div>'
+      +((v.pivo||v.klobasa) ? '<div style="display:flex; gap:16px; margin-bottom:8px">'
+        +(v.pivo ? '<div><div class="tiny-note" style="margin:0 0 3px">Pivo</div><div class="rating-row" style="gap:2px">'+miniRating(v.pivo,beerIcon)+'</div></div>' : '')
+        +(v.klobasa ? '<div><div class="tiny-note" style="margin:0 0 3px">Klobása</div><div class="rating-row" style="gap:2px">'+miniRating(v.klobasa,klobasaIcon)+'</div></div>' : '')
+      +'</div>' : '')
       +'<div class="detail-chips">'+chips.map(c=>'<span class="chip">'+esc(c)+'</span>').join('')+'</div>'
       +(v.poznamka ? '<div class="detail-note">'+esc(v.poznamka)+'</div>' : '')
       +'<div class="ticket-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
