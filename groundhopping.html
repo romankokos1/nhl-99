@@ -133,16 +133,17 @@
   .spread-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.2,.7,.2,1); }
   .spread-scrim{ position:absolute; inset:0; pointer-events:none;
     background:linear-gradient(180deg, rgba(12,16,20,0) 38%, rgba(12,16,20,0.22) 60%, rgba(12,16,20,0.94) 100%); }
-  .spread-eyebrow{ position:absolute; left:22px; top:18px; font-family:'Manrope',sans-serif; font-size:10px; font-weight:700;
-    letter-spacing:0.16em; text-transform:uppercase; color:var(--light-bright); text-shadow:0 1px 6px rgba(0,0,0,0.5);}
+  .spread-eyebrow{ position:absolute; left:14px; top:14px; font-family:'Manrope',sans-serif; font-size:9.5px; font-weight:700;
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--light-bright); background:rgba(12,16,20,0.62); backdrop-filter:blur(6px);
+    border:1px solid rgba(200,167,75,0.30); padding:5px 10px; border-radius:var(--r-pill); z-index:1;}
   .spread-caption{ position:absolute; left:22px; right:96px; bottom:22px; }
   .spread-title{ font-family:'Fraunces',serif; font-weight:500; font-size:23px; line-height:1.16; color:#fdfbf7; }
   .spread-title .vs{ font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--light-bright); font-size:0.72em; margin:0 7px; }
   .spread-sub{ font-family:'Manrope',sans-serif; font-size:11.5px; color:rgba(242,239,233,0.68); margin-top:7px; letter-spacing:0.01em; }
   .spread-sub .meta-stadion{ color:rgba(242,239,233,0.85); text-decoration-color:rgba(242,239,233,0.4); }
-  .spread-stamp{ position:absolute; right:18px; bottom:-24px; width:76px; height:76px; border-radius:50%;
-    background:var(--bg); border:1px dashed rgba(200,167,75,0.55); display:flex; flex-direction:column; align-items:center; justify-content:center;
-    box-shadow:0 10px 22px -10px rgba(0,0,0,0.7), 0 0 0 5px var(--bg); z-index:2; }
+  .spread-stamp{ position:absolute; right:16px; bottom:16px; width:64px; height:64px; border-radius:50%;
+    background:rgba(12,16,20,0.6); backdrop-filter:blur(6px); border:1px dashed rgba(200,167,75,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 6px 16px -8px rgba(0,0,0,0.6); z-index:1; }
   .stamp-day{ font-family:'Fraunces',serif; font-weight:500; font-size:22px; color:var(--text); line-height:1;}
   .stamp-sub{ font-family:'Manrope',sans-serif; font-size:8px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--light); margin-top:2px;}
 
@@ -152,9 +153,9 @@
   .info-who{ display:flex; align-items:center; gap:7px; font-family:'Manrope',sans-serif; font-size:11.5px; color:var(--text-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .avatar{width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8.5px; font-weight:700; color:#0C1014; flex-shrink:0;}
   .info-div{ width:1px; height:12px; background:var(--hairline-strong); flex-shrink:0; }
-  .info-dots{ display:flex; gap:4px; flex-shrink:0; }
-  .info-dots span{ width:4px; height:4px; border-radius:50%; background:var(--hairline-strong); display:block; }
-  .info-dots span.on{ background:var(--light); }
+  .info-rating{ display:flex; gap:2px; flex-shrink:0; align-items:center; }
+  .info-rating span{ display:flex; color:var(--hairline-strong); }
+  .info-rating span.on{ color:var(--light); }
   .info-social{ display:flex; align-items:center; gap:14px; margin-left:auto; flex-shrink:0; }
   .soc-btn{display:flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-3); background:none; border:none; padding:0;}
   .soc-btn svg{width:12px; height:12px;}
@@ -1364,7 +1365,8 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       ? esc(v.domaci?v.domaci:'Prohlídka stadionu')
       : esc(v.domaci)+(score?'<span class="vs">'+esc(score)+'</span>':'<span class="vs">–</span>')+esc(v.hoste||'');
     const n=v.hodnoceni||0;
-    let dots=''; for(let i=1;i<=5;i++) dots+='<span class="'+(i<=n?'on':'')+'"></span>';
+    function tinyStar(filled){ return '<svg viewBox="0 0 24 24" width="10" height="10" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.7"><path d="M12 2.5l2.9 6.1 6.6.7-4.9 4.5 1.3 6.6L12 17.6l-5.9 3.1 1.3-6.6L2.5 9.3l6.6-.7L12 2.5z"/></svg>'; }
+    let dots=''; for(let i=1;i<=5;i++) dots+='<span class="'+(i<=n?'on':'')+'">'+tinyStar(i<=n)+'</span>';
     const menuBtn = showWho ? '<button class="icon-round" style="position:absolute; top:8px; right:8px; width:28px; height:28px; background:rgba(12,16,20,0.55); backdrop-filter:blur(6px); border:none; color:var(--text-2); z-index:2" data-menu="'+v.id+'"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button>' : '';
     const socialHtml = sbConfigured()
       ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg>'+likeN+'</button>'
@@ -1375,7 +1377,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const infoBar = '<div class="info-bar">'
       +(whoHtml?'<div class="info-who">'+whoHtml+'</div>':'')
       +(whoHtml?'<span class="info-div"></span>':'')
-      +'<div class="info-dots">'+dots+'</div>'
+      +'<div class="info-rating">'+dots+'</div>'
       +(socialHtml?'<div class="info-social">'+socialHtml+'</div>':'')
     +'</div>';
 
