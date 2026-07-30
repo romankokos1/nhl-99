@@ -124,46 +124,48 @@
   .search-wrap input{width:100%; background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:11px 14px 11px 38px; color:var(--text); font-size:14px;}
   .search-wrap input::placeholder{color:var(--text-4);}
 
-  /* ticket card — signature element: passport-style visit card */
-  .ticket{
-    background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-card);
-    margin-bottom:var(--s4); box-shadow:var(--shadow-card); overflow:hidden; cursor:pointer; position:relative;
-  }
-  .ticket:active{transform:scale(0.99);}
-  .ticket-hero{position:relative; width:100%; height:148px; background:var(--surface-2); overflow:hidden;}
-  .ticket-hero img{width:100%; height:100%; object-fit:cover; display:block;}
-  .ticket-hero-empty{width:100%; height:100%; display:flex; align-items:center; justify-content:center;
-    background:radial-gradient(120% 140% at 15% -10%, rgba(200,167,75,0.10) 0%, transparent 55%), linear-gradient(155deg,var(--surface-hi),var(--surface-2));}
-  .ticket-hero-empty svg{width:34px; height:34px; opacity:0.28; color:var(--light);}
-  .ticket-hero-fade{position:absolute; inset:0; background:linear-gradient(0deg, rgba(12,16,20,0.55) 0%, transparent 42%);}
-  .ticket-type-tag{position:absolute; top:12px; left:12px; background:rgba(12,16,20,0.62); backdrop-filter:blur(6px); border:1px solid rgba(200,167,75,0.30);
-    color:var(--light-bright); font-family:'Manrope',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:0.11em; text-transform:uppercase; padding:5px 10px; border-radius:var(--r-pill);}
-  .ticket-lower{display:flex;}
-  .ticket-datestrip{
-    width:56px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-    padding:var(--s3) 4px; border-right:1px solid var(--hairline);
-  }
-  .ds-day{font-family:'Fraunces',serif; font-weight:500; font-size:22px; color:var(--text); line-height:1;}
-  .ds-mon{font-family:'Manrope',sans-serif; font-size:9.5px; text-transform:uppercase; color:var(--light); letter-spacing:0.10em; font-weight:700;}
-  .ds-rule{width:16px; height:1px; background:var(--hairline-strong); margin:4px 0;}
-  .ds-year{font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--text-4);}
-  .ticket-content{flex:1; padding:var(--s3) var(--s4); min-width:0;}
-  .ticket-teams{font-family:'Fraunces',serif; font-weight:500; font-size:16px; color:var(--text); display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;}
-  .ticket-score{font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--light-bright); flex-shrink:0; font-size:14px;}
-  .ticket-meta{font-family:'Manrope',sans-serif; font-size:11.5px; color:var(--text-3); margin-top:4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
-  .ticket-meta .dotsep{width:3px; height:3px; border-radius:50%; background:var(--text-4);}
-  .meta-stadion{text-decoration:underline dotted; text-underline-offset:2px; text-decoration-color:var(--text-4);}
-  .chip.meta-stadion{cursor:pointer;}
-  .ticket-dots{display:flex; gap:4px; margin-top:7px;}
-  .ticket-dots span{width:5px; height:5px; border-radius:50%; background:var(--hairline-strong); display:block;}
-  .ticket-dots span.on{background:var(--light);}
-  .ticket-foot{display:flex; align-items:center; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px solid var(--hairline);}
-  .ticket-who{display:flex; align-items:center; gap:6px; font-family:'Manrope',sans-serif; font-size:11.5px; color:var(--text-3);}
+  /* signature element — visits are either a full-bleed photographic "spread"
+     with a pinned passport stamp, or a quiet single-line "manifest" entry.
+     No card boxes, no shadows-as-default, no repeating grid unit. */
+  .spread{ position:relative; margin:0 0 46px; cursor:pointer; }
+  .spread:active .spread-photo img{ transform:scale(1.015); }
+  .spread-photo{ position:relative; width:100%; aspect-ratio:4/5; border-radius:4px; overflow:hidden; background:var(--surface-2); }
+  .spread-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.2,.7,.2,1); }
+  .spread-scrim{ position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(180deg, rgba(12,16,20,0) 38%, rgba(12,16,20,0.22) 60%, rgba(12,16,20,0.94) 100%); }
+  .spread-eyebrow{ position:absolute; left:22px; top:18px; font-family:'Manrope',sans-serif; font-size:10px; font-weight:700;
+    letter-spacing:0.16em; text-transform:uppercase; color:var(--light-bright); text-shadow:0 1px 6px rgba(0,0,0,0.5);}
+  .spread-caption{ position:absolute; left:22px; right:96px; bottom:22px; }
+  .spread-title{ font-family:'Fraunces',serif; font-weight:500; font-size:23px; line-height:1.16; color:#fdfbf7; }
+  .spread-title .vs{ font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--light-bright); font-size:0.72em; margin:0 7px; }
+  .spread-sub{ font-family:'Manrope',sans-serif; font-size:11.5px; color:rgba(242,239,233,0.68); margin-top:7px; letter-spacing:0.01em; }
+  .spread-sub .meta-stadion{ color:rgba(242,239,233,0.85); text-decoration-color:rgba(242,239,233,0.4); }
+  .spread-stamp{ position:absolute; right:18px; bottom:-24px; width:76px; height:76px; border-radius:50%;
+    background:var(--bg); border:1px dashed rgba(200,167,75,0.55); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 10px 22px -10px rgba(0,0,0,0.7), 0 0 0 5px var(--bg); }
+  .stamp-day{ font-family:'Fraunces',serif; font-weight:500; font-size:22px; color:var(--text); line-height:1;}
+  .stamp-sub{ font-family:'Manrope',sans-serif; font-size:8px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--light); margin-top:2px;}
+  .spread-margin{ display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-left:2px; }
+  .margin-who{ display:flex; align-items:center; gap:7px; font-family:'Manrope',sans-serif; font-size:11.5px; color:var(--text-3); }
   .avatar{width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8.5px; font-weight:700; color:#0C1014; flex-shrink:0;}
-  .ticket-social{display:flex; gap:12px; align-items:center;}
+  .margin-right{ display:flex; align-items:center; gap:14px; }
+  .margin-dots{ display:flex; gap:4px; }
+  .margin-dots span{ width:4px; height:4px; border-radius:50%; background:var(--hairline-strong); display:block; }
+  .margin-dots span.on{ background:var(--light); }
   .soc-btn{display:flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-3); background:none; border:none; padding:0;}
-  .soc-btn svg{width:13px; height:13px;}
+  .soc-btn svg{width:12px; height:12px;}
   .soc-btn.liked{color:var(--red);}
+
+  /* photo-less visits: a quiet manifest line, not a card */
+  .ledger{ display:flex; align-items:flex-start; gap:16px; padding:15px 2px; border-bottom:1px solid var(--hairline); cursor:pointer; }
+  .ledger:last-child{ border-bottom:none; }
+  .ledger-date{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--light); width:50px; flex-shrink:0; padding-top:3px; letter-spacing:0.02em;}
+  .ledger-main{ flex:1; min-width:0; }
+  .ledger-title{ font-family:'Fraunces',serif; font-weight:500; font-size:16.5px; color:var(--text); line-height:1.3; }
+  .ledger-title .vs{ font-family:'IBM Plex Mono',monospace; color:var(--light-bright); font-size:0.72em; margin:0 6px; font-weight:600;}
+  .ledger-sub{ font-family:'Manrope',sans-serif; font-size:11px; color:var(--text-3); margin-top:4px; }
+  .ledger-foot{ display:flex; align-items:center; gap:14px; margin-top:8px; }
+  .ledger-tag{ font-family:'Manrope',sans-serif; font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-4); flex-shrink:0; padding-top:4px; white-space:nowrap; }
 
   .fab-add{position:fixed;}
   .empty-state{text-align:center; padding:var(--s8) var(--s5); color:var(--text-3);}
@@ -1332,6 +1334,10 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   }
 
   function initials(name){ return (name||'?').trim().slice(0,2).toUpperCase(); }
+  function tiltFor(id){
+    let h=0; for(const c of (id||'x')) h=(h*31+c.charCodeAt(0))>>>0;
+    return -8 + (h%17); // stable -8..8deg per visit
+  }
   function ticketCard(v, showWho){
     const d=czShortDate(v.datum);
     const isTour = v.typ==='prohlidka';
@@ -1341,38 +1347,46 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const commN = commentsMap[v.id] ? commentsMap[v.id].length : 0;
     const stadionLabel=[v.stadion,v.mesto].filter(Boolean).join(', ');
     const stadKey=stadionKey(v);
-    const metaParts=[];
-    if(stadionLabel) metaParts.push('<span class="meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(stadionLabel)+'</span>');
-    if(v.zeme) metaParts.push('<span>'+esc(v.zeme)+'</span>');
-    if(!isTour && v.soutez) metaParts.push('<span>'+esc(v.soutez)+'</span>');
-    const teamsHtml = isTour
-      ? '<span>'+(v.domaci?esc(v.domaci):'Prohlídka stadionu')+'</span>'
-      : '<span>'+esc(v.domaci)+'</span>'+(score?'<span class="ticket-score">'+esc(score)+'</span>':'<span style="color:var(--text-4)">–</span>')+(v.hoste?'<span>'+esc(v.hoste)+'</span>':'');
-    const heroInner = (v.foto && sbConfigured())
-      ? '<img src="'+storageUrl(v.foto)+'" loading="lazy" alt="">'
-      : '<div class="ticket-hero-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M9 20l-6-2V6l6 2 6-2 6 2v12l-6-2-6 2z"/></svg></div>';
+    const subParts=[];
+    if(stadionLabel) subParts.push('<span class="meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(stadionLabel)+'</span>');
+    if(v.zeme) subParts.push('<span>'+esc(v.zeme)+'</span>');
+    if(!isTour && v.soutez) subParts.push('<span>'+esc(v.soutez)+'</span>');
+    const titleHtml = isTour
+      ? esc(v.domaci?v.domaci:'Prohlídka stadionu')
+      : esc(v.domaci)+(score?'<span class="vs">'+esc(score)+'</span>':'<span class="vs">–</span>')+esc(v.hoste||'');
     const n=v.hodnoceni||0;
     let dots=''; for(let i=1;i<=5;i++) dots+='<span class="'+(i<=n?'on':'')+'"></span>';
-    return '<div class="ticket" data-open="'+v.id+'">'
-      +'<div class="ticket-hero">'+heroInner+'<div class="ticket-hero-fade"></div>'
-        +'<div class="ticket-type-tag">'+(isTour?'Prohlídka':'Zápas')+'</div>'
-        +(showWho ? '<button class="icon-round" style="position:absolute; top:8px; right:8px; width:28px; height:28px; background:rgba(12,16,20,0.55); backdrop-filter:blur(6px); border:none; color:var(--text-2)" data-menu="'+v.id+'"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button>' : '')
-      +'</div>'
-      +'<div class="ticket-lower">'
-        +'<div class="ticket-datestrip"><div class="ds-day">'+esc(d.d)+'</div><div class="ds-mon">'+esc(d.m)+'</div><div class="ds-rule"></div><div class="ds-year">'+esc(String(d.y).slice(-2))+'</div></div>'
-        +'<div class="ticket-content">'
-          +'<div class="ticket-teams">'+teamsHtml+'</div>'
-          +'<div class="ticket-meta">'+metaParts.join('<span class="dotsep"></span>')+'</div>'
-          +'<div class="ticket-dots">'+dots+'</div>'
-          +'<div class="ticket-foot">'
-            +(showWho ? '<div class="ticket-who"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+'</div>' : '<span></span>')
-            +(sbConfigured() ? '<div class="ticket-social">'
-              +'<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg>'+likeN+'</button>'
-              +'<button class="soc-btn" data-open="'+v.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/></svg>'+commN+'</button>'
-            +'</div>' : '<span></span>')
-          +'</div>'
+    const menuBtn = showWho ? '<button class="icon-round" style="position:absolute; top:8px; right:8px; width:28px; height:28px; background:rgba(12,16,20,0.55); backdrop-filter:blur(6px); border:none; color:var(--text-2); z-index:2" data-menu="'+v.id+'"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button>' : '';
+    const socialHtml = sbConfigured()
+      ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg>'+likeN+'</button>'
+        +'<button class="soc-btn" data-open="'+v.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/></svg>'+commN+'</button>'
+      : '';
+    const whoHtml = showWho ? '<span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba) : '';
+
+    if(v.foto && sbConfigured()){
+      // full-bleed photographic spread with a pinned passport stamp
+      return '<article class="spread" data-open="'+v.id+'">'
+        +'<div class="spread-photo"><img src="'+storageUrl(v.foto)+'" loading="lazy" alt=""><div class="spread-scrim"></div></div>'
+        +'<div class="spread-eyebrow">'+(isTour?'Prohlídka stadionu':'Zápas')+'</div>'
+        +menuBtn
+        +'<div class="spread-caption"><div class="spread-title">'+titleHtml+'</div><div class="spread-sub">'+subParts.join(' · ')+'</div></div>'
+        +'<div class="spread-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(d.d)+'</div><div class="stamp-sub">'+esc(d.m)+' '+esc(String(d.y).slice(-2))+'</div></div>'
+        +'<div class="spread-margin">'
+          +'<div class="margin-who">'+whoHtml+'</div>'
+          +'<div class="margin-right"><div class="margin-dots">'+dots+'</div>'+(socialHtml?'<div style="display:flex; gap:12px">'+socialHtml+'</div>':'')+'</div>'
         +'</div>'
+      +'</article>';
+    }
+
+    // no photo: a quiet single-line manifest entry
+    return '<div class="ledger" data-open="'+v.id+'">'
+      +'<div class="ledger-date">'+esc(d.d)+' '+esc(d.m)+'</div>'
+      +'<div class="ledger-main">'
+        +'<div class="ledger-title">'+titleHtml+'</div>'
+        +'<div class="ledger-sub">'+subParts.join(' · ')+(showWho?' · '+esc(v.osoba):'')+'</div>'
+        +'<div class="ledger-foot"><div class="margin-dots">'+dots+'</div>'+(socialHtml?'<div style="display:flex; gap:12px">'+socialHtml+'</div>':'')+'</div>'
       +'</div>'
+      +'<div class="ledger-tag">'+(isTour?'Prohlídka':'Zápas')+'</div>'
     +'</div>';
   }
   function gridTile(v){
@@ -1696,7 +1710,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       +'</div>' : '')
       +'<div class="detail-chips">'+chips.map(c=>c===v.stadion ? '<span class="chip meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(c)+'</span>' : '<span class="chip">'+esc(c)+'</span>').join('')+'</div>'
       +(v.poznamka ? '<div class="detail-note">'+esc(v.poznamka)+'</div>' : '')
-      +'<div class="ticket-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
+      +'<div class="margin-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
       +(sbConfigured() ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'" style="margin-bottom:var(--s3)"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg> Líbí se ('+(likesMap[v.id]?likesMap[v.id].size:0)+')</button>' : '')
       +'<button class="btn btn-ghost btn-sm" id="detail-share" style="margin-bottom:var(--s4)">Sdílet jako obrázek</button>'
       +'<div id="comment-thread">'+comments.map(c=>'<div class="comment-row"><span class="avatar" style="background:'+avatarColor(c.osoba)+'">'+esc(initials(c.osoba))+'</span><div class="comment-bubble"><div class="who">'+esc(c.osoba)+'</div>'+esc(c.text)+'</div>'+(c.osoba===cfg.name?'<button data-delcomment="'+c.id+'" style="background:none; border:none; color:var(--text-4); flex-shrink:0; padding:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M6 6l12 12M18 6L6 18"/></svg></button>':'')+'</div>').join('')+'</div>'
