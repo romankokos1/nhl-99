@@ -282,6 +282,42 @@
   .cardmenu-pop button{display:flex; align-items:center; gap:8px; width:100%; padding:11px 16px; background:none; border:none; color:var(--text); font-size:13px; text-align:left; cursor:pointer;}
   .cardmenu-pop button svg{width:15px; height:15px;}
   .cardmenu-pop button.danger{color:var(--red);}
+
+  /* grid/gallery view */
+  .feed-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:3px;}
+  .grid-tile{position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; background:var(--surface-2); cursor:pointer;}
+  .grid-tile img{width:100%; height:100%; object-fit:cover;}
+  .grid-tile .gt-fallback{width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px; text-align:center;}
+  .grid-tile .gt-fallback .t{font-family:'Oswald',sans-serif; font-size:11px; text-transform:uppercase; color:var(--chalk); line-height:1.2;}
+  .grid-tile .gt-badge{position:absolute; left:5px; bottom:5px; background:rgba(10,14,18,0.72); backdrop-filter:blur(4px); border-radius:6px; padding:2px 6px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--light);}
+
+  /* wishlist */
+  .wish-row{display:flex; align-items:center; gap:var(--s3); background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:var(--s3); margin-bottom:8px;}
+  .wish-info{flex:1; min-width:0;}
+  .wish-info .t{font-weight:600; font-size:14px;}
+  .wish-info .s{font-size:12px; color:var(--text-3);}
+  .wish-actions{display:flex; gap:6px; flex-shrink:0;}
+  .wish-actions button{width:32px; height:32px; border-radius:50%; border:1px solid var(--hairline); background:var(--surface-2); color:var(--text-2); display:flex; align-items:center; justify-content:center;}
+  .wish-actions button.go{color:var(--pitch); border-color:rgba(95,174,74,0.35);}
+  .wish-actions button svg{width:15px; height:15px;}
+
+  /* duplicate merge */
+  .dup-card{background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:var(--s3) var(--s4); margin-bottom:var(--s3);}
+  .dup-opt{display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--hairline);}
+  .dup-opt:last-of-type{border-bottom:none;}
+  .dup-opt .t{font-size:13.5px; font-weight:600;}
+  .dup-opt .s{font-size:11.5px; color:var(--text-3);}
+  .dup-opt button{flex-shrink:0; background:var(--surface-2); border:1px solid var(--hairline-strong); color:var(--light); font-size:11.5px; font-weight:700; border-radius:var(--r-pill); padding:6px 12px;}
+  .dup-skip{width:100%; text-align:center; font-size:11.5px; color:var(--text-3); background:none; border:none; padding:8px 0 0; cursor:pointer;}
+
+  /* wrapped */
+  .wrapped-hero{background:linear-gradient(155deg,var(--surface-2),var(--surface)); border:1px solid var(--hairline); border-radius:var(--r-card); padding:var(--s5); text-align:center; margin-bottom:var(--s5);}
+  .wrapped-hero .yr{font-family:'Oswald',sans-serif; font-size:34px; color:var(--light); text-transform:uppercase;}
+  .wrapped-hero .sub{font-size:12.5px; color:var(--text-3); margin-top:2px;}
+  .year-pick{display:flex; gap:6px; overflow-x:auto; margin-bottom:var(--s4); padding-bottom:2px;}
+  .year-pick::-webkit-scrollbar{display:none;}
+  .year-chip{flex-shrink:0; background:var(--surface-2); border:1px solid var(--hairline); border-radius:var(--r-pill); padding:8px 16px; font-size:13px; font-weight:600; color:var(--text-2);}
+  .year-chip.active{background:var(--surface-hi); color:var(--light); border-color:var(--hairline-strong);}
 </style>
 </head>
 <body>
@@ -296,6 +332,9 @@
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0a0e12" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 6l3.6 2.6-1.4 4.2H9.8L8.4 8.6 12 6z" fill="#0a0e12"/><path d="M3 12h4M17 12h4M12 3v4M12 17v4"/></svg>
         </span>
         <div style="flex:1"><div class="tb-title">Groundhopping</div></div>
+        <button class="icon-round" id="view-toggle" aria-label="Přepnout zobrazení">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="view-toggle-icon"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        </button>
         <button class="icon-round" data-map aria-label="Mapa">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-6-2V6l6 2 6-2 6 2v12l-6-2-6 2z"/><path d="M9 8v12M15 6v12"/></svg>
         </button>
@@ -445,6 +484,23 @@
           <div class="row-item" id="invite-btn2" data-invite style="display:none">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="3"/><path d="M2 21c0-3.5 3-5.5 7-5.5M16 3.2a3.5 3.5 0 0 1 0 6.6M15 15c4 0 7 2 7 5"/></svg>
             <div class="t">Pozvat kamarády</div>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="row-item" id="wish-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg>
+            <div class="t">Chci navštívit</div>
+            <span class="tiny-note" id="wish-count" style="margin:0 6px 0 0"></span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="row-item" id="wrapped-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>
+            <div class="t">Roční přehled</div>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="row-item" id="dup-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="12" height="12" rx="2"/><rect x="9" y="9" width="12" height="12" rx="2"/></svg>
+            <div class="t">Sloučit duplicitní stadiony</div>
+            <span class="tiny-note" id="dup-count" style="margin:0 6px 0 0"></span>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
           </div>
         </div>
@@ -608,6 +664,47 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   <!-- photo lightbox -->
   <div class="lightbox-overlay" id="lightbox-overlay"><img id="lightbox-img" src="" alt=""></div>
 
+  <!-- wishlist / bucket list -->
+  <div class="overlay" id="wish-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Chci navštívit</h2>
+      <p class="lead">Stadiony, které máš v hledáčku. Zůstává jen v tomto zařízení.</p>
+      <div class="field"><label>Stadion</label><input type="text" id="wish-stadion" placeholder="název stadionu" autocomplete="off"></div>
+      <div class="field-row">
+        <div class="field"><label>Město</label><input type="text" id="wish-mesto" placeholder="město" autocomplete="off"></div>
+        <div class="field"><label>Země</label><input type="text" id="wish-zeme" placeholder="země" autocomplete="off"></div>
+      </div>
+      <div class="field"><label>Poznámka</label><input type="text" id="wish-poznamka" placeholder="proč tam chceš, nepovinné" autocomplete="off"></div>
+      <button class="btn btn-primary" id="wish-add">Přidat na seznam</button>
+      <div class="section-title" style="margin-top:var(--s5)">Seznam</div>
+      <div id="wish-list"></div>
+      <button class="btn btn-ghost" id="wish-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
+  <!-- yearly wrapped -->
+  <div class="overlay" id="wrapped-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Roční přehled</h2>
+      <div class="year-pick" id="wrapped-years"></div>
+      <div id="wrapped-content"></div>
+      <button class="btn btn-ghost" id="wrapped-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
+  <!-- duplicate stadium merge -->
+  <div class="overlay" id="dup-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Sloučit duplicitní stadiony</h2>
+      <p class="lead">Když je stejný stadion zapsaný pod dvěma různými názvy, sloučí se pod ten, který vybereš.</p>
+      <div id="dup-list"></div>
+      <button class="btn btn-ghost" id="dup-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
   <!-- card action menu -->
   <div class="cardmenu-pop" id="cardmenu-pop">
     <button id="cm-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Upravit</button>
@@ -622,10 +719,11 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
 
-  const LKEY='gh_navstevy', CFG='gh_cfg', STAD_CACHE='gh_stadion_cache', GEOCACHE='gh_geocache';
+  const LKEY='gh_navstevy', CFG='gh_cfg', STAD_CACHE='gh_stadion_cache', GEOCACHE='gh_geocache', WISH='gh_wishlist', DUPDISMISS='gh_dup_dismiss';
   const BUCKET='fotky';
 
   let visits = [];
+  let wishlist = [];
   let cfg = { url:'', key:'', name:'' };
   let stadionCache = {};
   let geoCache = {};
@@ -633,8 +731,10 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   let currentRating = 0;
   let editingId = null;
   let feedScope = 'all';
+  let viewMode = 'list';
   let statScope = 'all';
   let boardMode = 'stadiums';
+  let wrappedYear = null;
   let likesMap = {};   // navstevy_id -> Set(osoba)
   let commentsMap = {}; // navstevy_id -> [{id,osoba,text,vytvoreno}]
 
@@ -659,11 +759,15 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     try { cfg = Object.assign(cfg, JSON.parse(localStorage.getItem(CFG))||{}); } catch(e){}
     try { stadionCache = JSON.parse(localStorage.getItem(STAD_CACHE))||{}; } catch(e){ stadionCache={}; }
     try { geoCache = JSON.parse(localStorage.getItem(GEOCACHE))||{}; } catch(e){ geoCache={}; }
+    try { wishlist = JSON.parse(localStorage.getItem(WISH))||[]; } catch(e){ wishlist=[]; }
   }
   function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(visits)); } catch(e){ toast('Nelze uložit lokálně', true); } }
   function saveCfg(){ try { localStorage.setItem(CFG, JSON.stringify(cfg)); } catch(e){} }
   function saveStadionCache(){ try { localStorage.setItem(STAD_CACHE, JSON.stringify(stadionCache)); } catch(e){} }
   function saveGeoCache(){ try { localStorage.setItem(GEOCACHE, JSON.stringify(geoCache)); } catch(e){} }
+  function saveWishlist(){ try { localStorage.setItem(WISH, JSON.stringify(wishlist)); } catch(e){} }
+  function getDismissed(){ try { return new Set(JSON.parse(localStorage.getItem(DUPDISMISS))||[]); } catch(e){ return new Set(); } }
+  function saveDismissed(set){ try { localStorage.setItem(DUPDISMISS, JSON.stringify([...set])); } catch(e){} }
 
   /* ---------- supabase ---------- */
   function sbHeaders(){ return { 'apikey':cfg.key, 'Authorization':'Bearer '+cfg.key, 'Content-Type':'application/json' }; }
@@ -703,6 +807,91 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   async function deletePhoto(path){
     if(!sbConfigured()||!path) return;
     try{ await fetch(cfg.url.replace(/\/$/,'')+'/storage/v1/object/'+BUCKET+'/'+path, {method:'DELETE', headers:{'apikey':cfg.key,'Authorization':'Bearer '+cfg.key}}); }catch(e){}
+  }
+
+  /* ---------- read capture date out of a photo (EXIF), best-effort ---------- */
+  async function maybeUseExifDate(file){
+    const field=$('#f-datum'); if(!field) return null;
+    if(field.value.trim() && field.value.trim()!==todayISO()) return null;
+    const d=await readPhotoDate(file);
+    if(!d || d===field.value.trim()) return null;
+    field.value=d;
+    return d;
+  }
+  function readPhotoDate(file){
+    return new Promise(resolve=>{
+      try{
+        const reader=new FileReader();
+        reader.onerror=()=>resolve(null);
+        reader.onload=()=>{ try{ resolve(parseExifDate(reader.result)); }catch(e){ resolve(null); } };
+        reader.readAsArrayBuffer(file.slice(0, 256*1024));
+      }catch(e){ resolve(null); }
+    });
+  }
+  function parseExifDate(buf){
+    const v=new DataView(buf);
+    if(v.byteLength<16 || v.getUint16(0,false)!==0xFFD8) return null;
+    let off=2;
+    while(off+4<=v.byteLength){
+      const marker=v.getUint16(off,false);
+      if((marker & 0xFF00)!==0xFF00) return null;
+      const size=v.getUint16(off+2,false);
+      if(marker===0xFFE1){
+        const start=off+4;
+        if(start+6>v.byteLength) return null;
+        if(v.getUint32(start,false)!==0x45786966) return null;
+        return readExifIFDs(v, start+6);
+      }
+      if(marker===0xFFDA) return null;
+      off+=2+size;
+    }
+    return null;
+  }
+  function readExifIFDs(v, tiff){
+    if(tiff+8>v.byteLength) return null;
+    const le = v.getUint16(tiff,false)===0x4949;
+    if(v.getUint16(tiff+2,le)!==0x002A) return null;
+    const ifd0=tiff+v.getUint32(tiff+4,le);
+    const want={0x9003:1, 0x9004:2, 0x0132:3};
+    let best=null, bestRank=99;
+    const scan=(dirStart)=>{
+      if(dirStart+2>v.byteLength) return null;
+      const n=v.getUint16(dirStart,le);
+      let exifPtr=null;
+      for(let i=0;i<n;i++){
+        const e=dirStart+2+i*12;
+        if(e+12>v.byteLength) break;
+        const tag=v.getUint16(e,le);
+        if(tag===0x8769){ exifPtr=tiff+v.getUint32(e+8,le); continue; }
+        if(want[tag]){
+          const count=v.getUint32(e+4,le);
+          const val=(count>4)? tiff+v.getUint32(e+8,le) : e+8;
+          const str=readAscii(v,val,Math.min(count,20));
+          const d=exifToISO(str);
+          if(d && want[tag]<bestRank){ best=d; bestRank=want[tag]; }
+        }
+      }
+      return exifPtr;
+    };
+    const ptr=scan(ifd0);
+    if(ptr) scan(ptr);
+    return best;
+  }
+  function readAscii(v, at, len){
+    let out='';
+    for(let i=0;i<len && at+i<v.byteLength;i++){
+      const c=v.getUint8(at+i);
+      if(c===0) break;
+      out+=String.fromCharCode(c);
+    }
+    return out;
+  }
+  function exifToISO(str){
+    const m=/^(\d{4}):(\d{2}):(\d{2})/.exec(str||'');
+    if(!m) return null;
+    const y=+m[1], mo=+m[2], d=+m[3];
+    if(y<1990 || y>2100 || mo<1 || mo>12 || d<1 || d>31) return null;
+    return m[1]+'-'+m[2]+'-'+m[3];
   }
 
   async function sbPull(){
@@ -926,6 +1115,15 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       +(showWho ? '<button class="icon-round" style="position:absolute; top:8px; right:8px; width:28px; height:28px; background:transparent; border:none" data-menu="'+v.id+'"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button>' : '')
     +'</div>';
   }
+  function gridTile(v){
+    const d=czShortDate(v.datum);
+    const hasPhoto = v.foto && sbConfigured();
+    return '<div class="grid-tile" data-open="'+v.id+'">'
+      +(hasPhoto ? '<img src="'+storageUrl(v.foto)+'" loading="lazy">'
+        : '<div class="gt-fallback" style="background:linear-gradient(155deg,'+avatarColor(v.domaci)+'44,var(--surface-2))"><div class="t">'+esc(v.domaci)+(v.hoste?'<br>vs '+esc(v.hoste):'')+'</div></div>')
+      +'<div class="gt-badge">'+esc(d.d)+'.'+esc(String(MONTHS.indexOf(d.m)+1))+'.</div>'
+    +'</div>';
+  }
   function sortVisits(arr){ return arr.slice().sort((a,b)=> (b.datum||'').localeCompare(a.datum||'') || (b.id||'').localeCompare(a.id||'')); }
 
   function renderFeed(){
@@ -938,7 +1136,11 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       feed.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20l-6-2V6l6 2 6-2 6 2v12l-6-2-6 2z"/></svg><div class="t">Zatím žádné návštěvy</div><div class="s">Přidej svůj první zápas přes tlačítko +</div></div>';
       return;
     }
-    feed.innerHTML=arr.map(v=>ticketCard(v, feedScope==='all')).join('');
+    if(viewMode==='grid'){
+      feed.innerHTML='<div class="feed-grid">'+arr.map(gridTile).join('')+'</div>';
+    } else {
+      feed.innerHTML=arr.map(v=>ticketCard(v, feedScope==='all')).join('');
+    }
   }
 
   function renderHero(){
@@ -1008,7 +1210,112 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     $('#invite-btn2').style.display=sbConfigured()?'flex':'none';
   }
 
-  function renderAll(){ renderHero(); renderFeed(); renderStats(); renderBoard(); renderProfile(); }
+  function renderAll(){ renderHero(); renderFeed(); renderStats(); renderBoard(); renderProfile(); renderWishlist(); renderDupOverlay(); }
+
+  /* ---------- yearly wrapped ---------- */
+  function wrappedYearsList(){ return [...new Set(visits.map(v=>(v.datum||'').slice(0,4)).filter(y=>y.length===4))].sort().reverse(); }
+  function renderWrappedYears(){
+    const years=wrappedYearsList();
+    if(!wrappedYear || !years.includes(wrappedYear)) wrappedYear=years[0]||null;
+    $('#wrapped-years').innerHTML=years.map(y=>'<button class="year-chip'+(y===wrappedYear?' active':'')+'" data-wyear="'+y+'">'+y+'</button>').join('');
+  }
+  function renderWrapped(){
+    renderWrappedYears();
+    const content=$('#wrapped-content');
+    if(!wrappedYear){ content.innerHTML='<div class="empty-state"><div class="t">Zatím žádná data</div><div class="s">Přidej první návštěvu a přehled se tu objeví.</div></div>'; return; }
+    const arr=visits.filter(v=>(v.datum||'').startsWith(wrappedYear));
+    const stadiums=new Set(arr.map(stadionKey).filter(Boolean));
+    const countries=new Set(arr.map(v=>norm(v.zeme)).filter(Boolean));
+    const rated=arr.filter(v=>v.hodnoceni>0);
+    const best=rated.slice().sort((a,b)=>(b.hodnoceni-a.hodnoceni)||(b.datum||'').localeCompare(a.datum||''))[0];
+    const soutezCounts={}; arr.forEach(v=>{ if(v.soutez) soutezCounts[v.soutez]=(soutezCounts[v.soutez]||0)+1; });
+    const topSoutez=Object.entries(soutezCounts).sort((a,b)=>b[1]-a[1])[0];
+    const sorted=arr.slice().sort((a,b)=>(a.datum||'').localeCompare(b.datum||''));
+    content.innerHTML =
+      '<div class="wrapped-hero"><div class="yr">'+wrappedYear+'</div><div class="sub">'+arr.length+' zápasů &middot; '+stadiums.size+' stadionů &middot; '+countries.size+' zemí</div></div>'
+      +'<div class="stat-grid">'
+        +'<div class="stat-card"><div class="n">'+arr.length+'</div><div class="l">zápasů</div></div>'
+        +'<div class="stat-card"><div class="n">'+stadiums.size+'</div><div class="l">stadionů</div></div>'
+        +'<div class="stat-card"><div class="n">'+countries.size+'</div><div class="l">zemí</div></div>'
+        +'<div class="stat-card"><div class="n">'+(topSoutez?topSoutez[1]:'–')+'</div><div class="l">'+(topSoutez?esc(topSoutez[0]):'nejčastější soutěž')+'</div></div>'
+      +'</div>'
+      +(best ? '<div class="section-title">Nejlepší atmosféra</div>'+ticketCard(best,true) : '')
+      +(sorted[0] ? '<div class="section-title">První a poslední zápas roku</div>'+ticketCard(sorted[0],true)+(sorted.length>1?ticketCard(sorted[sorted.length-1],true):'') : '');
+  }
+
+  /* ---------- share card (export visit as image) ---------- */
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath(); ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function buildShareCanvas(v){
+    const W=1000,H=1250;
+    const canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext('2d');
+    const grad=ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'#16222b'); grad.addColorStop(0.5,'#0d1319'); grad.addColorStop(1,'#0a0e12');
+    ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+    const glow=ctx.createRadialGradient(W*0.82,H*0.04,50,W*0.82,H*0.04,520);
+    glow.addColorStop(0,'rgba(244,211,94,0.14)'); glow.addColorStop(1,'rgba(244,211,94,0)');
+    ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+
+    ctx.fillStyle='#f4d35e'; ctx.textAlign='center';
+    ctx.font='600 28px Oswald, sans-serif';
+    ctx.fillText('G R O U N D H O P P I N G   D E N Í K', W/2, 90);
+
+    const cardX=60, cardY=150, cardW=W-120, cardH=860;
+    ctx.fillStyle='rgba(18,26,34,0.92)';
+    roundRect(ctx,cardX,cardY,cardW,cardH,32); ctx.fill();
+    ctx.strokeStyle='rgba(244,211,94,0.22)'; ctx.lineWidth=2;
+    roundRect(ctx,cardX,cardY,cardW,cardH,32); ctx.stroke();
+
+    const d=czShortDate(v.datum);
+    ctx.fillStyle='#eef2ee'; ctx.font='700 38px "IBM Plex Mono", monospace';
+    ctx.fillText(d.d+'. '+(MONTHS.indexOf(d.m)+1)+'. '+d.y, W/2, cardY+80);
+
+    ctx.setLineDash([6,10]); ctx.strokeStyle='rgba(244,211,94,0.25)';
+    ctx.beginPath(); ctx.moveTo(cardX+30, cardY+120); ctx.lineTo(cardX+cardW-30, cardY+120); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font='600 52px Oswald, sans-serif'; ctx.fillStyle='#eef3ee';
+    ctx.fillText((v.domaci||'').toUpperCase(), W/2, cardY+230);
+    const score=(v.skoreD!=null && v.skoreH!=null) ? (v.skoreD+' : '+v.skoreH) : 'vs';
+    ctx.font='700 74px "IBM Plex Mono", monospace'; ctx.fillStyle='#ffe27a';
+    ctx.fillText(score, W/2, cardY+330);
+    if(v.hoste){ ctx.font='600 52px Oswald, sans-serif'; ctx.fillStyle='#eef3ee'; ctx.fillText(v.hoste.toUpperCase(), W/2, cardY+420); }
+
+    ctx.font='400 28px Inter, sans-serif'; ctx.fillStyle='#a6b6ad';
+    ctx.fillText([v.stadion, [v.mesto,v.zeme].filter(Boolean).join(', ')].filter(Boolean).join(' · '), W/2, cardY+490);
+    if(v.soutez){ ctx.font='500 26px Inter, sans-serif'; ctx.fillStyle='#72857c'; ctx.fillText(v.soutez, W/2, cardY+530); }
+
+    const n=v.hodnoceni||0, ballR=18, gap=46, startX=W/2-(gap*2);
+    for(let i=0;i<5;i++){
+      const cx=startX+i*gap, cy=cardY+610;
+      ctx.beginPath(); ctx.arc(cx,cy,ballR,0,Math.PI*2);
+      ctx.fillStyle = i<n ? '#f4d35e' : 'rgba(255,255,255,0.10)';
+      ctx.fill();
+    }
+    if(v.divaku){ ctx.font='400 26px "IBM Plex Mono", monospace'; ctx.fillStyle='#72857c'; ctx.fillText(v.divaku+' diváků', W/2, cardY+700); }
+
+    ctx.font='500 24px Inter, sans-serif'; ctx.fillStyle='#6b7d74';
+    ctx.fillText(v.osoba||'', W/2, cardY+cardH-40);
+    return canvas;
+  }
+  async function shareVisitImage(v){
+    try{ await document.fonts.ready; }catch(e){}
+    const canvas=buildShareCanvas(v);
+    canvas.toBlob(async blob=>{
+      if(!blob){ toast('Obrázek se nepodařilo vytvořit', true); return; }
+      const file=new File([blob], 'zapas-'+(v.datum||'')+'.png', {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{ await navigator.share({files:[file], title:'Groundhopping deník'}); return; }catch(e){}
+      }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download=file.name; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    }, 'image/png', 0.95);
+  }
 
   /* ---------- visit detail ---------- */
   function openVisitDetail(id){
@@ -1025,13 +1332,15 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       +'<div class="detail-chips">'+chips.map(c=>'<span class="chip">'+esc(c)+'</span>').join('')+'</div>'
       +(v.poznamka ? '<div class="detail-note">'+esc(v.poznamka)+'</div>' : '')
       +'<div class="ticket-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
-      +(sbConfigured() ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'" style="margin-bottom:var(--s4)"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg> Líbí se ('+(likesMap[v.id]?likesMap[v.id].size:0)+')</button>' : '')
+      +(sbConfigured() ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'" style="margin-bottom:var(--s3)"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg> Líbí se ('+(likesMap[v.id]?likesMap[v.id].size:0)+')</button>' : '')
+      +'<button class="btn btn-ghost btn-sm" id="detail-share" style="margin-bottom:var(--s4)">Sdílet jako obrázek</button>'
       +'<div id="comment-thread">'+comments.map(c=>'<div class="comment-row"><span class="avatar" style="background:'+avatarColor(c.osoba)+'">'+esc(initials(c.osoba))+'</span><div class="comment-bubble"><div class="who">'+esc(c.osoba)+'</div>'+esc(c.text)+'</div></div>').join('')+'</div>'
       +(sbConfigured() && cfg.name ? '<div class="comment-input-row"><input type="text" id="comment-input" placeholder="Napiš komentář…" autocomplete="off"><button id="comment-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 12l16-8-6 8 6 8-16-8z"/></svg></button></div>' : '')
       +(v.osoba===cfg.name ? '<div class="btn-row"><button class="btn btn-ghost btn-sm" id="detail-edit">Upravit</button><button class="btn btn-danger btn-sm" id="detail-delete">Smazat</button></div>' : '');
     $('#detail-overlay').classList.add('show');
     const img=$('#detail-photo-img'); if(img) img.addEventListener('click', ()=>openLightbox(img.src));
     const likeBtn=$('#detail-sheet-content [data-like]'); if(likeBtn) likeBtn.addEventListener('click', ()=>toggleLike(v.id));
+    const shareBtn=$('#detail-share'); if(shareBtn) shareBtn.addEventListener('click', ()=>shareVisitImage(v));
     const editBtn=$('#detail-edit'); if(editBtn) editBtn.addEventListener('click', ()=>{ closeAllOverlays(); editVisit(v.id); });
     const delBtn=$('#detail-delete'); if(delBtn) delBtn.addEventListener('click', ()=>{ if(confirm('Opravdu smazat tuto návštěvu?')) delVisit(v.id); });
     const sendBtn=$('#comment-send'); if(sendBtn) sendBtn.addEventListener('click', ()=>{ const inp=$('#comment-input'); if(inp.value.trim()){ commentAdd(v.id, inp.value); inp.value=''; } });
@@ -1131,6 +1440,90 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     visits.forEach(v=>{ const k=stadionKey(v); if(!k) return; if(!map[k]) map[k]={key:k, stadion:v.stadion, mesto:v.mesto, zeme:v.zeme, count:0}; map[k].count++; });
     return Object.values(map);
   }
+
+  /* ---------- wishlist / bucket list (local only) ---------- */
+  function renderWishlist(){
+    $('#wish-count').textContent = wishlist.length ? wishlist.length : '';
+    const list=$('#wish-list');
+    if(!wishlist.length){ list.innerHTML='<div class="tiny-note">Zatím žádný stadion na seznamu.</div>'; return; }
+    list.innerHTML=wishlist.map(w=>
+      '<div class="wish-row"><div class="wish-info"><div class="t">'+esc(w.stadion)+'</div><div class="s">'+esc([w.mesto,w.zeme].filter(Boolean).join(', '))+(w.poznamka?' · '+esc(w.poznamka):'')+'</div></div>'
+      +'<div class="wish-actions"><button class="go" data-wishgo="'+w.id+'" title="Zapsat návštěvu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></button>'
+      +'<button data-wishdel="'+w.id+'" title="Smazat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>'
+    ).join('');
+  }
+  function addWishlist(){
+    const stadion=$('#wish-stadion').value.trim();
+    if(!stadion){ toast('Vyplň aspoň název stadionu', true); return; }
+    wishlist.unshift({ id:uid(), stadion, mesto:$('#wish-mesto').value.trim(), zeme:$('#wish-zeme').value.trim(), poznamka:$('#wish-poznamka').value.trim() });
+    saveWishlist();
+    ['#wish-stadion','#wish-mesto','#wish-zeme','#wish-poznamka'].forEach(id=>$(id).value='');
+    renderWishlist();
+    toast('Přidáno na seznam');
+  }
+  function delWishlist(id){ wishlist=wishlist.filter(w=>w.id!==id); saveWishlist(); renderWishlist(); }
+  function goWishlist(id){
+    const w=wishlist.find(x=>x.id===id); if(!w) return;
+    wishlist=wishlist.filter(x=>x.id!==id); saveWishlist();
+    $('#wish-overlay').classList.remove('show');
+    editingId=null; resetForm();
+    $('#f-stadion').value=w.stadion; $('#f-mesto').value=w.mesto; $('#f-zeme').value=w.zeme;
+    goView('add');
+  }
+
+  /* ---------- duplicate stadium detection & merge ---------- */
+  function lev(a,b){
+    a=norm(a); b=norm(b);
+    if(a===b) return 0;
+    if(!a.length) return b.length; if(!b.length) return a.length;
+    const m=a.length,n=b.length; let prev=Array.from({length:n+1},(_,i)=>i), cur=new Array(n+1);
+    for(let i=1;i<=m;i++){ cur[0]=i; for(let j=1;j<=n;j++){ const cost=a[i-1]===b[j-1]?0:1; cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+cost); } [prev,cur]=[cur,prev]; }
+    return prev[n];
+  }
+  function sim(a,b){ const A=norm(a),B=norm(b); if(!A||!B) return 0; const d=lev(A,B); return 1 - d/Math.max(A.length,B.length); }
+  function findDupCandidates(){
+    const list=distinctStadiums();
+    const dismissed=getDismissed();
+    const pairs=[];
+    for(let i=0;i<list.length;i++){
+      for(let j=i+1;j<list.length;j++){
+        const a=list[i], b=list[j];
+        const pairKey=[a.key,b.key].sort().join('~');
+        if(dismissed.has(pairKey)) continue;
+        const s=sim(a.stadion, b.stadion);
+        if(s>=0.72 && s<1) pairs.push({a,b,pairKey,score:s});
+      }
+    }
+    pairs.sort((x,y)=>y.score-x.score);
+    return pairs;
+  }
+  async function mergeStadiums(winner, loser){
+    let changed=false;
+    visits.forEach(v=>{
+      if(stadionKey(v)===loser.key){ v.stadion=winner.stadion; v.mesto=winner.mesto; v.zeme=winner.zeme||v.zeme; v.synced=false; changed=true; }
+    });
+    if(changed){
+      saveLocal();
+      if(sbConfigured()){ for(const v of visits.filter(v=>v.synced===false)) await sbPush(v); }
+      delete stadionCache[loser.key]; saveStadionCache();
+    }
+    toast('Stadiony sloučeny');
+    renderAll(); renderDupOverlay();
+  }
+  function dismissDupPair(pairKey){ const d=getDismissed(); d.add(pairKey); saveDismissed(d); renderDupOverlay(); }
+  function renderDupOverlay(){
+    const pairs=findDupCandidates();
+    $('#dup-count').textContent = pairs.length ? pairs.length : '';
+    const list=$('#dup-list');
+    if(!pairs.length){ list.innerHTML='<div class="tiny-note">Žádné podezřelé duplicity nenalezeny.</div>'; return; }
+    list.innerHTML=pairs.map(p=>
+      '<div class="dup-card">'
+      +'<div class="dup-opt"><div><div class="t">'+esc(p.a.stadion)+'</div><div class="s">'+esc([p.a.mesto,p.a.zeme].filter(Boolean).join(', '))+' · '+p.a.count+'&times;</div></div><button data-mergewin="'+p.a.key+'" data-mergelose="'+p.b.key+'">Sloučit sem</button></div>'
+      +'<div class="dup-opt"><div><div class="t">'+esc(p.b.stadion)+'</div><div class="s">'+esc([p.b.mesto,p.b.zeme].filter(Boolean).join(', '))+' · '+p.b.count+'&times;</div></div><button data-mergewin="'+p.b.key+'" data-mergelose="'+p.a.key+'">Sloučit sem</button></div>'
+      +'<button class="dup-skip" data-dupskip="'+p.pairKey+'">Nejsou to duplicity</button>'
+      +'</div>'
+    ).join('');
+  }
   let mapInstance=null;
   async function openMap(){
     $('#map-overlay').classList.add('show');
@@ -1209,6 +1602,38 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     try{ const payload=JSON.parse(atob(decodeURIComponent(m[1]))); return {url:payload.u, key:payload.k}; }catch(e){ return null; }
   }
 
+  /* ---------- yearly wrapped ui ---------- */
+  $('#wrapped-btn').addEventListener('click', ()=>{ renderWrapped(); $('#wrapped-overlay').classList.add('show'); });
+  $('#wrapped-close').addEventListener('click', ()=>$('#wrapped-overlay').classList.remove('show'));
+  $('#wrapped-years').addEventListener('click', e=>{
+    const b=e.target.closest('[data-wyear]'); if(!b) return;
+    wrappedYear=b.dataset.wyear; renderWrapped();
+  });
+
+  /* ---------- wishlist ui ---------- */
+  $('#wish-btn').addEventListener('click', ()=>{ renderWishlist(); $('#wish-overlay').classList.add('show'); });
+  $('#wish-close').addEventListener('click', ()=>$('#wish-overlay').classList.remove('show'));
+  $('#wish-add').addEventListener('click', addWishlist);
+  $('#wish-list').addEventListener('click', e=>{
+    const go=e.target.closest('[data-wishgo]'); if(go){ goWishlist(go.dataset.wishgo); return; }
+    const del=e.target.closest('[data-wishdel]'); if(del){ delWishlist(del.dataset.wishdel); }
+  });
+
+  /* ---------- duplicate merge ui ---------- */
+  $('#dup-btn').addEventListener('click', ()=>{ renderDupOverlay(); $('#dup-overlay').classList.add('show'); });
+  $('#dup-close').addEventListener('click', ()=>$('#dup-overlay').classList.remove('show'));
+  $('#dup-list').addEventListener('click', e=>{
+    const skip=e.target.closest('[data-dupskip]'); if(skip){ dismissDupPair(skip.dataset.dupskip); return; }
+    const btn=e.target.closest('[data-mergewin]');
+    if(btn){
+      const pairs=findDupCandidates();
+      const winKey=btn.dataset.mergewin, loseKey=btn.dataset.mergelose;
+      const flat=[].concat(...pairs.map(p=>[p.a,p.b]));
+      const winner=flat.find(x=>x.key===winKey), loser=flat.find(x=>x.key===loseKey);
+      if(winner && loser) mergeStadiums(winner, loser);
+    }
+  });
+
   /* ---------- navigation ---------- */
   function goView(name){
     $$('.screen').forEach(s=>s.classList.remove('active'));
@@ -1226,20 +1651,29 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   $$('.seg-btn[data-statscope]').forEach(b=>b.addEventListener('click', ()=>{ statScope=b.dataset.statscope; $$('.seg-btn[data-statscope]').forEach(x=>x.classList.toggle('active',x===b)); renderStats(); }));
   $$('.seg-btn[data-boardmode]').forEach(b=>b.addEventListener('click', ()=>{ boardMode=b.dataset.boardmode; $$('.seg-btn[data-boardmode]').forEach(x=>x.classList.toggle('active',x===b)); renderBoard(); }));
   $('#search-all').addEventListener('input', renderFeed);
+  $('#view-toggle').addEventListener('click', ()=>{
+    viewMode = viewMode==='list' ? 'grid' : 'list';
+    $('#view-toggle-icon').innerHTML = viewMode==='grid'
+      ? '<path d="M3 10.5L12 3l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5V20h14V9.5" stroke-linecap="round" stroke-linejoin="round"/>'
+      : '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
+    renderFeed();
+  });
 
   /* ---------- photo input ---------- */
   $('#photo-drop').addEventListener('click', ()=>$('#photo-input').click());
   $('#photo-input').addEventListener('change', async e=>{
     const file=e.target.files[0]; if(!file) return;
     try{
+      const exifDate=await maybeUseExifDate(file);
       pendingPhotoBlob=await compressImage(file, 1200, 0.75);
       pendingPhotoLocalUrl=URL.createObjectURL(pendingPhotoBlob);
       $('#photo-drop').innerHTML='<img src="'+pendingPhotoLocalUrl+'" class="photo-preview" style="height:100px">';
+      if(exifDate) toast('Datum doplněno z fotky: '+exifDate);
     }catch(err){ toast('Fotku se nepodařilo zpracovat', true); }
   });
 
   /* ---------- overlay close handling ---------- */
-  ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay'].forEach(sel=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay'].forEach(sel=>{
     $(sel).addEventListener('click', e=>{
       if(e.target===$(sel)){
         if(sel==='#name-overlay' && $(sel).dataset.force==='1' && !cfg.name) return;
@@ -1249,12 +1683,12 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   });
   document.addEventListener('keydown', e=>{
     if(e.key==='Escape'){
-      ['#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay'].forEach(sel=>$(sel).classList.remove('show'));
+      ['#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay'].forEach(sel=>$(sel).classList.remove('show'));
       closeCardMenu();
       if(cfg.name) $('#name-overlay').classList.remove('show');
     }
   });
-  function closeAllOverlays(){ ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay'].forEach(sel=>$(sel).classList.remove('show')); }
+  function closeAllOverlays(){ ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay'].forEach(sel=>$(sel).classList.remove('show')); }
 
   /* ---------- boot ---------- */
   loadLocal();
