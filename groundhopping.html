@@ -519,6 +519,12 @@
             <span class="tiny-note" id="dup-count" style="margin:0 6px 0 0"></span>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
           </div>
+          <div class="row-item" id="challenge-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="5"/><path d="M8.5 13.5L7 21l5-2.5L17 21l-1.5-7.5"/></svg>
+            <div class="t">Skupinová výzva</div>
+            <span class="tiny-note" id="challenge-count" style="margin:0 6px 0 0"></span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
         </div>
         <div class="section-title">Moje návštěvy</div>
         <div id="profile-feed"></div>
@@ -627,11 +633,23 @@ alter table komentare enable row level security;
 grant select, insert, update, delete on public.komentare to anon;
 create policy "komentare cist" on komentare for select using (true);
 create policy "komentare pridat" on komentare for insert with check (true);
-create policy "komentare mazat" on komentare for delete using (true);</div>
+create policy "komentare mazat" on komentare for delete using (true);
+
+create table vyzva (
+  id text primary key,
+  stadion text not null, mesto text, zeme text,
+  pridal text,
+  vytvoreno timestamptz default now()
+);
+alter table vyzva enable row level security;
+grant select, insert, update, delete on public.vyzva to anon;
+create policy "vyzva cist" on vyzva for select using (true);
+create policy "vyzva pridat" on vyzva for insert with check (true);
+create policy "vyzva mazat" on vyzva for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Podle toho, co ti chybí, spusť: <code>alter table navstevy add column if not exists typ text default 'zapas';</code> a/nebo <code>alter table navstevy add column if not exists pivo int; alter table navstevy add column if not exists klobasa int;</code></p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Podle toho, co ti chybí, spusť: <code>alter table navstevy add column if not exists typ text default 'zapas';</code> a/nebo <code>alter table navstevy add column if not exists pivo int; alter table navstevy add column if not exists klobasa int;</code> a pro skupinovou výzvu blok od „vyzva" výše.</p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -723,6 +741,25 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     </div>
   </div>
 
+  <!-- group challenge -->
+  <div class="overlay" id="challenge-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Skupinová výzva</h2>
+      <p class="lead">Vyberte si spolu seznam stadionů, které chcete obejít. Za splněný appka počítá stadion, který navštívil kdokoliv z party — sdílí se přes stejnou databázi jako zápisy.</p>
+      <div id="challenge-progress"></div>
+      <div id="challenge-list"></div>
+      <div class="section-title" style="margin-top:var(--s5)">Přidat stadion do výzvy</div>
+      <div class="field"><label>Stadion</label><input type="text" id="chall-stadion" placeholder="název stadionu" autocomplete="off"></div>
+      <div class="field-row">
+        <div class="field"><label>Město</label><input type="text" id="chall-mesto" placeholder="město" autocomplete="off"></div>
+        <div class="field"><label>Země</label><input type="text" id="chall-zeme" placeholder="země" autocomplete="off"></div>
+      </div>
+      <button class="btn btn-primary" id="challenge-add">Přidat do výzvy</button>
+      <button class="btn btn-ghost" id="challenge-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
   <!-- card action menu -->
   <div class="cardmenu-pop" id="cardmenu-pop">
     <button id="cm-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Upravit</button>
@@ -758,6 +795,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   let wrappedYear = null;
   let likesMap = {};   // navstevy_id -> Set(osoba)
   let commentsMap = {}; // navstevy_id -> [{id,osoba,text,vytvoreno}]
+  let challengeItems = []; // shared group challenge target stadiums
 
   function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -934,7 +972,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       saveLocal();
       online=true; setSync('online','Připojeno · '+remote.length+' návštěv');
       for(const v of stillUnsynced){ await sbPush(v); }
-      await Promise.all([likesPull(), commentsPull(), stadionyPull()]);
+      await Promise.all([likesPull(), commentsPull(), stadionyPull(), challengePull()]);
       renderAll();
     } catch(e){ online=false; setSync('offline','Offline — pracuji lokálně'); }
   }
@@ -1274,7 +1312,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     $('#invite-btn2').style.display=sbConfigured()?'flex':'none';
   }
 
-  function renderAll(){ renderHero(); renderFeed(); renderStats(); renderBoard(); renderProfile(); renderWishlist(); renderDupOverlay(); }
+  function renderAll(){ renderHero(); renderFeed(); renderStats(); renderBoard(); renderProfile(); renderWishlist(); renderDupOverlay(); renderChallenge(); }
 
   /* ---------- yearly wrapped ---------- */
   function wrappedYearsList(){ return [...new Set(visits.map(v=>(v.datum||'').slice(0,4)).filter(y=>y.length===4))].sort().reverse(); }
@@ -1606,6 +1644,57 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
       +'</div>'
     ).join('');
   }
+
+  /* ---------- group challenge (shared bucket list, tracked against everyone's visits) ---------- */
+  async function challengePull(){
+    if(!sbConfigured()) return;
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vyzva?select=*&order=vytvoreno.asc', {headers:sbHeaders()});
+      if(!r.ok) return;
+      challengeItems=await r.json();
+    }catch(e){}
+  }
+  async function challengeAdd(stadion, mesto, zeme){
+    if(!sbConfigured()){ toast('Nejdřív nastav sdílení s partou', true); return; }
+    if(!stadion){ toast('Vyplň aspoň název stadionu', true); return; }
+    const item={ id:uid(), stadion, mesto:mesto||null, zeme:zeme||null, pridal:cfg.name };
+    challengeItems.push(item);
+    renderChallenge();
+    try{ await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vyzva', {method:'POST', headers:sbHeaders(), body:JSON.stringify(item)}); }catch(e){}
+  }
+  async function challengeRemove(id){
+    challengeItems=challengeItems.filter(x=>x.id!==id);
+    renderChallenge();
+    try{ await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vyzva?id=eq.'+encodeURIComponent(id), {method:'DELETE', headers:sbHeaders()}); }catch(e){}
+  }
+  function challengeItemKey(it){ return norm((it.stadion||'')+'|'+(it.mesto||'')); }
+  function renderChallenge(){
+    if(!sbConfigured()){
+      $('#challenge-count').textContent='';
+      $('#challenge-progress').innerHTML='';
+      $('#challenge-list').innerHTML='<div class="tiny-note">Skupinová výzva funguje jen se zapnutým sdílením s partou (Profil → Sdílení s partou).</div>';
+      return;
+    }
+    if(!challengeItems.length){
+      $('#challenge-count').textContent='';
+      $('#challenge-progress').innerHTML='';
+      $('#challenge-list').innerHTML='<div class="tiny-note">Zatím žádné stadiony ve výzvě — přidej první níž.</div>';
+      return;
+    }
+    let done=0;
+    const rows=challengeItems.map(it=>{
+      const key=challengeItemKey(it);
+      const doneBy=[...new Set(visits.filter(v=>stadionKey(v)===key).map(v=>v.osoba))];
+      if(doneBy.length) done++;
+      return '<div class="wish-row"><div class="wish-info"><div class="t">'+(doneBy.length?'✓ ':'')+esc(it.stadion)+'</div><div class="s">'+esc([it.mesto,it.zeme].filter(Boolean).join(', '))+(doneBy.length?' · splnil: '+esc(doneBy.join(', ')):' · zatím nikdo')+'</div></div>'
+        +'<div class="wish-actions"><button data-challdel="'+it.id+'" title="Odebrat z výzvy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>';
+    }).join('');
+    $('#challenge-list').innerHTML=rows;
+    const pct=Math.round(done/challengeItems.length*100);
+    $('#challenge-progress').innerHTML='<div class="bar-row" style="margin-bottom:var(--s4)"><div class="bar-label" style="width:auto; margin-right:10px">'+done+' / '+challengeItems.length+'</div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div><div class="bar-n">'+pct+'%</div></div>';
+    const remaining=challengeItems.length-done;
+    $('#challenge-count').textContent = remaining ? remaining : '';
+  }
   let mapInstance=null;
   async function openMap(){
     $('#map-overlay').classList.add('show');
@@ -1692,6 +1781,17 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
     wrappedYear=b.dataset.wyear; renderWrapped();
   });
 
+  /* ---------- group challenge ui ---------- */
+  $('#challenge-btn').addEventListener('click', async ()=>{ $('#challenge-overlay').classList.add('show'); if(sbConfigured()){ await challengePull(); } renderChallenge(); });
+  $('#challenge-close').addEventListener('click', ()=>$('#challenge-overlay').classList.remove('show'));
+  $('#challenge-add').addEventListener('click', ()=>{
+    challengeAdd($('#chall-stadion').value.trim(), $('#chall-mesto').value.trim(), $('#chall-zeme').value.trim());
+    ['#chall-stadion','#chall-mesto','#chall-zeme'].forEach(id=>$(id).value='');
+  });
+  $('#challenge-list').addEventListener('click', e=>{
+    const del=e.target.closest('[data-challdel]'); if(del) challengeRemove(del.dataset.challdel);
+  });
+
   /* ---------- wishlist ui ---------- */
   $('#wish-btn').addEventListener('click', ()=>{ renderWishlist(); $('#wish-overlay').classList.add('show'); });
   $('#wish-close').addEventListener('click', ()=>$('#wish-overlay').classList.remove('show'));
@@ -1756,7 +1856,7 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   });
 
   /* ---------- overlay close handling ---------- */
-  ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay'].forEach(sel=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>{
     $(sel).addEventListener('click', e=>{
       if(e.target===$(sel)){
         if(sel==='#name-overlay' && $(sel).dataset.force==='1' && !cfg.name) return;
@@ -1766,12 +1866,12 @@ create policy "komentare mazat" on komentare for delete using (true);</div>
   });
   document.addEventListener('keydown', e=>{
     if(e.key==='Escape'){
-      ['#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay'].forEach(sel=>$(sel).classList.remove('show'));
+      ['#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>$(sel).classList.remove('show'));
       closeCardMenu();
       if(cfg.name) $('#name-overlay').classList.remove('show');
     }
   });
-  function closeAllOverlays(){ ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay'].forEach(sel=>$(sel).classList.remove('show')); }
+  function closeAllOverlays(){ ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>$(sel).classList.remove('show')); }
 
   /* ---------- boot ---------- */
   loadLocal();
