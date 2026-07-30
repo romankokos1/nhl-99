@@ -145,6 +145,8 @@
   .ticket-score{font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--light-bright); flex-shrink:0;}
   .ticket-meta{font-size:12px; color:var(--text-3); margin-top:3px; display:flex; align-items:center; gap:5px; flex-wrap:wrap;}
   .ticket-meta .dotsep{width:3px; height:3px; border-radius:50%; background:var(--text-4);}
+  .meta-stadion{text-decoration:underline dotted; text-underline-offset:2px; text-decoration-color:var(--text-4);}
+  .chip.meta-stadion{cursor:pointer;}
   .ticket-foot{display:flex; align-items:center; justify-content:space-between; margin-top:8px;}
   .ticket-rating{display:flex; gap:2px;}
   .ticket-rating svg{width:12px; height:12px;}
@@ -1329,9 +1331,11 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const liked = likesMap[v.id] && cfg.name && likesMap[v.id].has(cfg.name);
     const likeN = likesMap[v.id] ? likesMap[v.id].size : 0;
     const commN = commentsMap[v.id] ? commentsMap[v.id].length : 0;
-    const meta = isTour
-      ? [[v.stadion,v.mesto].filter(Boolean).join(', ')].filter(Boolean)
-      : [v.soutez, [v.stadion,v.mesto].filter(Boolean).join(', ')].filter(Boolean);
+    const stadionLabel=[v.stadion,v.mesto].filter(Boolean).join(', ');
+    const stadKey=stadionKey(v);
+    const metaParts=[];
+    if(!isTour && v.soutez) metaParts.push('<span>'+esc(v.soutez)+'</span>');
+    if(stadionLabel) metaParts.push('<span class="meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(stadionLabel)+'</span>');
     const teamsHtml = isTour
       ? '<span>'+(v.domaci?esc(v.domaci):'Prohlídka stadionu')+'</span><span class="chip" style="margin-left:8px; font-size:10px">PROHLÍDKA</span>'
       : '<span>'+esc(v.domaci)+'</span>'+(score?'<span class="ticket-score">'+esc(score)+'</span>':'<span style="color:var(--text-4)">–</span>')+(v.hoste?'<span>'+esc(v.hoste)+'</span>':'');
@@ -1341,7 +1345,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       +'<div class="ticket-stub"><div class="stub-day">'+esc(d.d)+'</div><div class="stub-mon">'+esc(d.m)+'</div><div class="stub-year">'+esc(d.y)+'</div></div>'
       +'<div class="ticket-body">'
         +'<div class="ticket-teams">'+teamsHtml+'</div>'
-        +'<div class="ticket-meta">'+meta.map(esc).join('<span class="dotsep"></span>')+'</div>'
+        +'<div class="ticket-meta">'+metaParts.join('<span class="dotsep"></span>')+'</div>'
         +(v.foto && sbConfigured() ? '<img class="ticket-photo" src="'+storageUrl(v.foto)+'" loading="lazy">' : '')
         +'<div class="ticket-foot">'
           +'<div class="ticket-rating">'+miniRating(v.hodnoceni||0)+'</div>'
@@ -1659,6 +1663,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const chips=isTour
       ? [v.stadion, [v.mesto,v.zeme].filter(Boolean).join(', ')].filter(Boolean)
       : [v.soutez, v.stadion, [v.mesto,v.zeme].filter(Boolean).join(', '), v.divaku?v.divaku+' diváků':''].filter(Boolean);
+    const stadKey=stadionKey(v);
     const liked = likesMap[v.id] && cfg.name && likesMap[v.id].has(cfg.name);
     const comments = commentsMap[v.id]||[];
     const teamsHtml = isTour
@@ -1673,7 +1678,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         +(v.pivo ? '<div><div class="tiny-note" style="margin:0 0 3px">Pivo</div><div class="rating-row" style="gap:2px">'+miniRating(v.pivo,beerIcon)+'</div></div>' : '')
         +(v.klobasa ? '<div><div class="tiny-note" style="margin:0 0 3px">Klobása</div><div class="rating-row" style="gap:2px">'+miniRating(v.klobasa,klobasaIcon)+'</div></div>' : '')
       +'</div>' : '')
-      +'<div class="detail-chips">'+chips.map(c=>'<span class="chip">'+esc(c)+'</span>').join('')+'</div>'
+      +'<div class="detail-chips">'+chips.map(c=>c===v.stadion ? '<span class="chip meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(c)+'</span>' : '<span class="chip">'+esc(c)+'</span>').join('')+'</div>'
       +(v.poznamka ? '<div class="detail-note">'+esc(v.poznamka)+'</div>' : '')
       +'<div class="ticket-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
       +(sbConfigured() ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'" style="margin-bottom:var(--s3)"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg> Líbí se ('+(likesMap[v.id]?likesMap[v.id].size:0)+')</button>' : '')
@@ -1732,6 +1737,8 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
 
   /* ---------- delegated feed clicks ---------- */
   document.addEventListener('click', e=>{
+    const stadBtn=e.target.closest('[data-stadionopen]');
+    if(stadBtn){ e.stopPropagation(); closeAllOverlays(); openStadionDetail(stadBtn.dataset.stadionopen); return; }
     const likeBtn=e.target.closest('[data-like]');
     if(likeBtn && !likeBtn.closest('#detail-sheet-content')){ e.stopPropagation(); toggleLike(likeBtn.dataset.like); return; }
     const openBtn=e.target.closest('[data-open]');
