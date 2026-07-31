@@ -219,7 +219,12 @@
   .photo-remove svg{width:16px; height:16px;}
   .photo-status{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--foam); opacity:0; pointer-events:none; background:rgba(10,6,3,0.4);}
   .photo-status.show{opacity:1;}
-  .lightbox{align-items:center; justify-content:center; background:rgba(8,5,2,0.92); backdrop-filter:blur(8px);}
+  #lightbox-overlay.lightbox{
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(8,5,2,0.92); backdrop-filter:blur(8px);
+    opacity:0; pointer-events:none; transition:opacity .2s ease; animation:none;
+  }
+  #lightbox-overlay.lightbox.show{opacity:1; pointer-events:auto; animation:none;}
   .lightbox img{max-width:94%; max-height:88%; border-radius:14px; box-shadow:0 20px 60px -20px #000; object-fit:contain;}
   .lightbox-close{
     position:absolute; top:calc(env(safe-area-inset-top) + 14px); right:16px; z-index:2;
@@ -6587,8 +6592,9 @@ var qrcode = function() {
     $('#lightbox-img').src=storageUrl(path);
     $('#lightbox-overlay').classList.add('show');
   }
-  $('#lightbox-close').addEventListener('click', ()=>$('#lightbox-overlay').classList.remove('show'));
-  $('#lightbox-overlay').addEventListener('click', e=>{ if(e.target===$('#lightbox-overlay')) $('#lightbox-overlay').classList.remove('show'); });
+  // Listener sits on the whole overlay, not just the backdrop — a click on the image
+  // bubbles up and closes it too, so there's no target-matching to get wrong.
+  $('#lightbox-overlay').addEventListener('click', ()=>$('#lightbox-overlay').classList.remove('show'));
   // beer detail sheet
   $('#detail-close').addEventListener('click', ()=>$('#detail-overlay').classList.remove('show'));
   $('#detail-body').addEventListener('click', e=>{
