@@ -201,14 +201,31 @@
   #feed.feed-grid .empty{grid-column:1 / -1;}
   .grid-tile{position:relative; aspect-ratio:1/1; overflow:hidden; cursor:pointer; border-radius:5px; background:var(--bg-2);}
   .grid-tile img{width:100%; height:100%; object-fit:cover; display:block;}
-  .grid-tile.no-photo{display:flex;}
-  .gt-noimg{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8px; height:100%; width:100%; gap:3px;}
-  .gt-name{font-size:11.5px; font-weight:700; color:#f4efea; line-height:1.25; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;}
-  .gt-brewery{font-size:9.5px; color:#a48e7a; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;}
+  .grid-tile.no-photo{
+    display:flex; background-color:#1f160f;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    box-shadow:inset 0 0 0 1px rgba(212,175,110,0.32);
+  }
+  .gt-hop{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0.055; color:#d9b46b; pointer-events:none;}
+  .gt-hop svg{width:60%; height:60%;}
+  .gt-noimg{
+    position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:13px 11px; height:100%; width:100%; gap:5px;
+  }
+  .gt-name{
+    font-family:'Fraunces',serif; font-size:13px; font-weight:600; color:#f4ead9; line-height:1.22;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; letter-spacing:0.005em;
+  }
+  .gt-div{width:15px; height:1px; background:rgba(212,175,110,0.45); flex-shrink:0;}
+  .gt-brewery{
+    font-size:8.5px; font-weight:600; color:#c9a668; text-transform:uppercase; letter-spacing:0.07em;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;
+  }
+  .gt-meta{font-size:7.5px; color:#8a7660; letter-spacing:0.05em; text-transform:uppercase;}
   .gt-score{
     position:absolute; top:5px; right:5px; z-index:2;
-    background:rgba(10,6,3,0.6); backdrop-filter:blur(4px); border-radius:6px; padding:1px 5px;
-    font-size:11px; font-weight:800; color:#ffc35a; font-variant-numeric:tabular-nums;
+    background:rgba(10,6,3,0.72); border:1px solid rgba(212,175,110,0.5); backdrop-filter:blur(4px); border-radius:7px; padding:1px 6px;
+    font-size:11px; font-weight:800; color:#e0b563; font-variant-numeric:tabular-nums;
   }
   .photo-preview img{display:block; width:100%; max-height:280px; object-fit:cover; transition:opacity .2s;}
   .photo-remove{
@@ -2768,9 +2785,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   function metaStyleIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3.2c2.5 1.9 4.1 4.3 4.1 6.8a4.1 4.1 0 0 1-8.2 0c0-2.5 1.6-4.9 4.1-6.8z"/></svg>'; }
   function metaPinIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21c3.3-3.7 5.3-6.6 5.3-9a5.3 5.3 0 0 0-10.6 0c0 2.4 2 5.3 5.3 9z"/><circle cx="12" cy="11.6" r="1.9"/></svg>'; }
   function cardMenuDots(){ return '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>'; }
-  function gridFallbackGradient(b){
-    let h=0; for(const c of (b.name||'?')) h=(h*31+c.charCodeAt(0))%360;
-    return 'linear-gradient(160deg, hsl('+h+' 32% 22%), hsl('+h+' 28% 13%))';
+  function hopMark(){
+    return '<svg viewBox="0 0 100 132" fill="currentColor"><path d="M50 4C27 18 16 42 21 66c4 20 15 37 29 62 14-25 25-42 29-62 5-24-6-48-29-62z"/><path d="M35 38c6 8 6 18 0 27M65 38c-6 8-6 18 0 27M31 64c7 6 9 15 6 25M69 64c-7 6-9 15-6 25" stroke="#1f160f" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';
   }
   function gridTile(b){
     const scoreHtml = b.rating ? '<span class="gt-score">'+b.rating+'</span>' : '';
@@ -2780,8 +2796,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +scoreHtml
         +'</div>';
     }
-    return '<div class="grid-tile no-photo" data-open="'+b.id+'" style="background:'+gridFallbackGradient(b)+'">'
-      +'<div class="gt-noimg"><span class="gt-name">'+esc(b.name)+'</span>'+(b.brewery?'<span class="gt-brewery">'+esc(b.brewery)+'</span>':'')+'</div>'
+    const metaLine=[b.style,(b.abv?b.abv+'%':'')].filter(Boolean).map(esc).join(' · ');
+    return '<div class="grid-tile no-photo" data-open="'+b.id+'">'
+      +'<div class="gt-hop" aria-hidden="true">'+hopMark()+'</div>'
+      +'<div class="gt-noimg">'
+      +   '<span class="gt-name">'+esc(b.name)+'</span>'
+      +   (b.brewery?'<span class="gt-div"></span><span class="gt-brewery">'+esc(b.brewery)+'</span>':'')
+      +   (metaLine?'<span class="gt-div"></span><span class="gt-meta">'+metaLine+'</span>':'')
+      +'</div>'
       +scoreHtml
       +'</div>';
   }
