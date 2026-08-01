@@ -202,26 +202,25 @@
   .grid-tile{position:relative; aspect-ratio:1/1; overflow:hidden; cursor:pointer; border-radius:5px; background:var(--bg-2);}
   .grid-tile img{width:100%; height:100%; object-fit:cover; display:block;}
   .grid-tile.no-photo{
-    display:flex; background-color:#1f160f;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-    box-shadow:inset 0 0 0 1px rgba(212,175,110,0.32);
+    display:flex; background-color:#2b2018;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    box-shadow:inset 0 0 0 1px rgba(212,175,110,0.3);
   }
-  .gt-hop{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0.055; color:#d9b46b; pointer-events:none;}
+  .gt-hop{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0.04; color:#d9b46b; pointer-events:none;}
   .gt-hop svg{width:60%; height:60%;}
   .gt-noimg{
-    position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; padding:13px 11px; height:100%; width:100%; gap:5px;
+    position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    text-align:center; padding:17px 12px 12px; height:100%; width:100%;
   }
   .gt-name{
-    font-family:'Fraunces',serif; font-size:13px; font-weight:600; color:#f4ead9; line-height:1.22;
-    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; letter-spacing:0.005em;
+    font-family:'Fraunces',serif; font-size:13.5px; font-weight:700; color:#f7ecd9; line-height:1.24;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; letter-spacing:0.002em;
   }
-  .gt-div{width:15px; height:1px; background:rgba(212,175,110,0.45); flex-shrink:0;}
   .gt-brewery{
-    font-size:8.5px; font-weight:600; color:#c9a668; text-transform:uppercase; letter-spacing:0.07em;
+    font-size:10.5px; font-weight:500; color:#c9a668; margin-top:7px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;
   }
-  .gt-meta{font-size:7.5px; color:#8a7660; letter-spacing:0.05em; text-transform:uppercase;}
+  .gt-meta{font-size:7.5px; color:#8a7660; letter-spacing:0.05em; text-transform:uppercase; margin-top:9px;}
   .gt-score{
     position:absolute; top:5px; right:5px; z-index:2;
     background:rgba(10,6,3,0.72); border:1px solid rgba(212,175,110,0.5); backdrop-filter:blur(4px); border-radius:7px; padding:1px 6px;
@@ -2801,8 +2800,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +'<div class="gt-hop" aria-hidden="true">'+hopMark()+'</div>'
       +'<div class="gt-noimg">'
       +   '<span class="gt-name">'+esc(b.name)+'</span>'
-      +   (b.brewery?'<span class="gt-div"></span><span class="gt-brewery">'+esc(b.brewery)+'</span>':'')
-      +   (metaLine?'<span class="gt-div"></span><span class="gt-meta">'+metaLine+'</span>':'')
+      +   (b.brewery?'<span class="gt-brewery">'+esc(b.brewery)+'</span>':'')
+      +   (metaLine?'<span class="gt-meta">'+metaLine+'</span>':'')
       +'</div>'
       +scoreHtml
       +'</div>';
