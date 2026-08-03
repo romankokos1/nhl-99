@@ -1091,6 +1091,17 @@
   .price-trend.up .pt-arrow{color:#e0567a;}
   .price-trend.down .pt-arrow{color:#6bbf7a;}
   .price-trend.flat .pt-arrow{color:var(--text-3);}
+  .price-block .price-trend{margin-top:12px; border-radius:var(--r-sm) var(--r-sm) 0 0; border-bottom:none;}
+  .price-block .price-chart{margin-top:0; border-radius:0 0 var(--r-sm) var(--r-sm);}
+  .price-chart{
+    display:flex; align-items:flex-end; gap:6px; margin-top:10px; padding:12px 10px 10px;
+    background:var(--surface-2); border:1px solid var(--hairline); border-top:none;
+    height:76px;
+  }
+  .ph-pt{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:4px; height:100%; min-width:0;}
+  .ph-val{font-size:9px; font-weight:700; color:var(--text-3); font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .ph-bar{width:100%; max-width:22px; background:linear-gradient(180deg, var(--amber-bright), var(--amber-deep)); border-radius:3px 3px 1px 1px;}
+  .ph-lbl{font-size:8px; color:var(--text-4); font-weight:600; white-space:nowrap;}
   /* collaborations */
   .collab-toggle{
     background:none; border:none; font-family:inherit; font-size:12.5px; font-weight:600;
@@ -2891,12 +2902,22 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     openCardMenu(btn);
   }
   function beerKey(b){ return norm(b.name)+'|||'+norm(b.brewery||''); }
-  /* ---------- price trend: first known price -> most recent, for a set of entries ---------- */
+  /* ---------- price history: group same-day purchases into one point first,
+     so two different beers on one visit never look like a price change ---------- */
+  function priceHistory(entries){
+    const byDate={};
+    entries.forEach(b=>{
+      if(!(b.price && parseFloat(b.price)>0 && b.date)) return;
+      if(!byDate[b.date]) byDate[b.date]={sum:0,n:0};
+      byDate[b.date].sum+=parseFloat(b.price); byDate[b.date].n++;
+    });
+    return Object.keys(byDate).sort().map(d=>({date:d, avg:byDate[d].sum/byDate[d].n}));
+  }
   function priceTrend(entries){
-    const priced=entries.filter(b=>b.price && parseFloat(b.price)>0 && b.date).slice().sort((a,b)=>a.date.localeCompare(b.date));
-    if(priced.length<2) return null;
-    const first=parseFloat(priced[0].price), last=parseFloat(priced[priced.length-1].price);
-    return {first, last, diff:last-first, n:priced.length};
+    const hist=priceHistory(entries);
+    if(hist.length<2) return null; // fewer than 2 distinct DAYS = nothing to compare
+    const first=hist[0].avg, last=hist[hist.length-1].avg;
+    return {first, last, diff:last-first, points:hist.length};
   }
   function priceTrendHtml(entries, label){
     const t=priceTrend(entries); if(!t) return '';
@@ -2907,6 +2928,20 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +'<span class="pt-nums">'+Math.round(t.first)+' → '+Math.round(t.last)+' Kč</span>'
       +(label?'<span class="pt-label">'+esc(label)+'</span>':'')
       +'</div>';
+  }
+  function priceChartHtml(entries){
+    const full=priceHistory(entries);
+    if(full.length<2) return '';
+    const hist=full.slice(-10); // keep it readable — last 10 distinct days
+    const max=Math.max(...hist.map(h=>h.avg)), min=Math.min(...hist.map(h=>h.avg));
+    const range=Math.max(1, max-min);
+    const bars=hist.map(h=>{
+      const hPx=Math.max(5, Math.round(6+40*(h.avg-min)/range));
+      const d=new Date(h.date+'T12:00:00');
+      const lbl=d.getDate()+'.'+(d.getMonth()+1)+'.';
+      return '<div class="ph-pt"><div class="ph-val">'+Math.round(h.avg)+'</div><div class="ph-bar" style="height:'+hPx+'px"></div><div class="ph-lbl">'+lbl+'</div></div>';
+    }).join('');
+    return '<div class="price-chart">'+bars+'</div>';
   }
   function openBeerDetail(id){
     const b=beers.find(x=>x.id===id); if(!b) return;
@@ -2930,7 +2965,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(chips.length) html+='<div class="chips" style="margin-top:8px">'+chips.join('')+'</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
     const beerTrend=priceTrendHtml(all);
-    if(beerTrend) html+=beerTrend;
+    if(beerTrend) html+='<div class="price-block">'+beerTrend+priceChartHtml(all)+'</div>';
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Kdo už ho ochutnal ('+all.length+')</div>';
     html+='<div class="card list-card detail-list">';
@@ -3030,7 +3065,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='<h2 class="detail-name">'+esc(label)+'</h2>';
     html+='<div class="detail-brewery">'+mine.length+' '+beerWord(mine.length)+' zapsáno v partě</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr piv na místě</span></div>';
-    if(venueTrend) html+=venueTrend;
+    if(venueTrend) html+='<div class="price-block">'+venueTrend+priceChartHtml(mine)+'</div>';
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Piva ochutnaná tady</div>';
     html+='<div class="card list-card detail-list">';
