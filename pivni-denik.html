@@ -1067,6 +1067,16 @@
   .habit-n{flex-shrink:0; text-align:right;}
   .habit-n b{display:block; font-family:'Fraunces',serif; font-size:19px; font-weight:700; color:var(--amber-bright); line-height:1; font-variant-numeric:tabular-nums;}
   .habit-n span{display:block; font-size:11px; color:var(--text-3); margin-top:3px;}
+  /* price trend */
+  .price-head{display:flex; gap:var(--s5); padding-bottom:var(--s3);}
+  .price-stat b{display:block; font-family:'Fraunces',serif; font-size:22px; font-weight:700; color:var(--amber-bright); line-height:1;}
+  .price-stat span{display:block; font-size:11px; color:var(--text-3); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;}
+  .pr-months{display:flex; align-items:flex-end; gap:4px; height:76px; padding-top:var(--s3); border-top:1px solid var(--hairline);}
+  .pr-m{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; height:100%;}
+  .pr-m-bar{width:100%; background:linear-gradient(180deg, var(--amber-bright), var(--amber-deep)); border-radius:3px 3px 1px 1px; min-height:4px;}
+  .pr-m-lbl{font-size:9px; color:var(--text-4); font-weight:600;}
+  .price-insight{font-size:12.5px; color:var(--text-2); line-height:1.5; margin-top:var(--s3); padding-top:var(--s3); border-top:1px solid var(--hairline);}
+  .price-insight b{color:var(--amber-bright);}
   /* collaborations */
   .collab-toggle{
     background:none; border:none; font-family:inherit; font-size:12.5px; font-weight:600;
@@ -1164,7 +1174,8 @@
         </div>
         <div class="field-row">
           <div class="field"><label for="f-style">Styl</label><input type="text" id="f-style" placeholder="Ležák, IPA…" autocomplete="off" list="style-list"><datalist id="style-list"></datalist></div>
-          <div class="field" style="max-width:120px"><label for="f-abv">Alkohol %</label><input type="number" id="f-abv" placeholder="4.8" step="0.1" min="0" max="70" inputmode="decimal"></div>
+          <div class="field" style="max-width:105px"><label for="f-abv">Alkohol %</label><input type="number" id="f-abv" placeholder="4.8" step="0.1" min="0" max="70" inputmode="decimal"></div>
+          <div class="field" style="max-width:100px"><label for="f-price">Cena Kč</label><input type="number" id="f-price" placeholder="45" step="1" min="0" inputmode="numeric"></div>
         </div>
 
         <div class="rate-block">
@@ -1246,6 +1257,8 @@
 
           <div class="sec-title">Štamgastství</div>
           <div class="card list-card" id="habits"></div>
+
+          <div id="price-section"></div>
 
           <div class="btn-row"><button class="btn btn-ghost" id="export-btn">Exportovat moje piva (TSV)</button></div>
         </div>
@@ -1422,7 +1435,7 @@
   osoba text not null,
   nazev text not null,
   pivovar text,
-  spolupivovar text, styl text, abv text,
+  spolupivovar text, styl text, abv text, cena text,
   kde text, datum text, poznamka text,
   hodnoceni int, foto text,
   vytvoreno timestamptz default now()
@@ -1509,7 +1522,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary"; pro lajky blok od „liky"; pro komentáře blok od „komentare"; pro fotky pivovarů <code>alter table pivovary add column if not exists foto text;</code>; pro spolupráce <code>alter table piva add column if not exists spolupivovar text;</code></p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Spusť jen to, co ti chybí: pro fotky <code>alter table piva add column if not exists foto text;</code> + blok od komentáře „fotky"; pro mapu blok od „mista"; pro pivovary blok od „pivovary"; pro lajky blok od „liky"; pro komentáře blok od „komentare"; pro fotky pivovarů <code>alter table pivovary add column if not exists foto text;</code>; pro spolupráce <code>alter table piva add column if not exists spolupivovar text;</code>; pro cenu <code>alter table piva add column if not exists cena text;</code></p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -2153,7 +2166,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       // map remote -> local shape
       const remote = rows.map(x => ({
         id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, collab:x.spolupivovar||'', style:x.styl,
-        abv:x.abv, where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
+        abv:x.abv, price:x.cena||'', where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
         foto:x.foto||'',
         synced:true
       }));
@@ -2175,7 +2188,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(!sbConfigured()) return false;
     const body = {
       id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, spolupivovar:b.collab||null, styl:b.style,
-      abv:b.abv, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
+      abv:b.abv, cena:b.price||null, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
       foto:b.foto||''
     };
     try {
@@ -2673,7 +2686,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   function resetForm(){
     editId=null; currentRating=0; currentPhoto='';
-    ['f-name','f-brewery','f-collab','f-style','f-abv','f-where','f-note'].forEach(id=>$('#'+id).value='');
+    ['f-name','f-brewery','f-collab','f-style','f-abv','f-price','f-where','f-note'].forEach(id=>$('#'+id).value='');
     $('#collab-field').style.display='none';
     $('#f-date').value=todayISO(); paintRating();
     if(tasting){ $('#f-where').value=tasting.where; $('#f-date').value=tasting.date; }
@@ -2709,6 +2722,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       collab:$('#f-collab').value.trim(),
       style:$('#f-style').value.trim(),
       abv:$('#f-abv').value.trim(),
+      price:$('#f-price').value.trim(),
       where:$('#f-where').value.trim(),
       date:$('#f-date').value.trim()||todayISO(),
       note:$('#f-note').value.trim(),
@@ -2744,7 +2758,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#f-name').value=b.name; $('#f-brewery').value=b.brewery||''; $('#f-style').value=b.style||'';
     $('#f-collab').value=b.collab||'';
     $('#collab-field').style.display = b.collab ? 'block' : 'none';
-    $('#f-abv').value=b.abv||''; $('#f-where').value=b.where||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
+    $('#f-abv').value=b.abv||''; $('#f-price').value=b.price||''; $('#f-where').value=b.where||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
     currentRating=b.rating||0; paintRating();
     currentPhoto=b.foto||''; setPhotoUI(currentPhoto, false);
     $('#form-title').textContent='Úprava záznamu';
@@ -2894,7 +2908,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'<span class="lb-av" style="background:'+avatarColor(x.osoba)+'">'+esc(initials(x.osoba))+'</span>'
         +'<span class="lb-person">'
         +  '<span class="lb-name">'+esc(x.osoba)+(mine?' <span class="you">ty</span>':'')+'</span>'
-        +  '<span class="lb-tags"><span class="lb-fav">'+esc(x.date||'')+'</span>'+(x.where?'<span class="lb-fav">'+esc(x.where)+'</span>':'')+'</span>'
+        +  '<span class="lb-tags"><span class="lb-fav">'+esc(x.date||'')+'</span>'+(x.where?'<span class="lb-fav">'+esc(x.where)+'</span>':'')+(x.price?'<span class="lb-fav">'+esc(x.price)+' Kč</span>':'')+'</span>'
         +  (x.note?'<div class="detail-note">'+esc(x.note)+'</div>':'')
         +'</span>'
         +'<span class="lb-metric"><b>'+(x.rating||'–')+'</b><small>/10</small></span>'
@@ -3546,6 +3560,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if($('#dist')) $('#dist').innerHTML = rated.length?bars:'<p class="muted center">Ohodnoť pár piv a uvidíš rozložení.</p>';
     renderTasteProfile();
     renderHabits();
+    renderPriceTrend();
     // recent activity sparkline-ish: last 6 months count
     if($('#stat-empty')) $('#stat-empty').style.display = mine.length?'none':'block';
     if($('#stat-body')) $('#stat-body').style.display = mine.length?'block':'none';
@@ -3608,6 +3623,57 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   /* ---------- habits: the same beer, in the same place, over and over ---------- */
   const HABIT_MIN=3;
+  /* ---------- price trend: is beer getting more expensive on you? ---------- */
+  function renderPriceTrend(){
+    const box=$('#price-section'); if(!box) return;
+    const mine=beers.filter(b=>b.osoba===cfg.name && b.price && parseFloat(b.price)>0 && b.date);
+    if(!mine.length){ box.innerHTML=''; return; }
+    const prices=mine.map(b=>parseFloat(b.price));
+    const avg=prices.reduce((a,c)=>a+c,0)/prices.length;
+    const total=prices.reduce((a,c)=>a+c,0);
+    const byMonth={};
+    mine.forEach(b=>{
+      const m=b.date.slice(0,7);
+      if(!byMonth[m]) byMonth[m]={sum:0,n:0};
+      byMonth[m].sum+=parseFloat(b.price); byMonth[m].n++;
+    });
+    const months=Object.keys(byMonth).sort();
+    const shown=months.slice(-12);
+    const monthAvgs=shown.map(m=>({m, avg:byMonth[m].sum/byMonth[m].n}));
+    const maxAvg=Math.max(...monthAvgs.map(x=>x.avg), 1);
+
+    let trendHtml='';
+    if(monthAvgs.length>=3){
+      const mid=Math.floor(monthAvgs.length/2);
+      const firstHalf=monthAvgs.slice(0,mid), secondHalf=monthAvgs.slice(mid);
+      const fAvg=firstHalf.reduce((s,x)=>s+x.avg,0)/firstHalf.length;
+      const sAvg=secondHalf.reduce((s,x)=>s+x.avg,0)/secondHalf.length;
+      const diff=sAvg-fAvg;
+      if(Math.abs(diff)>=2){
+        trendHtml='<div class="price-insight">'+(diff>0
+          ? 'Ceny ti v průměru <b>rostou</b> — poslední dobou o '+Math.round(diff)+' Kč víc než dřív.'
+          : 'Ceny ti v průměru <b>klesají</b> — poslední dobou o '+Math.round(-diff)+' Kč míň než dřív.')+'</div>';
+      }
+    }
+
+    const monthNamesShort=['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
+    const barsHtml=monthAvgs.map(x=>{
+      const mm=parseInt(x.m.slice(5,7),10);
+      const h=Math.max(4, Math.round(64*x.avg/maxAvg));
+      return '<div class="pr-m"><div class="pr-m-bar" style="height:'+h+'px"></div><div class="pr-m-lbl">'+monthNamesShort[mm-1]+'</div></div>';
+    }).join('');
+
+    box.innerHTML =
+      '<div class="sec-title">Vývoj cen</div>'
+      +'<div class="card list-card">'
+      +  '<div class="price-head">'
+      +    '<div class="price-stat"><b>'+Math.round(avg)+' Kč</b><span>průměr</span></div>'
+      +    '<div class="price-stat"><b>'+Math.round(total)+' Kč</b><span>celkem</span></div>'
+      +  '</div>'
+      +  (monthAvgs.length>1 ? '<div class="pr-months">'+barsHtml+'</div>' : '')
+      +  trendHtml
+      +'</div>';
+  }
   function renderHabits(){
     const box=$('#habits'); if(!box) return;
     const mine=beers.filter(b=>b.osoba===cfg.name && b.where && b.where.trim() && b.name && b.name.trim());
