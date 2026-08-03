@@ -426,6 +426,8 @@
   .beer-brewery svg{width:15px; height:15px; flex-shrink:0; color:#d9b46b; opacity:0.85;}
   .beer-meta-row{display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:14px; font-weight:500; color:#a48e7a;}
   .bm-item{display:inline-flex; align-items:center; gap:5px;}
+  .bm-item.linkish{background:none; border:none; padding:0; font-family:inherit; cursor:pointer; color:inherit;}
+  .bm-item.linkish:active{color:var(--amber-bright);}
   .bm-item svg{width:14px; height:14px; flex-shrink:0; opacity:0.8;}
   .bm-dot{opacity:0.5;}
   .glass-row{position:relative; display:block; height:calc(var(--gs, 10px) * 1.18); width:calc(var(--gs, 10px) * 10 + 2.5px * 9); margin-top:var(--s4);}
@@ -688,6 +690,8 @@
   .comment-send:active{filter:brightness(0.9);}
   .comment-send svg{width:15px; height:15px;}
   .lb-fav{font-size:11px; font-weight:600; color:var(--text-3); background:var(--bg-2); border:1px solid var(--hairline); border-radius:6px; padding:1px 7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;}
+  button.lb-fav.linkish{font-family:inherit; cursor:pointer;}
+  button.lb-fav.linkish:active{color:var(--amber-bright); border-color:var(--amber-deep);}
   .lb-beerinfo{flex:1; display:flex; flex-direction:column; overflow:hidden;}
   .lb-beerinfo b{font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .lb-beerinfo small{font-size:12px; color:var(--text-3);}
@@ -1077,6 +1081,16 @@
   .pr-m-lbl{font-size:9px; color:var(--text-4); font-weight:600;}
   .price-insight{font-size:12.5px; color:var(--text-2); line-height:1.5; margin-top:var(--s3); padding-top:var(--s3); border-top:1px solid var(--hairline);}
   .price-insight b{color:var(--amber-bright);}
+  .price-trend{
+    display:flex; align-items:center; gap:8px; margin-top:12px; padding:9px 13px;
+    background:var(--surface-2); border:1px solid var(--hairline); border-radius:var(--r-sm);
+  }
+  .price-trend .pt-arrow{font-size:16px; font-weight:800; flex-shrink:0;}
+  .price-trend .pt-nums{font-size:13.5px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums;}
+  .price-trend .pt-label{font-size:11.5px; color:var(--text-3); margin-left:auto;}
+  .price-trend.up .pt-arrow{color:#e0567a;}
+  .price-trend.down .pt-arrow{color:#6bbf7a;}
+  .price-trend.flat .pt-arrow{color:var(--text-3);}
   /* collaborations */
   .collab-toggle{
     background:none; border:none; font-family:inherit; font-size:12.5px; font-weight:600;
@@ -2825,7 +2839,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const metaBits=[];
     if(b.style) metaBits.push('<span class="bm-item">'+metaStyleIcon()+'<span>'+esc(b.style)+'</span></span>');
     if(b.abv) metaBits.push('<span class="bm-item plain">'+esc(b.abv)+'%</span>');
-    if(b.where) metaBits.push('<span class="bm-item">'+metaPinIcon()+'<span>'+esc(b.where)+'</span></span>');
+    if(b.where) metaBits.push('<button class="bm-item linkish" data-open-venue="'+esc(norm(b.where))+'">'+metaPinIcon()+'<span>'+esc(b.where)+'</span></button>');
     const dateShort = b.date ? esc(b.date) : '';
     const menuBtn = mine ? '<button class="card-menu-btn" data-cardmenu="'+b.id+'" aria-label="Možnosti">'+cardMenuDots()+'</button>' : '';
     return '<article class="card beer'+(mine?' mine':'')+(b.foto?' has-photo':'')+'" data-open="'+b.id+'">'
@@ -2877,6 +2891,23 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     openCardMenu(btn);
   }
   function beerKey(b){ return norm(b.name)+'|||'+norm(b.brewery||''); }
+  /* ---------- price trend: first known price -> most recent, for a set of entries ---------- */
+  function priceTrend(entries){
+    const priced=entries.filter(b=>b.price && parseFloat(b.price)>0 && b.date).slice().sort((a,b)=>a.date.localeCompare(b.date));
+    if(priced.length<2) return null;
+    const first=parseFloat(priced[0].price), last=parseFloat(priced[priced.length-1].price);
+    return {first, last, diff:last-first, n:priced.length};
+  }
+  function priceTrendHtml(entries, label){
+    const t=priceTrend(entries); if(!t) return '';
+    const arrow = t.diff>0.4?'↑':(t.diff<-0.4?'↓':'→');
+    const cls = t.diff>0.4?'up':(t.diff<-0.4?'down':'flat');
+    return '<div class="price-trend '+cls+'">'
+      +'<span class="pt-arrow">'+arrow+'</span>'
+      +'<span class="pt-nums">'+Math.round(t.first)+' → '+Math.round(t.last)+' Kč</span>'
+      +(label?'<span class="pt-label">'+esc(label)+'</span>':'')
+      +'</div>';
+  }
   function openBeerDetail(id){
     const b=beers.find(x=>x.id===id); if(!b) return;
     const key=beerKey(b);
@@ -2898,6 +2929,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }
     if(chips.length) html+='<div class="chips" style="margin-top:8px">'+chips.join('')+'</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
+    const beerTrend=priceTrendHtml(all);
+    if(beerTrend) html+=beerTrend;
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Kdo už ho ochutnal ('+all.length+')</div>';
     html+='<div class="card list-card detail-list">';
@@ -2908,7 +2941,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'<span class="lb-av" style="background:'+avatarColor(x.osoba)+'">'+esc(initials(x.osoba))+'</span>'
         +'<span class="lb-person">'
         +  '<span class="lb-name">'+esc(x.osoba)+(mine?' <span class="you">ty</span>':'')+'</span>'
-        +  '<span class="lb-tags"><span class="lb-fav">'+esc(x.date||'')+'</span>'+(x.where?'<span class="lb-fav">'+esc(x.where)+'</span>':'')+(x.price?'<span class="lb-fav">'+esc(x.price)+' Kč</span>':'')+'</span>'
+        +  '<span class="lb-tags"><span class="lb-fav">'+esc(x.date||'')+'</span>'+(x.where?'<button class="lb-fav linkish" data-open-venue="'+esc(norm(x.where))+'">'+esc(x.where)+'</button>':'')+(x.price?'<span class="lb-fav">'+esc(x.price)+' Kč</span>':'')+'</span>'
         +  (x.note?'<div class="detail-note">'+esc(x.note)+'</div>':'')
         +'</span>'
         +'<span class="lb-metric"><b>'+(x.rating||'–')+'</b><small>/10</small></span>'
@@ -2969,6 +3002,48 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +'<span class="lb-metric big"><b>'+(x.avg?x.avg.toFixed(1):'–')+'</b><small>Ø</small></span>'
       +'</div>'
     ).join('');
+    html+='</div>';
+
+    $('#detail-body').innerHTML=html;
+    $('#detail-overlay').classList.add('show');
+  }
+  function openVenueDetail(placeKey){
+    if(!placeKey) return;
+    const src=boardBeers();
+    const mine=src.filter(b=>b.where && norm(b.where)===placeKey);
+    if(!mine.length) return;
+    const label=mine[0].where.trim();
+    const rated=mine.filter(b=>b.rating>0);
+    const avg=rated.length? rated.reduce((s,b)=>s+b.rating,0)/rated.length : 0;
+    const venueTrend=priceTrendHtml(mine);
+
+    const bmap={};
+    mine.forEach(b=>{
+      const k=norm(b.name);
+      if(!bmap[k]) bmap[k]={name:b.name, entries:[], sum:0, n:0, rated:0};
+      bmap[k].entries.push(b); bmap[k].n++;
+      if(b.rating>0){ bmap[k].sum+=b.rating; bmap[k].rated++; }
+    });
+    const list=Object.values(bmap).map(x=>({...x, avg: x.rated? x.sum/x.rated : 0})).sort((a,b)=>b.n-a.n || b.avg-a.avg);
+
+    let html='<div class="detail-head">';
+    html+='<h2 class="detail-name">'+esc(label)+'</h2>';
+    html+='<div class="detail-brewery">'+mine.length+' '+beerWord(mine.length)+' zapsáno v partě</div>';
+    html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr piv na místě</span></div>';
+    if(venueTrend) html+=venueTrend;
+    html+='</div>';
+    html+='<div class="sec-title" style="margin-top:var(--s5)">Piva ochutnaná tady</div>';
+    html+='<div class="card list-card detail-list">';
+    html+=list.map(x=>{
+      const beerTrend=priceTrendHtml(x.entries);
+      return '<div class="rater-entry">'
+        +'<div class="lb-row clickable" data-open-beer-name="'+esc(norm(x.name))+'" data-open-beer-brewery="'+esc(norm((x.entries[0].brewery||'')))+'">'
+        +'<span class="lb-beerinfo"><b>'+esc(x.name)+'</b><small>'+x.n+'× zapsáno</small></span>'
+        +'<span class="lb-metric big"><b>'+(x.avg?x.avg.toFixed(1):'–')+'</b><small>Ø</small></span>'
+        +'</div>'
+        +(beerTrend?'<div style="padding:0 0 12px">'+beerTrend+'</div>':'')
+        +'</div>';
+    }).join('');
     html+='</div>';
 
     $('#detail-body').innerHTML=html;
@@ -6670,6 +6745,8 @@ var qrcode = function() {
     if(lk){ e.stopPropagation(); toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
     const bw=e.target.closest('[data-open-brewery]');
     if(bw){ e.stopPropagation(); openBreweryDetail(bw.dataset.openBrewery); return; }
+    const vn=e.target.closest('[data-open-venue]');
+    if(vn){ e.stopPropagation(); openVenueDetail(vn.dataset.openVenue); return; }
     const ph=e.target.closest('[data-photo]');
     const op=e.target.closest('[data-open]');
     if(ph){ e.stopPropagation(); openLightbox(ph.dataset.photo); return; }
@@ -6688,6 +6765,8 @@ var qrcode = function() {
   $('#detail-body').addEventListener('click', e=>{
     const bw=e.target.closest('[data-open-brewery]');
     if(bw){ openBreweryDetail(bw.dataset.openBrewery); return; }
+    const vn=e.target.closest('[data-open-venue]');
+    if(vn){ openVenueDetail(vn.dataset.openVenue); return; }
     const lk=e.target.closest('[data-like-btn]');
     if(lk){ toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
     const ct=e.target.closest('[data-comment-toggle]');
