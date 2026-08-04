@@ -1104,6 +1104,8 @@
   .ph-lbl{font-size:8px; color:var(--text-4); font-weight:600; white-space:nowrap;}
   .price-fam-block{margin-top:12px; padding:12px 13px; border-radius:var(--r-sm); background:var(--surface-2); border:1px solid var(--hairline);}
   .price-fam-head{font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:9px;}
+  .price-lezak-head{font-size:13px; font-weight:700; color:var(--text); margin-top:var(--s5); margin-bottom:2px;}
+  .price-lezak-head span{font-size:11px; font-weight:500; color:var(--text-3); margin-left:2px;}
   .pf-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid var(--hairline);}
   .pf-row:last-child{border-bottom:none;}
   .pf-fam{font-size:12.5px; font-weight:600; color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -2965,6 +2967,24 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }).join('');
     return '<div class="price-fam-block"><div class="price-fam-head">Podle stylu — poctivější srovnání</div>'+items+'</div>';
   }
+  // "Ležák 4,3 %+" (11° a výš) is the one beer everyone drinks everywhere, so it's the
+  // closest thing to a fair, comparable benchmark across venues and time — the weaker
+  // "výčepní" (10°) tier is deliberately excluded, it's a genuinely different price tier.
+  function isTraditionalLezak(b){
+    if(!(b.price && parseFloat(b.price)>0 && b.date)) return false;
+    const fam=matchStyleFamily(b.style);
+    if(fam!=='České a německé ležáky') return false;
+    const st=matchStyle(b.style);
+    if(st && st.n==='Výčepní světlé') return false;
+    return parseFloat(b.abv)>=4.3;
+  }
+  function priceLezakHtml(entries){
+    const lezaky=entries.filter(isTraditionalLezak);
+    const t=priceTrendHtml(lezaky);
+    if(!t) return '';
+    return '<div class="price-lezak-head">🍺 Tradiční ležák <span>(11° a výš, bez výčepního)</span></div>'
+      +'<div class="price-block">'+t+priceChartHtml(lezaky)+'</div>';
+  }
   function priceTrendHtml(entries, label){
     const t=priceTrend(entries); if(!t) return '';
     const arrow = t.diff>0.4?'↑':(t.diff<-0.4?'↓':'→');
@@ -3096,7 +3116,6 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const label=mine[0].where.trim();
     const rated=mine.filter(b=>b.rating>0);
     const avg=rated.length? rated.reduce((s,b)=>s+b.rating,0)/rated.length : 0;
-    const venueTrend=priceTrendHtml(mine);
 
     const bmap={};
     mine.forEach(b=>{
@@ -3111,7 +3130,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='<h2 class="detail-name">'+esc(label)+'</h2>';
     html+='<div class="detail-brewery">'+mine.length+' '+beerWord(mine.length)+' zapsáno v partě</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr piv na místě</span></div>';
-    if(venueTrend) html+='<div class="price-block">'+venueTrend+priceChartHtml(mine)+'</div>'+priceFamilyHtml(mine);
+    html+=priceLezakHtml(mine)+priceFamilyHtml(mine);
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Piva ochutnaná tady</div>';
     html+='<div class="card list-card detail-list">';
@@ -3798,20 +3817,6 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const monthAvgs=shown.map(m=>({m, avg:byMonth[m].sum/byMonth[m].n}));
     const maxAvg=Math.max(...monthAvgs.map(x=>x.avg), 1);
 
-    let trendHtml='';
-    if(monthAvgs.length>=3){
-      const mid=Math.floor(monthAvgs.length/2);
-      const firstHalf=monthAvgs.slice(0,mid), secondHalf=monthAvgs.slice(mid);
-      const fAvg=firstHalf.reduce((s,x)=>s+x.avg,0)/firstHalf.length;
-      const sAvg=secondHalf.reduce((s,x)=>s+x.avg,0)/secondHalf.length;
-      const diff=sAvg-fAvg;
-      if(Math.abs(diff)>=2){
-        trendHtml='<div class="price-insight">'+(diff>0
-          ? 'Ceny ti v průměru <b>rostou</b> — poslední dobou o '+Math.round(diff)+' Kč víc než dřív.'
-          : 'Ceny ti v průměru <b>klesají</b> — poslední dobou o '+Math.round(-diff)+' Kč míň než dřív.')+'</div>';
-      }
-    }
-
     const monthNamesShort=['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
     const barsHtml=monthAvgs.map(x=>{
       const mm=parseInt(x.m.slice(5,7),10);
@@ -3827,8 +3832,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +    '<div class="price-stat"><b>'+Math.round(total)+' Kč</b><span>celkem</span></div>'
       +  '</div>'
       +  (monthAvgs.length>1 ? '<div class="pr-months">'+barsHtml+'</div>' : '')
-      +  trendHtml
       +'</div>'
+      +priceLezakHtml(mine)
       +priceFamilyHtml(mine);
   }
   function renderHabits(){
