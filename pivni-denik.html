@@ -1102,6 +1102,15 @@
   .ph-val{font-size:9px; font-weight:700; color:var(--text-3); font-variant-numeric:tabular-nums; white-space:nowrap;}
   .ph-bar{width:100%; max-width:22px; background:linear-gradient(180deg, var(--amber-bright), var(--amber-deep)); border-radius:3px 3px 1px 1px;}
   .ph-lbl{font-size:8px; color:var(--text-4); font-weight:600; white-space:nowrap;}
+  .price-fam-block{margin-top:12px; padding:12px 13px; border-radius:var(--r-sm); background:var(--surface-2); border:1px solid var(--hairline);}
+  .price-fam-head{font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:9px;}
+  .pf-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid var(--hairline);}
+  .pf-row:last-child{border-bottom:none;}
+  .pf-fam{font-size:12.5px; font-weight:600; color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pf-nums{font-size:12.5px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; flex-shrink:0; display:flex; align-items:center; gap:5px;}
+  .pf-row.up .pf-arrow{color:#e0567a;}
+  .pf-row.down .pf-arrow{color:#6bbf7a;}
+  .pf-row.flat .pf-arrow{color:var(--text-3);}
   /* collaborations */
   .collab-toggle{
     background:none; border:none; font-family:inherit; font-size:12.5px; font-weight:600;
@@ -2491,6 +2500,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     for(const p of styleIndex()){ if(t.indexOf(' '+p.a+' ')>=0) return p.st; }
     return null;
   }
+  // Same lookup as matchStyle, but returns the broad family (spodně kvašené / kyselá.../ ...)
+  // instead of the specific style — that's the fair axis for comparing prices.
+  function matchStyleFamily(text){
+    if(!text) return null;
+    const t=' '+norm(text)+' ';
+    for(const p of styleIndex()){ if(t.indexOf(' '+p.a+' ')>=0) return p.fam; }
+    return null;
+  }
   function computeStyleMap(){
     const mine=beers.filter(b=>b.osoba===cfg.name && b.style && b.style.trim());
     const hits={}; let unmatched=0;
@@ -2919,6 +2936,35 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const first=hist[0].avg, last=hist[hist.length-1].avg;
     return {first, last, diff:last-first, points:hist.length};
   }
+  // The fair way to compare beer prices isn't ABV — a stout costs more than a pils at the
+  // same strength for reasons that have nothing to do with alcohol. Style family (the same
+  // grouping as the style map) is the closer-to-honest axis, so price trends get broken down
+  // by family rather than blended across everything.
+  function priceFamilyBreakdown(entries){
+    const byFam={};
+    entries.forEach(b=>{
+      if(!(b.price && parseFloat(b.price)>0 && b.date)) return;
+      const fam=matchStyleFamily(b.style) || 'Neurčený styl';
+      (byFam[fam]=byFam[fam]||[]).push(b);
+    });
+    const rows=[];
+    Object.entries(byFam).forEach(([fam, list])=>{
+      const t=priceTrend(list);
+      if(t) rows.push({fam, t});
+    });
+    rows.sort((a,b)=>Math.abs(b.t.diff)-Math.abs(a.t.diff));
+    return rows;
+  }
+  function priceFamilyHtml(entries){
+    const rows=priceFamilyBreakdown(entries);
+    if(!rows.length) return '';
+    const items=rows.map(r=>{
+      const arrow=r.t.diff>0.4?'↑':(r.t.diff<-0.4?'↓':'→');
+      const cls=r.t.diff>0.4?'up':(r.t.diff<-0.4?'down':'flat');
+      return '<div class="pf-row '+cls+'"><span class="pf-fam">'+esc(r.fam)+'</span><span class="pf-nums">'+Math.round(r.t.first)+' → '+Math.round(r.t.last)+' Kč <b class="pf-arrow">'+arrow+'</b></span></div>';
+    }).join('');
+    return '<div class="price-fam-block"><div class="price-fam-head">Podle stylu — poctivější srovnání</div>'+items+'</div>';
+  }
   function priceTrendHtml(entries, label){
     const t=priceTrend(entries); if(!t) return '';
     const arrow = t.diff>0.4?'↑':(t.diff<-0.4?'↓':'→');
@@ -3065,7 +3111,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='<h2 class="detail-name">'+esc(label)+'</h2>';
     html+='<div class="detail-brewery">'+mine.length+' '+beerWord(mine.length)+' zapsáno v partě</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr piv na místě</span></div>';
-    if(venueTrend) html+='<div class="price-block">'+venueTrend+priceChartHtml(mine)+'</div>';
+    if(venueTrend) html+='<div class="price-block">'+venueTrend+priceChartHtml(mine)+'</div>'+priceFamilyHtml(mine);
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Piva ochutnaná tady</div>';
     html+='<div class="card list-card detail-list">';
@@ -3782,7 +3828,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +  '</div>'
       +  (monthAvgs.length>1 ? '<div class="pr-months">'+barsHtml+'</div>' : '')
       +  trendHtml
-      +'</div>';
+      +'</div>'
+      +priceFamilyHtml(mine);
   }
   function renderHabits(){
     const box=$('#habits'); if(!box) return;
