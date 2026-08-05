@@ -3202,7 +3202,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   let mapInstance=null;
   let mapMode='venues';
   function beerWord(n){ return n===1?'pivo':(n<5?'piva':'piv'); }
-  async function openMap(mode){
+  async function openMap(mode, skipPull){
     mapMode = mode || mapMode || 'venues';
     document.querySelectorAll('#map-mode-seg .seg-btn').forEach(x=>x.classList.toggle('active', x.dataset.mapmode===mapMode));
     const isBrew=mapMode==='breweries';
@@ -3221,8 +3221,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#map-loading').classList.add('show');
     try{ await loadLeaflet(); }
     catch(e){ toast('Mapu se nepodařilo načíst — zkontroluj připojení', true); $('#map-loading').classList.remove('show'); return; }
-    if(isBrew){ loadBreweryCache(); await breweriesPull(); }
-    else { loadGeoCache(); await placesPull(); }
+    if(isBrew){ loadBreweryCache(); if(!skipPull) await breweriesPull(); }
+    else { loadGeoCache(); if(!skipPull) await placesPull(); }
     if(!mapInstance){
       mapInstance=L.map('map-canvas',{ zoomControl:true }).setView([49.8,15.5],7);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ maxZoom:19, attribution:'© OpenStreetMap contributors' }).addTo(mapInstance);
@@ -3270,6 +3270,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   function placeMarker(p, coord, mode){
     const isBrew=mode==='breweries';
+    let current={lat:coord.lat, lng:coord.lng}; // tracks the last CONFIRMED position across repeated drags
     const m=L.marker([coord.lat,coord.lng], { draggable:true }).addTo(mapInstance);
     let html='<div class="map-pin-popup"><b>'+esc(p.label)+'</b><span>'+p.count+' '+beerWord(p.count)+(p.avg?' · Ø '+p.avg.toFixed(1):'')+'</span>';
     if(isBrew) html+='<button class="pf-btn" data-pf-open="'+esc(p.key)+'">Detail pivovaru</button>';
@@ -3278,6 +3279,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     m.on('dragend', ()=>{
       const ll=m.getLatLng();
       const newCoord={lat:ll.lat,lng:ll.lng};
+      const distM=haversineM(current.lat, current.lng, newCoord.lat, newCoord.lng);
+      if(distM<12) { m.setLatLng([current.lat,current.lng]); return; } // a shaky touch, not an intentional drag
+      const distTxt = distM>=1000 ? (distM/1000).toFixed(1)+' km' : Math.round(distM)+' m';
+      if(!confirm('Přesunout „'+p.label+'" o '+distTxt+'?\n\nKlepni Zrušit, pokud to byl omyl.')){
+        m.setLatLng([current.lat,current.lng]); // snap back, nothing saved
+        return;
+      }
+      current=newCoord;
       if(isBrew){
         const cur=breweryCache[p.key]||{nazev:p.label};
         breweryCache[p.key]=Object.assign({}, cur, newCoord); saveBreweryCache();
@@ -3341,13 +3350,13 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       breweryCache[pfCtx.key]=Object.assign({}, cur, patch); saveBreweryCache();
       breweriesPush(pfCtx.key, breweryCache[pfCtx.key]);
       toast(city && !cur.mesto ? 'Poloha i město doplněny' : (sbConfigured()?'Poloha opravena a sdílena s partou':'Poloha opravena lokálně'));
-      openMap('breweries');
+      openMap('breweries', true);
     } else {
       geoCache[pfCtx.key]=newCoord;
       saveGeoCache();
       placesPush(pfCtx.key, pfCtx.label, newCoord);
       toast(sbConfigured()?'Poloha opravena a sdílena s partou':'Poloha opravena lokálně');
-      openMap('venues');
+      openMap('venues', true);
     }
   }
   function sortBeers(arr, mode){
