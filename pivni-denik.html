@@ -3265,7 +3265,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(bounds.length) mapInstance.fitBounds(bounds,{padding:[30,30], maxZoom:14});
     setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),200);
     $('#map-fallback').innerHTML = fallback.length
-      ? fallback.map(p=>'<div class="mf-row"><div class="mf-info"><b>'+esc(p.label)+'</b><small>'+p.count+' '+beerWord(p.count)+'</small></div><button class="mf-fix" data-fix="'+esc(p.key)+'" data-fix-label="'+esc(p.label)+'" data-fix-kind="'+mapMode+'">Najít</button></div>').join('')
+      ? fallback.map(p=>'<div class="mf-row"><div class="mf-info"><b>'+esc(p.label)+'</b><small>'+p.count+' '+beerWord(p.count)+'</small></div><button class="mf-fix" data-fix="'+esc(p.key)+'" data-fix-label="'+esc(p.label)+'" data-fix-kind="'+(mapMode==='breweries'?'brewery':'place')+'">Najít</button></div>').join('')
       : '<p class="muted center">'+(isBrew?'Všechny pivovary se podařilo najít na mapě.':'Všechna místa se podařilo najít na mapě.')+'</p>';
   }
   function placeMarker(p, coord, mode){
