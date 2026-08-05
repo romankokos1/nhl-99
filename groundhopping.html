@@ -282,6 +282,13 @@
   .detail-score{font-family:'IBM Plex Mono',monospace; color:var(--light-bright);}
   .detail-chips{display:flex; flex-wrap:wrap; gap:6px; margin:var(--s3) 0;}
   .chip{background:var(--surface-2); border:1px solid var(--hairline); border-radius:var(--r-pill); padding:5px 11px; font-size:11.5px; color:var(--text-2);}
+  .chip-picker{display:flex; flex-wrap:wrap; gap:7px;}
+  .chip-pick{background:var(--surface-2); border:1px solid var(--hairline-strong); border-radius:var(--r-pill); padding:7px 13px; font-size:12.5px; color:var(--text-2); cursor:pointer; user-select:none;}
+  .chip-pick.on{background:rgba(200,167,75,0.14); border-color:var(--light-deep); color:var(--light-bright);}
+  .avatar-stack{display:flex; align-items:center;}
+  .avatar-stack .avatar{margin-left:-6px; border:2px solid var(--surface); flex-shrink:0;}
+  .avatar-stack .avatar:first-child{margin-left:0;}
+  .brief .avatar-stack .avatar{border-color:var(--surface);}
   .detail-note{font-size:13.5px; color:var(--text-2); line-height:1.6; margin-bottom:var(--s4);}
   .comment-row{display:flex; gap:8px; margin-bottom:var(--s3); align-items:flex-start;}
   .comment-bubble{background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:9px 12px; flex:1; font-size:13px;}
@@ -456,6 +463,12 @@
           <div class="field"><label>Země</label><input type="text" id="f-zeme" placeholder="země" autocomplete="off"></div>
         </div>
         <div class="field" id="divaku-field"><label>Návštěvnost (nepovinné)</label><input type="number" min="0" id="f-divaku" placeholder="počet diváků"></div>
+
+        <div class="field">
+          <label>Byl s tebou i někdo z party?</label>
+          <div class="chip-picker" id="spolu-chips"></div>
+          <input type="text" id="f-spolu-extra" placeholder="jméno, pokud tu není (odděl čárkou)" autocomplete="off" style="margin-top:9px">
+        </div>
 
         <div class="field">
           <label>Atmosféra</label>
@@ -641,7 +654,7 @@
   skore_d int, skore_h int,
   soutez text, stadion text, mesto text, zeme text,
   datum text, divaku int, poznamka text,
-  hodnoceni int, pivo int, klobasa int, foto text,
+  hodnoceni int, pivo int, klobasa int, foto text, spolu text,
   vytvoreno timestamptz default now()
 );
 alter table navstevy enable row level security;
@@ -705,7 +718,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Podle toho, co ti chybí, spusť: <code>alter table navstevy add column if not exists typ text default 'zapas';</code> a/nebo <code>alter table navstevy add column if not exists pivo int; alter table navstevy add column if not exists klobasa int;</code> a pro skupinovou výzvu blok od „vyzva" výše.</p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Podle toho, co ti chybí, spusť: <code>alter table navstevy add column if not exists typ text default 'zapas';</code> a/nebo <code>alter table navstevy add column if not exists pivo int; alter table navstevy add column if not exists klobasa int;</code> a/nebo <code>alter table navstevy add column if not exists spolu text;</code> a pro skupinovou výzvu blok od „vyzva" výše.</p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -845,6 +858,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   let currentKlobasa = 0;
   let editingId = null;
   let formType = 'zapas';
+  let selectedSpolu = new Set();
   let feedScope = 'all';
   let viewMode = 'list';
   let statScope = 'all';
@@ -1083,7 +1097,8 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       const remote=rows.map(x=>({
         id:x.id, osoba:x.osoba, typ:x.typ||'zapas', domaci:x.domaci, hoste:x.hoste||'', skoreD:x.skore_d, skoreH:x.skore_h,
         soutez:x.soutez||'', stadion:x.stadion||'', mesto:x.mesto||'', zeme:x.zeme||'',
-        datum:x.datum, divaku:x.divaku, poznamka:x.poznamka||'', hodnoceni:x.hodnoceni||0, pivo:x.pivo||0, klobasa:x.klobasa||0, foto:x.foto||'', vytvoreno:x.vytvoreno, synced:true
+        datum:x.datum, divaku:x.divaku, poznamka:x.poznamka||'', hodnoceni:x.hodnoceni||0, pivo:x.pivo||0, klobasa:x.klobasa||0, foto:x.foto||'',
+        spolu:(x.spolu||'').split(',').map(s=>s.trim()).filter(Boolean), vytvoreno:x.vytvoreno, synced:true
       }));
       const unsynced=visits.filter(v=>!v.synced);
       const remoteIds=new Set(remote.map(r=>r.id));
@@ -1102,7 +1117,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       skore_d:(v.skoreD===''||v.skoreD==null)?null:v.skoreD, skore_h:(v.skoreH===''||v.skoreH==null)?null:v.skoreH,
       soutez:v.soutez||null, stadion:v.stadion||null, mesto:v.mesto||null, zeme:v.zeme||null,
       datum:v.datum, divaku:(v.divaku===''||v.divaku==null)?null:v.divaku, poznamka:v.poznamka||null,
-      hodnoceni:v.hodnoceni||0, pivo:v.pivo||0, klobasa:v.klobasa||0, foto:v.foto||'' };
+      hodnoceni:v.hodnoceni||0, pivo:v.pivo||0, klobasa:v.klobasa||0, foto:v.foto||'', spolu:(v.spolu||[]).join(',')||null };
     try {
       const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navstevy?on_conflict=id', {
         method:'POST', headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates'}), body:JSON.stringify(body)
@@ -1224,13 +1239,14 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     ['#score-d-field','#vs-mid-sep','#score-h-field','#hoste-field','#soutez-field','#divaku-field'].forEach(sel=>{ $(sel).style.display = isTour ? 'none' : ''; });
   }
   function resetForm(){
-    editingId=null; currentRating=0; currentBeer=0; currentKlobasa=0; pendingPhotoBlob=null; pendingPhotoLocalUrl='';
-    ['f-domaci','f-hoste','f-soutez','f-stadion','f-mesto','f-zeme','f-poznamka','f-skoreD','f-skoreH','f-divaku'].forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
+    editingId=null; currentRating=0; currentBeer=0; currentKlobasa=0; pendingPhotoBlob=null; pendingPhotoLocalUrl=''; selectedSpolu=new Set();
+    ['f-domaci','f-hoste','f-soutez','f-stadion','f-mesto','f-zeme','f-poznamka','f-skoreD','f-skoreH','f-divaku','f-spolu-extra'].forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
     $('#f-datum').value=todayISO();
     $('#add-title').textContent='Nová návštěva';
     $('#photo-drop').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-4-5 4M13 15l2-2 6 6"/></svg><div>Přidat fotku ze stadionu</div>';
     setFormType('zapas');
     buildRatingRow();
+    renderSpoluChips();
   }
   async function saveVisit(){
     const isTour = formType==='prohlidka';
@@ -1258,6 +1274,8 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     v.hodnoceni=currentRating;
     v.pivo=currentBeer;
     v.klobasa=currentKlobasa;
+    const extra=$('#f-spolu-extra').value.split(',').map(s=>s.trim()).filter(Boolean);
+    v.spolu=[...new Set([...selectedSpolu, ...extra])].filter(n=>n && n!==v.osoba);
     v.synced=false;
 
     if(pendingPhotoBlob && sbConfigured()){
@@ -1286,6 +1304,11 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     $('#add-title').textContent='Upravit návštěvu';
     if(v.foto && sbConfigured()){ $('#photo-drop').innerHTML='<img src="'+storageUrl(v.foto)+'" class="photo-preview" style="height:100px">'; }
     buildRatingRow();
+    const known=knownPeople();
+    const spolu=v.spolu||[];
+    selectedSpolu=new Set(spolu.filter(s=>known.includes(s)));
+    $('#f-spolu-extra').value=spolu.filter(s=>!known.includes(s)).join(', ');
+    renderSpoluChips();
     goView('add');
   }
   async function delVisit(id){
@@ -1344,6 +1367,18 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   }
 
   function initials(name){ return (name||'?').trim().slice(0,2).toUpperCase(); }
+  function visitInvolves(v, name){ return v.osoba===name || (v.spolu||[]).includes(name); }
+  function knownPeople(){
+    const set=new Set();
+    visits.forEach(v=>{ if(v.osoba && v.osoba!==cfg.name) set.add(v.osoba); (v.spolu||[]).forEach(s=>{ if(s && s!==cfg.name) set.add(s); }); });
+    return [...set].sort((a,b)=>a.localeCompare(b));
+  }
+  function renderSpoluChips(){
+    const box=$('#spolu-chips'); if(!box) return;
+    const people=knownPeople();
+    if(!people.length){ box.innerHTML='<span class="tiny-note">Zatím tu s tebou nikdo z party nezapisoval — napiš jméno níž.</span>'; return; }
+    box.innerHTML=people.map(p=>'<span class="chip-pick'+(selectedSpolu.has(p)?' on':'')+'" data-spolu="'+esc(p)+'">'+esc(p)+'</span>').join('');
+  }
   function tiltFor(id){
     let h=0; for(const c of (id||'x')) h=(h*31+c.charCodeAt(0))>>>0;
     return -8 + (h%17); // stable -8..8deg per visit
@@ -1372,7 +1407,9 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg>'+likeN+'</button>'
         +'<button class="soc-btn" data-open="'+v.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/></svg>'+commN+'</button>'
       : '';
-    const whoHtml = showWho ? '<span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba) : '';
+    const companions=(v.spolu||[]);
+    const allPeople=[v.osoba, ...companions].filter(Boolean);
+    const whoHtml = showWho ? '<div class="avatar-stack">'+allPeople.map(p=>'<span class="avatar" style="background:'+avatarColor(p)+'">'+esc(initials(p))+'</span>').join('')+'</div><span>'+esc(allPeople.join(', '))+'</span>' : '';
     // one shared bottom bar for both card variants: [who · rating] ......... [likes comments]
     const infoBar = '<div class="info-bar">'
       +(whoHtml?'<div class="info-who">'+whoHtml+'</div>':'')
@@ -1419,7 +1456,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
 
   function renderFeed(){
     let arr=sortVisits(visits);
-    if(feedScope==='mine') arr=arr.filter(v=>v.osoba===cfg.name);
+    if(feedScope==='mine') arr=arr.filter(v=>visitInvolves(v,cfg.name));
     const q=norm($('#search-all').value);
     if(q) arr=arr.filter(v=> norm(v.domaci+' '+v.hoste+' '+v.stadion+' '+v.soutez+' '+v.mesto).includes(q));
     const feed=$('#feed');
@@ -1455,7 +1492,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
 
   function renderHero(){
     let arr=visits;
-    if(feedScope==='mine') arr=arr.filter(v=>v.osoba===cfg.name);
+    if(feedScope==='mine') arr=arr.filter(v=>visitInvolves(v,cfg.name));
     const stadiums=new Set(arr.map(stadionKey).filter(Boolean));
     const countries=new Set(arr.map(v=>norm(v.zeme)).filter(Boolean));
     $('#hero-hello').textContent = cfg.name ? ('Ahoj, '+cfg.name) : 'Vítej';
@@ -1526,7 +1563,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
 
   function renderStats(){
     let arr=visits;
-    if(statScope==='mine') arr=arr.filter(v=>v.osoba===cfg.name);
+    if(statScope==='mine') arr=arr.filter(v=>visitInvolves(v,cfg.name));
     const stadiums=new Set(arr.map(stadionKey).filter(Boolean));
     const countries=new Set(arr.map(v=>norm(v.zeme)).filter(Boolean));
     const rated=arr.filter(v=>v.hodnoceni>0);
@@ -1558,9 +1595,13 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   function renderBoard(){
     const per={};
     visits.forEach(v=>{
-      const o=v.osoba||'?'; per[o]=per[o]||{stadiums:new Set(), matches:0};
-      const k=stadionKey(v); if(k) per[o].stadiums.add(k);
-      per[o].matches++;
+      const people=[v.osoba, ...(v.spolu||[])].filter(Boolean);
+      const k=stadionKey(v);
+      people.forEach(o=>{
+        per[o]=per[o]||{stadiums:new Set(), matches:0};
+        if(k) per[o].stadiums.add(k);
+        per[o].matches++;
+      });
     });
     let rows=Object.entries(per).map(([name,d])=>({name, stadiums:d.stadiums.size, matches:d.matches}));
     rows.sort((a,b)=> boardMode==='stadiums' ? (b.stadiums-a.stadiums) : (b.matches-a.matches));
@@ -1578,7 +1619,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     $('#prof-name').textContent=cfg.name||'Nezadáno';
     $('#prof-avatar').textContent=initials(cfg.name);
     $('#prof-avatar').style.background=avatarColor(cfg.name);
-    const mine=visits.filter(v=>v.osoba===cfg.name);
+    const mine=visits.filter(v=>visitInvolves(v,cfg.name));
     $('#prof-stadiums').textContent=new Set(mine.map(stadionKey).filter(Boolean)).size;
     $('#prof-matches').textContent=mine.length;
     const feed=$('#profile-feed');
@@ -1726,7 +1767,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       +'</div>' : '')
       +'<div class="detail-chips">'+chips.map(c=>c===v.stadion ? '<span class="chip meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(c)+'</span>' : '<span class="chip">'+esc(c)+'</span>').join('')+'</div>'
       +(v.poznamka ? '<div class="detail-note">'+esc(v.poznamka)+'</div>' : '')
-      +'<div class="info-who" style="margin-bottom:var(--s3)"><span class="avatar" style="background:'+avatarColor(v.osoba)+'">'+esc(initials(v.osoba))+'</span>'+esc(v.osoba)+' · '+esc(v.datum||'')+'</div>'
+      +'<div class="info-who" style="margin-bottom:var(--s3)"><div class="avatar-stack">'+[v.osoba,...(v.spolu||[])].filter(Boolean).map(p=>'<span class="avatar" style="background:'+avatarColor(p)+'">'+esc(initials(p))+'</span>').join('')+'</div><span>'+esc([v.osoba,...(v.spolu||[])].filter(Boolean).join(', '))+' · '+esc(v.datum||'')+'</span></div>'
       +(sbConfigured() ? '<button class="soc-btn'+(liked?' liked':'')+'" data-like="'+v.id+'" style="margin-bottom:var(--s3)"><svg viewBox="0 0 24 24" fill="'+(liked?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.8 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.2 3.6 3.5 7.2C19 16.6 12 21 12 21z"/></svg> Líbí se ('+(likesMap[v.id]?likesMap[v.id].size:0)+')</button>' : '')
       +'<button class="btn btn-ghost btn-sm" id="detail-share" style="margin-bottom:var(--s4)">Sdílet jako obrázek</button>'
       +'<div id="comment-thread">'+comments.map(c=>'<div class="comment-row"><span class="avatar" style="background:'+avatarColor(c.osoba)+'">'+esc(initials(c.osoba))+'</span><div class="comment-bubble"><div class="who">'+esc(c.osoba)+'</div>'+esc(c.text)+'</div>'+(c.osoba===cfg.name?'<button data-delcomment="'+c.id+'" style="background:none; border:none; color:var(--text-4); flex-shrink:0; padding:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M6 6l12 12M18 6L6 18"/></svg></button>':'')+'</div>').join('')+'</div>'
@@ -1962,7 +2003,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     let done=0;
     const rows=challengeItems.map(it=>{
       const key=challengeItemKey(it);
-      const doneBy=[...new Set(visits.filter(v=>stadionKey(v)===key).map(v=>v.osoba))];
+      const doneBy=[...new Set(visits.filter(v=>stadionKey(v)===key).flatMap(v=>[v.osoba, ...(v.spolu||[])].filter(Boolean)))];
       if(doneBy.length) done++;
       return '<div class="wish-row"><div class="wish-info"><div class="t">'+(doneBy.length?'✓ ':'')+esc(it.stadion)+'</div><div class="s">'+esc([it.mesto,it.zeme].filter(Boolean).join(', '))+(doneBy.length?' · splnil: '+esc(doneBy.join(', ')):' · zatím nikdo')+'</div></div>'
         +'<div class="wish-actions"><button data-challdel="'+it.id+'" title="Odebrat z výzvy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>';
@@ -2107,6 +2148,12 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   $$('[data-goback]').forEach(b=>b.addEventListener('click', ()=>goView('home')));
   $('#save-visit').addEventListener('click', saveVisit);
   $$('#type-segment .seg-btn').forEach(b=>b.addEventListener('click', ()=>setFormType(b.dataset.vtype)));
+  $('#spolu-chips').addEventListener('click', e=>{
+    const chip=e.target.closest('[data-spolu]'); if(!chip) return;
+    const name=chip.dataset.spolu;
+    if(selectedSpolu.has(name)) selectedSpolu.delete(name); else selectedSpolu.add(name);
+    renderSpoluChips();
+  });
 
   $$('.seg-btn[data-scope]').forEach(b=>b.addEventListener('click', ()=>{ feedScope=b.dataset.scope; $$('.seg-btn[data-scope]').forEach(x=>x.classList.toggle('active',x===b)); renderHero(); renderFeed(); }));
   $$('.seg-btn[data-statscope]').forEach(b=>b.addEventListener('click', ()=>{ statScope=b.dataset.statscope; $$('.seg-btn[data-statscope]').forEach(x=>x.classList.toggle('active',x===b)); renderStats(); }));
