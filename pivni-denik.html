@@ -3015,7 +3015,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const all=beers.filter(x=>beerKey(x)===key).sort((a,b2)=>(b2.date||'').localeCompare(a.date||''));
     const rated=all.filter(x=>x.rating>0);
     const avg=rated.length? rated.reduce((s,x)=>s+x.rating,0)/rated.length : 0;
-    const photoEntry=all.find(x=>x.foto);
+    const photoEntry=b.foto ? b : all.find(x=>x.foto); // show the exact photo they tapped, not just the first one on record
     const chips=[];
     if(b.style) chips.push('<span class="chip">'+esc(b.style)+'</span>');
     if(b.abv) chips.push('<span class="chip">'+esc(b.abv)+'%</span>');
