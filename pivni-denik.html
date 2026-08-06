@@ -848,23 +848,24 @@
     display:flex; align-items:center; justify-content:space-around;
   }
   .navitem{
-    flex:1; background:none; border:none; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:3px;
-    color:var(--text-4); font-family:inherit; font-size:10px; font-weight:600;
-    padding:6px 0; transition:color .2s; position:relative;
+    flex:1; min-width:0; background:none; border:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    color:var(--text-4); font-family:inherit; font-size:9px; font-weight:600;
+    letter-spacing:-0.01em; padding:5px 0; transition:color .2s; position:relative;
   }
-  .navitem svg{width:24px; height:24px; transition:transform .2s;}
+  .navitem svg{width:21px; height:21px; transition:transform .2s;}
+  .navitem-label{max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .navitem.active{color:var(--amber-bright);}
   .navitem.active svg{transform:translateY(-1px);}
   .navitem:active svg{transform:scale(0.88);}
   .navitem.add{color:var(--text-4);}
   .nav-fab{
-    width:52px; height:52px; margin-top:-14px; border-radius:18px;
+    width:46px; height:46px; margin-top:-12px; border-radius:16px;
     background:linear-gradient(160deg, var(--amber-bright), var(--amber));
     display:flex; align-items:center; justify-content:center; color:#241703;
     box-shadow:var(--glow); border:1px solid rgba(255,255,255,0.15);
   }
-  .nav-fab svg{width:26px; height:26px;}
+  .nav-fab svg{width:23px; height:23px;}
 
   /* modals */
   .overlay{
@@ -1331,6 +1332,44 @@
       </div>
     </section>
 
+    <!-- ========== BREWERIES ========== -->
+    <section class="screen" id="screen-breweries">
+      <div class="topbar"><div class="tb-title">Pivovary</div></div>
+      <div class="pad">
+        <div class="search-wrap" style="margin-bottom:var(--s3)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+          <input type="text" id="brl-search" placeholder="Hledat pivovar…" autocomplete="off">
+        </div>
+        <div class="segment" id="brl-sort-seg" style="margin-bottom:var(--s3)">
+          <button class="seg-btn active" data-brlsort="count">Nejvíc piv</button>
+          <button class="seg-btn" data-brlsort="rating">Nejlepší</button>
+          <button class="seg-btn" data-brlsort="name">Podle názvu</button>
+        </div>
+        <div class="card list-card" id="brl-list"></div>
+        <button class="btn btn-ghost" id="brl-dedup" style="margin-top:var(--s4)">Najít duplicitní pivovary</button>
+        <div class="bottom-space"></div>
+      </div>
+    </section>
+
+    <!-- ========== VENUE MAP ========== -->
+    <section class="screen" id="screen-map">
+      <div class="topbar"><div class="tb-title" id="map-title">Mapa podniků</div></div>
+      <div class="pad">
+        <div class="segment" id="map-mode-seg" style="margin-bottom:var(--s3)">
+          <button class="seg-btn active" data-mapmode="venues">Podniky</button>
+          <button class="seg-btn" data-mapmode="breweries">Pivovary</button>
+        </div>
+        <div class="map-canvas-wrap">
+          <div id="map-canvas"></div>
+          <div class="map-loading" id="map-loading"><div class="map-spinner"></div><span id="map-loading-text">Hledám podniky…</span></div>
+        </div>
+        <p class="tiny-note" style="padding:0 2px; margin-bottom:var(--s2)">Pin sedí špatně? Podrž a přetáhni ho, nebo v jeho bublině klepni na „Opravit polohu".</p>
+        <div class="sec-title" id="map-fallback-title">Místa bez polohy</div>
+        <div class="card list-card" id="map-fallback"></div>
+        <div class="bottom-space"></div>
+      </div>
+    </section>
+
     <!-- ========== PROFILE ========== -->
     <section class="screen" id="screen-profile">
       <div class="topbar"><div class="tb-title">Profil</div></div>
@@ -1365,18 +1404,6 @@
           <div class="row-item" data-yearbook>
             <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H19v18H6.5A2.5 2.5 0 0 0 4 22V4.5z"/><path d="M9 7h6M9 11h6"/></svg></div>
             <div class="row-tx"><div class="t">Ročenka</div><div class="d">Vytisknout rok jako knížku</div></div>
-            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          </div>
-
-          <div class="row-item" data-breweries>
-            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M4.5 21V9.5l7.5-5 7.5 5V21"/><path d="M9 21v-6h6v6"/><path d="M4.5 9.5h15"/></svg></div>
-            <div class="row-tx"><div class="t">Pivovary</div><div class="d">Všechny, co jste ochutnali</div></div>
-            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          </div>
-
-          <div class="row-item" data-map>
-            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c4-4.5 6.5-8 6.5-11a6.5 6.5 0 0 0-13 0c0 3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div>
-            <div class="row-tx"><div class="t">Mapa podniků</div><div class="d">Kde všude jste ochutnávali</div></div>
             <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
         </div>
@@ -1426,22 +1453,30 @@
   <nav class="tabbar">
     <button class="navitem active" data-view="home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5V20h14V9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Domů
+      <span class="navitem-label">Domů</span>
     </button>
     <button class="navitem" data-view="stats">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 20V10M12 20V4M19 20v-6" stroke-linecap="round"/></svg>
-      Statistiky
+      <span class="navitem-label">Statistiky</span>
+    </button>
+    <button class="navitem" data-view="breweries">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M4.5 21V9.5l7.5-5 7.5 5V21"/><path d="M9 21v-6h6v6"/><path d="M4.5 9.5h15"/></svg>
+      <span class="navitem-label">Pivovary</span>
     </button>
     <button class="navitem add" data-view="add">
       <span class="nav-fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
     </button>
+    <button class="navitem" data-view="map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c4-4.5 6.5-8 6.5-11a6.5 6.5 0 0 0-13 0c0 3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+      <span class="navitem-label">Mapa</span>
+    </button>
     <button class="navitem" data-view="board">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4" stroke-linecap="round"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" stroke-linecap="round"/></svg>
-      Žebříček
+      <span class="navitem-label">Žebříček</span>
     </button>
     <button class="navitem" data-view="profile">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke-linecap="round"/></svg>
-      Profil
+      <span class="navitem-label">Profil</span>
     </button>
   </nav>
 
@@ -1644,28 +1679,6 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     </div>
   </div>
 
-  <!-- venue map -->
-  <div class="overlay" id="map-overlay">
-    <div class="sheet map-sheet">
-      <div class="grabber"></div>
-      <div class="map-head">
-        <div class="sec-title first" style="margin:0" id="map-title">Mapa podniků</div>
-        <button class="detail-close" id="map-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
-      </div>
-      <div class="segment" id="map-mode-seg" style="margin-bottom:var(--s3)">
-        <button class="seg-btn active" data-mapmode="venues">Podniky</button>
-        <button class="seg-btn" data-mapmode="breweries">Pivovary</button>
-      </div>
-      <div class="map-canvas-wrap">
-        <div id="map-canvas"></div>
-        <div class="map-loading" id="map-loading"><div class="map-spinner"></div><span id="map-loading-text">Hledám podniky…</span></div>
-      </div>
-      <p class="tiny-note" style="padding:0 2px; margin-bottom:var(--s2)">Pin sedí špatně? Podrž a přetáhni ho, nebo v jeho bublině klepni na „Opravit polohu".</p>
-      <div class="sec-title" id="map-fallback-title">Místa bez polohy</div>
-      <div class="card list-card" id="map-fallback"></div>
-    </div>
-  </div>
-
   <!-- place correction search -->
   <div class="overlay" id="placefix-overlay">
     <div class="sheet">
@@ -1694,28 +1707,6 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <div class="field"><label for="be-popis">Popis</label><textarea id="be-popis" placeholder="Pár slov o pivovaru…"></textarea></div>
       <button class="btn btn-primary" id="be-save">Uložit</button>
       <button class="btn btn-ghost" id="be-close" style="margin-top:var(--s3)">Zavřít</button>
-    </div>
-  </div>
-
-  <!-- all breweries, searchable -->
-  <div class="overlay" id="breweries-overlay">
-    <div class="sheet map-sheet">
-      <div class="grabber"></div>
-      <div class="map-head">
-        <div class="sec-title first" style="margin:0">Pivovary</div>
-        <button class="detail-close" id="brl-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
-      </div>
-      <div class="search-wrap" style="margin-bottom:var(--s3)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-        <input type="text" id="brl-search" placeholder="Hledat pivovar…" autocomplete="off">
-      </div>
-      <div class="segment" id="brl-sort-seg" style="margin-bottom:var(--s3)">
-        <button class="seg-btn active" data-brlsort="count">Nejvíc piv</button>
-        <button class="seg-btn" data-brlsort="rating">Nejlepší</button>
-        <button class="seg-btn" data-brlsort="name">Podle názvu</button>
-      </div>
-      <div class="card list-card" id="brl-list"></div>
-      <button class="btn btn-ghost" id="brl-dedup" style="margin-top:var(--s4)">Najít duplicitní pivovary</button>
     </div>
   </div>
 
@@ -3209,7 +3200,6 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#map-title').textContent = isBrew ? 'Mapa pivovarů' : 'Mapa podniků';
     $('#map-loading-text').textContent = isBrew ? 'Hledám pivovary…' : 'Hledám podniky…';
     $('#map-fallback-title').textContent = isBrew ? 'Pivovary bez polohy' : 'Místa bez polohy';
-    $('#map-overlay').classList.add('show');
     const items = isBrew ? distinctBreweriesForMap() : distinctPlaces();
     if(!items.length){
       $('#map-canvas').innerHTML='';
@@ -3231,7 +3221,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         const btn=node.querySelector('[data-pf]');
         if(btn) btn.addEventListener('click', ()=>{ mapInstance.closePopup(); openPlaceFix(btn.dataset.pf, btn.dataset.pfLabel, btn.dataset.pfKind||'place'); });
         const openBtn=node.querySelector('[data-pf-open]');
-        if(openBtn) openBtn.addEventListener('click', ()=>{ mapInstance.closePopup(); $('#map-overlay').classList.remove('show'); openBreweryDetail(openBtn.dataset.pfOpen); });
+        if(openBtn) openBtn.addEventListener('click', ()=>{ mapInstance.closePopup(); openBreweryDetail(openBtn.dataset.pfOpen); });
       });
     } else {
       mapInstance.eachLayer(l=>{ if(l instanceof L.Marker) mapInstance.removeLayer(l); });
@@ -4073,6 +4063,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(v==='board' && dirty.board){ renderBoard(); dirty.board=false; }
     if(v==='stats'){ renderStats(); dirty.stats=false; }
     if(v==='profile'){ renderTrophies(); dirty.trophies=false; }
+    if(v==='breweries'){ $('#brl-search').value=''; renderBreweriesList(); }
+    if(v==='map'){ openMap(mapMode||'venues'); }
   }
   function openName(){ $('#name-input').value=cfg.name||''; $('#name-overlay').classList.add('show'); setTimeout(()=>$('#name-input').focus(),50); }
 
@@ -4157,11 +4149,6 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   /* ---------- all breweries, searchable ---------- */
   let brlSort='count';
-  function openBreweriesList(){
-    $('#breweries-overlay').classList.add('show');
-    $('#brl-search').value='';
-    renderBreweriesList();
-  }
   function renderBreweriesList(){
     const box=$('#brl-list'); if(!box) return;
     const q=($('#brl-search').value||'').trim().toLowerCase();
@@ -6981,7 +6968,6 @@ var qrcode = function() {
   document.querySelectorAll('[data-merge]').forEach(b=>b.addEventListener('click', openMerge));
   $('#merge-close').addEventListener('click', ()=>$('#merge-overlay').classList.remove('show'));
   // venue map
-  document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click', ()=>openMap('venues')));
   // yearly / monthly wrapped
   document.querySelectorAll('[data-wrapped]').forEach(b=>b.addEventListener('click', ()=>openWrapped()));
   $('#wrapped-close').addEventListener('click', ()=>$('#wrapped-overlay').classList.remove('show'));
@@ -7007,7 +6993,6 @@ var qrcode = function() {
     el.scrollTo({left: idx*el.clientWidth, behavior:'smooth'});
   });
   document.querySelectorAll('#map-mode-seg .seg-btn').forEach(b=>b.addEventListener('click', ()=>openMap(b.dataset.mapmode)));
-  $('#map-close').addEventListener('click', ()=>$('#map-overlay').classList.remove('show'));
   // place correction
   $('#map-fallback').addEventListener('click', e=>{
     const btn=e.target.closest('[data-fix]'); if(!btn) return;
@@ -7078,8 +7063,6 @@ var qrcode = function() {
     applyMerge(clusters[ci], canonical);
   });
   // breweries list
-  document.querySelectorAll('[data-breweries]').forEach(b=>b.addEventListener('click', openBreweriesList));
-  $('#brl-close').addEventListener('click', ()=>$('#breweries-overlay').classList.remove('show'));
   $('#brl-search').addEventListener('input', renderBreweriesList);
   document.querySelectorAll('#brl-sort-seg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{
     brlSort=b.dataset.brlsort;
@@ -7088,7 +7071,6 @@ var qrcode = function() {
   }));
   $('#brl-list').addEventListener('click', e=>{
     const row=e.target.closest('[data-open-brewery]'); if(!row) return;
-    $('#breweries-overlay').classList.remove('show');
     openBreweryDetail(row.dataset.openBrewery);
   });
   $('#brewery-photo-input').addEventListener('change', e=>{
@@ -7182,13 +7164,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#map-overlay','#placefix-overlay','#brewery-edit-overlay','#breweries-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#map-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#breweries-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
