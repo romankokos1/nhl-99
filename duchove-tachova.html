@@ -6,8 +6,8 @@
 <title>Duchové Tachova</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root{
     --bg:#0e1016;
@@ -89,6 +89,17 @@
   }
   #start-status{ margin-top:14px; font-size:12px; color:var(--crimson); min-height:16px; }
 
+  #loading{
+    position:fixed; inset:0; z-index:45; background:#0e1016;
+    display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px;
+    color:var(--muted); font-family:'IBM Plex Mono', monospace; font-size:13px; gap:14px;
+  }
+  #loading.show{ display:flex; }
+  #loading .spin{ width:28px;height:28px;border-radius:50%; border:3px solid #2a2f3c; border-top-color:var(--gold-bright); animation:spin 1s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  #loading .err{ color:var(--crimson); max-width:280px; line-height:1.5; }
+  #loading button{ margin-top:6px; background:var(--panel); border:1px solid var(--panel-line); color:var(--ink); padding:10px 18px; border-radius:8px; font-size:12.5px; font-family:'IBM Plex Sans',sans-serif; }
+
   /* ---- range toast ---- */
   #toast{
     position:fixed; left:50%; bottom:calc(30px + env(safe-area-inset-bottom)); transform:translate(-50%, 20px);
@@ -159,6 +170,11 @@
     <input type="checkbox" id="test-mode"> nejsem v Tachově — testovací režim (bez vzdálenosti)
   </label>
   <div id="start-status"></div>
+</div>
+
+<div id="loading">
+  <div class="spin"></div>
+  <div id="loading-text">Načítám mapu…</div>
 </div>
 
 <div id="topbar" class="hidden">
@@ -283,14 +299,40 @@ function setPinState(id, state){
   else el.classList.add("locked");
 }
 
+function showLoading(msg, isError){
+  const box = document.getElementById("loading");
+  const txt = document.getElementById("loading-text");
+  box.classList.add("show");
+  if(isError){
+    txt.innerHTML = `<div class="err">${msg}</div><button onclick="location.reload()">Zkusit znovu</button>`;
+    box.querySelector(".spin").style.display = "none";
+  } else {
+    txt.textContent = msg;
+  }
+}
+function hideLoading(){ document.getElementById("loading").classList.remove("show"); }
+
 function beginHunt(){
   testMode = document.getElementById("test-mode").checked;
-  const statusEl = document.getElementById("start-status");
 
-  document.getElementById("start").classList.add("hidden");
-  document.getElementById("topbar").classList.remove("hidden");
-  document.getElementById("recenter").classList.remove("hidden");
-  initMap();
+  document.getElementById("start").style.display = "none";
+  document.getElementById("topbar").style.display = "flex";
+  document.getElementById("recenter").style.display = "flex";
+  showLoading("Načítám mapu…");
+
+  if(typeof L === "undefined"){
+    showLoading("Nepodařilo se načíst mapu (Leaflet knihovna se nenačetla). Zkontroluj internetové připojení, vypni AdBlock/blokování obsahu pro tuhle stránku, nebo zkus jinou síť (WiFi ↔ mobilní data).", true);
+    return;
+  }
+
+  try{
+    initMap();
+  } catch(e){
+    showLoading("Chyba při vykreslování mapy: " + e.message, true);
+    return;
+  }
+
+  hideLoading();
 
   if(testMode){
     map.setView([ANCHOR.lat, ANCHOR.lng], 16);
@@ -298,8 +340,7 @@ function beginHunt(){
   }
 
   if(!navigator.geolocation){
-    statusEl.textContent = "Telefon nepodporuje polohu — zkus testovací režim.";
-    testMode = true;
+    showToast("Telefon nepodporuje polohu — zapni testovací režim.");
     return;
   }
 
@@ -307,7 +348,7 @@ function beginHunt(){
     userPos = [pos.coords.latitude, pos.coords.longitude];
     onPosition(userPos, pos.coords.accuracy);
   }, err=>{
-    showToast("Poloha nedostupná — zkus testovací režim nebo povol GPS v nastavení.");
+    showToast("Poloha nedostupná (" + err.message + ") — zkus testovací režim nebo povol GPS v nastavení telefonu.");
   }, { enableHighAccuracy:true, maximumAge:4000, timeout:12000 });
 }
 
@@ -444,11 +485,11 @@ function resetGame(){
   updateStats();
 }
 
-if(collected.size === CREATURES.length){
-  document.getElementById("start").classList.add("hidden");
-  document.getElementById("topbar").classList.remove("hidden");
-  initMap();
-  showWin();
+if(collected.size === CREATURES.length && typeof L !== "undefined"){
+  document.getElementById("start").style.display = "none";
+  document.getElementById("topbar").style.display = "flex";
+  document.getElementById("recenter").style.display = "flex";
+  try{ initMap(); showWin(); } catch(e){ showLoading("Chyba při vykreslování mapy: " + e.message, true); }
 }
 </script>
 </body>
