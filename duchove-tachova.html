@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
-<title>Duchové Tachovaa</title>
+<title>Duchové Tachova</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
@@ -186,7 +186,7 @@
 <div id="start">
   <div class="eyebrow">TACHOVSKÉ SLAVNOSTI · 7.–9. 8. 2026</div>
   <h1>👻 Duchové Tachova</h1>
-  <p>Po městě je rozeseto 8 duchů — každý hlídá jedno místo z historie Tachova. Přibliž se k němu na dosah a chyť ho. Povol polohu telefonu a vyraž.</p>
+  <p>Po městě je rozeseto 12 duchů — každý hlídá jedno místo z historie Tachova (dva jsou bonusové, kousek za centrem). Přibliž se na dosah a chyť je. Povol polohu telefonu a vyraž.</p>
   <button class="go-btn" onclick="beginHunt()">Povolit polohu a začít lov</button>
   <label class="test-toggle">
     <input type="checkbox" id="test-mode"> nejsem v Tachově — testovací režim (bez vzdálenosti)
@@ -202,7 +202,7 @@
 
 <div id="topbar" class="hidden">
   <div class="title">👻 Duchové Tachova</div>
-  <div class="stats"><span>CHYCENO <b id="caught-count">0</b>/8</span></div>
+  <div class="stats"><span>CHYCENO <b id="caught-count">0</b>/<span id="total-count">12</span></span></div>
 </div>
 
 <div id="map"></div>
@@ -267,7 +267,15 @@ const CREATURES = [
   { id:"mlyn", icon:"⚙️", name:"Mlynářský skřítek", pos:offset(-300,350),
     text:"Husmannův mlýn nese jméno Jana Filipa Hussmanna, kterému bylo město roku 1623 prodáno jako trest za protihabsburské povstání." },
   { id:"naplavka", icon:"🧜", name:"Víla náplavky", pos:offset(-200,420),
-    text:"Druhá scéna slavností na Tachovské náplavce loni přilákala hlavně fanoušky alternativní a klubové hudby." }
+    text:"Druhá scéna slavností na Tachovské náplavce loni přilákala hlavně fanoušky alternativní a klubové hudby." },
+  { id:"jizdarna", icon:"🐎", name:"Jezdec ze Světců", pos:offset(790,-1890),
+    text:"Jízdárna ve Světcích z let 1858–1861 je druhá největší jízdárna ve střední Evropě, hned po vídeňské císařské. Leží asi 3 km od centra — bonusový bod pro ty, co to chtějí obejít pořádně." },
+  { id:"alej", icon:"🌳", name:"Strom knížecí aleje", pos:offset(400,-1050),
+    text:"Alej založil roku 1791 kníže Windischgrätz — vede od Zámeckého mlýna až ke Světcům a ukrývá přes 500 vzácných památných stromů." },
+  { id:"stadion", icon:"🏒", name:"Brankář ze stadionu", pos:offset(120,-596),
+    text:"Zimní stadion v Pobřežní ulici nabízí veřejné bruslení i bar s bowlingem — ideální úkryt před horkem o víkendu slavností." },
+  { id:"vodnik", icon:"🍺", name:"Vodníkův hostinský", pos:offset(135,-422),
+    text:"Hospůdka U Vodníka sídlí v areálu bývalého koupaliště U Náhonu — oblíbený podnik, kde se hraje i na místním festivalu Muziq." }
 ];
 
 const CATCH_RADIUS_M = 120;
@@ -462,7 +470,7 @@ function showWin(){
 
 function shareCode(){
   const code = document.getElementById("my-code").textContent;
-  const text = `Chytil jsem všech 8 duchů Tachova! 👻🏰 Můj kód: ${code}\nZkus mě trumfnout před slavnostmi!`;
+  const text = `Chytil jsem všech ${CREATURES.length} duchů Tachova! 👻🏰 Můj kód: ${code}\nZkus mě trumfnout před slavnostmi!`;
   if(navigator.share){ navigator.share({text}).catch(()=>{}); }
   else {
     navigator.clipboard.writeText(text);
@@ -494,7 +502,7 @@ function renderBoard(){
   const mine = { name:"Ty", count: collected.size };
   const all = [mine, ...board].sort((a,b)=>b.count-a.count);
   const wrap = document.getElementById("board");
-  wrap.innerHTML = all.map(r => `<div class="board-row"><span>${r.name}</span><b>${r.count}/8</b></div>`).join("");
+  wrap.innerHTML = all.map(r => `<div class="board-row"><span>${r.name}</span><b>${r.count}/${CREATURES.length}</b></div>`).join("");
 }
 
 function resetGame(){
