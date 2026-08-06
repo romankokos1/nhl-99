@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root{
     --bg:#0e1016;
@@ -47,6 +48,22 @@
     width:46px;height:46px;border-radius:50%; background:var(--panel); border:1px solid var(--panel-line);
     color:var(--gold-bright); font-size:18px; display:flex; align-items:center; justify-content:center;
   }
+  #board-btn{
+    position:fixed; left:14px; bottom:calc(20px + env(safe-area-inset-bottom)); z-index:20;
+    padding:0 16px; height:46px; border-radius:23px; background:var(--panel); border:1px solid var(--panel-line);
+    color:var(--gold-bright); font-size:13px; font-family:'IBM Plex Mono',monospace; display:flex; align-items:center; gap:6px;
+  }
+  #live-board{
+    position:fixed; left:0; right:0; bottom:0; z-index:41; background:var(--panel);
+    border-radius:16px 16px 0 0; padding:18px 20px calc(20px + env(safe-area-inset-bottom));
+    transform:translateY(105%); transition:transform .3s; max-height:60vh; overflow-y:auto;
+  }
+  #live-board.open{ transform:translateY(0); }
+  #live-board h3{ font-family:'Cinzel',serif; font-size:16px; margin:0 0 4px; }
+  #live-board .sub{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--muted); margin-bottom:12px; }
+  #live-board .row{ display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--panel-line); font-size:13.5px; }
+  #live-board .row b{ font-family:'IBM Plex Mono',monospace; color:var(--gold-bright); }
+  #live-board .close{ display:block; margin:14px auto 0; background:none; border:none; color:var(--muted); font-size:12.5px; text-decoration:underline; }
 
   /* ---- creature markers ---- */
   .creature-pin{ display:flex; align-items:center; justify-content:center; position:relative; }
@@ -191,6 +208,7 @@
   <label class="test-toggle">
     <input type="checkbox" id="test-mode"> nejsem v Tachově — testovací režim (bez vzdálenosti)
   </label>
+  <input type="text" id="player-name" placeholder="Tvoje jméno pro žebříček" style="margin-top:14px;width:100%;max-width:280px;padding:12px 14px;border-radius:10px;border:1px solid var(--panel-line);background:var(--panel);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:14px;">
   <div id="start-status"></div>
   <div id="build-tag">build 2026-08-06-v3</div>
 </div>
@@ -207,6 +225,13 @@
 
 <div id="map"></div>
 <button id="recenter" class="hidden" onclick="recenter()">◎</button>
+<button id="board-btn" class="hidden" onclick="openLiveBoard()">👥 <span id="board-btn-count">—</span></button>
+<div id="live-board">
+  <h3>Živý žebříček</h3>
+  <div class="sub" id="live-board-status">připojuji…</div>
+  <div id="live-board-rows"></div>
+  <button class="close" onclick="closeLiveBoard()">Zavřít</button>
+</div>
 <div id="toast"></div>
 
 <div id="hint">
@@ -245,6 +270,82 @@
 
 <script>
 const ANCHOR = { lat:49.7955, lng:12.6331 }; // kostel Nanebevzetí Panny Marie
+
+// ---- Supabase (sdílený živý žebříček) ----
+// Vlož sem svoje hodnoty z Project Settings → API (Project URL a "anon public" klíč).
+const SUPABASE_URL = "VLOŽ_SEM_PROJECT_URL";
+const SUPABASE_ANON_KEY = "VLOŽ_SEM_ANON_KEY";
+
+let sb = null;
+let playerId = localStorage.getItem("tachov-player-id");
+if(!playerId){
+  playerId = "p_" + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem("tachov-player-id", playerId);
+}
+
+function supabaseConfigured(){
+  return SUPABASE_URL.indexOf("VLOŽ_SEM") === -1 && SUPABASE_ANON_KEY.indexOf("VLOŽ_SEM") === -1;
+}
+
+function initSupabase(){
+  if(!supabaseConfigured() || typeof supabase === "undefined") return false;
+  try{
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return true;
+  } catch(e){
+    console.error(e);
+    return false;
+  }
+}
+
+async function syncProgress(){
+  if(!sb) return;
+  const name = (localStorage.getItem("tachov-player-name") || "Kamarád").slice(0,24);
+  try{
+    await sb.from("hunters").upsert({
+      id: playerId,
+      name: name,
+      caught_count: collected.size,
+      caught_ids: [...collected].join(","),
+      updated_at: new Date().toISOString()
+    });
+  } catch(e){ console.error("sync failed", e); }
+}
+
+function renderLiveBoard(rows){
+  const wrap = document.getElementById("live-board-rows");
+  const sorted = rows.slice().sort((a,b)=> b.caught_count - a.caught_count);
+  wrap.innerHTML = sorted.map(r => {
+    const isMe = r.id === playerId;
+    return `<div class="row"><span>${isMe ? "Ty" : (r.name||"Kamarád")}</span><b>${r.caught_count}/${CREATURES.length}</b></div>`;
+  }).join("") || '<div class="row"><span>Zatím jen ty.</span></div>';
+  const mine = rows.find(r=>r.id===playerId);
+  document.getElementById("board-btn-count").textContent = collected.size + "/" + CREATURES.length;
+}
+
+async function subscribeLiveBoard(){
+  if(!sb) return;
+  document.getElementById("board-btn").classList.remove("hidden");
+  document.getElementById("board-btn").style.display = "flex";
+
+  async function refresh(){
+    const { data, error } = await sb.from("hunters").select("*");
+    if(error){
+      document.getElementById("live-board-status").textContent = "Nepodařilo se načíst (offline?)";
+      return;
+    }
+    document.getElementById("live-board-status").textContent = data.length + " lovců online";
+    renderLiveBoard(data);
+  }
+  refresh();
+
+  sb.channel("hunters-changes")
+    .on("postgres_changes", { event:"*", schema:"public", table:"hunters" }, refresh)
+    .subscribe();
+}
+
+function openLiveBoard(){ document.getElementById("live-board").classList.add("open"); }
+function closeLiveBoard(){ document.getElementById("live-board").classList.remove("open"); }
 function offset(north_m, east_m){
   const dLat = north_m / 111320;
   const dLng = east_m / (111320 * Math.cos(ANCHOR.lat * Math.PI/180));
@@ -275,7 +376,9 @@ const CREATURES = [
   { id:"stadion", icon:"🏒", name:"Brankář ze stadionu", pos:offset(120,-596),
     text:"Zimní stadion v Pobřežní ulici nabízí veřejné bruslení i bar s bowlingem — ideální úkryt před horkem o víkendu slavností." },
   { id:"vodnik", icon:"🍺", name:"Vodníkův hostinský", pos:offset(135,-422),
-    text:"Hospůdka U Vodníka sídlí v areálu bývalého koupaliště U Náhonu — oblíbený podnik, kde se hraje i na místním festivalu Muziq." }
+    text:"Hospůdka U Vodníka sídlí v areálu bývalého koupaliště U Náhonu — oblíbený podnik, kde se hraje i na místním festivalu Muziq." },
+  { id:"mohyla", icon:"🕊️", name:"Mohyla", pos:offset(650,-250), solemn:true,
+    text:"Pietní místo na severním okraji Tachova, vybudované roku 1948. Je zde pohřbeno přes 230 obětí pochodů smrti z konce druhé světové války, které v roce 1945 procházely Tachovskem z nacistických koncentračních táborů." }
 ];
 
 const CATCH_RADIUS_M = 120;
@@ -345,6 +448,8 @@ function hideLoading(){ document.getElementById("loading").classList.remove("sho
 
 function beginHunt(){
   testMode = document.getElementById("test-mode").checked;
+  const nameInput = document.getElementById("player-name").value.trim();
+  if(nameInput) localStorage.setItem("tachov-player-name", nameInput);
 
   document.getElementById("start").style.display = "none";
   document.getElementById("topbar").style.display = "flex";
@@ -364,6 +469,10 @@ function beginHunt(){
   }
 
   hideLoading();
+
+  try{
+    if(initSupabase()) subscribeLiveBoard();
+  } catch(e){ console.error("supabase init failed", e); }
 
   if(testMode){
     map.setView([ANCHOR.lat, ANCHOR.lng], 16);
@@ -425,24 +534,33 @@ function openEncounter(id){
   currentEncounterId = id;
   const c = CREATURES.find(x=>x.id===id);
   document.getElementById("enc-icon").textContent = c.icon;
+  document.getElementById("enc-icon").style.animation = c.solemn ? "none" : "";
   document.getElementById("enc-name").textContent = c.name;
   document.getElementById("enc-text").textContent = c.text;
+  document.getElementById("enc-catch").textContent = c.solemn ? "Zaznamenat návštěvu" : "Chytit!";
   document.getElementById("encounter").classList.add("open");
+  document.getElementById("encounter").classList.toggle("solemn", !!c.solemn);
 }
 function closeEncounter(){ document.getElementById("encounter").classList.remove("open"); currentEncounterId=null; }
 
 function catchCurrent(){
   if(!currentEncounterId) return;
+  const c = CREATURES.find(x=>x.id===currentEncounterId);
   collected.add(currentEncounterId);
   localStorage.setItem("tachov-ghosts", JSON.stringify([...collected]));
   const el = document.getElementById("pin-"+currentEncounterId);
   if(el){ el.classList.remove("locked"); el.classList.add("caught"); el.querySelector(".bubble").textContent="✓"; }
-  if(navigator.vibrate) navigator.vibrate([30,40,60]);
+  if(!c.solemn){
+    if(navigator.vibrate) navigator.vibrate([30,40,60]);
+  }
   updateStats();
+  syncProgress();
   const done = currentEncounterId;
   closeEncounter();
   if(collected.size === CREATURES.length){
     setTimeout(showWin, 300);
+  } else if(c.solemn){
+    showToast("Zaznamenáno. " + (CREATURES.length - collected.size) + " míst zbývá.");
   } else {
     showToast("Chyceno! " + (CREATURES.length - collected.size) + " zbývá.");
   }
