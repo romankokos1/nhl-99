@@ -157,9 +157,31 @@
   .board-row{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:13px; padding:8px 0; border-bottom:1px solid #2a2213; }
   .board-row b{ color:var(--gold-bright); }
   .hidden{ display:none !important; }
+  #debug-banner{
+    position:fixed; top:0; left:0; right:0; z-index:999;
+    background:#7a1f1f; color:#fff; font-family:'IBM Plex Mono',monospace;
+    font-size:11px; padding:8px 10px; display:none; word-break:break-word;
+  }
+  #build-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; color:#5c6478; margin-top:18px; letter-spacing:.05em;
+  }
 </style>
 </head>
 <body>
+<div id="debug-banner"></div>
+<script>
+  window.onerror = function(msg, src, line, col, err){
+    var b = document.getElementById('debug-banner');
+    b.style.display = 'block';
+    b.textContent = 'CHYBA: ' + msg + ' (řádek ' + line + ')';
+    return false;
+  };
+  window.addEventListener('unhandledrejection', function(e){
+    var b = document.getElementById('debug-banner');
+    b.style.display = 'block';
+    b.textContent = 'CHYBA (promise): ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
+  });
+</script>
 
 <div id="start">
   <div class="eyebrow">TACHOVSKÉ SLAVNOSTI · 7.–9. 8. 2026</div>
@@ -170,6 +192,7 @@
     <input type="checkbox" id="test-mode"> nejsem v Tachově — testovací režim (bez vzdálenosti)
   </label>
   <div id="start-status"></div>
+  <div id="build-tag">build 2026-08-06-v3</div>
 </div>
 
 <div id="loading">
