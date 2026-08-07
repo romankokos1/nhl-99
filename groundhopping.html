@@ -285,6 +285,14 @@
   .chip-picker{display:flex; flex-wrap:wrap; gap:7px;}
   .chip-pick{background:var(--surface-2); border:1px solid var(--hairline-strong); border-radius:var(--r-pill); padding:7px 13px; font-size:12.5px; color:var(--text-2); cursor:pointer; user-select:none;}
   .chip-pick.on{background:rgba(200,167,75,0.14); border-color:var(--light-deep); color:var(--light-bright);}
+  .field-relative{position:relative;}
+  .suggest-list{position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:10; background:var(--surface-hi); border:1px solid var(--hairline-strong); border-radius:var(--r-sm); box-shadow:var(--shadow-float); max-height:220px; overflow-y:auto; display:none;}
+  .suggest-list.show{display:block;}
+  .suggest-item{padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--hairline);}
+  .suggest-item:last-child{border-bottom:none;}
+  .suggest-item:active{background:var(--surface-2);}
+  .suggest-item .t{font-size:13.5px; color:var(--text);}
+  .suggest-item .s{font-size:11px; color:var(--text-3); margin-top:2px;}
   .avatar-stack{display:flex; align-items:center;}
   .avatar-stack .avatar{margin-left:-6px; border:2px solid var(--surface); flex-shrink:0;}
   .avatar-stack .avatar:first-child{margin-left:0;}
@@ -457,7 +465,11 @@
           <div class="field"><label>Datum</label><input type="date" id="f-datum"></div>
         </div>
 
-        <div class="field"><label>Stadion</label><input type="text" id="f-stadion" placeholder="název stadionu" autocomplete="off"></div>
+        <div class="field field-relative">
+          <label>Stadion</label>
+          <input type="text" id="f-stadion" placeholder="název stadionu" autocomplete="off">
+          <div class="suggest-list" id="stadion-suggest"></div>
+        </div>
         <div class="field-row">
           <div class="field"><label>Město</label><input type="text" id="f-mesto" placeholder="město" autocomplete="off"></div>
           <div class="field"><label>Země</label><input type="text" id="f-zeme" placeholder="země" autocomplete="off"></div>
@@ -2147,6 +2159,34 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   $$('[data-goadd]').forEach(b=>b.addEventListener('click', ()=>{ editingId=null; resetForm(); goView('add'); }));
   $$('[data-goback]').forEach(b=>b.addEventListener('click', ()=>goView('home')));
   $('#save-visit').addEventListener('click', saveVisit);
+
+  /* ---------- stadium autocomplete (from shared stadiony cache) ---------- */
+  function renderStadionSuggest(q){
+    const box=$('#stadion-suggest');
+    const nq=norm(q);
+    if(nq.length<2){ box.classList.remove('show'); box.innerHTML=''; return; }
+    const items=Object.values(stadionCache)
+      .filter(s=>s.nazev && norm(s.nazev+' '+(s.mesto||'')).includes(nq))
+      .slice(0,7);
+    if(!items.length){ box.classList.remove('show'); box.innerHTML=''; return; }
+    box.innerHTML=items.map(s=>'<div class="suggest-item" data-pick="'+esc(s.nazev)+'|||'+esc(s.mesto||'')+'|||'+esc(s.zeme||'')+'|||'+esc(s.klub||'')+'"><div class="t">'+esc(s.nazev)+'</div><div class="s">'+esc([s.mesto,s.zeme].filter(Boolean).join(', '))+(s.klub?' · '+esc(s.klub):'')+(s.kapacita?' · '+esc(String(s.kapacita))+' míst':'')+'</div></div>').join('');
+    box.classList.add('show');
+  }
+  $('#f-stadion').addEventListener('input', e=>renderStadionSuggest(e.target.value));
+  $('#f-stadion').addEventListener('focus', e=>renderStadionSuggest(e.target.value));
+  $('#stadion-suggest').addEventListener('mousedown', e=>{
+    const item=e.target.closest('[data-pick]'); if(!item) return;
+    e.preventDefault();
+    const [nazev,mesto,zeme,klub]=item.dataset.pick.split('|||');
+    $('#f-stadion').value=nazev;
+    $('#f-mesto').value=mesto;
+    $('#f-zeme').value=zeme;
+    if(klub && !$('#f-domaci').value.trim() && formType==='zapas') $('#f-domaci').value=klub;
+    $('#stadion-suggest').classList.remove('show');
+  });
+  document.addEventListener('click', e=>{
+    if(!e.target.closest('.field-relative')) $('#stadion-suggest').classList.remove('show');
+  });
   $$('#type-segment .seg-btn').forEach(b=>b.addEventListener('click', ()=>setFormType(b.dataset.vtype)));
   $('#spolu-chips').addEventListener('click', e=>{
     const chip=e.target.closest('[data-spolu]'); if(!chip) return;
