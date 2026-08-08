@@ -92,7 +92,16 @@
   .finale{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 24px;
     background:radial-gradient(120% 70% at 50% 0%, rgba(200,167,75,0.06) 0%, transparent 60%), var(--bg);}
   .finale-eyebrow{font-size:11px; font-weight:700; letter-spacing:0.28em; text-transform:uppercase; color:var(--text-4); margin-bottom:30px;}
+  .finale-map{width:100%; max-width:640px; height:280px; border-radius:20px; overflow:hidden; margin-bottom:46px; border:1px solid var(--hairline-strong); position:relative;}
+  .finale-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.7);}
+  .finale-map .leaflet-control-attribution{background:rgba(12,16,20,0.7) !important; color:var(--text-4) !important; font-size:9px !important;}
+  .finale-map .leaflet-control-attribution a{color:var(--text-3) !important;}
+  .finale-map .dot-marker{width:9px; height:9px; border-radius:50%; background:var(--light); box-shadow:0 0 0 4px rgba(200,167,75,0.22);}
   .finale-grid{display:flex; gap:56px; flex-wrap:wrap; justify-content:center; margin-bottom:50px;}
+  .stop-share{position:absolute; top:20px; right:20px; z-index:2; width:36px; height:36px; border-radius:50%;
+    background:rgba(12,16,20,0.55); backdrop-filter:blur(6px); border:1px solid rgba(200,167,75,0.25); color:var(--text-2);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .stop-share svg{width:15px; height:15px;}
   .finale-stat .n{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:clamp(34px,7vw,58px); color:var(--light);}
   .finale-stat .l{font-size:11.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.1em; margin-top:6px;}
   .finale-back{font-family:'Manrope',sans-serif; font-size:13px; color:var(--text-2); text-decoration:none; border:1px solid var(--hairline-strong); padding:13px 26px; border-radius:999px; transition:.2s;}
@@ -131,6 +140,7 @@
 </div>
 
 <section class="finale" id="finale" style="display:none">
+  <div class="finale-map" id="finale-map"></div>
   <div class="finale-eyebrow">Zatím celkem</div>
   <div class="finale-grid">
     <div class="finale-stat"><div class="n" id="fin-stadiums">0</div><div class="l">stadionů</div></div>
@@ -200,6 +210,7 @@
       return '<article class="stop" data-idx="'+i+'">'
         +'<div class="stop-media"><img src="'+storageUrl(v.foto)+'" loading="lazy" alt=""></div>'
         +'<div class="stop-scrim"></div>'
+        +'<button class="stop-share" data-share="'+i+'" aria-label="Sdílet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6l6.8-3.8M8.6 13.4l6.8 3.8"/></svg></button>'
         +'<div class="stop-body">'
           +'<div class="stop-index">'+String(i+1).padStart(2,'0')+' / '+String(best.length).padStart(2,'0')+' &middot; '+czDate(v.datum)+'</div>'
           +'<div class="stop-eyebrow">'+(isTour?'Prohlídka stadionu':'Zápas')+'</div>'
@@ -215,8 +226,145 @@
       entries.forEach(en=>{ if(en.isIntersecting) en.target.classList.add('in'); });
     }, {threshold:0.35});
     document.querySelectorAll('.stop').forEach(el=>io.observe(el));
+
+    currentBest=best;
+    reel.addEventListener('click', e=>{
+      const btn=e.target.closest('[data-share]'); if(!btn) return;
+      e.stopPropagation();
+      shareVisitImage(currentBest[+btn.dataset.share]);
+    });
   }
 
+  /* ---------- share as image (canvas), same look as the app ---------- */
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath(); ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function buildShareCanvas(v){
+    const W=1000,H=1250;
+    const canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext('2d');
+    const grad=ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'#1b222a'); grad.addColorStop(0.5,'#10151b'); grad.addColorStop(1,'#0C1014');
+    ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+    const glow=ctx.createRadialGradient(W*0.82,H*0.04,50,W*0.82,H*0.04,520);
+    glow.addColorStop(0,'rgba(200,167,75,0.14)'); glow.addColorStop(1,'rgba(200,167,75,0)');
+    ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+
+    ctx.fillStyle='#C8A74B'; ctx.textAlign='center';
+    ctx.font='600 28px Fraunces, serif';
+    ctx.fillText('G R O U N D H O P P I N G   D E N Í K', W/2, 90);
+
+    const cardX=60, cardY=150, cardW=W-120, cardH=860;
+    ctx.fillStyle='rgba(18,26,34,0.92)';
+    roundRect(ctx,cardX,cardY,cardW,cardH,32); ctx.fill();
+    ctx.strokeStyle='rgba(200,167,75,0.22)'; ctx.lineWidth=2;
+    roundRect(ctx,cardX,cardY,cardW,cardH,32); ctx.stroke();
+
+    ctx.fillStyle='#f2efe9'; ctx.font='700 38px "IBM Plex Mono", monospace';
+    ctx.fillText(czDate(v.datum), W/2, cardY+80);
+
+    ctx.setLineDash([6,10]); ctx.strokeStyle='rgba(200,167,75,0.25)';
+    ctx.beginPath(); ctx.moveTo(cardX+30, cardY+120); ctx.lineTo(cardX+cardW-30, cardY+120); ctx.stroke();
+    ctx.setLineDash([]);
+
+    const isTour=v.typ==='prohlidka';
+    if(isTour){
+      if(v.domaci){ ctx.font='600 50px Fraunces, serif'; ctx.fillStyle='#f2efe9'; ctx.fillText(v.domaci.toUpperCase(), W/2, cardY+250); }
+      ctx.font='700 40px Fraunces, serif'; ctx.fillStyle='#e3c878';
+      ctx.fillText('PROHLÍDKA STADIONU', W/2, v.domaci?cardY+330:cardY+280);
+    } else {
+      ctx.font='600 52px Fraunces, serif'; ctx.fillStyle='#f2efe9';
+      ctx.fillText((v.domaci||'').toUpperCase(), W/2, cardY+230);
+      const score=(v.skore_d!=null && v.skore_h!=null) ? (v.skore_d+' : '+v.skore_h) : 'vs';
+      ctx.font='700 74px "IBM Plex Mono", monospace'; ctx.fillStyle='#e3c878';
+      ctx.fillText(score, W/2, cardY+330);
+      if(v.hoste){ ctx.font='600 52px Fraunces, serif'; ctx.fillStyle='#f2efe9'; ctx.fillText(v.hoste.toUpperCase(), W/2, cardY+420); }
+    }
+
+    ctx.font='400 28px Manrope, sans-serif'; ctx.fillStyle='#b9b2a4';
+    ctx.fillText([v.stadion, [v.mesto,v.zeme].filter(Boolean).join(', ')].filter(Boolean).join(' · '), W/2, cardY+490);
+    if(!isTour && v.soutez){ ctx.font='500 26px Manrope, sans-serif'; ctx.fillStyle='#84796a'; ctx.fillText(v.soutez, W/2, cardY+530); }
+
+    const n=v.hodnoceni||0, ballR=18, gap=46, startX=W/2-(gap*2);
+    for(let i=0;i<5;i++){
+      const cx=startX+i*gap, cy=cardY+610;
+      ctx.beginPath(); ctx.arc(cx,cy,ballR,0,Math.PI*2);
+      ctx.fillStyle = i<n ? '#C8A74B' : 'rgba(255,255,255,0.10)';
+      ctx.fill();
+    }
+    if(!isTour && v.divaku){ ctx.font='400 26px "IBM Plex Mono", monospace'; ctx.fillStyle='#84796a'; ctx.fillText(v.divaku+' diváků', W/2, cardY+700); }
+
+    ctx.font='500 24px Manrope, sans-serif'; ctx.fillStyle='#84796a';
+    ctx.fillText(v.osoba||'', W/2, cardY+cardH-40);
+    return canvas;
+  }
+  async function shareVisitImage(v){
+    if(!v) return;
+    try{ await document.fonts.ready; }catch(e){}
+    const canvas=buildShareCanvas(v);
+    canvas.toBlob(async blob=>{
+      if(!blob) return;
+      const file=new File([blob], 'zapas-'+(v.datum||'')+'.png', {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{ await navigator.share({files:[file], title:'Groundhopping deník'}); return; }catch(e){}
+      }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download=file.name; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    }, 'image/png', 0.95);
+  }
+
+  /* ---------- quiet map of every visited stadium ---------- */
+  function loadLeaflet(){
+    if(window.L) return Promise.resolve();
+    if(window.__leafletLoading) return window.__leafletLoading;
+    window.__leafletLoading=new Promise((resolve,reject)=>{
+      const link=document.createElement('link'); link.rel='stylesheet'; link.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+      document.head.appendChild(link);
+      const script=document.createElement('script'); script.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+      script.onload=()=>resolve(); script.onerror=()=>reject(new Error('Leaflet se nepodařilo načíst'));
+      document.body.appendChild(script);
+    });
+    return window.__leafletLoading;
+  }
+  async function fetchStadionCache(){
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/stadiony?select=*', {headers:{apikey:cfg.key, Authorization:'Bearer '+cfg.key}});
+      if(!r.ok) return {};
+      const rows=await r.json();
+      const map={};
+      rows.forEach(x=>{ map[x.klic]={nazev:x.nazev, mesto:x.mesto, zeme:x.zeme, lat:x.lat, lng:x.lng}; });
+      return map;
+    }catch(e){ return {}; }
+  }
+  async function renderFinaleMap(all){
+    const el=$('#finale-map');
+    const byKey={};
+    all.forEach(v=>{ const k=norm((v.stadion||'')+'|'+(v.mesto||'')); if(!k.trim()) return; if(!byKey[k]) byKey[k]={stadion:v.stadion, mesto:v.mesto}; });
+    const keys=Object.keys(byKey);
+    if(!keys.length){ el.style.display='none'; return; }
+    try{
+      await loadLeaflet();
+      const cache=await fetchStadionCache();
+      const map=L.map(el, {zoomControl:false, attributionControl:true, scrollWheelZoom:false, dragging:!L.Browser.mobile||true}).setView([49.8,15.5], 4);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap'}).addTo(map);
+      const dotIcon=L.divIcon({className:'', html:'<div class="dot-marker"></div>', iconSize:[9,9]});
+      const bounds=[];
+      keys.forEach(k=>{
+        const c=cache[k];
+        if(c && c.lat!=null && c.lng!=null){
+          bounds.push([c.lat,c.lng]);
+          L.marker([c.lat,c.lng], {icon:dotIcon}).addTo(map);
+        }
+      });
+      if(bounds.length) map.fitBounds(bounds, {padding:[20,20], maxZoom:9});
+      setTimeout(()=>map.invalidateSize(), 200);
+    }catch(e){ el.style.display='none'; }
+  }
+
+  let currentBest=[];
   async function boot(){
     $('#gate').classList.add('hide');
     try{
@@ -227,6 +375,7 @@
         : all.filter(v=>v.foto && v.hodnoceni>=4).slice(0,16);
       renderReel(best);
       renderFinale(all);
+      renderFinaleMap(all);
     }catch(e){
       $('#reel').innerHTML='<div class="empty"><p>Nepodařilo se načíst data. Zkontroluj URL a klíč, nebo to zkus znovu z odkazu v appce.</p></div>';
     }
