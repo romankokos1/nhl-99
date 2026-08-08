@@ -48,6 +48,15 @@
   .hero-sub{margin-top:22px; font-size:15px; color:var(--text-3); max-width:440px; line-height:1.6; opacity:0; animation:riseIn 1.1s ease .65s forwards;}
   .hero-scroll{position:absolute; bottom:40px; left:50%; transform:translateX(-50%); opacity:0; animation:riseIn 1s ease 1.2s forwards;}
   .hero-scroll svg{width:18px; height:26px; color:var(--text-4); animation:bob 2s ease-in-out infinite;}
+  .tour-btn{margin-top:30px; font-family:'Manrope',sans-serif; font-size:12.5px; font-weight:700; letter-spacing:0.05em; color:#0C1014;
+    background:linear-gradient(155deg,var(--light-bright),var(--light-deep)); border:none; padding:13px 26px; border-radius:999px; cursor:pointer;
+    opacity:0; animation:riseIn 1.1s ease .9s forwards;}
+  .tour-pill{position:fixed; bottom:26px; left:50%; transform:translateX(-50%); z-index:60; display:none; align-items:center; gap:10px;
+    background:rgba(12,16,20,0.72); backdrop-filter:blur(10px); border:1px solid var(--hairline-strong); border-radius:999px; padding:9px 9px 9px 16px;}
+  .tour-pill.show{display:flex;}
+  .tour-pill span{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-2);}
+  .tour-pill button{width:30px; height:30px; border-radius:50%; border:none; background:var(--light); color:#0C1014; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .tour-pill button svg{width:13px; height:13px;}
   @keyframes riseIn{from{opacity:0; transform:translateY(22px);} to{opacity:1; transform:translateY(0);}}
   @keyframes bob{0%,100%{transform:translateY(0);} 50%{transform:translateY(8px);}}
 
@@ -110,10 +119,16 @@
   <div class="hero-eyebrow">Groundhopping deník</div>
   <h1>Nejhezčí <em>zápisy</em></h1>
   <div class="hero-sub">Výběr nejlépe hodnocených návštěv s fotkou — jedna vzpomínka na obrazovku, tak jak stojí za to si ji pamatovat.</div>
+  <button class="tour-btn" id="tour-btn">Spustit prohlídku</button>
   <div class="hero-scroll"><svg viewBox="0 0 18 26" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="1" width="16" height="24" rx="8"/><circle cx="9" cy="8" r="1.6" fill="currentColor" stroke="none"/></svg></div>
 </section>
 
 <div class="reel" id="reel"></div>
+
+<div class="tour-pill" id="tour-pill">
+  <span id="tour-label">Prohlídka</span>
+  <button id="tour-pause"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+</div>
 
 <section class="finale" id="finale" style="display:none">
   <div class="finale-eyebrow">Zatím celkem</div>
@@ -206,13 +221,52 @@
     $('#gate').classList.add('hide');
     try{
       const all=await fetchVisits();
-      const best=all.filter(v=>v.foto && v.hodnoceni>=4).slice(0,16);
+      const pinned=all.filter(v=>v.foto && v.vitrina);
+      const best = pinned.length
+        ? pinned.sort((a,b)=>(b.datum||'').localeCompare(a.datum||''))
+        : all.filter(v=>v.foto && v.hodnoceni>=4).slice(0,16);
       renderReel(best);
       renderFinale(all);
     }catch(e){
       $('#reel').innerHTML='<div class="empty"><p>Nepodařilo se načíst data. Zkontroluj URL a klíč, nebo to zkus znovu z odkazu v appce.</p></div>';
     }
   }
+
+  const pauseIcon='<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+  const playIcon='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l14 8-14 8V4z"/></svg>';
+  let tourStops=[], tourIndex=0, tourTimer=null, tourPaused=false;
+  function updateTourLabel(){ $('#tour-label').textContent = tourIndex < tourStops.length ? (tourIndex+1)+' / '+tourStops.length : 'Konec'; }
+  function goToStop(i){
+    tourIndex=i;
+    const el = i < tourStops.length ? tourStops[i] : $('#finale');
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    updateTourLabel();
+  }
+  function scheduleNext(){
+    clearTimeout(tourTimer);
+    if(tourPaused) return;
+    tourTimer=setTimeout(()=>{
+      const next=tourIndex+1;
+      if(next<=tourStops.length){ goToStop(next); if(next<tourStops.length) scheduleNext(); else stopTour(); }
+    }, 4200);
+  }
+  function stopTour(){ clearTimeout(tourTimer); tourTimer=null; $('#tour-pill').classList.remove('show'); }
+  function startTour(){
+    tourStops=Array.from(document.querySelectorAll('.stop'));
+    if(!tourStops.length) return;
+    tourIndex=-1; tourPaused=false;
+    $('#tour-pause').innerHTML=pauseIcon;
+    $('#tour-pill').classList.add('show');
+    goToStop(0);
+    scheduleNext();
+    ['wheel','touchstart','keydown'].forEach(evt=>window.addEventListener(evt, stopTour, {once:true, passive:true}));
+  }
+  $('#tour-btn').addEventListener('click', startTour);
+  $('#tour-pause').addEventListener('click', ()=>{
+    tourPaused=!tourPaused;
+    $('#tour-pause').innerHTML = tourPaused ? playIcon : pauseIcon;
+    if(!tourPaused) scheduleNext(); else clearTimeout(tourTimer);
+  });
 
   window.addEventListener('scroll', ()=>{ $('#topmark').classList.toggle('show', window.scrollY>window.innerHeight*0.6); }, {passive:true});
 
