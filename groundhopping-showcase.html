@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0C1014">
+<title>Groundhopping — Nejhezčí zápisy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0C1014; --bg-2:#10151b; --surface:#161c22; --surface-2:#1b222a; --surface-hi:#232b34;
+    --hairline:rgba(200,167,75,0.10); --hairline-strong:rgba(200,167,75,0.24);
+    --light:#C8A74B; --light-bright:#e3c878; --light-deep:#9c7f34;
+    --text:#f2efe9; --text-2:#b9b2a4; --text-3:#84796a; --text-4:#544d43;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--text); font-family:'Manrope',-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  .disp{font-family:'Fraunces',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- connect gate ---------- */
+  #gate{position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:24px;}
+  #gate.hide{display:none;}
+  .gate-box{max-width:380px; width:100%; text-align:center;}
+  .gate-box .disp{font-size:26px; font-weight:500; letter-spacing:0.01em; margin-bottom:10px;}
+  .gate-box p{font-size:13px; color:var(--text-3); line-height:1.6; margin-bottom:22px;}
+  .gate-box input{width:100%; background:var(--surface); border:1px solid var(--hairline-strong); border-radius:12px; padding:13px 15px; color:var(--text); font-size:13.5px; margin-bottom:10px; font-family:'Manrope',sans-serif;}
+  .gate-box button{width:100%; padding:14px; border-radius:12px; border:none; background:linear-gradient(155deg,var(--light-bright),var(--light-deep)); color:#0C1014; font-weight:700; font-size:14px; cursor:pointer; margin-top:4px;}
+  .gate-note{font-size:11px; color:var(--text-4); margin-top:16px;}
+
+  /* ---------- top wordmark ---------- */
+  .topmark{position:fixed; top:0; left:0; right:0; z-index:50; display:flex; align-items:center; justify-content:center;
+    padding:20px 0; font-family:'Manrope',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.28em; text-transform:uppercase;
+    color:rgba(242,239,233,0.75); background:linear-gradient(180deg, rgba(12,16,20,0.55), transparent); pointer-events:none; opacity:0; transition:opacity .5s;}
+  .topmark.show{opacity:1;}
+
+  /* ---------- hero ---------- */
+  .hero{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 24px; position:relative;}
+  .hero-eyebrow{font-size:11px; font-weight:700; letter-spacing:0.3em; text-transform:uppercase; color:var(--light); margin-bottom:22px; opacity:0; animation:riseIn 1s ease .2s forwards;}
+  .hero h1{font-family:'Fraunces',serif; font-weight:400; font-size:clamp(38px,9vw,86px); line-height:1.02; letter-spacing:-0.01em; opacity:0; animation:riseIn 1.1s ease .4s forwards;}
+  .hero h1 em{font-style:italic; color:var(--light-bright);}
+  .hero-sub{margin-top:22px; font-size:15px; color:var(--text-3); max-width:440px; line-height:1.6; opacity:0; animation:riseIn 1.1s ease .65s forwards;}
+  .hero-scroll{position:absolute; bottom:40px; left:50%; transform:translateX(-50%); opacity:0; animation:riseIn 1s ease 1.2s forwards;}
+  .hero-scroll svg{width:18px; height:26px; color:var(--text-4); animation:bob 2s ease-in-out infinite;}
+  @keyframes riseIn{from{opacity:0; transform:translateY(22px);} to{opacity:1; transform:translateY(0);}}
+  @keyframes bob{0%,100%{transform:translateY(0);} 50%{transform:translateY(8px);}}
+
+  /* ---------- showcase sections ---------- */
+  .reel{position:relative;}
+  .stop{
+    position:relative; min-height:100vh; min-height:100dvh; display:flex; align-items:flex-end;
+    overflow:hidden; background:var(--surface-2);
+  }
+  .stop-media{position:absolute; inset:0;}
+  .stop-media img{width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.12); transition:transform 1.6s cubic-bezier(.16,.8,.24,1);}
+  .stop.in .stop-media img{transform:scale(1);}
+  .stop-scrim{position:absolute; inset:0; background:linear-gradient(180deg, rgba(12,16,20,0.05) 0%, rgba(12,16,20,0.15) 45%, rgba(12,16,20,0.92) 100%);}
+  .stop-body{position:relative; z-index:1; width:100%; padding:60px 28px 76px; max-width:640px; margin:0 auto;
+    opacity:0; transform:translateY(28px); transition:opacity .9s ease, transform .9s cubic-bezier(.16,.8,.24,1);}
+  .stop.in .stop-body{opacity:1; transform:translateY(0);}
+  .stop-index{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--light); letter-spacing:0.1em; margin-bottom:14px;}
+  .stop-eyebrow{font-size:10.5px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--light-bright); margin-bottom:10px;}
+  .stop h2{font-family:'Fraunces',serif; font-weight:500; font-size:clamp(28px,6vw,48px); line-height:1.08; color:#fdfbf7;}
+  .stop h2 .vs{font-family:'IBM Plex Mono',monospace; color:var(--light-bright); font-size:0.62em; margin:0 10px; font-weight:600;}
+  .stop-meta{margin-top:16px; font-size:13.5px; color:rgba(242,239,233,0.7); display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .stop-meta .sep{width:3px; height:3px; border-radius:50%; background:rgba(242,239,233,0.35);}
+  .stop-stars{display:flex; gap:4px; margin-top:20px;}
+  .stop-stars svg{width:14px; height:14px;}
+  .stop-note{margin-top:18px; font-size:14px; color:rgba(242,239,233,0.82); line-height:1.6; max-width:480px; font-style:italic;}
+  .stop-note::before{content:'"'; } .stop-note::after{content:'"';}
+
+  /* ---------- empty state ---------- */
+  .empty{min-height:70vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px;}
+  .empty p{color:var(--text-3); font-size:14px; max-width:340px; line-height:1.6;}
+
+  /* ---------- closing stats ---------- */
+  .finale{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 24px;
+    background:radial-gradient(120% 70% at 50% 0%, rgba(200,167,75,0.06) 0%, transparent 60%), var(--bg);}
+  .finale-eyebrow{font-size:11px; font-weight:700; letter-spacing:0.28em; text-transform:uppercase; color:var(--text-4); margin-bottom:30px;}
+  .finale-grid{display:flex; gap:56px; flex-wrap:wrap; justify-content:center; margin-bottom:50px;}
+  .finale-stat .n{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:clamp(34px,7vw,58px); color:var(--light);}
+  .finale-stat .l{font-size:11.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.1em; margin-top:6px;}
+  .finale-back{font-family:'Manrope',sans-serif; font-size:13px; color:var(--text-2); text-decoration:none; border:1px solid var(--hairline-strong); padding:13px 26px; border-radius:999px; transition:.2s;}
+  .finale-back:hover{border-color:var(--light-deep); color:var(--light-bright);}
+  .finale-word{margin-top:70px; font-family:'Fraunces',serif; font-size:13px; letter-spacing:0.3em; text-transform:uppercase; color:var(--text-4);}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <div class="disp">Groundhopping</div>
+    <p>Tahle stránka jen ukazuje — nic tu neupravíš. Připoj se ke stejné databázi jako v appce.</p>
+    <input type="text" id="g-url" placeholder="Supabase Project URL" autocomplete="off">
+    <input type="text" id="g-key" placeholder="Publishable / anon klíč" autocomplete="off">
+    <button id="g-go">Zobrazit</button>
+    <div class="gate-note">Odkaz z appky (Profil → Pozvat kamarády) tohle vyplní automaticky.</div>
+  </div>
+</div>
+
+<div class="topmark" id="topmark">Groundhopping</div>
+
+<section class="hero">
+  <div class="hero-eyebrow">Groundhopping deník</div>
+  <h1>Nejhezčí <em>zápisy</em></h1>
+  <div class="hero-sub">Výběr nejlépe hodnocených návštěv s fotkou — jedna vzpomínka na obrazovku, tak jak stojí za to si ji pamatovat.</div>
+  <div class="hero-scroll"><svg viewBox="0 0 18 26" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="1" width="16" height="24" rx="8"/><circle cx="9" cy="8" r="1.6" fill="currentColor" stroke="none"/></svg></div>
+</section>
+
+<div class="reel" id="reel"></div>
+
+<section class="finale" id="finale" style="display:none">
+  <div class="finale-eyebrow">Zatím celkem</div>
+  <div class="finale-grid">
+    <div class="finale-stat"><div class="n" id="fin-stadiums">0</div><div class="l">stadionů</div></div>
+    <div class="finale-stat"><div class="n" id="fin-matches">0</div><div class="l">návštěv</div></div>
+    <div class="finale-stat"><div class="n" id="fin-countries">0</div><div class="l">zemí</div></div>
+  </div>
+  <a class="finale-back" href="groundhopping.html">Zpět do deníku</a>
+  <div class="finale-word">Groundhopping deník</div>
+</section>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  let cfg={url:'',key:''};
+
+  function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  const MONTHS=['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
+  function czDate(iso){
+    if(!iso) return '';
+    const p=iso.split('-'); if(p.length<3) return '';
+    return p[2]+'. '+MONTHS[parseInt(p[1],10)-1]+' '+p[0];
+  }
+  function storageUrl(path){ return cfg.url.replace(/\/$/,'')+'/storage/v1/object/public/fotky/'+path; }
+
+  function starIcon(filled){
+    return '<svg viewBox="0 0 24 24" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.6" style="color:'+(filled?'var(--light)':'var(--text-4)')+'"><path d="M12 2.5l2.9 6.1 6.6.7-4.9 4.5 1.3 6.6L12 17.6l-5.9 3.1 1.3-6.6L2.5 9.3l6.6-.7L12 2.5z"/></svg>';
+  }
+
+  function loadCfg(){
+    try{ const c=JSON.parse(localStorage.getItem('gh_cfg')); if(c && c.url && c.key){ cfg.url=c.url; cfg.key=c.key; return true; } }catch(e){}
+    const m=location.hash.match(/gh=([^&]+)/);
+    if(m){ try{ const p=JSON.parse(atob(decodeURIComponent(m[1]))); cfg.url=p.u; cfg.key=p.k; return true; }catch(e){} }
+    return false;
+  }
+
+  async function fetchVisits(){
+    const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navstevy?select=*&order=hodnoceni.desc,datum.desc', {
+      headers:{apikey:cfg.key, Authorization:'Bearer '+cfg.key}
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }
+
+  function renderFinale(all){
+    const stadiums=new Set(all.map(v=>norm((v.stadion||'')+'|'+(v.mesto||''))).filter(k=>k!=='|'&&k));
+    const countries=new Set(all.map(v=>norm(v.zeme)).filter(Boolean));
+    $('#fin-stadiums').textContent=stadiums.size;
+    $('#fin-matches').textContent=all.length;
+    $('#fin-countries').textContent=countries.size;
+    $('#finale').style.display='flex';
+  }
+
+  function renderReel(best){
+    const reel=$('#reel');
+    if(!best.length){
+      reel.innerHTML='<div class="empty"><p>Zatím žádná ohodnocená návštěva s fotkou. Přidej pár zápisů do deníku a nejhezčí se objeví tady.</p></div>';
+      return;
+    }
+    reel.innerHTML=best.map((v,i)=>{
+      const isTour=v.typ==='prohlidka';
+      const titleHtml=isTour
+        ? esc(v.domaci?v.domaci:'Prohlídka stadionu')
+        : esc(v.domaci)+(v.skore_d!=null&&v.skore_h!=null?'<span class="vs">'+v.skore_d+':'+v.skore_h+'</span>':'<span class="vs">–</span>')+esc(v.hoste||'');
+      const meta=[[v.stadion,v.mesto].filter(Boolean).join(', '), v.zeme, !isTour?v.soutez:null].filter(Boolean);
+      let stars=''; for(let s=1;s<=5;s++) stars+=starIcon(s<=(v.hodnoceni||0));
+      return '<article class="stop" data-idx="'+i+'">'
+        +'<div class="stop-media"><img src="'+storageUrl(v.foto)+'" loading="lazy" alt=""></div>'
+        +'<div class="stop-scrim"></div>'
+        +'<div class="stop-body">'
+          +'<div class="stop-index">'+String(i+1).padStart(2,'0')+' / '+String(best.length).padStart(2,'0')+' &middot; '+czDate(v.datum)+'</div>'
+          +'<div class="stop-eyebrow">'+(isTour?'Prohlídka stadionu':'Zápas')+'</div>'
+          +'<h2>'+titleHtml+'</h2>'
+          +'<div class="stop-meta">'+meta.map(esc).join('<span class="sep"></span>')+'</div>'
+          +'<div class="stop-stars">'+stars+'</div>'
+          +(v.poznamka?'<div class="stop-note">'+esc(v.poznamka)+'</div>':'')
+        +'</div>'
+      +'</article>';
+    }).join('');
+
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(en=>{ if(en.isIntersecting) en.target.classList.add('in'); });
+    }, {threshold:0.35});
+    document.querySelectorAll('.stop').forEach(el=>io.observe(el));
+  }
+
+  async function boot(){
+    $('#gate').classList.add('hide');
+    try{
+      const all=await fetchVisits();
+      const best=all.filter(v=>v.foto && v.hodnoceni>=4).slice(0,16);
+      renderReel(best);
+      renderFinale(all);
+    }catch(e){
+      $('#reel').innerHTML='<div class="empty"><p>Nepodařilo se načíst data. Zkontroluj URL a klíč, nebo to zkus znovu z odkazu v appce.</p></div>';
+    }
+  }
+
+  window.addEventListener('scroll', ()=>{ $('#topmark').classList.toggle('show', window.scrollY>window.innerHeight*0.6); }, {passive:true});
+
+  $('#g-go').addEventListener('click', ()=>{
+    const url=$('#g-url').value.trim(), key=$('#g-key').value.trim();
+    if(!url||!key) return;
+    cfg.url=url; cfg.key=key;
+    boot();
+  });
+
+  if(loadCfg()){ boot(); }
+})();
+</script>
+</body>
+</html>
