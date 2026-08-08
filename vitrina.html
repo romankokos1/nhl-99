@@ -12,15 +12,12 @@
   :root{
     /* same palette as the main app — dark brown, warm amber */
     --bg:#191009;
-    --bg-2:#1f150c;
     --surface:#251a0f;
-    --surface-2:#2c2013;
     --glass:rgba(44,32,19,0.72);
     --hairline:rgba(232,163,61,0.14);
     --hairline-strong:rgba(232,163,61,0.24);
     --amber:#e8a33d;
     --amber-bright:#ffc35a;
-    --amber-deep:#c07d24;
     --foam:#f7edd6;
     --text:#f2e7d2;
     --text-2:#c3ab86;
@@ -28,15 +25,16 @@
     --text-4:#6b593f;
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
+  html{-webkit-text-size-adjust:100%;}
   body{
     font-family:'Inter',-apple-system,system-ui,sans-serif;
-    background:var(--bg); color:var(--text);
-    -webkit-font-smoothing:antialiased; overflow:hidden;
+    background:var(--bg); color:var(--text); line-height:1.5;
+    -webkit-font-smoothing:antialiased;
   }
   ::selection{background:var(--amber); color:#191009;}
+  img{display:block; max-width:100%;}
 
-  /* ---------- centered states (loading / error / needs-connection) ---------- */
+  /* ---------- centered states (loading / error / empty) ---------- */
   .state-screen{
     position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
     text-align:center; padding:40px; gap:16px;
@@ -44,7 +42,7 @@
   }
   .state-glass{opacity:0.85; animation:bob 2.6s ease-in-out infinite;}
   @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-  .state-title{font-family:'Fraunces',serif; font-weight:600; font-size:26px; color:var(--foam);}
+  .state-title{font-family:'Fraunces',serif; font-weight:600; font-size:24px; color:var(--foam);}
   .state-sub{font-size:14.5px; color:var(--text-2); max-width:340px; line-height:1.5;}
   .state-btn{
     margin-top:8px; font-family:inherit; font-size:14px; font-weight:700; color:#241703;
@@ -52,82 +50,98 @@
     border:none; padding:13px 24px; border-radius:999px; cursor:pointer;
   }
 
-  /* ---------- scroller / slides ---------- */
-  #scroller{
-    position:fixed; inset:0; overflow-y:scroll; overflow-x:hidden;
-    scroll-snap-type:y mandatory; scroll-behavior:smooth;
-    -webkit-overflow-scrolling:touch;
+  /* ---------- header ---------- */
+  header{
+    max-width:1100px; margin:0 auto; padding:calc(72px + env(safe-area-inset-top)) 20px 28px;
+    text-align:center;
   }
-  .slide{
-    position:relative; height:100vh; width:100%; scroll-snap-align:start; scroll-snap-stop:always;
-    display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden;
+  .h-eyebrow{font-size:12.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--amber-bright); margin-bottom:10px;}
+  .h-title{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(28px,6vw,42px); color:var(--foam); letter-spacing:-0.01em;}
+  .h-sub{font-size:14.5px; color:var(--text-2); margin-top:10px;}
+  .h-tour{
+    margin-top:22px; display:inline-flex; align-items:center; gap:8px; font-family:inherit; font-size:13.5px; font-weight:700;
+    color:var(--foam); background:var(--surface); border:1px solid var(--hairline-strong);
+    padding:10px 18px; border-radius:999px; cursor:pointer;
   }
-  .slide-bg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center;
-    transform:scale(1.1); transition:transform 5s cubic-bezier(.16,.7,.24,1); filter:saturate(1.02);}
-  .slide.in-view .slide-bg{transform:scale(1);}
-  .slide-scrim{position:absolute; inset:0;
-    background:linear-gradient(to bottom, rgba(12,8,4,0.15) 0%, rgba(12,8,4,0.1) 32%, rgba(15,10,5,0.75) 72%, rgba(12,8,4,0.96) 100%);}
-  .slide-content{position:relative; z-index:2; padding:0 24px calc(96px + env(safe-area-inset-bottom));
-    opacity:0; transform:translateY(28px); transition:opacity .9s ease, transform .9s cubic-bezier(.16,.7,.24,1);
-    max-width:560px;}
-  .slide.in-view .slide-content{opacity:1; transform:translateY(0);}
-  .slide-eyebrow{font-size:12.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--amber-bright); margin-bottom:10px;}
-  .slide-name{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(30px,8vw,52px); line-height:1.06; color:var(--foam); letter-spacing:-0.01em;}
-  .slide-brewery{font-size:16.5px; color:var(--text-2); margin-top:8px; font-weight:500;}
-  .slide-row{display:flex; align-items:baseline; gap:16px; margin-top:18px; flex-wrap:wrap;}
-  .slide-score{font-family:'Fraunces',serif; font-weight:700; font-size:34px; color:var(--amber-bright); line-height:1;}
-  .slide-score small{font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--text-3); margin-left:2px;}
-  .slide-chips{display:flex; gap:8px; flex-wrap:wrap;}
-  .slide-chip{font-size:12px; font-weight:600; color:var(--text-2); background:rgba(232,163,61,0.1); border:1px solid var(--hairline-strong); padding:4px 11px; border-radius:999px;}
-  .slide-meta{font-size:13px; color:var(--text-3); margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-  .slide-meta span:not(:last-child)::after{content:'·'; margin-left:8px; color:var(--text-4);}
-  .slide-note{font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:16.5px; line-height:1.45; color:var(--text); margin-top:18px; max-width:480px;}
+  .h-tour svg{width:14px; height:14px;}
 
-  /* ---------- intro slide ---------- */
-  .slide-intro{background:radial-gradient(ellipse 120% 70% at 50% 20%, #2c1c0c 0%, var(--bg) 65%);}
-  .slide-intro .slide-content{padding-bottom:0; max-width:520px; margin:0 auto; text-align:center; align-items:center;}
-  .intro-count{font-size:14px; color:var(--text-2); margin-top:14px;}
-  .intro-hint{margin-top:44px; font-size:12.5px; color:var(--text-4); display:flex; flex-direction:column; align-items:center; gap:6px;}
-  .intro-chev{animation:chevbounce 1.8s ease-in-out infinite;}
-  @keyframes chevbounce{0%,100%{transform:translateY(0); opacity:0.5;}50%{transform:translateY(6px); opacity:1;}}
-  .intro-cta{margin-top:26px;}
-
-  /* ---------- summary slide ---------- */
-  .slide-summary{background:radial-gradient(ellipse 120% 70% at 50% 80%, #2c1c0c 0%, var(--bg) 65%); justify-content:center;}
-  .slide-summary .slide-content{opacity:1; transform:none; max-width:560px; margin:0 auto; text-align:center; padding-bottom:0;}
-  .summary-title{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(26px,6vw,38px); color:var(--foam);}
-  .summary-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-top:32px;}
-  .summary-tile{background:var(--surface); border:1px solid var(--hairline); border-radius:18px; padding:20px 12px;}
-  .summary-n{font-family:'Fraunces',serif; font-weight:700; font-size:32px; color:var(--amber-bright);}
-  .summary-l{font-size:12.5px; color:var(--text-3); margin-top:4px;}
-  .summary-back{
-    display:inline-flex; align-items:center; gap:8px; margin-top:36px; font-family:inherit; font-size:14.5px; font-weight:700;
-    color:#241703; background:linear-gradient(160deg, var(--amber-bright), var(--amber));
-    border:none; padding:15px 28px; border-radius:999px; cursor:pointer; text-decoration:none;
+  /* ---------- mosaic grid ---------- */
+  .grid{
+    display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:190px; grid-auto-flow:dense;
+    gap:10px; max-width:1100px; margin:0 auto; padding:0 20px calc(60px + env(safe-area-inset-bottom));
   }
+  @media(max-width:860px){ .grid{grid-template-columns:repeat(3,1fr); grid-auto-rows:160px;} }
+  @media(max-width:600px){ .grid{grid-template-columns:repeat(2,1fr); grid-auto-rows:150px; gap:8px;} }
+  .tile{
+    position:relative; grid-column:span 1; grid-row:span 1; border-radius:16px; overflow:hidden; cursor:pointer;
+    background:var(--surface); border:1px solid var(--hairline);
+    opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s cubic-bezier(.16,.7,.24,1);
+  }
+  .tile.in-view{opacity:1; transform:translateY(0);}
+  .tile.big{grid-column:span 2; grid-row:span 2;}
+  .tile.wide{grid-column:span 2; grid-row:span 1;}
+  .tile img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .5s ease;}
+  .tile:active img{transform:scale(1.04);}
+  .tile-scrim{position:absolute; inset:0; background:linear-gradient(to bottom, rgba(12,8,4,0) 45%, rgba(10,7,4,0.88) 100%);}
+  .tile-tx{position:absolute; left:0; right:0; bottom:0; padding:12px 14px;}
+  .tile-name{font-family:'Fraunces',serif; font-weight:600; color:var(--foam); font-size:15px; line-height:1.2;}
+  .tile.big .tile-name{font-size:22px;}
+  .tile-brewery{font-size:11.5px; color:var(--text-2); margin-top:2px;}
+  .tile-score{
+    position:absolute; top:10px; right:10px; font-family:'Fraunces',serif; font-weight:700; font-size:13px; color:#241703;
+    background:var(--amber-bright); padding:3px 8px; border-radius:999px; line-height:1.3;
+  }
+
+  /* ---------- summary strip ---------- */
+  .summary{max-width:1100px; margin:0 auto; padding:20px 20px calc(80px + env(safe-area-inset-bottom));}
+  .summary-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  @media(max-width:600px){ .summary-grid{grid-template-columns:repeat(2,1fr);} }
+  .summary-tile{background:var(--surface); border:1px solid var(--hairline); border-radius:16px; padding:18px 10px; text-align:center;}
+  .summary-n{font-family:'Fraunces',serif; font-weight:700; font-size:28px; color:var(--amber-bright);}
+  .summary-l{font-size:12px; color:var(--text-3); margin-top:4px;}
 
   /* ---------- fixed chrome ---------- */
   .top-link{
-    position:fixed; top:calc(16px + env(safe-area-inset-top)); left:16px; z-index:10;
+    position:fixed; top:calc(16px + env(safe-area-inset-top)); left:16px; z-index:20;
     font-size:13px; font-weight:600; color:var(--text-2); text-decoration:none;
     background:var(--glass); backdrop-filter:blur(16px); border:1px solid var(--hairline);
     padding:9px 15px; border-radius:999px; display:inline-flex; align-items:center; gap:6px;
   }
   .top-link svg{width:14px; height:14px;}
-  #controls{
-    position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:10;
-    display:flex; align-items:center; gap:10px;
-    background:var(--glass); backdrop-filter:blur(20px) saturate(1.3); border:1px solid var(--hairline);
-    padding:8px 8px 8px 16px; border-radius:999px; opacity:0; transition:opacity .4s ease; pointer-events:none;
+
+  /* ---------- detail modal ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; z-index:50; background:rgba(10,7,4,0.92); backdrop-filter:blur(6px);
+    display:none; align-items:center; justify-content:center; padding:20px;
   }
-  #controls.show{opacity:1; pointer-events:auto;}
-  #progress-tx{font-variant-numeric:tabular-nums; font-size:12px; font-weight:600; color:var(--text-3); min-width:44px;}
-  #play-toggle{
-    width:36px; height:36px; border-radius:50%; border:none; cursor:pointer;
-    background:linear-gradient(160deg, var(--amber-bright), var(--amber)); color:#241703;
-    display:flex; align-items:center; justify-content:center;
+  .modal-backdrop.show{display:flex;}
+  .modal-card{
+    width:100%; max-width:460px; max-height:calc(100vh - 40px); overflow-y:auto; border-radius:22px;
+    background:var(--surface); border:1px solid var(--hairline-strong);
   }
-  #play-toggle svg{width:16px; height:16px;}
+  .modal-photo{position:relative; aspect-ratio:4/5; background:#0f0a05;}
+  .modal-photo img{width:100%; height:100%; object-fit:cover;}
+  .modal-close{
+    position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%; border:none; cursor:pointer;
+    background:rgba(10,7,4,0.6); backdrop-filter:blur(8px); color:var(--foam); display:flex; align-items:center; justify-content:center;
+  }
+  .modal-close svg{width:16px; height:16px;}
+  .modal-nav{
+    position:absolute; top:50%; transform:translateY(-50%); width:36px; height:36px; border-radius:50%; border:none; cursor:pointer;
+    background:rgba(10,7,4,0.55); backdrop-filter:blur(8px); color:var(--foam); display:flex; align-items:center; justify-content:center;
+  }
+  .modal-nav svg{width:16px; height:16px;}
+  .modal-prev{left:12px;} .modal-next{right:12px;}
+  .modal-body{padding:22px 22px calc(26px + env(safe-area-inset-bottom));}
+  .modal-eyebrow{font-size:12.5px; font-weight:700; color:var(--amber-bright); text-transform:uppercase; letter-spacing:0.06em;}
+  .modal-name{font-family:'Fraunces',serif; font-weight:600; font-size:26px; color:var(--foam); margin-top:8px; line-height:1.15;}
+  .modal-row{display:flex; align-items:baseline; gap:14px; margin-top:14px; flex-wrap:wrap;}
+  .modal-score{font-family:'Fraunces',serif; font-weight:700; font-size:24px; color:var(--amber-bright);}
+  .modal-score small{font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--text-3);}
+  .modal-chip{font-size:11.5px; font-weight:600; color:var(--text-2); background:rgba(232,163,61,0.1); border:1px solid var(--hairline-strong); padding:3px 10px; border-radius:999px; margin-right:6px;}
+  .modal-meta{font-size:12.5px; color:var(--text-3); margin-top:12px;}
+  .modal-meta span:not(:last-child)::after{content:'·'; margin-left:7px; color:var(--text-4);}
+  .modal-note{font-family:'Fraunces',serif; font-style:italic; font-size:15.5px; line-height:1.45; color:var(--text); margin-top:16px;}
 </style>
 </head>
 <body>
@@ -144,13 +158,41 @@
     Deník
   </a>
 
-  <div id="scroller" style="display:none"></div>
+  <div id="page" style="display:none">
+    <header>
+      <div class="h-eyebrow">Vitrína</div>
+      <h1 class="h-title">Nejlepší kousky z deníku</h1>
+      <div class="h-sub" id="h-count">— vybraných zápisů</div>
+      <button class="h-tour" id="tour-btn">
+        <svg id="tour-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l13 7-13 7V5z"/></svg>
+        <span id="tour-label">Spustit prohlídku</span>
+      </button>
+    </header>
+    <div class="grid" id="grid"></div>
+    <div class="summary">
+      <div class="summary-grid" id="summary-grid"></div>
+    </div>
+  </div>
 
-  <div id="controls">
-    <span id="progress-tx">1 / 1</span>
-    <button id="play-toggle" aria-label="Spustit prohlídku">
-      <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l13 7-13 7V5z"/></svg>
-    </button>
+  <div class="modal-backdrop" id="modal">
+    <div class="modal-card" id="modal-card">
+      <div class="modal-photo">
+        <img id="modal-img" src="" alt="">
+        <button class="modal-close" id="modal-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+        <button class="modal-nav modal-prev" id="modal-prev" aria-label="Předchozí"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="modal-nav modal-next" id="modal-next" aria-label="Další"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-eyebrow" id="modal-brewery"></div>
+        <h2 class="modal-name" id="modal-name"></h2>
+        <div class="modal-row">
+          <div class="modal-score" id="modal-score"></div>
+          <div id="modal-chips"></div>
+        </div>
+        <div class="modal-meta" id="modal-meta"></div>
+        <p class="modal-note" id="modal-note" style="display:none"></p>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -192,7 +234,6 @@
   }
   $('#state-btn').addEventListener('click', ()=>location.reload());
 
-  // back link: prefer the page we were actually opened from, if it's this same site
   function backHref(){
     try{
       if(document.referrer){
@@ -212,6 +253,8 @@
   const headers={ apikey:cfg.key, Authorization:'Bearer '+cfg.key };
   function storageUrl(path){ return base+'/storage/v1/object/public/'+BUCKET+'/'+path; }
 
+  let cityByKey={};
+
   async function boot(){
     let piva, pivovary=[];
     try{
@@ -226,7 +269,6 @@
       const r2=await fetch(base+'/rest/v1/pivovary?select=klic,mesto', { headers });
       if(r2.ok) pivovary=await r2.json();
     }catch(e){ /* volitelný doplněk, bez něj se obejdeme */ }
-    const cityByKey={};
     pivovary.forEach(p=>{ if(p.mesto) cityByKey[p.klic]=p.mesto; });
 
     if(!piva.length){
@@ -235,143 +277,133 @@
     }
 
     const withPhoto=piva.filter(x=>x.foto);
-    let curated=withPhoto.filter(x=>x.vitrina);
-    let picks = curated.length ? curated : withPhoto.slice().sort((a,b)=> (b.hodnoceni||0)-(a.hodnoceni||0) || (b.datum||'').localeCompare(a.datum||'')).slice(0,18);
+    const curated=withPhoto.filter(x=>x.vitrina);
+    const picks = curated.length
+      ? curated.slice().sort((a,b)=> (b.hodnoceni||0)-(a.hodnoceni||0) || (b.datum||'').localeCompare(a.datum||''))
+      : withPhoto.slice().sort((a,b)=> (b.hodnoceni||0)-(a.hodnoceni||0) || (b.datum||'').localeCompare(a.datum||'')).slice(0,18);
 
     if(!picks.length){
       showState('Vitrína je zatím prázdná', 'Zatím žádné pivo nemá fotku — přidej ji u zápisu v appce, ať má vitrína co ukázat.', false);
       return;
     }
-    if(curated.length){
-      picks=picks.slice().sort((a,b)=> (b.hodnoceni||0)-(a.hodnoceni||0) || (b.datum||'').localeCompare(a.datum||''));
-    }
 
-    // aggregate stats across the WHOLE diary, not just the showcased picks
-    const brewerySet=new Set();
-    const placeSet=new Set();
-    const styleSet=new Set();
-    const peopleSet=new Set();
+    const brewerySet=new Set(), placeSet=new Set(), styleSet=new Set();
     piva.forEach(x=>{
       if(x.pivovar) brewerySet.add(norm(x.pivovar));
       if(x.spolupivovar) brewerySet.add(norm(x.spolupivovar));
       if(x.kde) placeSet.add(x.kde.trim().toLowerCase());
       if(x.styl) styleSet.add(x.styl.trim().toLowerCase());
-      if(x.osoba) peopleSet.add(x.osoba);
     });
 
-    renderSlides(picks, cityByKey, {
-      beers: piva.length, breweries: brewerySet.size, places: placeSet.size, styles: styleSet.size, people: peopleSet.size
-    });
+    renderPage(picks, { beers:piva.length, breweries:brewerySet.size, places:placeSet.size, styles:styleSet.size });
   }
 
-  function renderSlides(picks, cityByKey, stats){
-    const scroller=$('#scroller');
-    let html='';
+  const SIZE_CYCLE=['big','normal','normal','wide','normal','normal'];
 
-    html+='<section class="slide slide-intro" id="slide-intro">'
-      +'<div class="slide-content">'
-      +'<div class="slide-eyebrow">Vitrína</div>'
-      +'<h1 class="slide-name">Nejlepší kousky z deníku</h1>'
-      +'<div class="intro-count">'+picks.length+' vybraných zápisů</div>'
-      +'<div class="intro-hint"><span>scrolluj nebo spusť prohlídku</span><svg class="intro-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
-      +'</div></section>';
+  function renderPage(picks, stats){
+    $('#state').style.display='none';
+    $('#page').style.display='block';
+    $('#top-link').style.display='inline-flex';
+    $('#top-link').href=backHref();
+    $('#h-count').textContent=picks.length+' vybraných zápisů';
 
-    picks.forEach((b,i)=>{
+    const grid=$('#grid');
+    grid.innerHTML=picks.map((b,i)=>{
+      const size=SIZE_CYCLE[i%SIZE_CYCLE.length];
+      return '<div class="tile '+size+'" data-i="'+i+'">'
+        +'<img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.nazev)+'">'
+        +'<div class="tile-scrim"></div>'
+        +(b.hodnoceni?'<div class="tile-score">'+Number(b.hodnoceni).toFixed(1)+'</div>':'')
+        +'<div class="tile-tx"><div class="tile-name">'+esc(b.nazev)+'</div>'+(b.pivovar?'<div class="tile-brewery">'+esc(b.pivovar)+'</div>':'')+'</div>'
+        +'</div>';
+    }).join('');
+
+    const sg=$('#summary-grid');
+    sg.innerHTML=
+      '<div class="summary-tile"><div class="summary-n">'+stats.beers+'</div><div class="summary-l">zapsaných piv</div></div>'
+      +'<div class="summary-tile"><div class="summary-n">'+stats.breweries+'</div><div class="summary-l">pivovarů</div></div>'
+      +'<div class="summary-tile"><div class="summary-n">'+stats.places+'</div><div class="summary-l">míst</div></div>'
+      +'<div class="summary-tile"><div class="summary-n">'+stats.styles+'</div><div class="summary-l">stylů</div></div>';
+
+    setupReveal();
+    setupModal(picks);
+  }
+
+  function setupReveal(){
+    const tiles=[...document.querySelectorAll('.tile')];
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in-view'); io.unobserve(e.target); } });
+    }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
+    tiles.forEach(t=>io.observe(t));
+  }
+
+  function setupModal(picks){
+    const modal=$('#modal');
+    let openIndex=-1;
+    let timer=null;
+
+    function paint(i){
+      const b=picks[i]; if(!b) return;
+      openIndex=i;
       const city=b.pivovar ? cityByKey[norm(b.pivovar)] : '';
+      $('#modal-img').src=storageUrl(b.foto);
+      $('#modal-img').alt=b.nazev||'';
+      $('#modal-brewery').textContent=(b.pivovar||'')+(city?' · '+city:'');
+      $('#modal-name').textContent=b.nazev||'';
+      $('#modal-score').innerHTML = b.hodnoceni ? Number(b.hodnoceni).toFixed(1)+'<small>/10</small>' : '';
       const chips=[];
-      if(b.styl) chips.push('<span class="slide-chip">'+esc(b.styl)+'</span>');
-      if(b.abv) chips.push('<span class="slide-chip">'+esc(b.abv)+'%</span>');
+      if(b.styl) chips.push('<span class="modal-chip">'+esc(b.styl)+'</span>');
+      if(b.abv) chips.push('<span class="modal-chip">'+esc(b.abv)+'%</span>');
+      $('#modal-chips').innerHTML=chips.join('');
       const metaBits=[];
       if(b.datum) metaBits.push('<span>'+esc(czDate(b.datum))+'</span>');
       if(b.kde) metaBits.push('<span>'+esc(b.kde)+'</span>');
       if(b.cena) metaBits.push('<span>'+esc(b.cena)+' Kč</span>');
       if(b.osoba) metaBits.push('<span>zapsal(a) '+esc(b.osoba)+'</span>');
-      html+='<section class="slide" data-index="'+(i+1)+'">'
-        +'<img class="slide-bg" loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.nazev)+'">'
-        +'<div class="slide-scrim"></div>'
-        +'<div class="slide-content">'
-        +(b.pivovar?'<div class="slide-eyebrow">'+esc(b.pivovar)+(city?' · '+esc(city):'')+'</div>':'')
-        +'<h2 class="slide-name">'+esc(b.nazev)+'</h2>'
-        +'<div class="slide-row">'
-        +(b.hodnoceni?'<div class="slide-score">'+Number(b.hodnoceni).toFixed(1)+'<small>/10</small></div>':'')
-        +(chips.length?'<div class="slide-chips">'+chips.join('')+'</div>':'')
-        +'</div>'
-        +(metaBits.length?'<div class="slide-meta">'+metaBits.join('')+'</div>':'')
-        +(b.poznamka?'<p class="slide-note">„'+esc(b.poznamka)+'"</p>':'')
-        +'</div></section>';
+      $('#modal-meta').innerHTML=metaBits.join('');
+      if(b.poznamka){ $('#modal-note').style.display='block'; $('#modal-note').textContent='„'+b.poznamka+'"'; }
+      else { $('#modal-note').style.display='none'; }
+      $('#modal-card').scrollTop=0;
+    }
+    function open(i){ paint(i); modal.classList.add('show'); }
+    function close(){ modal.classList.remove('show'); stopTour(); }
+    function step(dir){
+      const next=openIndex+dir;
+      if(next<0 || next>=picks.length){ if(dir>0) stopTour(); return; }
+      paint(next);
+    }
+
+    $('#grid').addEventListener('click', e=>{
+      const t=e.target.closest('.tile'); if(!t) return;
+      open(parseInt(t.dataset.i,10));
+    });
+    $('#modal-close').addEventListener('click', close);
+    $('#modal-prev').addEventListener('click', ()=>{ stopTour(); step(-1); });
+    $('#modal-next').addEventListener('click', ()=>{ stopTour(); step(1); });
+    modal.addEventListener('click', e=>{ if(e.target===modal) close(); });
+    document.addEventListener('keydown', e=>{
+      if(!modal.classList.contains('show')) return;
+      if(e.key==='Escape') close();
+      if(e.key==='ArrowLeft'){ stopTour(); step(-1); }
+      if(e.key==='ArrowRight'){ stopTour(); step(1); }
     });
 
-    html+='<section class="slide slide-summary" id="slide-summary">'
-      +'<div class="slide-content">'
-      +'<div class="summary-title">Zatím v deníku</div>'
-      +'<div class="summary-grid">'
-      +'<div class="summary-tile"><div class="summary-n">'+stats.beers+'</div><div class="summary-l">zapsaných piv</div></div>'
-      +'<div class="summary-tile"><div class="summary-n">'+stats.breweries+'</div><div class="summary-l">pivovarů</div></div>'
-      +'<div class="summary-tile"><div class="summary-n">'+stats.places+'</div><div class="summary-l">míst</div></div>'
-      +'<div class="summary-tile"><div class="summary-n">'+stats.styles+'</div><div class="summary-l">stylů</div></div>'
-      +'</div>'
-      +'<a class="summary-back" href="'+esc(backHref())+'">Zpět do deníku</a>'
-      +'</div></section>';
-
-    scroller.innerHTML=html;
-    scroller.style.display='block';
-    $('#state').style.display='none';
-    $('#top-link').style.display='inline-flex';
-    $('#top-link').href=backHref();
-    $('#controls').classList.add('show');
-    $('#progress-tx').textContent='1 / '+(picks.length+2);
-
-    setupReveal();
-    setupProgress(picks.length+2);
-    setupAutoplay();
-  }
-
-  function setupReveal(){
-    const slides=[...document.querySelectorAll('.slide')];
-    const io=new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{ e.target.classList.toggle('in-view', e.isIntersecting && e.intersectionRatio>0.55); });
-    }, { root:$('#scroller'), threshold:[0,0.55,1] });
-    slides.forEach(s=>io.observe(s));
-  }
-
-  function setupProgress(total){
-    const scroller=$('#scroller');
-    let raf=null;
-    scroller.addEventListener('scroll', ()=>{
-      if(raf) return;
-      raf=requestAnimationFrame(()=>{
-        raf=null;
-        const idx=Math.round(scroller.scrollTop/scroller.clientHeight);
-        $('#progress-tx').textContent=(Math.min(idx,total-1)+1)+' / '+total;
-      });
-    }, { passive:true });
-  }
-
-  function setupAutoplay(){
-    const scroller=$('#scroller');
-    const btn=$('#play-toggle');
-    const icon=$('#play-icon');
+    // guided tour: cycles through the tiles automatically, stops on any manual interaction
+    const tourBtn=$('#tour-btn'), tourIcon=$('#tour-icon'), tourLabel=$('#tour-label');
     const PAUSE_ICON='<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>';
     const PLAY_ICON='<path d="M7 5l13 7-13 7V5z"/>';
-    let timer=null;
-
-    function stop(){
-      if(timer){ clearInterval(timer); timer=null; icon.innerHTML=PLAY_ICON; btn.setAttribute('aria-label','Spustit prohlídku'); }
+    function startTour(){
+      tourIcon.innerHTML=PAUSE_ICON; tourLabel.textContent='Pauza';
+      if(!modal.classList.contains('show')) open(0);
+      timer=setInterval(()=>step(1), 4000);
     }
-    function start(){
-      icon.innerHTML=PAUSE_ICON; btn.setAttribute('aria-label','Pauza');
-      timer=setInterval(()=>{
-        const slides=[...document.querySelectorAll('.slide')];
-        const h=scroller.clientHeight;
-        const idx=Math.round(scroller.scrollTop/h);
-        const next=idx+1;
-        if(next>=slides.length){ stop(); return; }
-        scroller.scrollTo({ top:next*h, behavior:'smooth' });
-      }, 4000);
+    function stopTour(){
+      if(timer){ clearInterval(timer); timer=null; }
+      tourIcon.innerHTML=PLAY_ICON; tourLabel.textContent='Spustit prohlídku';
     }
-    btn.addEventListener('click', ()=>{ timer ? stop() : start(); });
+    tourBtn.addEventListener('click', ()=>{ timer ? (stopTour(), close()) : startTour(); });
     ['wheel','touchstart','pointerdown'].forEach(evt=>{
-      scroller.addEventListener(evt, ()=>{ if(timer) stop(); }, { passive:true });
+      modal.addEventListener(evt, ()=>{ if(timer) stopTour(); }, { passive:true });
     });
   }
 
