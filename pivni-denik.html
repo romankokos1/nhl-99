@@ -474,6 +474,7 @@
   }
   .row-btn:active{color:var(--foam);}
   .row-btn.del:active{color:var(--red);}
+  .row-btn.detail-showcase.active{color:var(--amber-bright);}
 
   /* empty state */
   .empty{text-align:center; padding:var(--s8) var(--s5); color:var(--text-3);}
@@ -2194,7 +2195,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const remote = rows.map(x => ({
         id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, collab:x.spolupivovar||'', style:x.styl,
         abv:x.abv, price:x.cena||'', where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
-        foto:x.foto||'',
+        foto:x.foto||'', vitrina:!!x.vitrina,
         synced:true
       }));
       // keep any local-only (unsynced) records, replace the rest with remote truth
@@ -2216,7 +2217,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const body = {
       id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, spolupivovar:b.collab||null, styl:b.style,
       abv:b.abv, cena:b.price||null, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
-      foto:b.foto||''
+      foto:b.foto||'', vitrina:!!b.vitrina
     };
     try {
       const r = await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?on_conflict=id', {
@@ -2749,6 +2750,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     commitBeer();
   }
   function commitBeer(overrideName, overrideBrewery){
+    const prev = editId ? beers.find(x=>x.id===editId) : null;
     const rec = {
       id: editId || uid(),
       osoba: cfg.name,
@@ -2763,6 +2765,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       note:$('#f-note').value.trim(),
       rating:currentRating,
       foto:currentPhoto||'',
+      vitrina: prev ? !!prev.vitrina : false,
       synced:false
     };
     if(editId){
@@ -2800,6 +2803,15 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#save-btn').textContent='Uložit změny';
     $('#cancel-btn').style.display='inline-flex';
     switchView('add');
+  }
+  async function toggleShowcase(id){
+    const b=beers.find(x=>x.id===id); if(!b) return;
+    if(b.osoba && b.osoba!==cfg.name){ toast('Můžeš upravovat jen svoje piva', true); return; }
+    b.vitrina=!b.vitrina; b.synced=false;
+    saveLocal();
+    openBeerDetail(id); // repaint the button state right away
+    const ok = sbConfigured() ? await sbPush(b) : false;
+    toast(b.vitrina ? (ok?'Přidáno do vitríny':'Přidáno do vitríny (uloží se, až budeš online)') : 'Odebráno z vitríny');
   }
   async function delBeer(id){
     const b=beers.find(x=>x.id===id); if(!b) return;
@@ -3038,6 +3050,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'</span>'
         +'<span class="lb-metric"><b>'+(x.rating||'–')+'</b><small>/10</small></span>'
         + likeButtonHtml(x)
+        +(mine&&x.foto?'<button class="row-btn detail-showcase'+(x.vitrina?' active':'')+'" data-detail-showcase="'+x.id+'" aria-label="Vitrína">'+(x.vitrina?'Ve vitríně ✓':'Do vitríny')+'</button>':'')
         +(mine?'<button class="row-btn detail-edit" data-detail-edit="'+x.id+'" aria-label="Upravit">Upravit</button>':'')
         +'</div>'
         +'<div class="comment-block" data-comment-block="'+x.id+'">'+commentThreadHtml(x)+'</div>'
@@ -6865,6 +6878,8 @@ var qrcode = function() {
     const ph=e.target.closest('[data-photo]'); if(ph){ openLightbox(ph.dataset.photo); return; }
     const ed=e.target.closest('[data-detail-edit]');
     if(ed){ $('#detail-overlay').classList.remove('show'); editBeer(ed.dataset.detailEdit); return; }
+    const sc=e.target.closest('[data-detail-showcase]');
+    if(sc){ toggleShowcase(sc.dataset.detailShowcase); return; }
     const beedit=e.target.closest('[data-brewery-edit]');
     if(beedit){ openBreweryEdit(beedit.dataset.breweryEdit, beedit.dataset.breweryLabel); return; }
     const bphoto=e.target.closest('[data-brewery-photo]');
