@@ -1444,7 +1444,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         +'<div class="spread-eyebrow">'+(isTour?'Prohlídka stadionu':'Zápas')+'</div>'
         +menuBtn
         +'<div class="spread-caption"><div class="spread-title">'+titleHtml+'</div><div class="spread-sub">'+subParts.join(' · ')+'</div></div>'
-        +'<div class="spread-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(d.d)+'</div><div class="stamp-sub">'+esc(d.m)+' '+esc(String(d.y).slice(-2))+'</div></div>'
+        +'<div class="spread-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(String(d.y).slice(-2))+'</div><div class="stamp-sub">'+esc(d.d)+' '+esc(d.m)+'</div></div>'
         +infoBar
       +'</article>';
     }
@@ -1453,7 +1453,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     return '<div class="brief" data-open="'+v.id+'">'
       +'<svg class="brief-graphic" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M8 62c0-24 20-44 44-44s44 20 44 44"/><path d="M18 62c0-18 15-33 34-33s34 15 34 33"/><path d="M8 62h84M50 18v8M50 62V40"/></svg>'
       +'<div class="brief-top"><div class="brief-eyebrow">'+(isTour?'Prohlídka':'Zápas')+'</div>'
-        +'<div class="brief-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(d.d)+'</div><div class="stamp-sub">'+esc(d.m)+' '+esc(String(d.y).slice(-2))+'</div></div>'
+        +'<div class="brief-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(String(d.y).slice(-2))+'</div><div class="stamp-sub">'+esc(d.d)+' '+esc(d.m)+'</div></div>'
       +'</div>'
       +menuBtn
       +'<div class="brief-title">'+titleHtml+'</div>'
