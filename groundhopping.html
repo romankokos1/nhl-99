@@ -140,7 +140,9 @@
   .spread-title{ font-family:'Fraunces',serif; font-weight:500; font-size:23px; line-height:1.16; color:#fdfbf7; }
   .spread-title .vs{ font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--light-bright); font-size:0.72em; margin:0 7px; }
   .spread-sub{ font-family:'Manrope',sans-serif; font-size:11.5px; color:rgba(242,239,233,0.68); margin-top:7px; letter-spacing:0.01em; }
-  .spread-sub .meta-stadion{ color:rgba(242,239,233,0.85); text-decoration-color:rgba(242,239,233,0.4); }
+  .meta-stadion, .meta-klub{ cursor:pointer; text-decoration:underline dotted; text-underline-offset:2px; text-decoration-color:var(--text-4); }
+  .spread-sub .meta-stadion, .spread-title .meta-klub{ color:rgba(242,239,233,0.85); text-decoration-color:rgba(242,239,233,0.4); }
+  .chip.meta-stadion{cursor:pointer;}
   .spread-stamp{ position:absolute; right:16px; bottom:16px; width:64px; height:64px; border-radius:50%;
     background:rgba(12,16,20,0.6); backdrop-filter:blur(6px); border:1px dashed rgba(200,167,75,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center;
     box-shadow:0 6px 16px -8px rgba(0,0,0,0.6); z-index:1; }
@@ -765,6 +767,11 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   <!-- stadium detail sheet -->
   <div class="overlay" id="stadion-overlay">
     <div class="sheet" id="stadion-sheet-content"></div>
+  </div>
+
+  <!-- club detail sheet -->
+  <div class="overlay" id="klub-overlay">
+    <div class="sheet" id="klub-sheet-content"></div>
   </div>
 
   <!-- map -->
@@ -1415,9 +1422,10 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     if(stadionLabel) subParts.push('<span class="meta-stadion" data-stadionopen="'+esc(stadKey)+'">'+esc(stadionLabel)+'</span>');
     if(v.zeme) subParts.push('<span>'+esc(v.zeme)+'</span>');
     if(!isTour && v.soutez) subParts.push('<span>'+esc(v.soutez)+'</span>');
-    const titleHtml = isTour
-      ? esc(v.domaci?v.domaci:'Prohlídka stadionu')
-      : esc(v.domaci)+(score?'<span class="vs">'+esc(score)+'</span>':'<span class="vs">–</span>')+esc(v.hoste||'');
+  function klubSpan(name){ return name ? '<span class="meta-klub" data-klubopen="'+esc(name)+'">'+esc(name)+'</span>' : ''; }
+  const titleHtml = isTour
+      ? klubSpan(v.domaci) || 'Prohlídka stadionu'
+      : klubSpan(v.domaci)+(score?'<span class="vs">'+esc(score)+'</span>':'<span class="vs">–</span>')+klubSpan(v.hoste);
     const n=v.hodnoceni||0;
     function tinyStar(filled){ return '<svg viewBox="0 0 24 24" width="10" height="10" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.7"><path d="M12 2.5l2.9 6.1 6.6.7-4.9 4.5 1.3 6.6L12 17.6l-5.9 3.1 1.3-6.6L2.5 9.3l6.6-.7L12 2.5z"/></svg>'; }
     let dots=''; for(let i=1;i<=5;i++) dots+='<span class="'+(i<=n?'on':'')+'">'+tinyStar(i<=n)+'</span>';
@@ -1773,8 +1781,8 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const liked = likesMap[v.id] && cfg.name && likesMap[v.id].has(cfg.name);
     const comments = commentsMap[v.id]||[];
     const teamsHtml = isTour
-      ? '<span>'+(v.domaci?esc(v.domaci):'Prohlídka stadionu')+'</span><span class="chip" style="margin-left:8px">PROHLÍDKA</span>'
-      : '<span>'+esc(v.domaci)+'</span><span class="detail-score">'+esc(score)+'</span><span>'+esc(v.hoste||'')+'</span>';
+      ? '<span>'+(v.domaci?'<span class="meta-klub" data-klubopen="'+esc(v.domaci)+'">'+esc(v.domaci)+'</span>':'Prohlídka stadionu')+'</span><span class="chip" style="margin-left:8px">PROHLÍDKA</span>'
+      : (v.domaci?'<span class="meta-klub" data-klubopen="'+esc(v.domaci)+'">'+esc(v.domaci)+'</span>':'<span></span>')+'<span class="detail-score">'+esc(score)+'</span>'+(v.hoste?'<span class="meta-klub" data-klubopen="'+esc(v.hoste)+'">'+esc(v.hoste)+'</span>':'<span></span>');
     $('#detail-sheet-content').innerHTML =
       '<div class="grabber"></div>'
       +(v.foto && sbConfigured() ? '<img class="detail-photo" src="'+storageUrl(v.foto)+'" id="detail-photo-img">' : '')
@@ -1807,6 +1815,37 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   function refreshDetailIfOpen(id){ if($('#detail-overlay').classList.contains('show')) openVisitDetail(id); }
 
   /* ---------- stadium detail ---------- */
+  function openKlubDetail(name){
+    const key=norm(name);
+    if(!key) return;
+    const at=visits.filter(v=>norm(v.domaci)===key || norm(v.hoste)===key);
+    if(!at.length) return;
+    const homeAt=at.filter(v=>norm(v.domaci)===key);
+    const awayAt=at.filter(v=>norm(v.hoste)===key);
+    const stadiums=new Set(at.map(stadionKey).filter(Boolean));
+    const rated=at.filter(v=>v.hodnoceni>0);
+    const avg=rated.length? (rated.reduce((s,v)=>s+v.hodnoceni,0)/rated.length).toFixed(1) : '–';
+    const perPerson={};
+    at.forEach(v=>{ [v.osoba,...(v.spolu||[])].filter(Boolean).forEach(p=>{ perPerson[p]=(perPerson[p]||0)+1; }); });
+    const ranked=Object.entries(perPerson).sort((a,b)=>b[1]-a[1]);
+    $('#klub-sheet-content').innerHTML =
+      '<div class="grabber"></div>'
+      +'<h2>'+esc(name)+'</h2>'
+      +'<p class="lead">'+at.length+' návštěv napříč partou · '+stadiums.size+' '+(stadiums.size===1?'stadion':'stadionů')+'</p>'
+      +'<div class="stat-grid">'
+        +'<div class="stat-card"><div class="n">'+homeAt.length+'</div><div class="l">doma</div></div>'
+        +'<div class="stat-card"><div class="n">'+awayAt.length+'</div><div class="l">venku</div></div>'
+        +'<div class="stat-card"><div class="n">'+stadiums.size+'</div><div class="l">stadionů</div></div>'
+        +'<div class="stat-card"><div class="n">'+avg+'</div><div class="l">průměrná atmosféra</div></div>'
+      +'</div>'
+      +(ranked.length ? '<div class="section-title">Kdo ho viděl nejvíc</div>'+ranked.slice(0,8).map(([p,n],i)=>
+          '<div class="rank-row'+(i===0?' top1':i===1?' top2':i===2?' top3':'')+'"><div class="rank-pos">'+(i+1)+'</div><span class="avatar" style="background:'+avatarColor(p)+'; width:26px; height:26px; font-size:10px">'+esc(initials(p))+'</span><div class="rank-name">'+esc(p)+'</div><div style="text-align:right"><div class="rank-n">'+n+'</div><div class="rank-l">'+(n===1?'návštěva':'návštěv')+'</div></div></div>'
+        ).join('') : '')
+      +'<div class="section-title">Návštěvy</div>'
+      +sortVisits(at).map(v=>ticketCard(v,true)).join('');
+    $('#klub-overlay').classList.add('show');
+  }
+
   function openStadionDetail(key){
     const at=visits.filter(v=>stadionKey(v)===key);
     if(!at.length) return;
@@ -1845,6 +1884,8 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
 
   /* ---------- delegated feed clicks ---------- */
   document.addEventListener('click', e=>{
+    const klubBtn=e.target.closest('[data-klubopen]');
+    if(klubBtn){ e.stopPropagation(); closeAllOverlays(); openKlubDetail(klubBtn.dataset.klubopen); return; }
     const stadBtn=e.target.closest('[data-stadionopen]');
     if(stadBtn){ e.stopPropagation(); closeAllOverlays(); openStadionDetail(stadBtn.dataset.stadionopen); return; }
     const likeBtn=e.target.closest('[data-like]');
@@ -2232,7 +2273,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   });
 
   /* ---------- overlay close handling ---------- */
-  ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>{
     $(sel).addEventListener('click', e=>{
       if(e.target===$(sel)){
         if(sel==='#name-overlay' && $(sel).dataset.force==='1' && !cfg.name) return;
@@ -2242,12 +2283,12 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   });
   document.addEventListener('keydown', e=>{
     if(e.key==='Escape'){
-      ['#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>$(sel).classList.remove('show'));
+      ['#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>$(sel).classList.remove('show'));
       closeCardMenu();
       if(cfg.name) $('#name-overlay').classList.remove('show');
     }
   });
-  function closeAllOverlays(){ ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>$(sel).classList.remove('show')); }
+  function closeAllOverlays(){ ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>$(sel).classList.remove('show')); }
 
   /* ---------- boot ---------- */
   loadLocal();
