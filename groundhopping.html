@@ -144,8 +144,8 @@
   .spread-stamp{ position:absolute; right:16px; bottom:16px; width:64px; height:64px; border-radius:50%;
     background:rgba(12,16,20,0.6); backdrop-filter:blur(6px); border:1px dashed rgba(200,167,75,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center;
     box-shadow:0 6px 16px -8px rgba(0,0,0,0.6); z-index:1; }
-  .stamp-day{ font-family:'Fraunces',serif; font-weight:500; font-size:22px; color:var(--text); line-height:1;}
-  .stamp-sub{ font-family:'Manrope',sans-serif; font-size:8px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--light); margin-top:2px;}
+  .stamp-top{ font-family:'Manrope',sans-serif; font-size:8px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--light); margin-bottom:3px;}
+  .stamp-year{ font-family:'Fraunces',serif; font-weight:500; font-size:17px; color:var(--text); line-height:1;}
 
   /* shared bottom info bar — one aligned row, grouped left (who+rating) / right (social) */
   .info-bar{ display:flex; align-items:center; gap:12px; margin-top:16px; }
@@ -170,8 +170,8 @@
   .brief-eyebrow{ font-family:'Manrope',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--light-bright); padding-top:4px; }
   .brief-stamp{ flex-shrink:0; width:46px; height:46px; border-radius:50%; border:1px dashed rgba(200,167,75,0.5);
     display:flex; flex-direction:column; align-items:center; justify-content:center; }
-  .brief-stamp .stamp-day{ font-size:14px; }
-  .brief-stamp .stamp-sub{ font-size:6.5px; margin-top:1px; }
+  .brief-stamp .stamp-year{ font-size:11px; }
+  .brief-stamp .stamp-top{ font-size:6px; margin-bottom:1px; }
   .brief-title{ font-family:'Fraunces',serif; font-weight:500; font-size:19px; line-height:1.22; color:var(--text); position:relative; z-index:1; }
   .brief-title .vs{ font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--light-bright); font-size:0.72em; margin:0 7px; }
   .brief-sub{ font-family:'Manrope',sans-serif; font-size:11.5px; color:var(--text-3); margin-top:6px; position:relative; z-index:1; }
@@ -1444,7 +1444,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         +'<div class="spread-eyebrow">'+(isTour?'Prohlídka stadionu':'Zápas')+'</div>'
         +menuBtn
         +'<div class="spread-caption"><div class="spread-title">'+titleHtml+'</div><div class="spread-sub">'+subParts.join(' · ')+'</div></div>'
-        +'<div class="spread-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(String(d.y).slice(-2))+'</div><div class="stamp-sub">'+esc(d.d)+' '+esc(d.m)+'</div></div>'
+        +'<div class="spread-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-top">'+esc(d.d)+' '+esc(d.m)+'</div><div class="stamp-year">'+esc(d.y)+'</div></div>'
         +infoBar
       +'</article>';
     }
@@ -1453,7 +1453,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     return '<div class="brief" data-open="'+v.id+'">'
       +'<svg class="brief-graphic" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M8 62c0-24 20-44 44-44s44 20 44 44"/><path d="M18 62c0-18 15-33 34-33s34 15 34 33"/><path d="M8 62h84M50 18v8M50 62V40"/></svg>'
       +'<div class="brief-top"><div class="brief-eyebrow">'+(isTour?'Prohlídka':'Zápas')+'</div>'
-        +'<div class="brief-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-day">'+esc(String(d.y).slice(-2))+'</div><div class="stamp-sub">'+esc(d.d)+' '+esc(d.m)+'</div></div>'
+        +'<div class="brief-stamp" style="transform:rotate('+tiltFor(v.id)+'deg)"><div class="stamp-top">'+esc(d.d)+' '+esc(d.m)+'</div><div class="stamp-year">'+esc(d.y)+'</div></div>'
       +'</div>'
       +menuBtn
       +'<div class="brief-title">'+titleHtml+'</div>'
