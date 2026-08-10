@@ -508,6 +508,7 @@
   .ac-item .ac-name{flex:1; font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .ac-item .ac-name mark{background:none; color:var(--amber-bright); font-weight:700;}
   .ac-item .ac-brew{font-size:12px; color:var(--text-3); flex-shrink:0; max-width:45%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ac-item .ac-wish{font-size:11px; font-weight:700; color:var(--amber-bright); flex-shrink:0; background:rgba(232,163,61,0.12); border-radius:6px; padding:2px 7px;}
   .ac-hint{padding:11px 14px; font-size:12.5px; color:var(--text-4);}
   .field-row{display:flex; gap:var(--s3);}
   .field-row .field{flex:1;}
@@ -6839,26 +6840,40 @@ var qrcode = function() {
     // map normalized index roughly back — simple prefix highlight fallback
     return t.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','i'),'<mark>$1</mark>');
   }
+  function wishSuggestionsForBrewery(){
+    const brew=$('#f-brewery').value.trim();
+    if(!brew) return [];
+    return (wishMap[norm(brew)]||[]).map(w=>({name:w.nazev, brewery:brew, wish:true}));
+  }
   function refreshBeerAC(){
     const inp=$('#f-name'); if(!inp) return;
     const drop=$('#beer-ac'); if(!drop) return;
     if(document.activeElement!==inp){ return; } // only refresh while focused
     const q=inp.value.trim();
-    if(q.length<MIN_AC){ drop.classList.remove('show'); acItems=[]; return; }
+    const wishAll=wishSuggestionsForBrewery();
+    if(q.length<MIN_AC && !wishAll.length){ drop.classList.remove('show'); acItems=[]; return; }
     const nq=norm(q);
-    const all=knownBeers();
-    // rank: startsWith first, then contains
-    const starts=[], contains=[];
-    for(const b of all){
-      const n=norm(b.name); if(n===nq) continue; // exact already typed
-      if(n.startsWith(nq)) starts.push(b);
-      else if(n.includes(nq)) contains.push(b);
+    const wishFiltered=wishAll.filter(b=>!nq || norm(b.name).includes(nq));
+    let rest=[];
+    if(q.length>=MIN_AC){
+      const all=knownBeers();
+      // rank: startsWith first, then contains
+      const starts=[], contains=[];
+      for(const b of all){
+        const n=norm(b.name); if(n===nq) continue; // exact already typed
+        if(wishFiltered.some(w=>norm(w.name)===n)) continue; // already shown as a wishlist match
+        if(n.startsWith(nq)) starts.push(b);
+        else if(n.includes(nq)) contains.push(b);
+      }
+      rest=starts.concat(contains);
     }
-    acItems=starts.concat(contains).slice(0,MAX_AC);
+    acItems=wishFiltered.concat(rest).slice(0,MAX_AC);
     acHi=-1;
     if(!acItems.length){ drop.classList.remove('show'); return; }
     drop.innerHTML=acItems.map((b,i)=>
-      '<div class="ac-item" data-i="'+i+'"><span class="ac-name">'+hlEsc(b.name,q)+'</span>'+(b.brewery?'<span class="ac-brew">'+esc(b.brewery)+'</span>':'')+'</div>'
+      '<div class="ac-item" data-i="'+i+'"><span class="ac-name">'+hlEsc(b.name,q)+'</span>'
+      +(b.wish?'<span class="ac-wish">na seznamu přání</span>':(b.brewery?'<span class="ac-brew">'+esc(b.brewery)+'</span>':''))
+      +'</div>'
     ).join('');
     drop.classList.add('show');
   }
@@ -6907,6 +6922,7 @@ var qrcode = function() {
     inp.addEventListener('focus', refreshBeerAC);
     inp.addEventListener('blur', ()=>setTimeout(()=>drop.classList.remove('show'),150));
     inp.addEventListener('change', ()=>fillFromKnown(inp.value.trim()));
+    $('#f-brewery').addEventListener('input', ()=>{ if(document.activeElement===inp) refreshBeerAC(); });
     inp.addEventListener('keydown', e=>{
       if(!drop.classList.contains('show')||!acItems.length) return;
       if(e.key==='ArrowDown'){ e.preventDefault(); acHi=Math.min(acHi+1,acItems.length-1); paintHi(); }
