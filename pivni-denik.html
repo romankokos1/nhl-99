@@ -690,6 +690,14 @@
   }
   .comment-send:active{filter:brightness(0.9);}
   .comment-send svg{width:15px; height:15px;}
+  /* wishlist */
+  .wish-list{margin-top:var(--s3); padding:12px 14px; background:var(--bg-2); border-radius:12px; border:1px solid var(--hairline);}
+  .wish-row{display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--hairline);}
+  .wish-row:last-of-type{border-bottom:none;}
+  .wish-tx{flex:1; display:flex; flex-direction:column; gap:1px; overflow-wrap:anywhere; min-width:0;}
+  .wish-tx b{font-size:13.5px; font-weight:700; color:var(--text);}
+  .wish-tx small{font-size:11.5px; color:var(--text-3);}
+  .wish-empty{font-size:13px; color:var(--text-3); padding:4px 0 10px;}
   .lb-fav{font-size:11px; font-weight:600; color:var(--text-3); background:var(--bg-2); border:1px solid var(--hairline); border-radius:6px; padding:1px 7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;}
   button.lb-fav.linkish{font-family:inherit; cursor:pointer;}
   button.lb-fav.linkish:active{color:var(--amber-bright); border-color:var(--amber-deep);}
@@ -2401,6 +2409,94 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       return r.ok;
     } catch(e){ return false; }
   }
+  /* ---------- wishlist (per-brewery, from the party) ---------- */
+  let wishMap={}; // { [breweryKey]: [{id, nazev, osoba, vytvoreno}] }
+  async function wishPull(){
+    if(!sbConfigured()){ wishMap={}; return; }
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/prani?select=*&order=vytvoreno.asc', { headers: sbHeaders() });
+      if(!r.ok) return;
+      const rows=await r.json();
+      const map={};
+      rows.forEach(row=>{
+        if(!row.pivovar) return;
+        if(!map[row.pivovar]) map[row.pivovar]=[];
+        map[row.pivovar].push({ id:row.id, nazev:row.nazev, osoba:row.osoba, vytvoreno:row.vytvoreno });
+      });
+      wishMap=map;
+    } catch(e){}
+  }
+  async function wishAdd(brewKey, nazev){
+    if(!sbConfigured()) return null;
+    const id=uid();
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/prani', {
+        method:'POST', headers:sbHeaders(),
+        body: JSON.stringify({ id, pivovar:brewKey, nazev, osoba:cfg.name })
+      });
+      return r.ok ? id : null;
+    } catch(e){ return null; }
+  }
+  async function wishRemove(id){
+    if(!sbConfigured()) return false;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/prani?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+      return r.ok;
+    } catch(e){ return false; }
+  }
+  function wishRow(w, brewKey){
+    return '<div class="wish-row">'
+      +'<span class="wish-tx"><b>'+esc(w.nazev)+'</b>'+(w.osoba?'<small>přidal(a) '+esc(w.osoba)+'</small>':'')+'</span>'
+      +'<button class="comment-del" data-wish-del="'+w.id+'" data-wish-del-brewery="'+esc(brewKey)+'" aria-label="Smazat">'+delIconSmall()+'</button>'
+      +'</div>';
+  }
+  function wishlistHtml(brewKey){
+    const items=wishMap[brewKey]||[];
+    let html='<div class="wish-list" data-wish-block="'+esc(brewKey)+'">';
+    html += items.length
+      ? items.map(w=>wishRow(w, brewKey)).join('')
+      : '<div class="wish-empty">Zatím nic — přidejte pivo, které chcete zkusit.</div>';
+    html += '<div class="comment-input-row">'
+      +'<input type="text" class="comment-input" data-wish-input="'+esc(brewKey)+'" placeholder="Název piva…" maxlength="120">'
+      +'<button class="comment-send" data-wish-send="'+esc(brewKey)+'" aria-label="Přidat">'+sendIcon()+'</button>'
+      +'</div>';
+    html += '</div>';
+    return html;
+  }
+  function refreshWishlist(brewKey){
+    const block=document.querySelector('[data-wish-block="'+brewKey+'"]');
+    if(block) block.outerHTML=wishlistHtml(brewKey);
+  }
+  async function sendWish(brewKey){
+    const input=document.querySelector('[data-wish-input="'+brewKey+'"]');
+    if(!input) return;
+    const nazev=input.value.trim();
+    if(!nazev) return;
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš přidávat na seznam', true); return; }
+    input.disabled=true;
+    const id=await wishAdd(brewKey, nazev);
+    if(id){
+      if(!wishMap[brewKey]) wishMap[brewKey]=[];
+      wishMap[brewKey].push({ id, nazev, osoba:cfg.name, vytvoreno:new Date().toISOString() });
+      refreshWishlist(brewKey);
+    } else {
+      toast('Nepodařilo se přidat', true);
+      input.disabled=false;
+    }
+  }
+  async function removeWish(id, brewKey){
+    const list=wishMap[brewKey]||[];
+    const idx=list.findIndex(w=>w.id===id);
+    if(idx<0) return;
+    const removed=list.splice(idx,1)[0];
+    refreshWishlist(brewKey);
+    const ok=await wishRemove(id);
+    if(!ok){
+      list.splice(idx,0,removed);
+      refreshWishlist(brewKey);
+      toast('Nepodařilo se smazat', true);
+    }
+  }
   function commentWord(n){ return n===1?'komentář':(n<5?'komentáře':'komentářů'); }
   function commentIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5z"/></svg>'; }
   function sendIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 8 6 8-16-8z"/></svg>'; }
@@ -2775,11 +2871,22 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       beers.unshift(rec);
     }
     const wasEdit=!!editId;
+    let wishCelebrate=false;
+    if(!wasEdit && rec.brewery){
+      const bKey=norm(rec.brewery), nKey=norm(rec.name);
+      const list=wishMap[bKey]||[];
+      const idx=list.findIndex(w=>norm(w.nazev)===nKey);
+      if(idx>=0){
+        const w=list.splice(idx,1)[0];
+        wishCelebrate=true;
+        wishRemove(w.id); // úklid na pozadí, nekritické
+      }
+    }
     saveLocal(); resetForm(); renderAll();
     if(sbConfigured()){
-      sbPush(rec).then(ok=>{ toast(ok ? 'Uloženo · na zdraví! 🍺' : 'Uloženo lokálně (offline)'); renderAll(); });
+      sbPush(rec).then(ok=>{ toast(wishCelebrate ? 'Škrtnuto ze seznamu přání! 🎉' : (ok ? 'Uloženo · na zdraví! 🍺' : 'Uloženo lokálně (offline)')); renderAll(); });
     } else {
-      toast('Uloženo lokálně · zapni sdílení v Profilu');
+      toast(wishCelebrate ? 'Škrtnuto ze seznamu přání! 🎉' : 'Uloženo lokálně · zapni sdílení v Profilu');
     }
     if(tasting && !wasEdit){
       tasting.count++; saveTasting(); paintTastingBar();
@@ -3108,6 +3215,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +'</div>'
     ).join('');
     html+='</div>';
+    html+='<div class="sec-title" style="margin-top:var(--s5)">Chtěli bychom ochutnat</div>';
+    html+=wishlistHtml(brewKey);
 
     $('#detail-body').innerHTML=html;
     $('#detail-overlay').classList.add('show');
@@ -6703,7 +6812,7 @@ var qrcode = function() {
   resetForm();
   renderAll();
 
-  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); }
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); }
   else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
 
   if(!cfg.name) setTimeout(openName, 400);
@@ -6880,6 +6989,10 @@ var qrcode = function() {
     if(ed){ $('#detail-overlay').classList.remove('show'); editBeer(ed.dataset.detailEdit); return; }
     const sc=e.target.closest('[data-detail-showcase]');
     if(sc){ toggleShowcase(sc.dataset.detailShowcase); return; }
+    const wd=e.target.closest('[data-wish-del]');
+    if(wd){ removeWish(wd.dataset.wishDel, wd.dataset.wishDelBrewery); return; }
+    const ws=e.target.closest('[data-wish-send]');
+    if(ws){ sendWish(ws.dataset.wishSend); return; }
     const beedit=e.target.closest('[data-brewery-edit]');
     if(beedit){ openBreweryEdit(beedit.dataset.breweryEdit, beedit.dataset.breweryLabel); return; }
     const bphoto=e.target.closest('[data-brewery-photo]');
@@ -6928,6 +7041,8 @@ var qrcode = function() {
   $('#detail-body').addEventListener('keydown', e=>{
     const ci=e.target.closest('[data-comment-input]');
     if(ci && e.key==='Enter'){ e.preventDefault(); sendComment(ci.dataset.commentInput); }
+    const wi=e.target.closest('[data-wish-input]');
+    if(wi && e.key==='Enter'){ e.preventDefault(); sendWish(wi.dataset.wishInput); }
   });
   // ranking screen: brewery + beer drill-down
   $('#screen-board').addEventListener('click', e=>{
@@ -7199,7 +7314,7 @@ var qrcode = function() {
     }
     if(!e.target.closest('.cardmenu-pop')) closeCardMenu();
   });
-  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); } }, 30000);
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 
