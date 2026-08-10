@@ -4132,7 +4132,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const src=boardBeers();
     const bmap={};
     src.filter(b=>b.rating>0).forEach(b=>{
-      const k=(b.name||'').toLowerCase()+'|'+(b.brewery||'').toLowerCase();
+      const k=norm(b.name)+'|'+norm(b.brewery||'');
       if(!bmap[k]) bmap[k]={name:b.name,brewery:b.brewery,sum:0,n:0};
       bmap[k].sum+=b.rating; bmap[k].n++;
     });
