@@ -850,6 +850,10 @@
   .conn-pill.online{color:var(--green);} .conn-pill.online .pill-dot{background:var(--green); box-shadow:0 0 8px var(--green);}
   .conn-pill.offline{color:var(--red);} .conn-pill.offline .pill-dot{background:var(--red);}
   .conn-pill.syncing{color:var(--amber);} .conn-pill.syncing .pill-dot{background:var(--amber); animation:pulse 1s infinite;}
+  .pending-badge{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:var(--amber-bright); margin-left:6px;}
+  .pending-badge::before{content:'⏳';}
+  .pending-dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--amber-bright); box-shadow:0 0 6px var(--amber-bright); flex-shrink:0; margin-left:6px;}
+  .gt-pending{position:absolute; top:6px; left:6px; margin-left:0;}
   @keyframes pulse{50%{opacity:0.3;}}
 
   /* sync line (home) */
@@ -1180,7 +1184,7 @@
       </div>
 
       <div class="pad">
-        <div class="syncline"><span class="dot" ></span><span class="sync-text">—</span></div>
+        <div class="syncline"><span class="dot" ></span><span class="sync-text">—</span><span class="pending-badge" id="pending-badge-home" style="display:none"></span></div>
 
         <div class="hero">
           <div class="hero-hello" id="hero-hello">Vítej</div>
@@ -1399,7 +1403,7 @@
         <div class="profile-head">
           <div class="profile-av" id="me-avatar">?</div>
           <div class="profile-name me-name">—</div>
-          <div class="profile-role">tvůj pivní účet · <span class="conn-pill" id="conn-pill"><span class="pill-dot"></span><span class="pill-text">Offline</span></span></div>
+          <div class="profile-role">tvůj pivní účet · <span class="conn-pill" id="conn-pill"><span class="pill-dot"></span><span class="pill-text">Offline</span></span><span class="pending-badge" id="pending-badge-profile" style="display:none"></span></div>
         </div>
 
         <button class="trophy-head trophy-open" id="trophy-open">
@@ -2165,7 +2169,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     try { beers = JSON.parse(localStorage.getItem(LKEY)) || []; } catch(e){ beers=[]; }
     try { cfg = Object.assign(cfg, JSON.parse(localStorage.getItem(CFG))||{}); } catch(e){}
   }
-  function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(beers)); } catch(e){ toast('Nelze uložit lokálně', true); } }
+  function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(beers)); } catch(e){ toast('Nelze uložit lokálně', true); } updatePendingBadge(); }
+  function updatePendingBadge(){
+    const n=beers.filter(b=>!b.synced).length;
+    document.querySelectorAll('.pending-badge').forEach(el=>{
+      if(n>0){ el.textContent=n+' '+(n===1?'čeká':'čekají')+' na odeslání'; el.style.display='inline-flex'; }
+      else { el.style.display='none'; el.textContent=''; }
+    });
+  }
   function saveCfg(){ try { localStorage.setItem(CFG, JSON.stringify(cfg)); } catch(e){} }
 
   /* ---------- Supabase REST helpers ---------- */
@@ -2559,6 +2570,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const inv=$('#invite-btn'); if(inv) inv.style.display = sbConfigured() ? 'flex' : 'none';
     const pill=$('#conn-pill');
     if(pill){ pill.className='conn-pill '+state; pill.querySelector('.pill-text').textContent = state==='online'?'Připojeno':(state==='syncing'?'Synchronizuji':'Offline'); }
+    updatePendingBadge();
   }
 
   /* ---------- rating control ---------- */
@@ -2919,6 +2931,19 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }
     switchView('home');
   }
+  function logAgain(id){
+    const b=beers.find(x=>x.id===id); if(!b) return;
+    resetForm();
+    $('#f-name').value=b.name||'';
+    $('#f-brewery').value=b.brewery||'';
+    $('#f-collab').value=b.collab||'';
+    $('#collab-field').style.display = b.collab ? 'block' : 'none';
+    $('#f-style').value=b.style||'';
+    $('#f-abv').value=b.abv||'';
+    $('#detail-overlay').classList.remove('show');
+    switchView('add');
+    toast('Předvyplněno z předchozího zápisu · doplň hodnocení a datum');
+  }
   function editBeer(id){
     const b=beers.find(x=>x.id===id); if(!b) return;
     if(b.osoba && b.osoba!==cfg.name){ toast('Můžeš upravovat jen svoje piva', true); return; }
@@ -2980,10 +3005,11 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   function gridTile(b){
     const scoreHtml = b.rating ? '<span class="gt-score">'+b.rating+'</span>' : '';
+    const pendingHtml = !b.synced ? '<span class="pending-dot gt-pending" title="Čeká na odeslání"></span>' : '';
     if(b.foto){
       return '<div class="grid-tile" data-open="'+b.id+'">'
         +'<img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.name)+'">'
-        +scoreHtml
+        +scoreHtml+pendingHtml
         +'</div>';
     }
     const metaLine=[b.style,(b.abv?b.abv+'%':'')].filter(Boolean).map(esc).join(' · ');
@@ -2994,7 +3020,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +   (b.brewery?'<span class="gt-brewery">'+esc(b.brewery)+'</span>':'')
       +   (metaLine?'<span class="gt-meta">'+metaLine+'</span>':'')
       +'</div>'
-      +scoreHtml
+      +scoreHtml+pendingHtml
       +'</div>';
   }
   function beerCard(b, showWho){
@@ -3010,6 +3036,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       + '<div class="beer-main">'
       +   '<div class="beer-top">'
       +     '<h3 class="beer-name">'+esc(b.name)+'</h3>'
+      +     (!b.synced?'<span class="pending-dot" title="Čeká na odeslání do sdílené databáze"></span>':'')
       +     '<div class="score-plain"><span class="score-num">'+(b.rating||'–')+'</span><span class="score-den">/10</span></div>'
       +     (!b.foto?menuBtn:'')
       +   '</div>'
@@ -3163,6 +3190,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }
     if(chips.length) html+='<div class="chips" style="margin-top:8px">'+chips.join('')+'</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
+    html+='<button class="btn btn-ghost" data-log-again="'+esc(b.id)+'" style="margin-top:12px">↻ Zapsat znovu</button>';
     const beerTrend=priceTrendHtml(all);
     if(beerTrend) html+='<div class="price-block">'+beerTrend+priceChartHtml(all)+'</div>';
     html+='</div>';
@@ -7183,6 +7211,8 @@ var qrcode = function() {
     if(ed){ $('#detail-overlay').classList.remove('show'); editBeer(ed.dataset.detailEdit); return; }
     const sc=e.target.closest('[data-detail-showcase]');
     if(sc){ toggleShowcase(sc.dataset.detailShowcase); return; }
+    const la=e.target.closest('[data-log-again]');
+    if(la){ logAgain(la.dataset.logAgain); return; }
     const wd=e.target.closest('[data-wish-del]');
     if(wd){ removeWish(wd.dataset.wishDel, wd.dataset.wishDelBrewery); return; }
     const ws=e.target.closest('[data-wish-send]');
