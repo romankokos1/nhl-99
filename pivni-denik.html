@@ -1076,6 +1076,8 @@
   }
   .taste-insight b{color:var(--amber-bright); font-weight:700;}
   .taste-row{padding:11px 0; border-bottom:1px solid var(--hairline);}
+  .taste-row.linkish{cursor:pointer;}
+  .taste-row.linkish:active{background:var(--surface-2);}
   .taste-row:last-of-type{border-bottom:none;}
   .taste-top{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
   .taste-name{font-size:14px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -2998,7 +3000,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   function beerCard(b, showWho){
     const mine = b.osoba===cfg.name;
     const metaBits=[];
-    if(b.style) metaBits.push('<span class="bm-item">'+metaStyleIcon()+'<span>'+esc(b.style)+'</span></span>');
+    if(b.style) metaBits.push('<button class="bm-item linkish" data-open-style="'+esc(b.style)+'">'+metaStyleIcon()+'<span>'+esc(b.style)+'</span></button>');
     if(b.abv) metaBits.push('<span class="bm-item plain">'+esc(b.abv)+'%</span>');
     if(b.where) metaBits.push('<button class="bm-item linkish" data-open-venue="'+esc(norm(b.where))+'">'+metaPinIcon()+'<span>'+esc(b.where)+'</span></button>');
     const dateShort = b.date ? esc(b.date) : '';
@@ -3505,6 +3507,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     });
   }
   function matchQ(b,q){ if(!q) return true; return [b.name,b.brewery,b.collab,b.style,b.where,b.note,b.osoba].some(f=>(f||'').toLowerCase().includes(q)); }
+  function filterByStyle(name){
+    if(!name) return;
+    switchView('home');
+    const inp=$('#search-all');
+    if(inp){ inp.value=name; inp.blur(); }
+    renderHome();
+    toast('Filtr: '+name);
+  }
 
   let homeScope = 'all'; // 'all' | 'mine'
   let homeSort = 'date-desc';
@@ -4072,7 +4082,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }
     box.innerHTML=list.slice(0,10).map(x=>{
       const w=x.avg?Math.round(x.avg*10):0;
-      return '<div class="taste-row">'
+      return '<div class="taste-row linkish" data-taste-style="'+esc(x.name)+'">'
         +'<div class="taste-top"><span class="taste-name">'+esc(x.name)+'</span>'
         +'<span class="taste-avg">'+(x.avg?x.avg.toFixed(1):'–')+'</span></div>'
         +'<div class="taste-bar"><div class="taste-fill" style="width:'+w+'%"></div></div>'
@@ -7120,6 +7130,10 @@ var qrcode = function() {
     renderHome();
   }));
   if($('#export-btn')) $('#export-btn').addEventListener('click', exportTSV);
+  if($('#top-styles')) $('#top-styles').addEventListener('click', e=>{
+    const row=e.target.closest('[data-taste-style]'); if(!row) return;
+    filterByStyle(row.dataset.tasteStyle);
+  });
   // feed actions (delegated)
   $('#feed').addEventListener('click',e=>{
     const cm=e.target.closest('[data-cardmenu]');
@@ -7130,6 +7144,8 @@ var qrcode = function() {
     if(bw){ e.stopPropagation(); openBreweryDetail(bw.dataset.openBrewery); return; }
     const vn=e.target.closest('[data-open-venue]');
     if(vn){ e.stopPropagation(); openVenueDetail(vn.dataset.openVenue); return; }
+    const st=e.target.closest('[data-open-style]');
+    if(st){ e.stopPropagation(); filterByStyle(st.dataset.openStyle); return; }
     const ph=e.target.closest('[data-photo]');
     const op=e.target.closest('[data-open]');
     if(ph){ e.stopPropagation(); openLightbox(ph.dataset.photo); return; }
