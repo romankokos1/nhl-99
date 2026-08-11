@@ -153,7 +153,7 @@
     <button class="state-btn" id="state-btn" style="display:none">Zkusit znovu</button>
   </div>
 
-  <a class="top-link" id="top-link" href="index.html" style="display:none">
+  <a class="top-link" id="top-link" href="pivni-denik.html" style="display:none">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Deník
   </a>
@@ -241,7 +241,7 @@
         if(r.origin===location.origin && !/vitrina/i.test(r.pathname)) return r.pathname+r.search;
       }
     }catch(e){}
-    return 'index.html';
+    return 'pivni-denik.html';
   }
 
   if(!cfg.url || !cfg.key){
