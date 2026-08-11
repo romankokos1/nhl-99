@@ -258,6 +258,12 @@
   .wp-prog-fill{height:100%; width:0; background:var(--amber-bright); transition:width .25s;}
   .wrapped-close{flex-shrink:0; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; color:#fff; border:none; cursor:pointer;}
   .wrapped-close svg{width:16px; height:16px;}
+  .wp-scope-seg{flex-shrink:0; display:flex; gap:4px; background:rgba(255,255,255,0.08); border-radius:var(--r-pill); padding:3px;}
+  .wp-scope-btn{
+    padding:5px 12px; border-radius:var(--r-pill); font-size:12.5px; font-weight:700; font-family:inherit;
+    background:none; color:rgba(255,255,255,0.55); border:none; cursor:pointer;
+  }
+  .wp-scope-btn.active{background:var(--amber); color:#241703;}
   .wrapped-period-seg{display:flex; gap:6px; padding:4px var(--s4) 12px; overflow-x:auto; scrollbar-width:none;}
   .wrapped-period-seg::-webkit-scrollbar{display:none;}
   .wp-seg-btn{
@@ -1783,6 +1789,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   <div class="overlay wrapped-overlay" id="wrapped-overlay">
     <div class="wrapped-shell">
       <div class="wrapped-header">
+        <div class="wp-scope-seg" id="wp-scope-seg">
+          <button class="wp-scope-btn active" data-wp-scope="me">Já</button>
+          <button class="wp-scope-btn" data-wp-scope="party">Parta</button>
+        </div>
         <div class="wrapped-progress" id="wrapped-progress"></div>
         <button class="wrapped-close" id="wrapped-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
       </div>
@@ -3716,9 +3726,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   const MONTH_NAMES_CZ=['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
   const DOW_NAMES_CZ=['neděle','pondělí','úterý','středa','čtvrtek','pátek','sobota'];
   function monthNameCZ(ym){ const idx=parseInt((ym||'').slice(5,7),10)-1; return MONTH_NAMES_CZ[idx]||ym; }
-  function availableWrappedYears(){
+  function availableWrappedYears(scope){
     const years=new Set();
-    beers.forEach(b=>{ if(b.osoba===cfg.name && b.date) years.add(b.date.slice(0,4)); });
+    beers.forEach(b=>{ if((scope==='party' || b.osoba===cfg.name) && b.date) years.add(b.date.slice(0,4)); });
     return [...years].sort((a,b)=>b-a);
   }
   function computeWrappedStats(period){
@@ -3813,10 +3823,119 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     slides.push('<div class="wp-slide wp-outro"><h2 class="wp-title" style="font-size:22px">Shrnutí</h2><div class="wp-recap">'+recap+'</div><p class="wp-line">Uvidíme se '+(p.type==='year'?'příští rok':'příští měsíc')+'! 🍻</p></div>');
     return slides;
   }
+
+  /* ---------- party wrapped: same story, whole group ---------- */
+  function computePartyWrappedStats(period){
+    const all=beers.filter(b=>{
+      if(!b.date) return false;
+      return period.type==='year' ? b.date.slice(0,4)===String(period.value) : b.date.slice(0,7)===period.value;
+    });
+    const rated=all.filter(b=>b.rating>0);
+    const avg=rated.length? rated.reduce((s,b)=>s+b.rating,0)/rated.length : 0;
+    const people=new Set(all.map(b=>b.osoba).filter(Boolean));
+    const personCounts={};
+    all.forEach(b=>{ if(b.osoba) personCounts[b.osoba]=(personCounts[b.osoba]||0)+1; });
+    const personEntries=Object.entries(personCounts).sort((a,b)=>b[1]-a[1]);
+    const mvp=personEntries[0]?{ name:personEntries[0][0], count:personEntries[0][1] }:null;
+    const styleCounts={};
+    all.forEach(b=>{ if(b.style){ const s=b.style.trim(); styleCounts[s]=(styleCounts[s]||0)+1; } });
+    const styleEntries=Object.entries(styleCounts).sort((a,b)=>b[1]-a[1]);
+    const favStyle=styleEntries[0]||null;
+    const brewCounts={}, brewSum={}, brewN={};
+    all.forEach(b=>beerBreweries(b).forEach(k=>{
+      brewCounts[k]=(brewCounts[k]||0)+1;
+      if(b.rating>0){ brewSum[k]=(brewSum[k]||0)+b.rating; brewN[k]=(brewN[k]||0)+1; }
+    }));
+    const brewEntries=Object.entries(brewCounts).sort((a,b)=>b[1]-a[1]);
+    const favBrewery=brewEntries[0]?{ name:brewEntries[0][0], count:brewEntries[0][1], avg: brewN[brewEntries[0][0]]? brewSum[brewEntries[0][0]]/brewN[brewEntries[0][0]] : 0 }:null;
+    const bestBeer=rated.slice().sort((a,b)=>b.rating-a.rating || (b.date||'').localeCompare(a.date||''))[0]||null;
+    let activeLabel=null, activeCount=0;
+    if(period.type==='year'){
+      const mc={}; all.forEach(b=>{ const m=b.date.slice(0,7); mc[m]=(mc[m]||0)+1; });
+      const top=Object.entries(mc).sort((a,b)=>b[1]-a[1])[0];
+      if(top){ activeLabel=monthNameCZ(top[0]); activeCount=top[1]; }
+    } else {
+      const dc={}; all.forEach(b=>{ const d=new Date(b.date+'T12:00:00'); const dow=DOW_NAMES_CZ[d.getDay()]; dc[dow]=(dc[dow]||0)+1; });
+      const top=Object.entries(dc).sort((a,b)=>b[1]-a[1])[0];
+      if(top){ activeLabel=top[0]; activeCount=top[1]; }
+    }
+    // most generous / strictest rater (min. 3 ratings in period, ať to není náhoda)
+    const personRatings={};
+    rated.forEach(b=>{ if(!b.osoba) return; (personRatings[b.osoba]=personRatings[b.osoba]||[]).push(b.rating); });
+    const raterAvgs=Object.entries(personRatings).filter(([,arr])=>arr.length>=3)
+      .map(([name,arr])=>({ name, avg: arr.reduce((s,n)=>s+n,0)/arr.length, n:arr.length }));
+    const generous=raterAvgs.slice().sort((a,b)=>b.avg-a.avg)[0]||null;
+    const strict=raterAvgs.slice().sort((a,b)=>a.avg-b.avg)[0]||null;
+    const placeSet=new Set(all.map(b=>b.where && b.where.trim().toLowerCase()).filter(Boolean));
+    const placeCounts={};
+    all.forEach(b=>{ if(b.where){ const w=b.where.trim(); placeCounts[w]=(placeCounts[w]||0)+1; } });
+    const placeEntries=Object.entries(placeCounts).sort((a,b)=>b[1]-a[1]);
+    const favPlace=placeEntries[0]||null;
+    return { period, count:all.length, avg, people:people.size, mvp, favStyle, favBrewery, bestBeer, activeLabel, activeCount, distinctStyles:styleEntries.length, generous, strict, favPlace };
+  }
+  function partyWrappedSlides(stats){
+    const p=stats.period;
+    const periodLabel = p.type==='year' ? String(p.value) : (monthNameCZ(p.value)+' '+p.value.slice(0,4));
+    const slides=[];
+    slides.push('<div class="wp-slide wp-cover">'
+      +'<div class="wp-deco">'+bigGlass()+'</div>'
+      +'<h1 class="wp-title">'+(p.type==='year'?'Rok':'Měsíc')+' party s pivem</h1>'
+      +'<div class="wp-period">'+esc(periodLabel)+'</div>'
+      +'<div class="wp-hint">Ťukni nebo přejeď pro pokračování →</div>'
+      +'</div>');
+    if(!stats.count){
+      slides.push('<div class="wp-slide"><div class="wp-big">0</div><p class="wp-line">Zatím jste '+(p.type==='year'?'letos':'tento měsíc')+' nic nezapsali.<br>Je čas to změnit! 🍻</p></div>');
+      return slides;
+    }
+    slides.push('<div class="wp-slide wp-c1"><div class="wp-label">Parta ochutnala dohromady</div><div class="wp-big">'+stats.count+'</div><div class="wp-label">'+beerWord(stats.count)+'</div><p class="wp-line">Zapojilo se <b>'+stats.people+'</b> '+(stats.people===1?'člověk':(stats.people<5?'lidé':'lidí'))+'.</p></div>');
+    if(stats.mvp){
+      const pct=Math.round(100*stats.mvp.count/stats.count);
+      slides.push('<div class="wp-slide wp-c2"><div class="wp-label">MVP party</div><div class="wp-big wp-big-text">'+esc(stats.mvp.name)+'</div><p class="wp-line">'+stats.mvp.count+' '+beerWord(stats.mvp.count)+' · '+pct+' % všech zápisů</p></div>');
+    }
+    if(stats.activeLabel){
+      slides.push('<div class="wp-slide wp-c3"><div class="wp-label">'+(p.type==='year'?'Nejaktivnější měsíc':'Nejaktivnější den')+'</div><div class="wp-big wp-big-text">'+esc(stats.activeLabel)+'</div><p class="wp-line">'+stats.activeCount+' '+beerWord(stats.activeCount)+' napříč partou.</p></div>');
+    }
+    if(stats.favStyle){
+      const pct=Math.round(100*stats.favStyle[1]/stats.count);
+      slides.push('<div class="wp-slide wp-c4"><div class="wp-label">Styl, co letěl nejvíc</div><div class="wp-big wp-big-text">'+esc(stats.favStyle[0])+'</div><p class="wp-line">'+stats.favStyle[1]+' '+beerWord(stats.favStyle[1])+' · '+pct+' % všech piv</p></div>');
+    }
+    if(stats.bestBeer){
+      const b=stats.bestBeer;
+      const bgStyle = b.foto ? ' style="background-image:url(\''+esc(storageUrl(b.foto))+'\')"' : '';
+      slides.push('<div class="wp-slide wp-c5'+(b.foto?' wp-has-photo':'')+'"'+bgStyle+'>'
+        +(b.foto?'<div class="wp-fade"></div>':'')
+        +'<div class="wp-label">Nejlepší pivo party</div>'
+        +'<div class="wp-beer-name">'+esc(b.name)+'</div>'
+        +(b.brewery?'<div class="wp-beer-brewery">'+esc(b.brewery)+'</div>':'')
+        +'<div class="wp-score">'+b.rating+'<span>/10</span></div>'
+        +(b.osoba?'<p class="wp-line">ochutnal(a) '+esc(b.osoba)+'</p>':'')
+        +'</div>');
+    }
+    if(stats.favBrewery){
+      slides.push('<div class="wp-slide wp-c6"><div class="wp-label">Nejnavštěvovanější pivovar</div><div class="wp-big wp-big-text">'+esc(stats.favBrewery.name)+'</div><p class="wp-line">'+stats.favBrewery.count+' '+beerWord(stats.favBrewery.count)+(stats.favBrewery.avg?' · Ø '+stats.favBrewery.avg.toFixed(1):'')+'</p></div>');
+    }
+    if(stats.favPlace){
+      slides.push('<div class="wp-slide wp-c7"><div class="wp-label">Kam jste to táhli nejvíc</div><div class="wp-big wp-big-text">'+esc(stats.favPlace[0])+'</div><p class="wp-line">'+stats.favPlace[1]+' '+beerWord(stats.favPlace[1])+'</p></div>');
+    }
+    if(stats.generous && stats.strict && stats.generous.name!==stats.strict.name){
+      slides.push('<div class="wp-slide wp-c2"><div class="wp-label">Nejštědřejší hodnotitel(ka)</div><div class="wp-big wp-big-text">'+esc(stats.generous.name)+'</div><p class="wp-line">Ø '+stats.generous.avg.toFixed(1)+' · zatímco '+esc(stats.strict.name)+' dává jen Ø '+stats.strict.avg.toFixed(1)+'</p></div>');
+    }
+    let recap='<div class="wp-recap-row"><span>Piv</span><b>'+stats.count+'</b></div>';
+    recap+='<div class="wp-recap-row"><span>Lidí</span><b>'+stats.people+'</b></div>';
+    if(stats.mvp) recap+='<div class="wp-recap-row"><span>MVP</span><b>'+esc(stats.mvp.name)+'</b></div>';
+    if(stats.favStyle) recap+='<div class="wp-recap-row"><span>Nejčastější styl</span><b>'+esc(stats.favStyle[0])+'</b></div>';
+    if(stats.bestBeer) recap+='<div class="wp-recap-row"><span>Nejlepší pivo</span><b>'+esc(stats.bestBeer.name)+'</b></div>';
+    recap+='<div class="wp-recap-row"><span>Průměr party</span><b>'+(stats.avg?stats.avg.toFixed(1):'–')+'</b></div>';
+    slides.push('<div class="wp-slide wp-outro"><h2 class="wp-title" style="font-size:22px">Shrnutí</h2><div class="wp-recap">'+recap+'</div><p class="wp-line">Uvidíme se '+(p.type==='year'?'příští rok':'příští měsíc')+'! 🍻</p></div>');
+    return slides;
+  }
   let wrappedPeriod=null;
+  let wrappedScope='me';
   function openWrapped(period){
+    wrappedScope='me';
+    document.querySelectorAll('#wp-scope-seg .wp-scope-btn').forEach(b=>b.classList.toggle('active', b.dataset.wpScope==='me'));
     if(!period){
-      const years=availableWrappedYears();
+      const years=availableWrappedYears(wrappedScope);
       period = years.length ? {type:'year', value:parseInt(years[0],10)} : {type:'year', value:new Date().getFullYear()};
     }
     wrappedPeriod=period;
@@ -3825,15 +3944,15 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#wrapped-overlay').classList.add('show');
   }
   function renderWrappedPeriodSeg(){
-    const years=availableWrappedYears();
+    const years=availableWrappedYears(wrappedScope);
     const seg=$('#wrapped-period-seg'); if(!seg) return;
     let html=years.map(y=>'<button class="wp-seg-btn'+(wrappedPeriod.type==='year'&&String(wrappedPeriod.value)===y?' active':'')+'" data-wp-period="year:'+y+'">'+y+'</button>').join('');
     html+='<button class="wp-seg-btn'+(wrappedPeriod.type==='month'?' active':'')+'" data-wp-period="month:current">Tento měsíc</button>';
     seg.innerHTML=html;
   }
   function renderWrappedSlides(){
-    const stats=computeWrappedStats(wrappedPeriod);
-    const slides=wrappedSlides(stats);
+    const stats = wrappedScope==='party' ? computePartyWrappedStats(wrappedPeriod) : computeWrappedStats(wrappedPeriod);
+    const slides = wrappedScope==='party' ? partyWrappedSlides(stats) : wrappedSlides(stats);
     const el=$('#wrapped-slides'); if(!el) return;
     el.innerHTML=slides.join('');
     el.scrollLeft=0;
@@ -7160,6 +7279,18 @@ var qrcode = function() {
   // yearly / monthly wrapped
   document.querySelectorAll('[data-wrapped]').forEach(b=>b.addEventListener('click', ()=>openWrapped()));
   $('#wrapped-close').addEventListener('click', ()=>$('#wrapped-overlay').classList.remove('show'));
+  $('#wp-scope-seg').addEventListener('click', e=>{
+    const btn=e.target.closest('[data-wp-scope]'); if(!btn) return;
+    const scope=btn.dataset.wpScope; if(scope===wrappedScope) return;
+    wrappedScope=scope;
+    document.querySelectorAll('#wp-scope-seg .wp-scope-btn').forEach(b=>b.classList.toggle('active', b===btn));
+    const years=availableWrappedYears(wrappedScope);
+    if(wrappedPeriod.type==='year' && !years.includes(String(wrappedPeriod.value))){
+      wrappedPeriod = years.length ? {type:'year', value:parseInt(years[0],10)} : {type:'year', value:new Date().getFullYear()};
+    }
+    renderWrappedPeriodSeg();
+    renderWrappedSlides();
+  });
   $('#wrapped-period-seg').addEventListener('click', e=>{
     const btn=e.target.closest('[data-wp-period]'); if(!btn) return;
     const raw=btn.dataset.wpPeriod;
