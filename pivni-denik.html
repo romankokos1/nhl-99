@@ -349,6 +349,7 @@
   .detail-list .lb-row{align-items:flex-start;}
   .detail-list .lb-row .lb-av{margin-top:2px;}
   .detail-note{font-size:12.5px; color:var(--text-3); font-style:italic; margin-top:4px; line-height:1.4;}
+  .rater-entry .detail-note{margin:4px 0 0 50px;}
   .detail-edit{flex-shrink:0; align-self:center;}
   .brewery-desc{font-size:13.5px; color:var(--text-2); line-height:1.55; margin-top:var(--s3);}
   .brewery-web{display:inline-block; font-size:13px; color:var(--amber-bright); margin-top:8px; text-decoration:none; border-bottom:1px solid var(--hairline-strong);}
@@ -709,10 +710,13 @@
   .wish-tx small{font-size:11.5px; color:var(--text-3);}
   .wish-empty{font-size:13px; color:var(--text-3); padding:4px 0 10px;}
   .lb-fav{font-size:11px; font-weight:600; color:var(--text-3); background:var(--bg-2); border:1px solid var(--hairline); border-radius:6px; padding:1px 7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;}
-  .rater-entry .lb-tags{flex-wrap:wrap; row-gap:6px;}
-  .rater-entry .lb-fav{max-width:none; white-space:normal; line-height:1.4;}
   button.lb-fav.linkish{font-family:inherit; cursor:pointer;}
   button.lb-fav.linkish:active{color:var(--amber-bright); border-color:var(--amber-deep);}
+  .rater-entry .lb-row .lb-name{flex:1; min-width:0;}
+  .rater-tags{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 0 50px;}
+  .rater-tags .lb-fav{max-width:none; white-space:normal; line-height:1.4;}
+  .rater-actions{display:flex; flex-wrap:wrap; gap:4px 14px; margin:4px 0 0 50px;}
+  .rater-actions .row-btn{padding:2px 0;}
   .lb-beerinfo{flex:1; display:flex; flex-direction:column; overflow:hidden;}
   .lb-beerinfo b{font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .lb-beerinfo small{font-size:12px; color:var(--text-3);}
@@ -1248,7 +1252,7 @@
           <div class="glass-rate" id="glass-rate"></div>
         </div>
 
-        <div class="field"><label for="f-where">Kde jsem ochutnal</label><input type="text" id="f-where" placeholder="U Medvídků, doma…" autocomplete="off"></div>
+        <div class="field"><label for="f-where">Kde jsem ochutnal</label><input type="text" id="f-where" placeholder="U Medvídků, doma…" autocomplete="off" list="venue-list"><datalist id="venue-list"></datalist></div>
         <div class="field"><label for="f-date">Datum</label><input type="text" id="f-date" placeholder="RRRR-MM-DD" autocomplete="off" inputmode="numeric"></div>
         <div class="field"><label for="f-note">Poznámka k chuti</label><textarea id="f-note" placeholder="Nahořklá, plná chuť, jemná pěna…"></textarea></div>
 
@@ -3200,19 +3204,22 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='<div class="card list-card detail-list">';
     html+=all.map(x=>{
       const mine=x.osoba===cfg.name;
+      const tags=[ '<span class="lb-fav">'+esc(x.date||'')+'</span>',
+        x.where?'<button class="lb-fav linkish" data-open-venue="'+esc(norm(x.where))+'">'+esc(x.where)+'</button>':'',
+        x.price?'<span class="lb-fav">'+esc(x.price)+' Kč</span>':'' ].filter(Boolean).join('');
       return '<div class="rater-entry">'
         +'<div class="lb-row rich">'
         +'<span class="lb-av" style="background:'+avatarColor(x.osoba)+'">'+esc(initials(x.osoba))+'</span>'
-        +'<span class="lb-person">'
-        +  '<span class="lb-name">'+esc(x.osoba)+(mine?' <span class="you">ty</span>':'')+'</span>'
-        +  '<span class="lb-tags"><span class="lb-fav">'+esc(x.date||'')+'</span>'+(x.where?'<button class="lb-fav linkish" data-open-venue="'+esc(norm(x.where))+'">'+esc(x.where)+'</button>':'')+(x.price?'<span class="lb-fav">'+esc(x.price)+' Kč</span>':'')+'</span>'
-        +  (x.note?'<div class="detail-note">'+esc(x.note)+'</div>':'')
-        +'</span>'
+        +'<span class="lb-name">'+esc(x.osoba)+(mine?' <span class="you">ty</span>':'')+'</span>'
         +'<span class="lb-metric"><b>'+(x.rating||'–')+'</b><small>/10</small></span>'
         + likeButtonHtml(x)
-        +(mine&&x.foto?'<button class="row-btn detail-showcase'+(x.vitrina?' active':'')+'" data-detail-showcase="'+x.id+'" aria-label="Vitrína">'+(x.vitrina?'Ve vitríně ✓':'Do vitríny')+'</button>':'')
-        +(mine?'<button class="row-btn detail-edit" data-detail-edit="'+x.id+'" aria-label="Upravit">Upravit</button>':'')
         +'</div>'
+        +(tags?'<div class="rater-tags">'+tags+'</div>':'')
+        +(x.note?'<div class="detail-note">'+esc(x.note)+'</div>':'')
+        +((mine&&x.foto)||mine?'<div class="rater-actions">'
+          +(mine&&x.foto?'<button class="row-btn detail-showcase'+(x.vitrina?' active':'')+'" data-detail-showcase="'+x.id+'" aria-label="Vitrína">'+(x.vitrina?'Ve vitríně ✓':'Do vitríny')+'</button>':'')
+          +(mine?'<button class="row-btn detail-edit" data-detail-edit="'+x.id+'" aria-label="Upravit">Upravit</button>':'')
+          +'</div>':'')
         +'<div class="comment-block" data-comment-block="'+x.id+'">'+commentThreadHtml(x)+'</div>'
         +'</div>';
     }).join('');
@@ -3574,6 +3581,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if($('#style-list')) $('#style-list').innerHTML=styles.map(s=>'<option value="'+esc(s)+'">').join('');
     const kb=knownBeers();
     if($('#brewery-list')) $('#brewery-list').innerHTML=knownBreweries().map(s=>'<option value="'+esc(s)+'">').join('');
+    if($('#venue-list')) $('#venue-list').innerHTML=distinctPlaces().sort((a,b)=>b.count-a.count).map(p=>'<option value="'+esc(p.label)+'">').join('');
     // if the beer autocomplete is open, refresh it live once new data arrives
     if(typeof refreshBeerAC==='function') refreshBeerAC();
   }
