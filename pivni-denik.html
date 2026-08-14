@@ -3599,14 +3599,20 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const bounds=[]; const fallback=[];
     for(const p of items){
       let coord = isBrew
-        ? (breweryCache[p.key] && breweryCache[p.key].lat!=null ? {lat:breweryCache[p.key].lat,lng:breweryCache[p.key].lng} : undefined)
+        ? (breweryCache[p.key]
+            ? (breweryCache[p.key].lat!=null ? {lat:breweryCache[p.key].lat,lng:breweryCache[p.key].lng}
+               : (breweryCache[p.key].geoFailed ? null : undefined))
+            : undefined)
         : geoCache[p.key];
       if(coord===undefined){
         try{
           coord=await geocodePlace(p.label);
           if(isBrew){
             const cur=breweryCache[p.key]||{nazev:p.label};
-            breweryCache[p.key]=Object.assign({}, cur, coord||{}); saveBreweryCache();
+            // remember misses too, so breweries with no findable address (flying breweries)
+            // don't get re-queried on every single map open
+            breweryCache[p.key]=Object.assign({}, cur, coord||{}, coord?{geoFailed:false}:{geoFailed:true});
+            saveBreweryCache();
             if(coord) breweriesPush(p.key, breweryCache[p.key]);
           } else {
             geoCache[p.key]=coord; saveGeoCache();
@@ -3663,7 +3669,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       current=newCoord;
       if(isBrew){
         const cur=breweryCache[p.key]||{nazev:p.label};
-        breweryCache[p.key]=Object.assign({}, cur, newCoord); saveBreweryCache();
+        breweryCache[p.key]=Object.assign({}, cur, newCoord, {geoFailed:false}); saveBreweryCache();
         breweriesPush(p.key, breweryCache[p.key]);
         toast(sbConfigured()?'Poloha pivovaru upravena a sdílena':'Poloha pivovaru upravena lokálně');
       } else {
@@ -3718,7 +3724,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#placefix-overlay').classList.remove('show');
     if(pfCtx.kind==='brewery'){
       const cur=breweryCache[pfCtx.key]||{nazev:pfCtx.label};
-      const patch=Object.assign({}, newCoord);
+      const patch=Object.assign({}, newCoord, {geoFailed:false});
       const city=cityFromResult(r);
       if(city && !cur.mesto) patch.mesto=city; // only fill in, never overwrite what you typed
       breweryCache[pfCtx.key]=Object.assign({}, cur, patch); saveBreweryCache();
