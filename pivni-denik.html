@@ -444,6 +444,13 @@
   .trip-cand-row:last-of-type{border-bottom:none;}
   .trip-cand-row input{flex-shrink:0; width:17px; height:17px; accent-color:var(--amber);}
   .trip-cand-row small{color:var(--text-3); display:block; font-size:12px; margin-top:1px;}
+  .trip-people{display:flex; align-items:center; gap:6px; margin-top:12px;}
+  .trip-people-av{
+    width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:10.5px; font-weight:700; color:#fff; border:2px solid var(--surface); margin-left:-8px;
+  }
+  .trip-people-av:first-child{margin-left:0;}
+  .trip-people-label{font-size:12.5px; color:var(--text-3); margin-left:6px;}
   /* tasting session */
   .tasting-bar{
     display:flex; align-items:center; gap:var(--s3); margin-bottom:var(--s4);
@@ -1961,6 +1968,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   </div>
 
   <input type="file" id="brewery-photo-input" accept="image/*" hidden>
+  <input type="file" id="trip-photo-input" accept="image/*" hidden>
 
   <div class="toast" id="toast"></div>
 </div>
@@ -2727,7 +2735,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       if(!r.ok) return;
       const rows=await r.json();
       const localOnly=trips.filter(t=>!rows.find(row=>row.id===t.id));
-      trips=rows.map(row=>({ id:row.id, nazev:row.nazev, datumOd:row.datum_od, datumDo:row.datum_do, poznamka:row.poznamka||'', osoba:row.osoba||'' })).concat(localOnly);
+      trips=rows.map(row=>({ id:row.id, nazev:row.nazev, datumOd:row.datum_od, datumDo:row.datum_do, poznamka:row.poznamka||'', osoba:row.osoba||'', foto:row.foto||'' })).concat(localOnly);
       saveTripsLocal();
     }catch(e){}
   }
@@ -2736,7 +2744,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     try{
       const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vylety?on_conflict=id', {
         method:'POST', headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates'}),
-        body: JSON.stringify({ id:t.id, nazev:t.nazev, datum_od:t.datumOd||null, datum_do:t.datumDo||null, poznamka:t.poznamka||null, osoba:t.osoba||cfg.name })
+        body: JSON.stringify({ id:t.id, nazev:t.nazev, datum_od:t.datumOd||null, datum_do:t.datumDo||null, poznamka:t.poznamka||null, osoba:t.osoba||cfg.name, foto:t.foto||null })
       });
       return r.ok;
     }catch(e){ return false; }
@@ -2760,8 +2768,11 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(!t.datumDo || t.datumDo===t.datumOd) return czDate(t.datumOd);
     return czDate(t.datumOd)+' – '+czDate(t.datumDo);
   }
-  function tripCoverPhoto(tripId){
-    const withPhoto=tripBeers(tripId).filter(b=>b.foto).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  function tripCoverPhoto(t){
+    if(typeof t==='string') t=trips.find(x=>x.id===t); // allow passing an id for convenience
+    if(!t) return null;
+    if(t.foto) return t.foto;
+    const withPhoto=tripBeers(t.id).filter(b=>b.foto).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     return withPhoto.length ? withPhoto[0].foto : null;
   }
   function candidateBeersForTrip(t){
@@ -2799,6 +2810,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
 
   let tripMapInstance=null;
+  let lastTripPhotos=[];
   async function renderTripMap(tripId){
     const wrap=document.getElementById('trip-map-canvas'); if(!wrap) return;
     loadGeoCache();
@@ -2848,23 +2860,30 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }
     const bs=tripBeers(id).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     const stats=tripStats(id);
-    const cover=tripCoverPhoto(id);
+    const cover=tripCoverPhoto(t);
     if(cover) html+='<div class="detail-photo" data-photo="'+esc(cover)+'"><img src="'+esc(storageUrl(cover))+'" alt="'+esc(t.nazev)+'"></div>';
     html+='<div class="detail-head">';
     html+='<h2 class="detail-name">'+esc(t.nazev)+'</h2>';
     html+='<div class="detail-brewery">'+esc(tripDateLabel(t))+'</div>';
     html+='<div class="chips" style="margin-top:8px"><span class="chip">'+stats.count+' '+beerWord(stats.count)+'</span><span class="chip">'+stats.breweries+' '+(stats.breweries===1?'pivovar':(stats.breweries<5?'pivovary':'pivovarů'))+'</span><span class="chip">'+stats.places+' '+(stats.places===1?'místo':(stats.places<5?'místa':'míst'))+'</span></div>';
     if(t.poznamka) html+='<p class="detail-note" style="margin-top:10px">'+esc(t.poznamka)+'</p>';
+    const people=[...new Set(bs.map(b=>b.osoba).filter(Boolean))];
+    if(people.length) html+='<div class="trip-people">'+people.map(p=>'<span class="trip-people-av" style="background:'+avatarColor(p)+'" title="'+esc(p)+'">'+esc(initials(p))+'</span>').join('')+'<span class="trip-people-label">'+(people.length===1?'byl(a) tam':'byli tam')+'</span></div>';
     html+='<button class="row-btn detail-edit" data-trip-edit="'+t.id+'" style="margin-top:10px">Upravit</button>';
+    html+='<button class="row-btn" data-trip-photo="'+t.id+'" style="margin-top:10px">'+(t.foto?'Změnit titulní fotku':'Nastavit titulní fotku')+'</button>';
+    if(t.foto) html+='<button class="row-btn del" data-trip-photo-del="'+t.id+'" style="margin-top:10px">Odebrat titulní fotku</button>';
     html+='</div>';
     html+='<div class="trip-map-wrap" style="display:none"><div id="trip-map-canvas"></div></div>';
-    html+='<div class="sec-title" style="margin-top:var(--s5)">Piva z výletu</div>';
+    const tripPhotos=bs.filter(b=>b.foto).map(b=>({id:b.id, path:b.foto}));
+    if(tripPhotos.length) html+='<button class="btn btn-ghost" data-trip-gallery="'+esc(tripPhotos[0].id)+'" style="margin-bottom:var(--s3)">📷 Galerie výletu ('+tripPhotos.length+')</button>';
+    html+='<div class="sec-title" style="margin-top:var(--s3)">Piva z výletu</div>';
     html+=bs.length ? bs.map(tripBeerRow).join('') : '<p class="muted">Zatím žádná piva.</p>';
     html+='<button class="btn btn-ghost" data-trip-addbeers="'+t.id+'" style="margin-top:var(--s4)">+ Přidat piva ze stejného období</button>';
     html+='<div id="trip-addbeers-panel" style="display:none; margin-top:var(--s3)"></div>';
     html+='<button class="row-btn del" data-trip-delete="'+t.id+'" style="margin-top:var(--s6)">Smazat výlet</button>';
     $('#detail-body').innerHTML=html;
     $('#detail-overlay').classList.add('show');
+    lastTripPhotos=tripPhotos;
     renderTripMap(id);
   }
 
@@ -2930,6 +2949,41 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(sbConfigured()) await tripPush(t);
     toast('Výlet uložen');
     openTripDetail(id, false);
+  }
+  /* ---------- trip cover photo ---------- */
+  let tripPhotoId=null;
+  function startTripPhoto(tripId){
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš nahrát fotku', true); return; }
+    tripPhotoId=tripId;
+    const input=$('#trip-photo-input');
+    input.value='';
+    input.click();
+  }
+  async function handleTripPhotoPicked(file){
+    const id=tripPhotoId; const t=trips.find(x=>x.id===id); if(!t||!file) return;
+    const previous = t.foto || null;
+    toast('Nahrávám fotku…');
+    try {
+      const blob=await compressImage(file, 1000, 0.7);
+      const path=await uploadPhoto(blob);
+      t.foto=path; saveTripsLocal();
+      if(sbConfigured()) await tripPush(t);
+      if(previous) deletePhoto(previous); // don't orphan the old cover
+      openTripDetail(id, false);
+      toast('Titulní fotka nastavena');
+    } catch(e){
+      toast('Fotku se nepodařilo nahrát: '+(e.message||'chyba'), true);
+    }
+  }
+  async function removeTripPhoto(id){
+    const t=trips.find(x=>x.id===id); if(!t||!t.foto) return;
+    if(!confirm('Odebrat titulní fotku výletu?')) return;
+    const path=t.foto;
+    t.foto=''; saveTripsLocal();
+    if(sbConfigured()) await tripPush(t);
+    deletePhoto(path);
+    openTripDetail(id, false);
+    toast('Titulní fotka odebrána');
   }
   async function deleteTrip(id){
     if(!confirm('Smazat výlet? Piva zůstanou v deníku, jen se od výletu odpojí.')) return;
@@ -7810,6 +7864,12 @@ var qrcode = function() {
     if(la){ logAgain(la.dataset.logAgain); return; }
     const tp=e.target.closest('[data-trip-pick]');
     if(tp){ openTripsOverlay(tp.dataset.tripPick); return; }
+    const tgal=e.target.closest('[data-trip-gallery]');
+    if(tgal){ openPhotoGallery(lastTripPhotos, tgal.dataset.tripGallery); return; }
+    const tph=e.target.closest('[data-trip-photo]');
+    if(tph){ startTripPhoto(tph.dataset.tripPhoto); return; }
+    const tphd=e.target.closest('[data-trip-photo-del]');
+    if(tphd){ removeTripPhoto(tphd.dataset.tripPhotoDel); return; }
     const tedit=e.target.closest('[data-trip-edit]');
     if(tedit){ openTripDetail(tedit.dataset.tripEdit, true); return; }
     const tcancel=e.target.closest('[data-trip-cancel]');
@@ -8051,6 +8111,10 @@ var qrcode = function() {
   $('#brewery-photo-input').addEventListener('change', e=>{
     const f=e.target.files&&e.target.files[0];
     if(f) handleBreweryPhotoPicked(f);
+  });
+  $('#trip-photo-input').addEventListener('change', e=>{
+    const f=e.target.files&&e.target.files[0];
+    if(f) handleTripPhotoPicked(f);
   });
   // taste profile sort
   document.querySelectorAll('#taste-seg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{
