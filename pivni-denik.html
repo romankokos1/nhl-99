@@ -438,6 +438,12 @@
   }
   .brl-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
   .brl-thumb.empty svg{width:19px; height:19px; color:var(--amber-deep); opacity:0.5;}
+  .trip-map-wrap{position:relative; height:190px; border-radius:var(--r-card); overflow:hidden; border:1px solid var(--hairline); margin:12px 0; background:var(--bg-2);}
+  #trip-map-canvas{width:100%; height:100%;}
+  .trip-cand-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--hairline); font-size:13.5px; color:var(--text-2); cursor:pointer;}
+  .trip-cand-row:last-of-type{border-bottom:none;}
+  .trip-cand-row input{flex-shrink:0; width:17px; height:17px; accent-color:var(--amber);}
+  .trip-cand-row small{color:var(--text-3); display:block; font-size:12px; margin-top:1px;}
   /* tasting session */
   .tasting-bar{
     display:flex; align-items:center; gap:var(--s3); margin-bottom:var(--s4);
@@ -1549,6 +1555,12 @@
             <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
 
+          <div class="row-item" data-trips>
+            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4M9 6l6-2"/></svg></div>
+            <div class="row-tx"><div class="t">Výlety</div><div class="d">Dny, kdy jste vyrazili víc míst</div></div>
+            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+
           <a class="row-item" href="vitrina.html" target="_blank" rel="noopener">
             <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M8 15l3-4 3 2.5L18 8"/></svg></div>
             <div class="row-tx"><div class="t">Vitrína</div><div class="d">Sdílená ukázka nejlepších piv</div></div>
@@ -1895,6 +1907,27 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         <button class="detail-close" id="trophies-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
       </div>
       <div class="trophy-grid" id="trophy-grid-all"></div>
+    </div>
+  </div>
+
+  <!-- trips -->
+  <div class="overlay" id="trips-overlay">
+    <div class="sheet map-sheet">
+      <div class="grabber"></div>
+      <div class="map-head">
+        <div class="sec-title first" style="margin:0" id="trips-title">Výlety</div>
+        <button class="detail-close" id="trips-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      </div>
+      <button class="btn btn-ghost" id="trip-new-btn" style="margin-bottom:var(--s4)">+ Nový výlet</button>
+      <div id="trip-new-form" style="display:none; margin-bottom:var(--s4)">
+        <div class="field"><label for="trip-new-name">Název výletu</label><input type="text" id="trip-new-name" placeholder="Jižní Morava"></div>
+        <div class="field-row">
+          <div class="field"><label for="trip-new-from">Od</label><input type="date" id="trip-new-from"></div>
+          <div class="field"><label for="trip-new-to">Do</label><input type="date" id="trip-new-to"></div>
+        </div>
+        <button class="btn btn-primary" id="trip-new-save">Založit výlet</button>
+      </div>
+      <div id="trips-list"></div>
     </div>
   </div>
 
@@ -2386,7 +2419,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const remote = rows.map(x => ({
         id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, collab:x.spolupivovar||'', style:x.styl,
         abv:x.abv, price:x.cena||'', where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
-        foto:x.foto||'', vitrina:!!x.vitrina,
+        foto:x.foto||'', vitrina:!!x.vitrina, tripId:x.vylet_id||null,
         synced:true
       }));
       // keep any local-only (unsynced) records, replace the rest with remote truth
@@ -2408,7 +2441,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const body = {
       id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, spolupivovar:b.collab||null, styl:b.style,
       abv:b.abv, cena:b.price||null, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
-      foto:b.foto||'', vitrina:!!b.vitrina
+      foto:b.foto||'', vitrina:!!b.vitrina, vylet_id:b.tripId||null
     };
     try {
       const r = await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?on_conflict=id', {
@@ -2679,6 +2712,239 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       refreshWishlist(brewKey);
       toast('Nepodařilo se smazat', true);
     }
+  }
+
+  /* ---------- trips: several beers from the same day(s) out, grouped together ---------- */
+  const TRIPS_KEY='pivni-denik-trips-v1';
+  let trips=[];
+  let tripPickerBeerId=null; // when set, the trips overlay acts as a picker instead of opening detail
+  function loadTripsLocal(){ try{ trips=JSON.parse(localStorage.getItem(TRIPS_KEY))||[]; }catch(e){ trips=[]; } }
+  function saveTripsLocal(){ try{ localStorage.setItem(TRIPS_KEY, JSON.stringify(trips)); }catch(e){} }
+  async function tripsPull(){
+    if(!sbConfigured()) return;
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vylety?select=*', { headers: sbHeaders() });
+      if(!r.ok) return;
+      const rows=await r.json();
+      const localOnly=trips.filter(t=>!rows.find(row=>row.id===t.id));
+      trips=rows.map(row=>({ id:row.id, nazev:row.nazev, datumOd:row.datum_od, datumDo:row.datum_do, poznamka:row.poznamka||'', osoba:row.osoba||'' })).concat(localOnly);
+      saveTripsLocal();
+    }catch(e){}
+  }
+  async function tripPush(t){
+    if(!sbConfigured()) return false;
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vylety?on_conflict=id', {
+        method:'POST', headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates'}),
+        body: JSON.stringify({ id:t.id, nazev:t.nazev, datum_od:t.datumOd||null, datum_do:t.datumDo||null, poznamka:t.poznamka||null, osoba:t.osoba||cfg.name })
+      });
+      return r.ok;
+    }catch(e){ return false; }
+  }
+  async function tripDeleteRemote(id){
+    if(!sbConfigured()) return false;
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vylety?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+      return r.ok;
+    }catch(e){ return false; }
+  }
+  function tripBeers(tripId){ return beers.filter(b=>b.tripId===tripId); }
+  function tripStats(tripId){
+    const bs=tripBeers(tripId);
+    const breweries=new Set(); bs.forEach(b=>beerBreweries(b).forEach(n=>breweries.add(norm(n))));
+    const places=new Set(); bs.forEach(b=>{ if(b.where) places.add(norm(b.where)); });
+    return { count:bs.length, breweries:breweries.size, places:places.size };
+  }
+  function tripDateLabel(t){
+    if(!t.datumOd) return '';
+    if(!t.datumDo || t.datumDo===t.datumOd) return czDate(t.datumOd);
+    return czDate(t.datumOd)+' – '+czDate(t.datumDo);
+  }
+  function tripCoverPhoto(tripId){
+    const withPhoto=tripBeers(tripId).filter(b=>b.foto).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    return withPhoto.length ? withPhoto[0].foto : null;
+  }
+  function candidateBeersForTrip(t){
+    if(!t.datumOd) return [];
+    const to=t.datumDo||t.datumOd;
+    return beers.filter(b=>b.date && b.date>=t.datumOd && b.date<=to && !b.tripId)
+      .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  }
+
+  function renderTripsList(){
+    const box=$('#trips-list'); if(!box) return;
+    const sorted=trips.slice().sort((a,b)=>(b.datumOd||'').localeCompare(a.datumOd||''));
+    if(!sorted.length){ box.innerHTML='<p class="muted center">Zatím žádné výlety — založ první nahoře.</p>'; return; }
+    box.innerHTML=sorted.map(t=>{
+      const stats=tripStats(t.id);
+      const cover=tripCoverPhoto(t.id);
+      const thumb = cover
+        ? '<span class="brl-thumb"><img loading="lazy" src="'+esc(storageUrl(cover))+'" alt=""></span>'
+        : '<span class="brl-thumb empty">'+bigGlass()+'</span>';
+      let sub=tripDateLabel(t);
+      if(stats.count) sub+=' · '+stats.count+' '+beerWord(stats.count);
+      return '<div class="lb-row clickable" data-trip-open="'+t.id+'">'
+        +thumb
+        +'<span class="lb-beerinfo"><b>'+esc(t.nazev)+'</b><small>'+esc(sub)+'</small></span>'
+        +'</div>';
+    }).join('');
+  }
+
+  function openTripsOverlay(pickForBeerId){
+    tripPickerBeerId=pickForBeerId||null;
+    $('#trips-title').textContent = tripPickerBeerId ? 'Přidat do výletu' : 'Výlety';
+    $('#trip-new-form').style.display='none';
+    renderTripsList();
+    $('#trips-overlay').classList.add('show');
+  }
+
+  let tripMapInstance=null;
+  async function renderTripMap(tripId){
+    const wrap=document.getElementById('trip-map-canvas'); if(!wrap) return;
+    loadGeoCache();
+    const pts=[]; const seen=new Set();
+    tripBeers(tripId).forEach(b=>{
+      if(!b.where) return;
+      const key=norm(b.where); if(seen.has(key)) return;
+      const c=geoCache[key];
+      if(c){ seen.add(key); pts.push({label:b.where, lat:c.lat, lng:c.lng}); }
+    });
+    if(!pts.length){ wrap.parentElement.style.display='none'; return; }
+    wrap.parentElement.style.display='block';
+    try{ await loadLeaflet(); }catch(e){ wrap.parentElement.style.display='none'; return; }
+    if(tripMapInstance){ tripMapInstance.remove(); tripMapInstance=null; }
+    tripMapInstance=L.map(wrap, { zoomControl:false, attributionControl:false, scrollWheelZoom:false }).setView([pts[0].lat,pts[0].lng], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ maxZoom:19 }).addTo(tripMapInstance);
+    const bounds=[];
+    pts.forEach(p=>{ L.marker([p.lat,p.lng]).addTo(tripMapInstance).bindPopup(esc(p.label)); bounds.push([p.lat,p.lng]); });
+    if(bounds.length>1) tripMapInstance.fitBounds(bounds, { padding:[20,20] });
+    setTimeout(()=>{ tripMapInstance && tripMapInstance.invalidateSize(); }, 200);
+  }
+
+  function tripBeerRow(b){
+    const thumb = b.foto
+      ? '<img class="row-ic" style="object-fit:cover" src="'+esc(storageUrl(b.foto))+'" alt="">'
+      : '<div class="row-ic">'+glassMark()+'</div>';
+    return '<div class="row-item" data-open="'+b.id+'">'
+      + thumb
+      + '<div class="row-tx"><div class="t">'+esc(b.name)+'</div><div class="d">'+esc(b.brewery||'')+(b.osoba?' · '+esc(b.osoba):'')+'</div></div>'
+      + (b.rating?'<div style="font-weight:800;color:var(--amber-bright);font-size:15px;flex-shrink:0">'+b.rating+'</div>':'')
+      + '</div>';
+  }
+
+  function openTripDetail(id, editMode){
+    const t=trips.find(x=>x.id===id); if(!t) return;
+    let html='';
+    if(editMode){
+      html+='<div class="detail-head">';
+      html+='<div class="field"><label for="trip-edit-name">Název</label><input type="text" id="trip-edit-name" value="'+esc(t.nazev)+'"></div>';
+      html+='<div class="field-row"><div class="field"><label for="trip-edit-from">Od</label><input type="date" id="trip-edit-from" value="'+esc(t.datumOd||'')+'"></div><div class="field"><label for="trip-edit-to">Do</label><input type="date" id="trip-edit-to" value="'+esc(t.datumDo||'')+'"></div></div>';
+      html+='<div class="field"><label for="trip-edit-note">Poznámka</label><textarea id="trip-edit-note" rows="3" placeholder="Jak to bylo…">'+esc(t.poznamka||'')+'</textarea></div>';
+      html+='<button class="btn btn-primary" data-trip-save="'+t.id+'">Uložit</button> <button class="btn btn-ghost" data-trip-cancel="'+t.id+'">Zrušit</button>';
+      html+='</div>';
+      $('#detail-body').innerHTML=html;
+      $('#detail-overlay').classList.add('show');
+      return;
+    }
+    const bs=tripBeers(id).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const stats=tripStats(id);
+    const cover=tripCoverPhoto(id);
+    if(cover) html+='<div class="detail-photo" data-photo="'+esc(cover)+'"><img src="'+esc(storageUrl(cover))+'" alt="'+esc(t.nazev)+'"></div>';
+    html+='<div class="detail-head">';
+    html+='<h2 class="detail-name">'+esc(t.nazev)+'</h2>';
+    html+='<div class="detail-brewery">'+esc(tripDateLabel(t))+'</div>';
+    html+='<div class="chips" style="margin-top:8px"><span class="chip">'+stats.count+' '+beerWord(stats.count)+'</span><span class="chip">'+stats.breweries+' '+(stats.breweries===1?'pivovar':(stats.breweries<5?'pivovary':'pivovarů'))+'</span><span class="chip">'+stats.places+' '+(stats.places===1?'místo':(stats.places<5?'místa':'míst'))+'</span></div>';
+    if(t.poznamka) html+='<p class="detail-note" style="margin-top:10px">'+esc(t.poznamka)+'</p>';
+    html+='<button class="row-btn detail-edit" data-trip-edit="'+t.id+'" style="margin-top:10px">Upravit</button>';
+    html+='</div>';
+    html+='<div class="trip-map-wrap" style="display:none"><div id="trip-map-canvas"></div></div>';
+    html+='<div class="sec-title" style="margin-top:var(--s5)">Piva z výletu</div>';
+    html+=bs.length ? bs.map(tripBeerRow).join('') : '<p class="muted">Zatím žádná piva.</p>';
+    html+='<button class="btn btn-ghost" data-trip-addbeers="'+t.id+'" style="margin-top:var(--s4)">+ Přidat piva ze stejného období</button>';
+    html+='<div id="trip-addbeers-panel" style="display:none; margin-top:var(--s3)"></div>';
+    html+='<button class="row-btn del" data-trip-delete="'+t.id+'" style="margin-top:var(--s6)">Smazat výlet</button>';
+    $('#detail-body').innerHTML=html;
+    $('#detail-overlay').classList.add('show');
+    renderTripMap(id);
+  }
+
+  function renderTripAddBeersPanel(tripId){
+    const t=trips.find(x=>x.id===tripId); if(!t) return;
+    const panel=$('#trip-addbeers-panel'); if(!panel) return;
+    const cands=candidateBeersForTrip(t);
+    if(!cands.length){ panel.innerHTML='<p class="muted">Žádná další piva ve stejném období, co ještě nejsou přiřazená k výletu.</p>'; return; }
+    panel.innerHTML = cands.map(b=>
+      '<label class="trip-cand-row"><input type="checkbox" data-trip-cand="'+b.id+'"><span>'+esc(b.name)+(b.brewery?' — '+esc(b.brewery):'')+'<small>'+esc(b.osoba||'')+' · '+esc(czDate(b.date))+'</small></span></label>'
+    ).join('') + '<button class="btn btn-primary" data-trip-confirm="'+tripId+'" style="margin-top:10px">Přidat vybraná</button>';
+  }
+  function toggleTripAddBeers(tripId){
+    const panel=$('#trip-addbeers-panel'); if(!panel) return;
+    const open=panel.style.display!=='none';
+    if(open){ panel.style.display='none'; panel.innerHTML=''; }
+    else { panel.style.display='block'; renderTripAddBeersPanel(tripId); }
+  }
+  async function confirmAddTripBeers(tripId){
+    const boxes=[...document.querySelectorAll('[data-trip-cand]:checked')];
+    if(!boxes.length) return;
+    const changed=[];
+    boxes.forEach(cb=>{
+      const b=beers.find(x=>x.id===cb.dataset.tripCand);
+      if(b){ b.tripId=tripId; b.synced=false; changed.push(b); }
+    });
+    saveLocal(); renderAll();
+    for(const b of changed){ if(sbConfigured()) await sbPush(b); }
+    toast(changed.length+' přidáno do výletu');
+    openTripDetail(tripId, false);
+  }
+  async function linkBeerToTrip(beerId, tripId){
+    const b=beers.find(x=>x.id===beerId); if(!b) return;
+    b.tripId=tripId; b.synced=false;
+    saveLocal(); renderAll();
+    $('#trips-overlay').classList.remove('show');
+    $('#detail-overlay').classList.remove('show');
+    tripPickerBeerId=null;
+    if(sbConfigured()) await sbPush(b);
+    toast('Přidáno do výletu');
+  }
+  async function saveNewTrip(){
+    const nazev=$('#trip-new-name').value.trim();
+    if(!nazev){ toast('Zadej název výletu', true); return; }
+    const from=$('#trip-new-from').value || todayISO();
+    const to=$('#trip-new-to').value || from;
+    const t={ id:uid(), nazev, datumOd:from, datumDo:to, poznamka:'', osoba:cfg.name };
+    trips.push(t); saveTripsLocal();
+    $('#trip-new-form').style.display='none';
+    $('#trip-new-name').value=''; $('#trip-new-from').value=''; $('#trip-new-to').value='';
+    if(sbConfigured()) await tripPush(t);
+    if(tripPickerBeerId){ linkBeerToTrip(tripPickerBeerId, t.id); return; }
+    renderTripsList();
+    toast('Výlet založen');
+  }
+  async function saveTripEdit(id){
+    const t=trips.find(x=>x.id===id); if(!t) return;
+    t.nazev=$('#trip-edit-name').value.trim()||t.nazev;
+    t.datumOd=$('#trip-edit-from').value||t.datumOd;
+    t.datumDo=$('#trip-edit-to').value||t.datumOd;
+    t.poznamka=$('#trip-edit-note').value.trim();
+    saveTripsLocal();
+    if(sbConfigured()) await tripPush(t);
+    toast('Výlet uložen');
+    openTripDetail(id, false);
+  }
+  async function deleteTrip(id){
+    if(!confirm('Smazat výlet? Piva zůstanou v deníku, jen se od výletu odpojí.')) return;
+    const affected=beers.filter(b=>b.tripId===id);
+    affected.forEach(b=>{ b.tripId=null; b.synced=false; });
+    saveLocal();
+    trips=trips.filter(t=>t.id!==id);
+    saveTripsLocal();
+    $('#detail-overlay').classList.remove('show');
+    if(sbConfigured()){
+      await tripDeleteRemote(id);
+      for(const b of affected){ await sbPush(b); }
+    }
+    renderAll();
+    toast('Výlet smazán');
   }
   function commentWord(n){ return n===1?'komentář':(n<5?'komentáře':'komentářů'); }
   function commentIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5z"/></svg>'; }
@@ -3088,6 +3354,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       rating:currentRating,
       foto:currentPhoto||'',
       vitrina: prev ? !!prev.vitrina : false,
+      tripId: prev ? (prev.tripId||null) : null,
       synced:false
     };
     if(editId){
@@ -3384,6 +3651,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(chips.length) html+='<div class="chips" style="margin-top:8px">'+chips.join('')+'</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
     html+='<button class="btn btn-ghost" data-log-again="'+esc(b.id)+'" style="margin-top:12px">↻ Zapsat znovu</button>';
+    html+='<button class="btn btn-ghost" data-trip-pick="'+esc(b.id)+'" style="margin-top:8px">🧭 Přidat do výletu</button>';
     const beerTrend=priceTrendHtml(all);
     if(beerTrend) html+='<div class="price-block">'+beerTrend+priceChartHtml(all)+'</div>';
     html+='</div>';
@@ -7246,6 +7514,7 @@ var qrcode = function() {
   loadLocal();
   applyTheme();
   loadBreweryCache();
+  loadTripsLocal();
   loadTasting();
   paintTastingBar();
 
@@ -7268,7 +7537,7 @@ var qrcode = function() {
   resetForm();
   renderAll();
 
-  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); }
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); }
   else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
 
   if(!cfg.name) setTimeout(openName, 400);
@@ -7539,6 +7808,20 @@ var qrcode = function() {
     if(sc){ toggleShowcase(sc.dataset.detailShowcase); return; }
     const la=e.target.closest('[data-log-again]');
     if(la){ logAgain(la.dataset.logAgain); return; }
+    const tp=e.target.closest('[data-trip-pick]');
+    if(tp){ openTripsOverlay(tp.dataset.tripPick); return; }
+    const tedit=e.target.closest('[data-trip-edit]');
+    if(tedit){ openTripDetail(tedit.dataset.tripEdit, true); return; }
+    const tcancel=e.target.closest('[data-trip-cancel]');
+    if(tcancel){ openTripDetail(tcancel.dataset.tripCancel, false); return; }
+    const tsave=e.target.closest('[data-trip-save]');
+    if(tsave){ saveTripEdit(tsave.dataset.tripSave); return; }
+    const tdel=e.target.closest('[data-trip-delete]');
+    if(tdel){ deleteTrip(tdel.dataset.tripDelete); return; }
+    const tab=e.target.closest('[data-trip-addbeers]');
+    if(tab){ toggleTripAddBeers(tab.dataset.tripAddbeers); return; }
+    const tconf=e.target.closest('[data-trip-confirm]');
+    if(tconf){ confirmAddTripBeers(tconf.dataset.tripConfirm); return; }
     const wd=e.target.closest('[data-wish-del]');
     if(wd){ removeWish(wd.dataset.wishDel, wd.dataset.wishDelBrewery); return; }
     const ws=e.target.closest('[data-wish-send]');
@@ -7792,6 +8075,20 @@ var qrcode = function() {
   document.querySelectorAll('[data-yearbook]').forEach(b=>b.addEventListener('click', openYearbook));
   $('#yb-close').addEventListener('click', ()=>$('#yearbook-overlay').classList.remove('show'));
   $('#yb-print').addEventListener('click', ()=>window.print());
+  // trips
+  document.querySelectorAll('[data-trips]').forEach(b=>b.addEventListener('click', ()=>openTripsOverlay(null)));
+  $('#trips-close').addEventListener('click', ()=>{ tripPickerBeerId=null; $('#trips-overlay').classList.remove('show'); });
+  $('#trip-new-btn').addEventListener('click', ()=>{
+    const f=$('#trip-new-form'); f.style.display = f.style.display==='none' ? 'block' : 'none';
+  });
+  $('#trip-new-save').addEventListener('click', saveNewTrip);
+  $('#trips-list').addEventListener('click', e=>{
+    const card=e.target.closest('[data-trip-open]'); if(!card) return;
+    const id=card.dataset.tripOpen;
+    if(tripPickerBeerId){ linkBeerToTrip(tripPickerBeerId, id); return; }
+    $('#trips-overlay').classList.remove('show');
+    openTripDetail(id, false);
+  });
   $('#yb-years').addEventListener('click', e=>{
     const btn=e.target.closest('[data-yb-year]'); if(!btn) return;
     ybYear=parseInt(btn.dataset.ybYear,10);
@@ -7859,13 +8156,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
@@ -7879,7 +8176,7 @@ var qrcode = function() {
     }
     if(!e.target.closest('.cardmenu-pop')) closeCardMenu();
   });
-  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); } }, 30000);
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 
