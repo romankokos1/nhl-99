@@ -657,6 +657,14 @@
   .rings-gear:active{transform:scale(0.9) rotate(30deg);}
   .rings-gear svg{width:18px; height:18px;}
   .rings-card{display:flex; align-items:center; gap:var(--s5); padding:var(--s5); margin-top:var(--s2);}
+  .party-goal-card{padding:var(--s4) var(--s5); margin-top:var(--s4);}
+  .pg-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .pg-title{font-size:13.5px; font-weight:700; color:var(--text-2);}
+  .pg-head .rings-gear{width:28px; height:28px;}
+  .pg-head .rings-gear svg{width:14px; height:14px;}
+  .pg-track{height:8px; border-radius:99px; background:var(--bg-2); margin-top:10px; overflow:hidden;}
+  .pg-fill{height:100%; border-radius:99px; background:linear-gradient(90deg, var(--amber), var(--amber-bright)); transition:width .6s ease;}
+  .pg-sub{font-size:12px; color:var(--text-3); margin-top:6px; font-variant-numeric:tabular-nums;}
   .rings-wrap{flex-shrink:0; width:148px; height:148px;}
   .rings-svg{width:100%; height:100%; transform:rotate(-90deg);}
   .ring-bg{fill:none; stroke:var(--bg-2);}
@@ -1281,6 +1289,9 @@
         <div style="flex:1">
           <div class="tb-title">Pivní deník</div>
         </div>
+        <button class="icon-round" id="globalsearch-open" aria-label="Hledat všude">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </button>
         <button class="icon-round" id="view-toggle" aria-label="Přepnout zobrazení">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="view-toggle-icon"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         </button>
@@ -1421,6 +1432,15 @@
               <div class="rl-item"><span class="rl-dot r-styles"></span><span class="rl-tx"><b id="rl-styles">0/0</b><small>styly</small></span></div>
               <div class="rl-item"><span class="rl-dot r-rated"></span><span class="rl-tx"><b id="rl-rated">0/0</b><small>hodnocení</small></span></div>
             </div>
+          </div>
+
+          <div class="party-goal-card card" id="party-goal-card">
+            <div class="pg-head">
+              <span class="pg-title">Cíl party · <span id="pg-year"></span></span>
+              <button class="rings-gear" id="pg-edit" aria-label="Upravit cíl party"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="pg-track"><div class="pg-fill" id="pg-fill" style="width:0%"></div></div>
+            <div class="pg-sub" id="pg-sub">0 / 0 piv</div>
           </div>
 
           <div class="stat-grid" style="margin-top:var(--s5)">
@@ -1935,6 +1955,22 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         <button class="btn btn-primary" id="trip-new-save">Založit výlet</button>
       </div>
       <div id="trips-list"></div>
+    </div>
+  </div>
+
+  <!-- global search: everything at once — beers, breweries, trips -->
+  <div class="overlay" id="globalsearch-overlay">
+    <div class="sheet map-sheet">
+      <div class="grabber"></div>
+      <div class="map-head">
+        <div class="sec-title first" style="margin:0">Hledat všude</div>
+        <button class="detail-close" id="globalsearch-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="search-wrap" style="margin-bottom:var(--s3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+        <input type="text" id="globalsearch-input" placeholder="Pivo, pivovar, výlet…" autocomplete="off">
+      </div>
+      <div id="globalsearch-results"></div>
     </div>
   </div>
 
@@ -4610,8 +4646,74 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     setT('rl-rated', cRated+'/'+gR);
   }
 
+  /* ---------- party goal: one shared target for the whole year, visible to everyone ---------- */
+  let partyGoal={ cil:150, aktualizoval:'' };
+  async function partyGoalPull(){
+    if(!sbConfigured()) return;
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/party_cil?klic=eq.rok&select=*', { headers: sbHeaders() });
+      if(!r.ok) return;
+      const rows=await r.json();
+      if(rows[0] && rows[0].cil!=null) partyGoal={ cil:rows[0].cil, aktualizoval:rows[0].aktualizoval||'' };
+    }catch(e){}
+  }
+  async function partyGoalSave(cil){
+    partyGoal={ cil, aktualizoval:cfg.name };
+    renderPartyGoal();
+    if(!sbConfigured()) return;
+    try{
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/party_cil?on_conflict=klic', {
+        method:'POST', headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates'}),
+        body: JSON.stringify({ klic:'rok', cil, aktualizoval:cfg.name })
+      });
+    }catch(e){}
+  }
+  function renderPartyGoal(){
+    const card=$('#party-goal-card'); if(!card) return;
+    const year=new Date().getFullYear();
+    const count=beers.filter(b=>b.date && b.date.slice(0,4)===String(year)).length;
+    const goal=Math.max(1, partyGoal.cil||150);
+    const pct=Math.min(100, Math.round(100*count/goal));
+    $('#pg-year').textContent=year;
+    $('#pg-fill').style.width=pct+'%';
+    $('#pg-sub').textContent=count+' / '+goal+' '+beerWord(goal)+(partyGoal.aktualizoval?' · cíl nastavil(a) '+partyGoal.aktualizoval:'');
+  }
+
+  /* ---------- global search: piva + pivovary + výlety at once ---------- */
+  function runGlobalSearch(q){
+    const box=$('#globalsearch-results'); if(!box) return;
+    const nq=q.trim().toLowerCase();
+    if(!nq){ box.innerHTML='<p class="muted center">Piš a hledej napříč pivy, pivovary i výlety.</p>'; return; }
+    const beerHits=beers.filter(b=>matchQ(b,nq)).slice(0,20);
+    const brewHits=knownBreweries().filter(n=>n.toLowerCase().includes(nq)).slice(0,10);
+    const tripHits=trips.filter(t=>(t.nazev||'').toLowerCase().includes(nq)).slice(0,10);
+
+    let html='';
+    if(beerHits.length){
+      html+='<div class="sec-title first" style="margin-top:0">Piva</div>';
+      html+='<div class="card list-card">'+beerHits.map(tripBeerRow).join('')+'</div>';
+    }
+    if(brewHits.length){
+      html+='<div class="sec-title">Pivovary</div>';
+      html+='<div class="card list-card">'+brewHits.map(n=>
+        '<div class="row-item" data-gs-brewery="'+esc(norm(n))+'"><div class="row-ic">'+breweryIcon2()+'</div><div class="row-tx"><div class="t">'+esc(n)+'</div></div></div>'
+      ).join('')+'</div>';
+    }
+    if(tripHits.length){
+      html+='<div class="sec-title">Výlety</div>';
+      html+='<div class="card list-card">'+tripHits.map(t=>
+        '<div class="row-item" data-gs-trip="'+t.id+'"><div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4M9 6l6-2"/></svg></div><div class="row-tx"><div class="t">'+esc(t.nazev)+'</div><div class="d">'+esc(tripDateLabel(t))+'</div></div></div>'
+      ).join('')+'</div>';
+    }
+    if(!beerHits.length && !brewHits.length && !tripHits.length){
+      html='<p class="muted center">Nic jsem nenašel.</p>';
+    }
+    box.innerHTML=html;
+  }
+
   function renderStats(){
     renderRings();
+    renderPartyGoal();
     const mine=beers.filter(b=>b.osoba===cfg.name);
     const rated=mine.filter(b=>b.rating>0);
     const avg = rated.length ? rated.reduce((s,b)=>s+b.rating,0)/rated.length : 0;
@@ -7591,7 +7693,7 @@ var qrcode = function() {
   resetForm();
   renderAll();
 
-  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); }
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); partyGoalPull().then(renderPartyGoal); }
   else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
 
   if(!cfg.name) setTimeout(openName, 400);
@@ -8076,6 +8178,15 @@ var qrcode = function() {
     $('#goals-overlay').classList.add('show');
   }
   document.querySelectorAll('[data-goals]').forEach(b=>b.addEventListener('click', openGoals));
+  $('#pg-edit').addEventListener('click', ()=>{
+    const cur=partyGoal.cil||150;
+    const raw=prompt('Kolik piv chce parta dohromady ochutnat letos?', cur);
+    if(raw===null) return;
+    const n=parseInt(raw,10);
+    if(!n || n<=0){ toast('Zadej kladné číslo', true); return; }
+    partyGoalSave(n);
+    toast('Cíl party uložen');
+  });
   // board period filter
   document.querySelectorAll('#period-seg .seg-btn').forEach(b=>b.addEventListener('click',()=>{
     boardPeriod=b.dataset.period;
@@ -8153,6 +8264,23 @@ var qrcode = function() {
     $('#trips-overlay').classList.remove('show');
     openTripDetail(id, false);
   });
+  // global search
+  $('#globalsearch-open').addEventListener('click', ()=>{
+    $('#globalsearch-input').value='';
+    runGlobalSearch('');
+    $('#globalsearch-overlay').classList.add('show');
+    setTimeout(()=>$('#globalsearch-input').focus(), 150);
+  });
+  $('#globalsearch-close').addEventListener('click', ()=>$('#globalsearch-overlay').classList.remove('show'));
+  $('#globalsearch-input').addEventListener('input', e=>runGlobalSearch(e.target.value));
+  $('#globalsearch-results').addEventListener('click', e=>{
+    const op=e.target.closest('[data-open]');
+    if(op){ $('#globalsearch-overlay').classList.remove('show'); openBeerDetail(op.dataset.open); return; }
+    const gb=e.target.closest('[data-gs-brewery]');
+    if(gb){ $('#globalsearch-overlay').classList.remove('show'); openBreweryDetail(gb.dataset.gsBrewery); return; }
+    const gt=e.target.closest('[data-gs-trip]');
+    if(gt){ $('#globalsearch-overlay').classList.remove('show'); openTripDetail(gt.dataset.gsTrip, false); return; }
+  });
   $('#yb-years').addEventListener('click', e=>{
     const btn=e.target.closest('[data-yb-year]'); if(!btn) return;
     ybYear=parseInt(btn.dataset.ybYear,10);
@@ -8220,13 +8348,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay','#globalsearch-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
@@ -8240,7 +8368,7 @@ var qrcode = function() {
     }
     if(!e.target.closest('.cardmenu-pop')) closeCardMenu();
   });
-  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); } }, 30000);
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); partyGoalPull().then(renderPartyGoal); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 
