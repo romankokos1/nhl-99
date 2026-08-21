@@ -478,6 +478,17 @@
   .map-sheet{max-height:94%; display:flex; flex-direction:column;}
   .map-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--s4);}
   .map-canvas-wrap{position:relative; height:340px; border-radius:var(--r-card); overflow:hidden; border:1px solid var(--hairline); margin-bottom:var(--s2); background:var(--bg-2);}
+  .map-canvas-wrap.is-fullscreen{
+    position:fixed; inset:0; z-index:150; height:100%; width:100%;
+    border-radius:0; border:none; margin:0;
+  }
+  .map-fs-toggle{
+    position:absolute; z-index:12; top:10px; right:10px; width:36px; height:36px; border-radius:50%;
+    background:rgba(20,14,7,0.72); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.14);
+    color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .map-canvas-wrap.is-fullscreen .map-fs-toggle{ top:calc(env(safe-area-inset-top) + 12px); }
+  .map-fs-toggle svg{width:17px; height:17px;}
   .map-legend{display:flex; flex-wrap:wrap; gap:12px; margin-bottom:var(--s3); font-size:11.5px; font-weight:600; color:var(--text-3);}
   .map-legend span{display:flex; align-items:center; gap:5px;}
   .map-legend i{width:10px; height:10px; border-radius:50%; display:inline-block; box-shadow:0 0 0 1px rgba(0,0,0,0.25);}
@@ -1542,9 +1553,12 @@
           <span><i style="background:#e8a33d"></i>5–9×</span>
           <span><i style="background:#ffc35a"></i>10×+</span>
         </div>
-        <div class="map-canvas-wrap">
+        <div class="map-canvas-wrap" id="map-canvas-wrap">
           <div id="map-canvas"></div>
           <div class="map-loading" id="map-loading"><div class="map-spinner"></div><span id="map-loading-text">Hledám podniky…</span></div>
+          <button class="map-fs-toggle" id="map-fs-toggle" aria-label="Celá obrazovka">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          </button>
         </div>
         <p class="tiny-note" style="padding:0 2px; margin-bottom:var(--s2)">Pin sedí špatně? Podrž a přetáhni ho, nebo v jeho bublině klepni na „Opravit polohu".</p>
         <div class="sec-title" id="map-fallback-title">Místa bez polohy</div>
@@ -5099,6 +5113,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(v==='profile'){ renderTrophies(); dirty.trophies=false; }
     if(v==='breweries'){ $('#brl-search').value=''; renderBreweriesList(); }
     else { const az=$('#az-index'); if(az) az.style.display='none'; }
+    if(v!=='map'){ const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; } }
     if(v==='map'){ openMap(mapMode||'venues'); }
   }
   function openName(){ $('#name-input').value=cfg.name||''; $('#name-overlay').classList.add('show'); setTimeout(()=>$('#name-input').focus(),50); }
@@ -8196,6 +8211,16 @@ var qrcode = function() {
     el.scrollTo({left: idx*el.clientWidth, behavior:'smooth'});
   });
   document.querySelectorAll('#map-mode-seg .seg-btn').forEach(b=>b.addEventListener('click', ()=>openMap(b.dataset.mapmode)));
+  $('#map-fs-toggle').addEventListener('click', ()=>{
+    const wrap=$('#map-canvas-wrap');
+    const fs=wrap.classList.toggle('is-fullscreen');
+    const icon=fs
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v4a2 2 0 0 1-2 2H3M15 3v4a2 2 0 0 0 2 2h4M9 21v-4a2 2 0 0 0-2-2H3M15 21v-4a2 2 0 0 1 2-2h4"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+    $('#map-fs-toggle').innerHTML=icon;
+    document.body.style.overflow = fs ? 'hidden' : '';
+    setTimeout(()=>{ mapInstance && mapInstance.invalidateSize(); }, 260);
+  });
   // place correction
   $('#map-fallback').addEventListener('click', e=>{
     const btn=e.target.closest('[data-fix]'); if(!btn) return;
@@ -8437,7 +8462,7 @@ var qrcode = function() {
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
