@@ -106,20 +106,20 @@
     position:sticky; top:0; z-index:20;
     padding:calc(max(env(safe-area-inset-top),14px) + 6px) var(--s5) 14px;
     background:linear-gradient(var(--bg) 62%, rgba(25,16,9,0));
-    display:flex; align-items:center; gap:var(--s3);
+    display:flex; align-items:center; gap:9px;
   }
   .topbar.blur{background:var(--glass); backdrop-filter:blur(20px) saturate(1.3); -webkit-backdrop-filter:blur(20px) saturate(1.3); border-bottom:1px solid var(--hairline);}
-  .tb-title{font-family:'Fraunces',serif; font-weight:600; font-size:26px; letter-spacing:-0.01em; color:var(--foam); flex:1;}
+  .tb-title{font-family:'Fraunces',serif; font-weight:600; font-size:26px; letter-spacing:-0.01em; color:var(--foam); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
   .tb-sub{font-size:12.5px; color:var(--text-3); margin-top:-2px;}
   .logo-mug{flex-shrink:0;}
   .icon-round{
-    width:38px; height:38px; border-radius:var(--r-pill);
+    width:34px; height:34px; border-radius:var(--r-pill);
     background:var(--surface-2); border:1px solid var(--hairline);
     display:flex; align-items:center; justify-content:center; color:var(--text-2);
     cursor:pointer; flex-shrink:0; transition:transform .15s, background .15s;
   }
   .icon-round:active{transform:scale(0.92);}
-  .icon-round svg{width:19px; height:19px;}
+  .icon-round svg{width:17px; height:17px;}
 
   /* screens */
   .screen{display:none; animation:fade .32s cubic-bezier(.2,.7,.2,1);}
@@ -269,18 +269,18 @@
   .gt-hop{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0.04; color:var(--amber-bright); pointer-events:none;}
   .gt-hop svg{width:60%; height:60%;}
   .gt-noimg{
-    position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-    text-align:center; padding:17px 12px 12px; height:100%; width:100%;
+    position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:14px 12px; height:100%; width:100%; gap:5px;
   }
   .gt-name{
-    font-family:'Fraunces',serif; font-size:13.5px; font-weight:700; color:var(--foam); line-height:1.24;
+    font-family:'Fraunces',serif; font-size:13.5px; font-weight:700; color:var(--foam); line-height:1.22;
     display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; letter-spacing:0.002em;
   }
   .gt-brewery{
-    font-size:10.5px; font-weight:500; color:var(--text-2); margin-top:7px;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;
+    font-size:10.5px; font-weight:500; color:var(--text-2); max-width:100%; line-height:1.25;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
-  .gt-meta{font-size:7.5px; color:var(--text-3); letter-spacing:0.05em; text-transform:uppercase; margin-top:9px;}
+  .gt-meta{font-size:7.5px; color:var(--text-3); letter-spacing:0.05em; text-transform:uppercase; margin-top:2px;}
   .gt-score{
     position:absolute; top:5px; right:5px; z-index:2;
     background:rgba(10,6,3,0.72); border:1px solid rgba(212,175,110,0.5); backdrop-filter:blur(4px); border-radius:7px; padding:1px 6px;
@@ -438,6 +438,13 @@
   }
   .brl-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
   .brl-thumb.empty svg{width:19px; height:19px; color:var(--amber-deep); opacity:0.5;}
+  .az-index{
+    position:absolute; right:2px; top:112px; bottom:88px; z-index:15;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:6px 5px; -webkit-user-select:none; user-select:none; touch-action:none;
+  }
+  .az-letter{font-size:9.5px; font-weight:700; color:var(--text-3); padding:1.4px 5px; line-height:1.3; cursor:pointer;}
+  .az-letter.active{color:var(--amber-bright); transform:scale(1.3); transform-origin:right center;}
   .trip-map-wrap{position:relative; height:190px; border-radius:var(--r-card); overflow:hidden; border:1px solid var(--hairline); margin:12px 0; background:var(--bg-2);}
   #trip-map-canvas{width:100%; height:100%;}
   .trip-cand-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--hairline); font-size:13.5px; color:var(--text-2); cursor:pointer;}
@@ -1644,6 +1651,9 @@
     </section>
 
   </div>
+
+  <!-- A-Z index, only shown for the breweries list when sorted by name -->
+  <div class="az-index" id="az-index" style="display:none"></div>
 
   <!-- bottom nav -->
   <nav class="tabbar">
@@ -3551,6 +3561,26 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   function hopMark(){
     return '<svg viewBox="0 0 100 132" fill="currentColor"><path d="M50 4C27 18 16 42 21 66c4 20 15 37 29 62 14-25 25-42 29-62 5-24-6-48-29-62z"/><path d="M35 38c6 8 6 18 0 27M65 38c-6 8-6 18 0 27M31 64c7 6 9 15 6 25M69 64c-7 6-9 15-6 25" stroke="#1f160f" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';
   }
+  function grainMark(){
+    return '<svg viewBox="0 0 100 132" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M50 10v100"/><path d="M50 24l-15-11M50 24l15-11M50 42l-17-12M50 42l17-12M50 60l-17-12M50 60l17-12M50 78l-16-11M50 78l16-11M50 96l-14-9M50 96l14-9"/></svg>';
+  }
+  function mugMark(){
+    return '<svg viewBox="0 0 100 132" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 28h48v72a9 9 0 0 1-9 9H29a9 9 0 0 1-9-9V28z"/><path d="M68 40h11a13 13 0 0 1 0 26H68"/><path d="M20 28c0-13 11-23 24-23s24 10 24 23"/></svg>';
+  }
+  function bottleMark(){
+    return '<svg viewBox="0 0 100 132" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"><path d="M41 4h18v22l11 15v82a7 7 0 0 1-7 7H37a7 7 0 0 1-7-7V41l11-15V4z"/><path d="M41 4h18"/><path d="M35 54h30"/></svg>';
+  }
+  const TILE_MOTIFS=[
+    { icon:hopMark, tint:'var(--amber-bright)' },
+    { icon:grainMark, tint:'var(--amber)' },
+    { icon:mugMark, tint:'var(--amber-deep)' },
+    { icon:bottleMark, tint:'var(--amber-bright)' }
+  ];
+  function tileMotif(seed){
+    let h=0;
+    for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0;
+    return TILE_MOTIFS[h%TILE_MOTIFS.length];
+  }
   function gridTile(b){
     const scoreHtml = b.rating ? '<span class="gt-score">'+b.rating+'</span>' : '';
     const pendingHtml = !b.synced ? '<span class="pending-dot gt-pending" title="Čeká na odeslání"></span>' : '';
@@ -3560,9 +3590,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +scoreHtml+pendingHtml
         +'</div>';
     }
+    const motif=tileMotif(b.id||b.name||'x');
     const metaLine=[b.style,(b.abv?b.abv+'%':'')].filter(Boolean).map(esc).join(' · ');
     return '<div class="grid-tile no-photo" data-open="'+b.id+'">'
-      +'<div class="gt-hop" aria-hidden="true">'+hopMark()+'</div>'
+      +'<div class="gt-hop" aria-hidden="true" style="color:'+motif.tint+'">'+motif.icon()+'</div>'
       +'<div class="gt-noimg">'
       +   '<span class="gt-name">'+esc(b.name)+'</span>'
       +   (b.brewery?'<span class="gt-brewery">'+esc(b.brewery)+'</span>':'')
@@ -5065,6 +5096,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(v==='stats'){ renderStats(); dirty.stats=false; }
     if(v==='profile'){ renderTrophies(); dirty.trophies=false; }
     if(v==='breweries'){ $('#brl-search').value=''; renderBreweriesList(); }
+    else { const az=$('#az-index'); if(az) az.style.display='none'; }
     if(v==='map'){ openMap(mapMode||'venues'); }
   }
   function openName(){ $('#name-input').value=cfg.name||''; $('#name-overlay').classList.add('show'); setTimeout(()=>$('#name-input').focus(),50); }
@@ -5163,7 +5195,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       if(brlSort==='name') return a.label.localeCompare(b.label,'cs');
       return b.count-a.count || b.avg-a.avg;
     });
-    if(!list.length){ box.innerHTML='<p class="muted center">'+(q?'Nic nenalezeno.':'Zatím žádné pivovary.')+'</p>'; return; }
+    if(!list.length){ box.innerHTML='<p class="muted center">'+(q?'Nic nenalezeno.':'Zatím žádné pivovary.')+'</p>'; renderAzIndex([]); return; }
+    const seenLetters=new Set();
     box.innerHTML=list.map(x=>{
       const info=breweryCache[x.key]||{};
       let sub=x.count+' '+beerWord(x.count);
@@ -5171,12 +5204,43 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const thumb = info.foto
         ? '<span class="brl-thumb"><img loading="lazy" src="'+esc(storageUrl(info.foto))+'" alt=""></span>'
         : '<span class="brl-thumb empty">'+breweryIcon2()+'</span>';
-      return '<div class="lb-row clickable" data-open-brewery="'+esc(x.key)+'">'
+      let azAttr='';
+      if(brlSort==='name' && !q){
+        const c=norm(x.label).charAt(0).toUpperCase();
+        const letter=/[A-Z0-9]/.test(c) ? c : '#';
+        if(!seenLetters.has(letter)){ seenLetters.add(letter); azAttr=' data-az="'+letter+'"'; }
+      }
+      return '<div class="lb-row clickable"'+azAttr+' data-open-brewery="'+esc(x.key)+'">'
         +thumb
         +'<span class="lb-beerinfo"><b>'+esc(x.label)+'</b><small>'+sub+'</small></span>'
         +'<span class="lb-metric big"><b>'+(x.avg?x.avg.toFixed(1):'–')+'</b><small>Ø</small></span>'
         +'</div>';
     }).join('');
+    renderAzIndex(brlSort==='name' && !q ? list : []);
+  }
+  function renderAzIndex(list){
+    const idx=$('#az-index'); if(!idx) return;
+    if(list.length<12){ idx.style.display='none'; idx.innerHTML=''; return; }
+    const letters=[];
+    const seen=new Set();
+    list.forEach(x=>{
+      const c=norm(x.label).charAt(0).toUpperCase();
+      const letter=/[A-Z0-9]/.test(c) ? c : '#';
+      if(!seen.has(letter)){ seen.add(letter); letters.push(letter); }
+    });
+    idx.innerHTML=letters.map(l=>'<span class="az-letter" data-az-letter="'+l+'">'+l+'</span>').join('');
+    idx.style.display='flex';
+  }
+  let azJumpTimer=null;
+  function jumpToAzLetter(letter){
+    const scroller=$('#scroller');
+    const target=document.querySelector('#brl-list [data-az="'+letter+'"]');
+    if(!target || !scroller) return;
+    const top = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+    scroller.scrollTo({ top: Math.max(0, top-64), behavior:'smooth' });
+    document.querySelectorAll('.az-letter').forEach(el=>el.classList.toggle('active', el.dataset.azLetter===letter));
+    clearTimeout(azJumpTimer);
+    azJumpTimer=setTimeout(()=>document.querySelectorAll('.az-letter').forEach(el=>el.classList.remove('active')), 500);
   }
 
   /* ---------- brewery duplicates ---------- */
@@ -8215,6 +8279,23 @@ var qrcode = function() {
     document.querySelectorAll('#brl-sort-seg .seg-btn').forEach(x=>x.classList.toggle('active', x===b));
     renderBreweriesList();
   }));
+  (function(){
+    const idx=$('#az-index');
+    let dragging=false;
+    function letterAt(clientY){
+      const el=document.elementFromPoint(idx.getBoundingClientRect().left+10, clientY);
+      const letterEl=el && el.closest('.az-letter');
+      return letterEl ? letterEl.dataset.azLetter : null;
+    }
+    function handle(clientY){
+      const l=letterAt(clientY);
+      if(l) jumpToAzLetter(l);
+    }
+    idx.addEventListener('pointerdown', e=>{ dragging=true; idx.setPointerCapture(e.pointerId); handle(e.clientY); });
+    idx.addEventListener('pointermove', e=>{ if(dragging) handle(e.clientY); });
+    idx.addEventListener('pointerup', ()=>{ dragging=false; });
+    idx.addEventListener('pointercancel', ()=>{ dragging=false; });
+  })();
   $('#brl-list').addEventListener('click', e=>{
     const row=e.target.closest('[data-open-brewery]'); if(!row) return;
     openBreweryDetail(row.dataset.openBrewery);
