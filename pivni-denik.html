@@ -792,6 +792,8 @@
   .lb-name{font-size:15px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .lb-name .you{font-size:10px; background:var(--amber); color:#241703; padding:1px 6px; border-radius:var(--r-pill); font-weight:700; vertical-align:middle; margin-left:4px;}
   .lb-tags{display:flex; align-items:center; gap:7px; overflow:hidden;}
+  #lb-people .lb-tags{flex-wrap:wrap; row-gap:5px;}
+  #lb-people .lb-fav{max-width:none; white-space:normal; line-height:1.4;}
   .lb-row .like-btn{margin-left:0;}
   .lb-row .like-btn .like-icon{width:17px; height:17px;}
   /* comments */
@@ -1660,6 +1662,12 @@
             <div class="row-tx"><div class="t">Sloučit pivovary</div><div class="d">Sjednotit různě psané názvy</div></div>
             <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
+
+          <div class="row-item" data-placemerge>
+            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c4-4.5 6.5-8 6.5-11a6.5 6.5 0 0 0-13 0c0 3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div>
+            <div class="row-tx"><div class="t">Sloučit místa</div><div class="d">Sjednotit různě psané podniky</div></div>
+            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
         </div>
         <div class="bottom-space"></div>
       </div>
@@ -1934,6 +1942,16 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <p class="lead">Stejný pivovar zapsaný různě? Vyber správný název a zbytek se pod něj sloučí.</p>
       <div id="brewmerge-body"></div>
       <button class="btn btn-ghost" id="brewmerge-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="placemerge-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Duplicitní místa</h2>
+      <p class="lead">Stejný podnik zapsaný různě? Vyber správný název a zbytek se pod něj sloučí.</p>
+      <div id="placemerge-body"></div>
+      <button class="btn btn-ghost" id="placemerge-close" style="margin-top:var(--s4)">Zavřít</button>
     </div>
   </div>
 
@@ -2550,6 +2568,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         body: JSON.stringify({ klic:key, nazev:label, lat:coord.lat, lng:coord.lng })
       });
     } catch(e){}
+  }
+  async function placeDeleteRemote(key){
+    if(!sbConfigured()) return;
+    try { await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/mista?klic=eq.'+encodeURIComponent(key), { method:'DELETE', headers: sbHeaders() }); } catch(e){}
   }
   /* ---------- shared brewery info (canonical name, city, web, position) ---------- */
   const BREWERY_CACHE_KEY='pivni-denik-brewerycache-v1';
@@ -4930,16 +4952,18 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const map={};
     src.forEach(b=>{
       const p=b.osoba||'?';
-      if(!map[p]) map[p]={name:p,count:0,sum:0,rated:0,best:0,styles:{}};
+      if(!map[p]) map[p]={name:p,count:0,sum:0,rated:0,best:0,styles:{},places:new Set(),breweries:new Set()};
       map[p].count++;
       if(b.rating>0){ map[p].sum+=b.rating; map[p].rated++; map[p].best=Math.max(map[p].best,b.rating); }
       if(b.style){ const s=b.style.trim(); map[p].styles[s]=(map[p].styles[s]||0)+1; }
+      if(b.where) map[p].places.add(norm(b.where));
+      beerBreweries(b).forEach(n=>map[p].breweries.add(norm(n)));
     });
     let people=Object.values(map).map(p=>{
       const styleEntries=Object.entries(p.styles).sort((a,b)=>b[1]-a[1]);
       const favStyle = styleEntries.length ? styleEntries[0][0] : '';
       const favShare = styleEntries.length ? styleEntries[0][1]/p.count : 0;
-      return {...p, avg: p.rated?p.sum/p.rated:0, distinctStyles:styleEntries.length, favStyle, favShare};
+      return {...p, avg: p.rated?p.sum/p.rated:0, distinctStyles:styleEntries.length, distinctPlaces:p.places.size, distinctBreweries:p.breweries.size, favStyle, favShare};
     });
     // assign superlative badges across the party
     if(people.length){
@@ -5011,7 +5035,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'<span class="lb-av" style="background:'+avatarColor(p.name)+'">'+esc(initials(p.name))+'</span>'
         +'<span class="lb-person">'
         +  '<span class="lb-name">'+esc(p.name)+(p.name===cfg.name?' <span class="you">ty</span>':'')+'</span>'
-        +  '<span class="lb-tags">'+(p.favStyle?'<span class="lb-fav">'+esc(p.favStyle)+'</span>':'')+badgePips(p.badges,3)+'</span>'
+        +  '<span class="lb-tags">'+(p.favStyle?'<span class="lb-fav">'+esc(p.favStyle)+'</span>':'')+'<span class="lb-fav">'+p.distinctBreweries+' '+(p.distinctBreweries===1?'pivovar':(p.distinctBreweries<5?'pivovary':'pivovarů'))+'</span><span class="lb-fav">'+p.distinctPlaces+' '+(p.distinctPlaces===1?'místo':(p.distinctPlaces<5?'místa':'míst'))+'</span>'+badgePips(p.badges,3)+'</span>'
         +'</span>'
         +'<span class="lb-metric"><b>'+p.count+'</b><small>piv</small></span>'
         +'<span class="lb-metric"><b>'+(p.avg?p.avg.toFixed(1):'–')+'</b><small>Ø</small></span>'
@@ -5334,6 +5358,90 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     toast(changed?('Sloučeno · '+changed+' piv převedeno'):'Nic ke sloučení');
     renderBrewMerge();
     renderBreweriesList();
+  }
+
+  /* ---------- place (venue) duplicates — same idea as brewery merge, just for "kde" ---------- */
+  function placeSim(a,b){
+    const A=norm(a), B=norm(b);
+    if(!A||!B) return 0;
+    if(A===B) return 1;
+    if(A.includes(B) || B.includes(A)) return 0.95;
+    const strip=s=>s.replace(/^(restaurace|hospoda|hospudka|pivnice|hostinec|bar|kavarna|bistro|sklipek|penzion|hotel)\s+/,'')
+                    .replace(/\s+(restaurace|hospoda|hospudka|pivnice|bar)$/,'').trim();
+    const A2=strip(A), B2=strip(B);
+    if(A2 && A2===B2) return 0.97;
+    return sim(A2||A, B2||B);
+  }
+  function findPlaceDupClusters(){
+    const variants=new Map();
+    beers.forEach(b=>{
+      const raw=(b.where||'').trim(); if(!raw) return;
+      if(!variants.has(raw)) variants.set(raw,{name:raw, count:0});
+      variants.get(raw).count++;
+    });
+    const list=[...variants.values()];
+    const clusters=[]; const used=new Set();
+    for(let i=0;i<list.length;i++){
+      if(used.has(i)) continue;
+      const group=[list[i]]; used.add(i);
+      for(let j=i+1;j<list.length;j++){
+        if(used.has(j)) continue;
+        if(placeSim(list[i].name, list[j].name)>=0.8 && norm(list[i].name)!==norm(list[j].name)){
+          group.push(list[j]); used.add(j);
+        }
+      }
+      if(group.length>1) clusters.push(group);
+    }
+    return clusters;
+  }
+  async function applyPlaceMerge(cluster, canonicalName){
+    const clusterKeys=new Set(cluster.map(v=>norm(v.name)));
+    const canonKey=norm(canonicalName);
+    let changed=0;
+    beers.forEach(b=>{
+      if(b.where && clusterKeys.has(norm(b.where)) && b.where!==canonicalName){
+        b.where=canonicalName; b.synced=false; changed++;
+      }
+    });
+    loadGeoCache();
+    // keep whichever variant already has a coordinate, prefer the canonical one's own
+    let coord=geoCache[canonKey]||null;
+    if(!coord){ for(const v of cluster){ const k=norm(v.name); if(geoCache[k]){ coord=geoCache[k]; break; } } }
+    cluster.forEach(v=>{ const k=norm(v.name); if(k!==canonKey) delete geoCache[k]; });
+    if(coord) geoCache[canonKey]=coord;
+    saveGeoCache();
+    saveLocal(); renderAll();
+    if(sbConfigured()){
+      for(const b of beers.filter(x=>!x.synced)) await sbPush(b);
+      if(coord) placesPush(canonKey, canonicalName, coord);
+      for(const v of cluster){ const k=norm(v.name); if(k!==canonKey) await placeDeleteRemote(k); }
+    }
+    toast(changed?('Sloučeno · '+changed+' piv převedeno'):'Nic ke sloučení');
+    renderPlaceMerge();
+  }
+  function openPlaceMerge(){ $('#placemerge-overlay').classList.add('show'); renderPlaceMerge(); }
+  function renderPlaceMerge(){
+    const box=$('#placemerge-body'); if(!box) return;
+    const clusters=findPlaceDupClusters();
+    if(!clusters.length){
+      box.innerHTML='<div class="empty" style="padding:32px 0"><p>Žádné podezřelé duplicity míst. 🎉</p></div>';
+      return;
+    }
+    box.innerHTML=clusters.map((cl,ci)=>{
+      const canonical=cl.slice().sort((a,b)=>b.count-a.count || b.name.length-a.name.length)[0];
+      const opts=cl.map((v,vi)=>{
+        const checked=(v.name===canonical.name)?'checked':'';
+        return '<label class="merge-opt"><input type="radio" name="pm'+ci+'" data-ci="'+ci+'" data-vi="'+vi+'" '+checked+'>'
+          +'<span class="mo-txt"><b>'+esc(v.name)+'</b></span>'
+          +'<span class="mo-count">'+v.count+'×</span></label>';
+      }).join('');
+      return '<div class="merge-cluster" data-ci="'+ci+'">'
+        +'<div class="mc-head">Vyber správný název místa:</div>'
+        +opts
+        +'<button class="btn btn-primary btn-sm placemerge-go" data-ci="'+ci+'" style="width:100%; margin-top:10px">Sloučit do vybraného</button>'
+        +'</div>';
+    }).join('');
+    box._clusters=clusters;
   }
   /* ---------- brewery photo ---------- */
   let breweryPhotoKey=null, breweryPhotoLabel='';
@@ -8423,6 +8531,16 @@ var qrcode = function() {
     if(!sel){ toast('Vyber správný název', true); return; }
     applyBreweryMerge(clusters[ci], clusters[ci][+sel.dataset.vi].name);
   });
+  document.querySelectorAll('[data-placemerge]').forEach(b=>b.addEventListener('click', openPlaceMerge));
+  $('#placemerge-close').addEventListener('click', ()=>$('#placemerge-overlay').classList.remove('show'));
+  $('#placemerge-body').addEventListener('click', e=>{
+    const go=e.target.closest('.placemerge-go'); if(!go) return;
+    const ci=+go.dataset.ci;
+    const clusters=$('#placemerge-body')._clusters; if(!clusters||!clusters[ci]) return;
+    const sel=$('#placemerge-body').querySelector('input[name="pm'+ci+'"]:checked');
+    if(!sel){ toast('Vyber správný název', true); return; }
+    applyPlaceMerge(clusters[ci], clusters[ci][+sel.dataset.vi].name);
+  });
   $('#invite-close').addEventListener('click', ()=>$('#invite-overlay').classList.remove('show'));
   $('#invite-copy').addEventListener('click', async ()=>{
     const url=$('#invite-url').value;
@@ -8456,13 +8574,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay','#globalsearch-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#placemerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay','#globalsearch-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#placemerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
