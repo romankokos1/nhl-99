@@ -2222,9 +2222,21 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     }
     const whereField=$('#f-where');
     if(whereField && !whereField.value.trim() && meta.gps){
-      let place=await findNearbyVenue(meta.gps.lat, meta.gps.lon);
-      if(!place) place=await reverseGeocode(meta.gps.lat, meta.gps.lon);
-      if(place && !whereField.value.trim()){ whereField.value=place; out.place=place; }
+      let place=null, coord=null;
+      const nearby=await findNearbyVenue(meta.gps.lat, meta.gps.lon);
+      if(nearby){ place=nearby.name; coord={lat:nearby.lat, lng:nearby.lon}; }
+      if(!place){ place=await reverseGeocode(meta.gps.lat, meta.gps.lon); if(place) coord={lat:meta.gps.lat, lng:meta.gps.lon}; }
+      if(place && !whereField.value.trim()){
+        whereField.value=place; out.place=place;
+        // we already have a real position right here — cache it directly instead of
+        // making the map guess it later from just the name, which can drift to a
+        // same-named place somewhere else entirely
+        if(coord){
+          const key=norm(place);
+          loadGeoCache();
+          if(!geoCache[key]){ geoCache[key]=coord; saveGeoCache(); placesPush(key, place, coord); }
+        }
+      }
     }
     return out;
   }
@@ -2254,7 +2266,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       if(!els.length) return null;
       els.forEach(e=>{ e._d=haversineM(lat,lon,e.lat,e.lon); });
       els.sort((a,b)=>a._d-b._d);
-      return els[0].tags.name;
+      // the venue's own OSM position — usually steadier than a phone's indoor GPS reading
+      return { name: els[0].tags.name, lat: els[0].lat, lon: els[0].lon };
     }catch(e){ return null; }
   }
   async function reverseGeocode(lat, lon){
