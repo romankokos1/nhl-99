@@ -125,6 +125,8 @@
   .screen{display:none; animation:fade .32s cubic-bezier(.2,.7,.2,1);}
   .screen.active{display:block;}
   @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+  @keyframes feedFlash{0%{box-shadow:0 0 0 2px var(--amber-bright);}100%{box-shadow:0 0 0 2px transparent;}}
+  .feed-flash{animation:feedFlash 1.5s ease-out; border-radius:var(--r-card);}
 
   /* section title */
   .sec-title{font-family:'Fraunces',serif; font-weight:600; font-size:21px; letter-spacing:-0.01em; color:var(--foam); margin:var(--s6) 0 var(--s3);}
@@ -451,6 +453,7 @@
     padding:6px 5px; -webkit-user-select:none; user-select:none; touch-action:none;
   }
   .az-letter{font-size:9.5px; font-weight:700; color:var(--text-3); padding:1.4px 5px; line-height:1.3; cursor:pointer;}
+  .az-letter.az-year{font-size:10px; font-weight:800; color:var(--amber-bright); padding-top:5px;}
   .az-letter.active{color:var(--amber-bright); transform:scale(1.3); transform-origin:right center;}
   .trip-map-wrap{position:relative; height:190px; border-radius:var(--r-card); overflow:hidden; border:1px solid var(--hairline); margin:12px 0; background:var(--bg-2);}
   #trip-map-canvas{width:100%; height:100%;}
@@ -4386,26 +4389,30 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const list=$('#feed'); if(list) list.insertAdjacentHTML('beforeend', html);
     if(feedShown<feedFull.length) appendFeedSentinel();
   }
+  const MONTH_ABBR_CZ=['Led','Úno','Bře','Dub','Kvě','Čvn','Čvc','Srp','Zář','Říj','Lis','Pro'];
   function renderYearIndex(sortedList){
     const idx=$('#year-index'); if(!idx) return;
     if(sortedList.length<40){ idx.style.display='none'; idx.innerHTML=''; return; }
-    const years=[];
     const seen=new Set();
+    const entries=[];
+    let lastYear=null;
     sortedList.forEach(b=>{
       if(!b.date) return;
-      const y=b.date.slice(0,4);
-      if(!seen.has(y)){ seen.add(y); years.push(y); }
+      const mk=b.date.slice(0,7);
+      if(seen.has(mk)) return;
+      seen.add(mk);
+      const y=mk.slice(0,4);
+      if(y!==lastYear){ entries.push({key:mk, label:y, isYear:true}); lastYear=y; }
+      else { entries.push({key:mk, label:MONTH_ABBR_CZ[parseInt(mk.slice(5,7),10)-1]}); }
     });
-    if(years.length<2){ idx.style.display='none'; idx.innerHTML=''; return; }
-    idx.innerHTML=years.map(y=>'<span class="az-letter" data-az-letter="'+y+'">'+y+'</span>').join('');
+    if(entries.length<2){ idx.style.display='none'; idx.innerHTML=''; return; }
+    idx.innerHTML=entries.map(e=>'<span class="az-letter'+(e.isYear?' az-year':'')+'" data-az-letter="'+e.key+'">'+e.label+'</span>').join('');
     idx.style.display='flex';
   }
-  function jumpToFeedYear(year){
+  function jumpToFeedYear(monthKey){
     const scroller=$('#scroller');
-    // find the first-loaded card whose month belongs to this year; load more pages if we haven't reached it yet
     const tryJump=()=>{
-      const heads=[...document.querySelectorAll('#feed .feed-month-head')];
-      const target=heads.find(h=>h.dataset.feedMonth && h.dataset.feedMonth.slice(0,4)===year);
+      const target=document.querySelector('#feed [data-feed-month="'+monthKey+'"]');
       if(target){
         const top=target.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
         scroller.scrollTo({ top: Math.max(0, top-8), behavior:'smooth' });
@@ -4414,11 +4421,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       return false;
     };
     if(tryJump()) return;
-    // not loaded yet — keep loading batches until we reach that year or run out
     let guard=0;
     const loadUntil=()=>{
       guard++;
-      if(feedShown>=feedFull.length || guard>40) return;
+      if(feedShown>=feedFull.length || guard>60) return;
       loadMoreFeed();
       if(!tryJump()) setTimeout(loadUntil, 0);
     };
@@ -8237,6 +8243,30 @@ var qrcode = function() {
     filterByStyle(row.dataset.tasteStyle);
   });
   // feed actions (delegated)
+  function jumpFromGridToList(id){
+    if(cfg.viewMode!=='list'){ cfg.viewMode='list'; saveCfg(); updateViewToggleIcon(); paintFeed(homeScope==='mine'); }
+    const scroller=$('#scroller');
+    const tryJump=()=>{
+      const target=document.querySelector('#feed [data-open="'+id+'"]');
+      if(target){
+        const top=target.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+        scroller.scrollTo({ top: Math.max(0, top-72), behavior:'smooth' });
+        target.classList.add('feed-flash');
+        setTimeout(()=>target.classList.remove('feed-flash'), 1500);
+        return true;
+      }
+      return false;
+    };
+    if(tryJump()) return;
+    let guard=0;
+    const loadUntil=()=>{
+      guard++;
+      if(feedShown>=feedFull.length || guard>80) return;
+      loadMoreFeed();
+      if(!tryJump()) setTimeout(loadUntil, 0);
+    };
+    loadUntil();
+  }
   $('#feed').addEventListener('click',e=>{
     const cm=e.target.closest('[data-cardmenu]');
     if(cm){ e.stopPropagation(); toggleCardMenu(cm); return; }
@@ -8251,7 +8281,10 @@ var qrcode = function() {
     const ph=e.target.closest('[data-photo]');
     const op=e.target.closest('[data-open]');
     if(ph){ e.stopPropagation(); openLightbox(ph.dataset.photo); return; }
-    if(op){ openBeerDetail(op.dataset.open); return; }
+    if(op){
+      if(cfg.viewMode==='grid'){ jumpFromGridToList(op.dataset.open); return; }
+      openBeerDetail(op.dataset.open); return;
+    }
   });
   function openLightbox(path){
     if(!path) return;
