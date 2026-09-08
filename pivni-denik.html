@@ -1404,7 +1404,15 @@
           <div class="glass-rate" id="glass-rate"></div>
         </div>
 
-        <div class="field"><label for="f-where">Kde jsem ochutnal</label><input type="text" id="f-where" placeholder="U Medvídků, doma…" autocomplete="off" list="venue-list"><datalist id="venue-list"></datalist></div>
+        <div class="field">
+          <label>Kde jsi pil?</label>
+          <div class="segment" id="context-seg" style="margin:8px 0 0">
+            <button type="button" class="seg-btn active" data-context="podnik">📍 V podniku</button>
+            <button type="button" class="seg-btn" data-context="doma">🏠 Doma</button>
+            <button type="button" class="seg-btn" data-context="cesta">🚗 Na cestách</button>
+          </div>
+        </div>
+        <div class="field" id="where-field"><label for="f-where">Kde jsem ochutnal</label><input type="text" id="f-where" placeholder="U Medvídků…" autocomplete="off" list="venue-list"><datalist id="venue-list"></datalist></div>
         <div class="field"><label for="f-date">Datum</label><input type="text" id="f-date" placeholder="RRRR-MM-DD" autocomplete="off" inputmode="numeric"></div>
         <div class="field"><label for="f-note">Poznámka k chuti</label><textarea id="f-note" placeholder="Nahořklá, plná chuť, jemná pěna…"></textarea></div>
 
@@ -2524,7 +2532,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const remote = rows.map(x => ({
         id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, collab:x.spolupivovar||'', style:x.styl,
         abv:x.abv, price:x.cena||'', where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
-        foto:x.foto||'', vitrina:!!x.vitrina, tripId:x.vylet_id||null,
+        foto:x.foto||'', vitrina:!!x.vitrina, tripId:x.vylet_id||null, context:x.kontext||'',
         synced:true
       }));
       // keep any local-only (unsynced) records, replace the rest with remote truth
@@ -2546,7 +2554,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const body = {
       id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, spolupivovar:b.collab||null, styl:b.style,
       abv:b.abv, cena:b.price||null, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
-      foto:b.foto||'', vitrina:!!b.vitrina, vylet_id:b.tripId||null
+      foto:b.foto||'', vitrina:!!b.vitrina, vylet_id:b.tripId||null, kontext:b.context||null
     };
     try {
       const r = await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?on_conflict=id', {
@@ -3463,10 +3471,18 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#session-card-doc').innerHTML=html;
     $('#session-card-overlay').classList.add('show');
   }
+  let addContext='podnik';
+  function setAddContext(ctx){
+    addContext=ctx;
+    document.querySelectorAll('#context-seg .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.context===ctx));
+    $('#where-field').style.display = ctx==='podnik' ? 'block' : 'none';
+    if(ctx!=='podnik') $('#f-where').value='';
+  }
   function resetForm(){
     editId=null; currentRating=0; currentPhoto='';
     ['f-name','f-brewery','f-collab','f-style','f-abv','f-price','f-where','f-note'].forEach(id=>$('#'+id).value='');
     $('#collab-field').style.display='none';
+    setAddContext('podnik');
     $('#f-date').value=todayISO(); paintRating();
     if(tasting){ $('#f-where').value=tasting.where; $('#f-date').value=tasting.date; }
     if($('#f-photo')) $('#f-photo').value='';
@@ -3504,6 +3520,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       abv:$('#f-abv').value.trim(),
       price:$('#f-price').value.trim(),
       where:$('#f-where').value.trim(),
+      context: addContext!=='podnik' ? addContext : '',
       date:$('#f-date').value.trim()||todayISO(),
       note:$('#f-note').value.trim(),
       rating:currentRating,
@@ -3564,7 +3581,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#f-name').value=b.name; $('#f-brewery').value=b.brewery||''; $('#f-style').value=b.style||'';
     $('#f-collab').value=b.collab||'';
     $('#collab-field').style.display = b.collab ? 'block' : 'none';
-    $('#f-abv').value=b.abv||''; $('#f-price').value=b.price||''; $('#f-where').value=b.where||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
+    $('#f-abv').value=b.abv||''; $('#f-price').value=b.price||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
+    setAddContext(b.context && b.context!=='podnik' ? b.context : 'podnik');
+    $('#f-where').value = (!b.context || b.context==='podnik') ? (b.where||'') : '';
     currentRating=b.rating||0; paintRating();
     currentPhoto=b.foto||''; setPhotoUI(currentPhoto, false);
     $('#form-title').textContent='Úprava záznamu';
@@ -3663,7 +3682,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const metaBits=[];
     if(b.style) metaBits.push('<button class="bm-item linkish" data-open-style="'+esc(b.style)+'">'+metaStyleIcon()+'<span>'+esc(b.style)+'</span></button>');
     if(b.abv) metaBits.push('<span class="bm-item plain">'+esc(b.abv)+'%</span>');
-    if(b.where) metaBits.push('<button class="bm-item linkish" data-open-venue="'+esc(norm(b.where))+'">'+metaPinIcon()+'<span>'+esc(b.where)+'</span></button>');
+    if(b.context==='doma') metaBits.push('<span class="bm-item plain">🏠 Doma</span>');
+    else if(b.context==='cesta') metaBits.push('<span class="bm-item plain">🚗 Na cestách</span>');
+    else if(b.where) metaBits.push('<button class="bm-item linkish" data-open-venue="'+esc(norm(b.where))+'">'+metaPinIcon()+'<span>'+esc(b.where)+'</span></button>');
     const dateShort = b.date ? esc(b.date) : '';
     const menuBtn = mine ? '<button class="card-menu-btn" data-cardmenu="'+b.id+'" aria-label="Možnosti">'+cardMenuDots()+'</button>' : '';
     return '<article class="card beer'+(mine?' mine':'')+(b.foto?' has-photo':'')+'" data-open="'+b.id+'">'
@@ -3837,7 +3858,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+=all.map(x=>{
       const mine=x.osoba===cfg.name;
       const tags=[ '<span class="lb-fav">'+esc(x.date||'')+'</span>',
-        x.where?'<button class="lb-fav linkish" data-open-venue="'+esc(norm(x.where))+'">'+esc(x.where)+'</button>':'',
+        x.context==='doma' ? '<span class="lb-fav">🏠 Doma</span>' : x.context==='cesta' ? '<span class="lb-fav">🚗 Na cestách</span>'
+          : x.where?'<button class="lb-fav linkish" data-open-venue="'+esc(norm(x.where))+'">'+esc(x.where)+'</button>':'',
         x.price?'<span class="lb-fav">'+esc(x.price)+' Kč</span>':'' ].filter(Boolean).join('');
       return '<div class="rater-entry">'
         +'<div class="lb-row rich">'
@@ -8548,6 +8570,10 @@ var qrcode = function() {
   $('#tasting-card').addEventListener('click', openSessionCard);
   $('#sc-close').addEventListener('click', ()=>$('#session-card-overlay').classList.remove('show'));
   $('#sc-print').addEventListener('click', ()=>window.print());
+  $('#context-seg').addEventListener('click', e=>{
+    const b=e.target.closest('[data-context]'); if(!b) return;
+    setAddContext(b.dataset.context);
+  });
   $('#collab-toggle').addEventListener('click', ()=>{
     const f=$('#collab-field');
     const showing = f.style.display!=='none';
