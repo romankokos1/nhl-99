@@ -518,6 +518,7 @@
   .mf-row b{font-size:14px; font-weight:600; color:var(--text);}
   .mf-row small{font-size:12px; color:var(--text-3);}
   .mf-info{display:flex; flex-direction:column; overflow:hidden;}
+  .kocovny-badge{font-size:10.5px; font-weight:600; color:var(--amber-bright); background:rgba(232,163,61,0.12); border-radius:6px; padding:1px 6px; margin-left:4px; white-space:nowrap;}
   .mf-info b{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .mf-fix{
     flex-shrink:0; font-family:inherit; font-size:12.5px; font-weight:700; color:#241703;
@@ -619,6 +620,8 @@
   .field input::placeholder, .field textarea::placeholder{color:var(--text-4);}
   .field input:focus, .field textarea:focus{outline:none; border-color:var(--amber-deep); box-shadow:0 0 0 4px rgba(232,163,61,0.1);}
   .field textarea{resize:none; min-height:84px; line-height:1.55;}
+  .checkbox-row{display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--text-2); margin:var(--s3) 0; cursor:pointer;}
+  .checkbox-row input{width:18px; height:18px; flex-shrink:0; accent-color:var(--amber);}
   /* custom autocomplete */
   .ac-wrap{position:relative;}
   .ac-drop{
@@ -1716,6 +1719,7 @@
       <h2>Jak ti mám říkat?</h2>
       <p class="lead">Tvoje jméno se objeví u tvých piv v žebříčku party. Zůstane uložené v tomto zařízení.</p>
       <div class="field"><label for="name-input">Jméno nebo přezdívka</label><input type="text" id="name-input" placeholder="např. Honza" autocomplete="off" maxlength="30"></div>
+      <p class="tiny-note" id="name-taken-hint" style="display:none; color:var(--red)">Tohle jméno už v deníku někdo používá. Pokud jsi jiná osoba, zvol radši jiné (např. s příjmením).</p>
       <button class="btn btn-primary" id="name-save">Uložit</button>
     </div>
   </div>
@@ -1929,6 +1933,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <div class="field"><label for="be-web">Web</label><input type="text" id="be-web" placeholder="https://…" autocomplete="off"></div>
       <div class="field"><label for="be-rok">Rok založení</label><input type="number" id="be-rok" placeholder="1795" inputmode="numeric"></div>
       <div class="field"><label for="be-popis">Popis</label><textarea id="be-popis" placeholder="Pár slov o pivovaru…"></textarea></div>
+      <label class="checkbox-row"><input type="checkbox" id="be-kocovny"> <span>🎈 Kočovný pivovar — nemá vlastní sídlo, vaří u hostitelů</span></label>
       <button class="btn btn-primary" id="be-save">Uložit</button>
       <button class="btn btn-ghost" id="be-close" style="margin-top:var(--s3)">Zavřít</button>
     </div>
@@ -2601,7 +2606,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         if(!row.klic) return;
         breweryCache[row.klic]=Object.assign({}, breweryCache[row.klic]||{}, {
           nazev:row.nazev||'', mesto:row.mesto||'', web:row.web||'', rok:row.rok_zalozeni||null, popis:row.popis||'',
-          foto:row.foto||'',
+          foto:row.foto||'', kocovny:!!row.kocovny,
           lat: row.lat!=null?row.lat:(breweryCache[row.klic]?breweryCache[row.klic].lat:undefined),
           lng: row.lng!=null?row.lng:(breweryCache[row.klic]?breweryCache[row.klic].lng:undefined)
         });
@@ -2617,7 +2622,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         headers: Object.assign(sbHeaders(), { 'Prefer':'resolution=merge-duplicates' }),
         body: JSON.stringify({
           klic:key, nazev:data.nazev||key, mesto:data.mesto||null, web:data.web||null,
-          rok_zalozeni:data.rok||null, popis:data.popis||null, foto:data.foto||null,
+          rok_zalozeni:data.rok||null, popis:data.popis||null, foto:data.foto||null, kocovny:!!data.kocovny,
           lat:data.lat!=null?data.lat:null, lng:data.lng!=null?data.lng:null
         })
       });
@@ -3878,7 +3883,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     let html='';
     if(info.foto) html+='<div class="detail-photo" data-photo="'+esc(info.foto)+'"><img src="'+esc(storageUrl(info.foto))+'" alt="'+esc(label)+'"></div>';
     html+='<div class="detail-head">';
-    html+='<h2 class="detail-name">'+esc(label)+'</h2>';
+    html+='<h2 class="detail-name">'+esc(label)+(info.kocovny?' <span class="kocovny-badge">🎈 kočovný</span>':'')+'</h2>';
     html+='<div class="detail-brewery">'+mine.length+' '+beerWord(mine.length)+' zapsáno v partě</div>';
     const metaBits=[];
     if(info.mesto) metaBits.push('<span class="chip">'+esc(info.mesto)+'</span>');
@@ -4040,7 +4045,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     for(const p of items){
       let coord = isBrew
         ? (breweryCache[p.key]
-            ? (breweryCache[p.key].lat!=null ? {lat:breweryCache[p.key].lat,lng:breweryCache[p.key].lng}
+            ? (breweryCache[p.key].kocovny ? null
+               : breweryCache[p.key].lat!=null ? {lat:breweryCache[p.key].lat,lng:breweryCache[p.key].lng}
                : (breweryCache[p.key].geoFailed ? null : undefined))
             : undefined)
         : geoCache[p.key];
@@ -4071,7 +4077,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(bounds.length) mapInstance.fitBounds(bounds,{padding:[30,30], maxZoom:14});
     setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),200);
     $('#map-fallback').innerHTML = fallback.length
-      ? fallback.map(p=>'<div class="mf-row"><div class="mf-info"><b>'+esc(p.label)+'</b><small>'+p.count+' '+beerWord(p.count)+'</small></div><button class="mf-fix" data-fix="'+esc(p.key)+'" data-fix-label="'+esc(p.label)+'" data-fix-kind="'+(mapMode==='breweries'?'brewery':'place')+'">Najít</button></div>').join('')
+      ? fallback.map(p=>{
+          const kocovny = isBrew && breweryCache[p.key] && breweryCache[p.key].kocovny;
+          return '<div class="mf-row"><div class="mf-info"><b>'+esc(p.label)+(kocovny?' <span class="kocovny-badge">🎈 kočovný</span>':'')+'</b><small>'+p.count+' '+beerWord(p.count)+(kocovny?' · bez vlastního sídla':'')+'</small></div><button class="mf-fix" data-fix="'+esc(p.key)+'" data-fix-label="'+esc(p.label)+'" data-fix-kind="'+(mapMode==='breweries'?'brewery':'place')+'">Najít</button></div>';
+        }).join('')
       : '<p class="muted center">'+(isBrew?'Všechny pivovary se podařilo najít na mapě.':'Všechna místa se podařilo najít na mapě.')+'</p>';
   }
   function visitBucket(count){
@@ -5153,7 +5162,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(v!=='map'){ const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; } }
     if(v==='map'){ openMap(mapMode||'venues'); }
   }
-  function openName(){ $('#name-input').value=cfg.name||''; $('#name-overlay').classList.add('show'); setTimeout(()=>$('#name-input').focus(),50); }
+  function openName(){ $('#name-input').value=cfg.name||''; $('#name-taken-hint').style.display='none'; $('#name-overlay').classList.add('show'); setTimeout(()=>$('#name-input').focus(),50); }
 
   let dupPending=null; // {typedName, typedBrewery, candidate}
   function openDupCheck(typedName, typedBrewery, candidate){
@@ -5266,7 +5275,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       }
       return '<div class="lb-row clickable"'+azAttr+' data-open-brewery="'+esc(x.key)+'">'
         +thumb
-        +'<span class="lb-beerinfo"><b>'+esc(x.label)+'</b><small>'+sub+'</small></span>'
+        +'<span class="lb-beerinfo"><b>'+esc(x.label)+(info.kocovny?' <span class="kocovny-badge">🎈 kočovný</span>':'')+'</b><small>'+sub+'</small></span>'
         +'<span class="lb-metric big"><b>'+(x.avg?x.avg.toFixed(1):'–')+'</b><small>Ø</small></span>'
         +'</div>';
     }).join('');
@@ -8254,10 +8263,19 @@ var qrcode = function() {
   });
   // change name
   document.querySelectorAll('[data-changename]').forEach(b=>b.addEventListener('click', openName));
+  $('#name-input').addEventListener('input', ()=>{
+    const n=$('#name-input').value.trim();
+    const taken = n && norm(n)!==norm(cfg.name||'') && beers.some(b=>b.osoba && norm(b.osoba)===norm(n));
+    $('#name-taken-hint').style.display = taken ? 'block' : 'none';
+  });
   $('#name-save').addEventListener('click', ()=>{
     const n=$('#name-input').value.trim();
     if(!n){ toast('Zadej jméno', true); return; }
     const old=cfg.name;
+    if(norm(n)!==norm(old||'')){
+      const taken=beers.some(b=>b.osoba && norm(b.osoba)===norm(n));
+      if(taken && !confirm('Jméno „'+n+'" už v deníku někdo používá. Pokud jsi jiná osoba, zvol radši jiné jméno (třeba s příjmením), ať se vám zápisy nesmíchají.\n\nJsi ale opravdu ta samá osoba, jen na novém zařízení? Pokračuj.')) return;
+    }
     cfg.name=n; saveCfg(); paintName();
     if(old && old!==n){ beers.forEach(b=>{ if(b.osoba===old){ b.osoba=n; b.synced=false; } }); saveLocal(); }
     $('#name-overlay').classList.remove('show');
@@ -8364,6 +8382,7 @@ var qrcode = function() {
     $('#be-web').value=info.web||'';
     $('#be-rok').value=info.rok||'';
     $('#be-popis').value=info.popis||'';
+    $('#be-kocovny').checked=!!info.kocovny;
     $('#brewery-edit-overlay').classList.add('show');
   }
   $('#be-save').addEventListener('click', ()=>{
@@ -8374,7 +8393,8 @@ var qrcode = function() {
       mesto: $('#be-mesto').value.trim(),
       web: $('#be-web').value.trim(),
       rok: parseInt($('#be-rok').value,10)||null,
-      popis: $('#be-popis').value.trim()
+      popis: $('#be-popis').value.trim(),
+      kocovny: $('#be-kocovny').checked
     });
     breweryCache[beCtx.key]=next; saveBreweryCache();
     breweriesPush(beCtx.key, next);
