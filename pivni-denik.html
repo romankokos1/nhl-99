@@ -287,7 +287,7 @@
     background:rgba(10,6,3,0.72); border:1px solid rgba(212,175,110,0.5); backdrop-filter:blur(4px); border-radius:7px; padding:1px 6px;
     font-size:11px; font-weight:800; color:#e0b563; font-variant-numeric:tabular-nums;
   }
-  .photo-preview img{display:block; width:100%; max-height:280px; object-fit:cover; transition:opacity .2s;}
+  .photo-preview img{display:block; width:100%; height:225px; object-fit:cover; transition:opacity .2s;}
   .photo-remove{
     position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%;
     background:rgba(10,6,3,0.7); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.15);
@@ -1430,6 +1430,11 @@
               <div class="photo-status" id="photo-status"></div>
             </div>
           </div>
+          <div class="segment" id="photo-pos-seg" style="display:none; margin-top:8px">
+            <button type="button" class="seg-btn" data-photopos="top">Nahoře</button>
+            <button type="button" class="seg-btn active" data-photopos="center">Uprostřed</button>
+            <button type="button" class="seg-btn" data-photopos="bottom">Dole</button>
+          </div>
         </div>
 
         <button class="btn btn-primary" id="save-btn">Uložit pivo</button>
@@ -2532,7 +2537,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const remote = rows.map(x => ({
         id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, collab:x.spolupivovar||'', style:x.styl,
         abv:x.abv, price:x.cena||'', where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
-        foto:x.foto||'', vitrina:!!x.vitrina, tripId:x.vylet_id||null, context:x.kontext||'',
+        foto:x.foto||'', vitrina:!!x.vitrina, tripId:x.vylet_id||null, context:x.kontext||'', photoPos:x.foto_pozice||'center',
         synced:true
       }));
       // keep any local-only (unsynced) records, replace the rest with remote truth
@@ -2554,7 +2559,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const body = {
       id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, spolupivovar:b.collab||null, styl:b.style,
       abv:b.abv, cena:b.price||null, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
-      foto:b.foto||'', vitrina:!!b.vitrina, vylet_id:b.tripId||null, kontext:b.context||null
+      foto:b.foto||'', vitrina:!!b.vitrina, vylet_id:b.tripId||null, kontext:b.context||null, foto_pozice:b.photoPos||'center'
     };
     try {
       const r = await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?on_conflict=id', {
@@ -3171,15 +3176,25 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
 
   /* ---------- form ---------- */
   let currentPhoto=''; // storage path of the current form's photo
+  const PHOTO_POS_Y={top:'0%', center:'50%', bottom:'100%'};
+  let currentPhotoPos='center';
+  function setPhotoPos(pos){
+    currentPhotoPos=pos;
+    document.querySelectorAll('#photo-pos-seg .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.photopos===pos));
+    const img=$('#photo-img'); if(img) img.style.objectPosition='50% '+PHOTO_POS_Y[pos];
+  }
   function setPhotoUI(path, uploading){
     const empty=$('#photo-empty'), prev=$('#photo-preview'), img=$('#photo-img'), status=$('#photo-status');
     if(!empty) return;
     if(path || uploading){
       empty.style.display='none'; prev.style.display='block';
+      $('#photo-pos-seg').style.display='flex';
       if(path && !uploading){ img.src=storageUrl(path); img.style.opacity='1'; status.textContent=''; status.classList.remove('show'); }
       if(uploading){ img.removeAttribute('src'); img.style.opacity='0.4'; status.textContent='Nahrávám…'; status.classList.add('show'); }
+      img.style.objectPosition='50% '+PHOTO_POS_Y[currentPhotoPos];
     } else {
       empty.style.display='flex'; prev.style.display='none'; img.removeAttribute('src'); status.textContent='';
+      $('#photo-pos-seg').style.display='none';
     }
   }
   /* ---------- style map ---------- */
@@ -3479,7 +3494,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(ctx!=='podnik') $('#f-where').value='';
   }
   function resetForm(){
-    editId=null; currentRating=0; currentPhoto='';
+    editId=null; currentRating=0; currentPhoto=''; currentPhotoPos='center';
     ['f-name','f-brewery','f-collab','f-style','f-abv','f-price','f-where','f-note'].forEach(id=>$('#'+id).value='');
     $('#collab-field').style.display='none';
     setAddContext('podnik');
@@ -3525,6 +3540,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       note:$('#f-note').value.trim(),
       rating:currentRating,
       foto:currentPhoto||'',
+      photoPos: currentPhoto ? currentPhotoPos : 'center',
       vitrina: prev ? !!prev.vitrina : false,
       tripId: prev ? (prev.tripId||null) : null,
       synced:false
@@ -3585,7 +3601,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     setAddContext(b.context && b.context!=='podnik' ? b.context : 'podnik');
     $('#f-where').value = (!b.context || b.context==='podnik') ? (b.where||'') : '';
     currentRating=b.rating||0; paintRating();
-    currentPhoto=b.foto||''; setPhotoUI(currentPhoto, false);
+    currentPhoto=b.foto||''; setPhotoPos(b.photoPos||'center'); setPhotoUI(currentPhoto, false);
     $('#form-title').textContent='Úprava záznamu';
     $('#save-btn').textContent='Uložit změny';
     $('#cancel-btn').style.display='inline-flex';
@@ -3660,7 +3676,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const pendingHtml = !b.synced ? '<span class="pending-dot gt-pending" title="Čeká na odeslání"></span>' : '';
     if(b.foto){
       return '<div class="grid-tile" data-open="'+b.id+'">'
-        +'<img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.name)+'">'
+        +'<img loading="lazy" style="'+photoPosStyle(b)+'" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.name)+'">'
         +scoreHtml+pendingHtml
         +'</div>';
     }
@@ -3677,6 +3693,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +scoreHtml+pendingHtml
       +'</div>';
   }
+  const PHOTO_POS_Y_MAP={top:'0%', center:'50%', bottom:'100%'};
+  function photoPosStyle(b){ return 'object-position:50% '+(PHOTO_POS_Y_MAP[b.photoPos]||'50%')+';'; }
   function beerCard(b, showWho){
     const mine = b.osoba===cfg.name;
     const metaBits=[];
@@ -3688,7 +3706,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const dateShort = b.date ? esc(b.date) : '';
     const menuBtn = mine ? '<button class="card-menu-btn" data-cardmenu="'+b.id+'" aria-label="Možnosti">'+cardMenuDots()+'</button>' : '';
     return '<article class="card beer'+(mine?' mine':'')+(b.foto?' has-photo':'')+'" data-open="'+b.id+'">'
-      + (b.foto?('<div class="beer-photo" data-photo="'+esc(b.foto)+'"><img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="Foto '+esc(b.name)+'">'+menuBtn+'</div>'):'')
+      + (b.foto?('<div class="beer-photo" data-photo="'+esc(b.foto)+'"><img loading="lazy" style="'+photoPosStyle(b)+'" src="'+esc(storageUrl(b.foto))+'" alt="Foto '+esc(b.name)+'">'+menuBtn+'</div>'):'')
       + '<div class="beer-main">'
       +   '<div class="beer-top">'
       +     '<h3 class="beer-name">'+esc(b.name)+'</h3>'
@@ -3839,7 +3857,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(b.abv) chips.push('<span class="chip">'+esc(b.abv)+'%</span>');
 
     let html='';
-    if(photoEntry) html+='<div class="detail-photo" data-photo-gallery="'+esc(photoEntry.id)+'"><img src="'+esc(storageUrl(photoEntry.foto))+'" alt="'+esc(b.name)+'"></div>';
+    if(photoEntry) html+='<div class="detail-photo" data-photo-gallery="'+esc(photoEntry.id)+'"><img style="'+photoPosStyle(photoEntry)+'" src="'+esc(storageUrl(photoEntry.foto))+'" alt="'+esc(b.name)+'"></div>';
     html+='<div class="detail-head">';
     html+='<h2 class="detail-name">'+esc(b.name)+'</h2>';
     if(b.brewery){
@@ -3869,7 +3887,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         + likeButtonHtml(x)
         +'</div>'
         +(tags?'<div class="rater-tags">'+tags+'</div>':'')
-        +(x.foto?'<img class="rater-thumb" loading="lazy" src="'+esc(storageUrl(x.foto))+'" data-photo-gallery="'+esc(x.id)+'" alt="Foto od '+esc(x.osoba)+'">':'')
+        +(x.foto?'<img class="rater-thumb" loading="lazy" style="'+photoPosStyle(x)+'" src="'+esc(storageUrl(x.foto))+'" data-photo-gallery="'+esc(x.id)+'" alt="Foto od '+esc(x.osoba)+'">':'')
         +(x.note?'<div class="detail-note">'+esc(x.note)+'</div>':'')
         +((mine&&x.foto)||mine?'<div class="rater-actions">'
           +(mine&&x.foto?'<button class="row-btn detail-showcase'+(x.vitrina?' active':'')+'" data-detail-showcase="'+x.id+'" aria-label="Vitrína">'+(x.vitrina?'Ve vitríně ✓':'Do vitríny')+'</button>':'')
@@ -8570,6 +8588,10 @@ var qrcode = function() {
   $('#tasting-card').addEventListener('click', openSessionCard);
   $('#sc-close').addEventListener('click', ()=>$('#session-card-overlay').classList.remove('show'));
   $('#sc-print').addEventListener('click', ()=>window.print());
+  $('#photo-pos-seg').addEventListener('click', e=>{
+    const b=e.target.closest('[data-photopos]'); if(!b) return;
+    setPhotoPos(b.dataset.photopos);
+  });
   $('#context-seg').addEventListener('click', e=>{
     const b=e.target.closest('[data-context]'); if(!b) return;
     setAddContext(b.dataset.context);
