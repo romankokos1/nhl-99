@@ -448,12 +448,13 @@
   .brl-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
   .brl-thumb.empty svg{width:19px; height:19px; color:var(--amber-deep); opacity:0.5;}
   .az-index{
-    position:absolute; right:2px; top:112px; bottom:88px; z-index:15;
+    position:absolute; right:0; top:96px; bottom:78px; z-index:15; width:20px;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:6px 5px; -webkit-user-select:none; user-select:none; touch-action:none;
+    padding:4px 2px; -webkit-user-select:none; user-select:none; touch-action:none;
+    overflow:hidden;
   }
-  .az-letter{font-size:9.5px; font-weight:700; color:var(--text-3); padding:1.4px 5px; line-height:1.3; cursor:pointer;}
-  .az-letter.az-year{font-size:10px; font-weight:800; color:var(--amber-bright); padding-top:5px;}
+  .az-letter{font-size:8px; font-weight:700; color:var(--text-3); padding:0.8px 3px; line-height:1.2; cursor:pointer;}
+  .az-letter.az-year{font-size:8.5px; font-weight:800; color:var(--amber-bright); padding-top:3px;}
   .az-letter.active{color:var(--amber-bright); transform:scale(1.3); transform-origin:right center;}
   .trip-map-wrap{position:relative; height:190px; border-radius:var(--r-card); overflow:hidden; border:1px solid var(--hairline); margin:12px 0; background:var(--bg-2);}
   #trip-map-canvas{width:100%; height:100%;}
@@ -618,8 +619,7 @@
   #feed.feed-grid .feed-month-head{grid-column:1 / -1;}
   .feed-month-head{
     font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--amber-bright);
-    padding:10px 2px 6px; position:sticky; top:calc(env(safe-area-inset-top) + 72px); z-index:6;
-    background:linear-gradient(var(--bg) 70%, transparent);
+    padding:10px 2px 6px;
   }
   .feed-more{text-align:center; padding:var(--s5) 0;}
   .feed-more .btn{padding:11px 22px;}
@@ -4389,7 +4389,6 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const list=$('#feed'); if(list) list.insertAdjacentHTML('beforeend', html);
     if(feedShown<feedFull.length) appendFeedSentinel();
   }
-  const MONTH_ABBR_CZ=['Led','Úno','Bře','Dub','Kvě','Čvn','Čvc','Srp','Zář','Říj','Lis','Pro'];
   function renderYearIndex(sortedList){
     const idx=$('#year-index'); if(!idx) return;
     if(sortedList.length<40){ idx.style.display='none'; idx.innerHTML=''; return; }
@@ -4402,8 +4401,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       if(seen.has(mk)) return;
       seen.add(mk);
       const y=mk.slice(0,4);
-      if(y!==lastYear){ entries.push({key:mk, label:y, isYear:true}); lastYear=y; }
-      else { entries.push({key:mk, label:MONTH_ABBR_CZ[parseInt(mk.slice(5,7),10)-1]}); }
+      if(y!==lastYear){ entries.push({key:mk, label:y.slice(2), isYear:true}); lastYear=y; }
+      else { entries.push({key:mk, label:String(parseInt(mk.slice(5,7),10))}); }
     });
     if(entries.length<2){ idx.style.display='none'; idx.innerHTML=''; return; }
     idx.innerHTML=entries.map(e=>'<span class="az-letter'+(e.isYear?' az-year':'')+'" data-az-letter="'+e.key+'">'+e.label+'</span>').join('');
