@@ -1001,6 +1001,9 @@
   .conn-pill.syncing{color:var(--amber);} .conn-pill.syncing .pill-dot{background:var(--amber); animation:pulse 1s infinite;}
   .pending-badge{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:var(--amber-bright); margin-left:6px;}
   .pending-badge::before{content:'⏳';}
+  .incomplete-badge{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:var(--amber-bright); margin-left:6px; cursor:pointer; text-decoration:underline; text-underline-offset:2px;}
+  .incomplete-badge::before{content:'✏️';}
+  .card-incomplete-tag{font-size:10.5px; font-weight:700; color:var(--amber-bright); background:rgba(232,163,61,0.12); border-radius:6px; padding:2px 7px; margin-left:6px; white-space:nowrap;}
   .pending-dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--amber-bright); box-shadow:0 0 6px var(--amber-bright); flex-shrink:0; margin-left:6px;}
   .gt-pending{position:absolute; top:6px; left:6px; margin-left:0;}
   @keyframes pulse{50%{opacity:0.3;}}
@@ -1343,7 +1346,7 @@
       </div>
 
       <div class="pad">
-        <div class="syncline"><span class="dot" ></span><span class="sync-text">—</span><span class="pending-badge" id="pending-badge-home" style="display:none"></span></div>
+        <div class="syncline"><span class="dot" ></span><span class="sync-text">—</span><span class="pending-badge" id="pending-badge-home" style="display:none"></span><span class="incomplete-badge" id="incomplete-badge-home" data-incomplete-open style="display:none"></span></div>
 
         <div class="hero">
           <div class="hero-hello" id="hero-hello">Vítej</div>
@@ -1405,6 +1408,7 @@
           <button class="ts-end" id="tasting-card" style="background:none; border:1px solid var(--hairline-strong); color:var(--amber-bright);">Karta</button>
           <button class="ts-end" id="tasting-end">Ukončit</button>
         </div>
+        <p class="tiny-note" id="incomplete-hint" style="display:none; color:var(--amber-bright); margin-bottom:var(--s3)">⚡ Tohle byl rychlý zápis — doplň, co chybí, a ulož.</p>
         <div class="field"><label for="f-name">Název piva</label><div class="ac-wrap"><input type="text" id="f-name" placeholder="Světlý ležák" autocomplete="off"><div class="ac-drop" id="beer-ac"></div></div></div>
         <div class="field"><label for="f-brewery">Pivovar</label><input type="text" id="f-brewery" placeholder="Budějovický Budvar" autocomplete="off" list="brewery-list"><datalist id="brewery-list"></datalist></div>
         <button type="button" class="collab-toggle" id="collab-toggle">+ Spolupráce dvou pivovarů</button>
@@ -1457,6 +1461,7 @@
         </div>
 
         <button class="btn btn-primary" id="save-btn">Uložit pivo</button>
+        <button class="btn btn-ghost" id="quick-save-btn" style="margin-top:8px">⚡ Rychlé pivo — jen název a hodnocení</button>
         <div class="btn-row" style="margin-top:var(--s3)"><button class="btn btn-ghost" id="cancel-btn" style="display:none">Zrušit úpravu</button></div>
         <div class="bottom-space"></div>
       </div>
@@ -1611,7 +1616,7 @@
         <div class="profile-head">
           <div class="profile-av" id="me-avatar">?</div>
           <div class="profile-name me-name">—</div>
-          <div class="profile-role">tvůj pivní účet · <span class="conn-pill" id="conn-pill"><span class="pill-dot"></span><span class="pill-text">Offline</span></span><span class="pending-badge" id="pending-badge-profile" style="display:none"></span></div>
+          <div class="profile-role">tvůj pivní účet · <span class="conn-pill" id="conn-pill"><span class="pill-dot"></span><span class="pill-text">Offline</span></span><span class="pending-badge" id="pending-badge-profile" style="display:none"></span><span class="incomplete-badge" id="incomplete-badge-profile" data-incomplete-open style="display:none"></span></div>
         </div>
 
         <button class="trophy-head trophy-open" id="trophy-open">
@@ -1644,6 +1649,12 @@
           <div class="row-item" data-trips>
             <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4M9 6l6-2"/></svg></div>
             <div class="row-tx"><div class="t">Výlety</div><div class="d">Dny, kdy jste vyrazili víc míst</div></div>
+            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+
+          <div class="row-item" data-venuewish>
+            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c4-4.5 6.5-8 6.5-11a6.5 6.5 0 0 0-13 0c0 3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div>
+            <div class="row-tx"><div class="t">Chtěli bychom navštívit</div><div class="d">Podniky, co ještě neznáte</div></div>
             <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
 
@@ -2037,6 +2048,21 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         <button class="btn btn-primary" id="trip-new-save">Založit výlet</button>
       </div>
       <div id="trips-list"></div>
+    </div>
+  </div>
+
+  <!-- venues we'd like to visit -->
+  <div class="overlay" id="venuewish-overlay">
+    <div class="sheet map-sheet">
+      <div class="grabber"></div>
+      <div class="map-head">
+        <div class="sec-title first" style="margin:0">Chtěli bychom navštívit</div>
+        <button class="detail-close" id="venuewish-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      </div>
+      <div id="venuewish-list" style="margin-bottom:var(--s4)"></div>
+      <div class="field"><label for="venuewish-name">Název podniku</label><input type="text" id="venuewish-name" placeholder="U Medvídků…"></div>
+      <div class="field"><label for="venuewish-note">Poznámka (nepovinné)</label><input type="text" id="venuewish-note" placeholder="Prý mají skvělý výčep…"></div>
+      <button class="btn btn-primary" id="venuewish-save">Přidat na seznam</button>
     </div>
   </div>
 
@@ -2488,13 +2514,26 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     try { beers = JSON.parse(localStorage.getItem(LKEY)) || []; } catch(e){ beers=[]; }
     try { cfg = Object.assign(cfg, JSON.parse(localStorage.getItem(CFG))||{}); } catch(e){}
   }
-  function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(beers)); } catch(e){ toast('Nelze uložit lokálně', true); } updatePendingBadge(); }
+  function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(beers)); } catch(e){ toast('Nelze uložit lokálně', true); } updatePendingBadge(); updateIncompleteBadge(); }
   function updatePendingBadge(){
     const n=beers.filter(b=>!b.synced).length;
     document.querySelectorAll('.pending-badge').forEach(el=>{
       if(n>0){ el.textContent=n+' '+(n===1?'čeká':'čekají')+' na odeslání'; el.style.display='inline-flex'; }
       else { el.style.display='none'; el.textContent=''; }
     });
+  }
+  function updateIncompleteBadge(){
+    const n=beers.filter(b=>b.incomplete && b.osoba===cfg.name).length;
+    document.querySelectorAll('.incomplete-badge').forEach(el=>{
+      if(n>0){ el.textContent=n+' '+(n===1?'čeká':'čekají')+' na doplnění'; el.style.display='inline-flex'; }
+      else { el.style.display='none'; el.textContent=''; }
+    });
+  }
+  function openNextIncomplete(){
+    const next=beers.find(b=>b.incomplete && b.osoba===cfg.name);
+    if(!next){ toast('Nic nečeká na doplnění'); return; }
+    editBeer(next.id);
+    toast('Doplň, co chybí, a ulož');
   }
   function saveCfg(){ try { localStorage.setItem(CFG, JSON.stringify(cfg)); } catch(e){} }
   function applyTheme(){
@@ -2563,7 +2602,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const remote = rows.map(x => ({
         id:x.id, osoba:x.osoba, name:x.nazev, brewery:x.pivovar, collab:x.spolupivovar||'', style:x.styl,
         abv:x.abv, price:x.cena||'', where:x.kde, date:x.datum, note:x.poznamka, rating:x.hodnoceni,
-        foto:x.foto||'', vitrina:!!x.vitrina, tripId:x.vylet_id||null, context:x.kontext||'', photoPos:x.foto_pozice||'center',
+        foto:x.foto||'', vitrina:!!x.vitrina, tripId:x.vylet_id||null, context:x.kontext||'', photoPos:x.foto_pozice||'center', incomplete:!!x.neuplne,
         synced:true
       }));
       // keep any local-only (unsynced) records, replace the rest with remote truth
@@ -2585,7 +2624,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const body = {
       id:b.id, osoba:b.osoba||cfg.name, nazev:b.name, pivovar:b.brewery, spolupivovar:b.collab||null, styl:b.style,
       abv:b.abv, cena:b.price||null, kde:b.where, datum:b.date, poznamka:b.note, hodnoceni:b.rating||0,
-      foto:b.foto||'', vitrina:!!b.vitrina, vylet_id:b.tripId||null, kontext:b.context||null, foto_pozice:b.photoPos||'center'
+      foto:b.foto||'', vitrina:!!b.vitrina, vylet_id:b.tripId||null, kontext:b.context||null, foto_pozice:b.photoPos||'center', neuplne:!!b.incomplete
     };
     try {
       const r = await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?on_conflict=id', {
@@ -2831,6 +2870,67 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const block=document.querySelector('[data-wish-block="'+brewKey+'"]');
     if(block) block.outerHTML=wishlistHtml(brewKey);
   }
+
+  /* ---------- venue wishlist: places we haven't been yet, shared with the party ---------- */
+  let venueWish=[];
+  async function venueWishPull(){
+    if(!sbConfigured()){ venueWish=[]; return; }
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/mista_prani?select=*&order=vytvoreno.asc', { headers: sbHeaders() });
+      if(!r.ok) return;
+      venueWish=(await r.json()).map(row=>({ id:row.id, nazev:row.nazev, poznamka:row.poznamka||'', osoba:row.osoba||'', vytvoreno:row.vytvoreno }));
+    } catch(e){}
+  }
+  async function venueWishAdd(nazev, poznamka){
+    if(!sbConfigured()) return null;
+    const id=uid();
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/mista_prani', {
+        method:'POST', headers:sbHeaders(),
+        body: JSON.stringify({ id, nazev, poznamka:poznamka||null, osoba:cfg.name })
+      });
+      return r.ok ? id : null;
+    } catch(e){ return null; }
+  }
+  async function venueWishRemove(id){
+    if(!sbConfigured()) return false;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/mista_prani?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+      return r.ok;
+    } catch(e){ return false; }
+  }
+  function renderVenueWishList(){
+    const box=$('#venuewish-list'); if(!box) return;
+    box.innerHTML = venueWish.length
+      ? venueWish.map(w=>
+          '<div class="wish-row"><span class="wish-tx"><b>'+esc(w.nazev)+'</b>'
+          +(w.poznamka?'<small>'+esc(w.poznamka)+'</small>':'')
+          +(w.osoba?'<small>přidal(a) '+esc(w.osoba)+'</small>':'')+'</span>'
+          +'<button class="comment-del" data-venuewish-del="'+w.id+'" aria-label="Smazat">'+delIconSmall()+'</button></div>'
+        ).join('')
+      : '<p class="muted center">Zatím nic — přidejte podnik, co chcete vyzkoušet.</p>';
+  }
+  function openVenueWish(){ renderVenueWishList(); $('#venuewish-overlay').classList.add('show'); }
+  async function saveNewVenueWish(){
+    const nazev=$('#venuewish-name').value.trim();
+    if(!nazev){ toast('Zadej název podniku', true); return; }
+    const poznamka=$('#venuewish-note').value.trim();
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš přidávat', true); return; }
+    const id=await venueWishAdd(nazev, poznamka);
+    if(id){
+      venueWish.push({ id, nazev, poznamka, osoba:cfg.name, vytvoreno:new Date().toISOString() });
+      $('#venuewish-name').value=''; $('#venuewish-note').value='';
+      renderVenueWishList();
+    } else { toast('Nepodařilo se přidat', true); }
+  }
+  async function removeVenueWish(id){
+    const idx=venueWish.findIndex(w=>w.id===id); if(idx<0) return;
+    const removed=venueWish.splice(idx,1)[0];
+    renderVenueWishList();
+    const ok=await venueWishRemove(id);
+    if(!ok){ venueWish.splice(idx,0,removed); renderVenueWishList(); toast('Nepodařilo se smazat', true); }
+  }
+
   async function sendWish(brewKey){
     const input=document.querySelector('[data-wish-input="'+brewKey+'"]');
     if(!input) return;
@@ -3180,6 +3280,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const pill=$('#conn-pill');
     if(pill){ pill.className='conn-pill '+state; pill.querySelector('.pill-text').textContent = state==='online'?'Připojeno':(state==='syncing'?'Synchronizuji':'Offline'); }
     updatePendingBadge();
+    updateIncompleteBadge();
   }
 
   /* ---------- rating control ---------- */
@@ -3531,13 +3632,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#form-title').textContent='Nový záznam';
     $('#save-btn').textContent='Uložit pivo';
     $('#cancel-btn').style.display='none';
+    $('#incomplete-hint').style.display='none';
   }
-  async function saveBeer(){
+  async function saveBeer(quick){
     const name=$('#f-name').value.trim();
     if(!name){ toast('Zadej název piva', true); $('#f-name').focus(); return; }
     if(!cfg.name){ openName(); return; }
-    // duplicate detection (only for brand-new records, not edits)
-    if(!editId){
+    // duplicate detection (only for brand-new, non-quick records)
+    if(!editId && !quick){
       const brew=$('#f-brewery').value.trim();
       const sim1=findSimilar(name, knownBeers(), name, brew);
       if(sim1){
@@ -3547,9 +3649,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         if(brewOk){ openDupCheck(name, brew, cand); return; }
       }
     }
-    commitBeer();
+    commitBeer(null, null, quick);
   }
-  function commitBeer(overrideName, overrideBrewery){
+  function commitBeer(overrideName, overrideBrewery, quick){
     const prev = editId ? beers.find(x=>x.id===editId) : null;
     const rec = {
       id: editId || uid(),
@@ -3569,6 +3671,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       photoPos: currentPhoto ? currentPhotoPos : 'center',
       vitrina: prev ? !!prev.vitrina : false,
       tripId: prev ? (prev.tripId||null) : null,
+      incomplete: !!quick,
       synced:false
     };
     if(editId){
@@ -3589,11 +3692,20 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         wishRemove(w.id); // úklid na pozadí, nekritické
       }
     }
+    if(!wasEdit && rec.where){
+      const nWhere=norm(rec.where);
+      const vIdx=venueWish.findIndex(w=>norm(w.nazev)===nWhere);
+      if(vIdx>=0){
+        const w=venueWish.splice(vIdx,1)[0];
+        wishCelebrate=true;
+        venueWishRemove(w.id); // úklid na pozadí, nekritické
+      }
+    }
     saveLocal(); resetForm(); renderAll();
     if(sbConfigured()){
-      sbPush(rec).then(ok=>{ toast(wishCelebrate ? 'Škrtnuto ze seznamu přání! 🎉' : (ok ? 'Uloženo · na zdraví! 🍺' : 'Uloženo lokálně (offline)')); renderAll(); });
+      sbPush(rec).then(ok=>{ toast(wishCelebrate ? 'Škrtnuto ze seznamu přání! 🎉' : quick ? '⚡ Uloženo · doplníš později' : (ok ? 'Uloženo · na zdraví! 🍺' : 'Uloženo lokálně (offline)')); renderAll(); });
     } else {
-      toast(wishCelebrate ? 'Škrtnuto ze seznamu přání! 🎉' : 'Uloženo lokálně · zapni sdílení v Profilu');
+      toast(wishCelebrate ? 'Škrtnuto ze seznamu přání! 🎉' : quick ? '⚡ Uloženo · doplníš později' : 'Uloženo lokálně · zapni sdílení v Profilu');
     }
     if(tasting && !wasEdit){
       tasting.count++; saveTasting(); paintTastingBar();
@@ -3631,6 +3743,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#form-title').textContent='Úprava záznamu';
     $('#save-btn').textContent='Uložit změny';
     $('#cancel-btn').style.display='inline-flex';
+    $('#incomplete-hint').style.display = b.incomplete ? 'block' : 'none';
     switchView('add');
   }
   async function toggleShowcase(id){
@@ -3737,6 +3850,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +   '<div class="beer-top">'
       +     '<h3 class="beer-name">'+esc(b.name)+'</h3>'
       +     (!b.synced?'<span class="pending-dot" title="Čeká na odeslání do sdílené databáze"></span>':'')
+      +     (b.incomplete?'<span class="card-incomplete-tag">Doplnit</span>':'')
       +     '<div class="score-plain"><span class="score-num">'+(b.rating||'–')+'</span><span class="score-den">/10</span></div>'
       +     (!b.foto?menuBtn:'')
       +   '</div>'
@@ -8031,7 +8145,7 @@ var qrcode = function() {
   resetForm();
   renderAll();
 
-  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); partyGoalPull().then(renderPartyGoal); }
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); venueWishPull(); partyGoalPull().then(renderPartyGoal); }
   else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
 
   if(!cfg.name) setTimeout(openName, 400);
@@ -8102,7 +8216,8 @@ var qrcode = function() {
     fillFromKnown(b.name);
   }
   // form
-  $('#save-btn').addEventListener('click', saveBeer);
+  $('#save-btn').addEventListener('click', ()=>saveBeer(false));
+  $('#quick-save-btn').addEventListener('click', ()=>saveBeer(true));
   // photo picker
   if($('#photo-empty')) $('#photo-empty').addEventListener('click', ()=>{
     if(!sbConfigured()){ toast('Nejdřív zapni sdílení v Profilu', true); return; }
@@ -8667,6 +8782,7 @@ var qrcode = function() {
   document.querySelectorAll('[data-brewmerge]').forEach(b=>b.addEventListener('click', openBrewMerge));
   // yearbook
   document.querySelectorAll('[data-yearbook]').forEach(b=>b.addEventListener('click', openYearbook));
+  document.querySelectorAll('[data-incomplete-open]').forEach(b=>b.addEventListener('click', openNextIncomplete));
   $('#yb-close').addEventListener('click', ()=>$('#yearbook-overlay').classList.remove('show'));
   $('#yb-print').addEventListener('click', ()=>window.print());
   // trips
@@ -8682,6 +8798,14 @@ var qrcode = function() {
     if(tripPickerBeerId){ linkBeerToTrip(tripPickerBeerId, id); return; }
     $('#trips-overlay').classList.remove('show');
     openTripDetail(id, false);
+  });
+  // venue wishlist
+  document.querySelectorAll('[data-venuewish]').forEach(b=>b.addEventListener('click', openVenueWish));
+  $('#venuewish-close').addEventListener('click', ()=>$('#venuewish-overlay').classList.remove('show'));
+  $('#venuewish-save').addEventListener('click', saveNewVenueWish);
+  $('#venuewish-list').addEventListener('click', e=>{
+    const del=e.target.closest('[data-venuewish-del]'); if(!del) return;
+    removeVenueWish(del.dataset.venuewishDel);
   });
   // global search
   $('#globalsearch-open').addEventListener('click', ()=>{
@@ -8785,13 +8909,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#placemerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay','#globalsearch-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#placemerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay','#venuewish-overlay','#globalsearch-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#placemerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#placemerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#venuewish-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
@@ -8805,7 +8929,7 @@ var qrcode = function() {
     }
     if(!e.target.closest('.cardmenu-pop')) closeCardMenu();
   });
-  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); partyGoalPull().then(renderPartyGoal); } }, 30000);
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); venueWishPull(); partyGoalPull().then(renderPartyGoal); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 
