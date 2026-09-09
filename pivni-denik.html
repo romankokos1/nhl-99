@@ -225,6 +225,9 @@
     background:var(--surface-2); border:none; color:var(--text-3); display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
   .search-clear svg{position:static; width:13px; height:13px;}
+  .input-clear-wrap{position:relative;}
+  .input-clear-wrap input{padding-right:40px;}
+  .input-clear-wrap .search-clear{right:6px;}
 
   /* beer card */
   .card.beer{
@@ -586,17 +589,27 @@
   .beer-foot{display:flex; align-items:center; gap:var(--s3); margin-top:var(--s3); padding-top:10px; border-top:1px solid var(--hairline);}
   .byline{display:flex; align-items:center; gap:6px; font-size:13.5px; color:var(--text-2); font-weight:600;}
   .like-btn{
-    display:flex; align-items:center; gap:5px; margin-left:auto;
-    background:none; border:none; cursor:pointer; padding:2px 4px; color:var(--text-3);
-    transition:transform .15s;
+    display:flex; align-items:center; margin-left:auto;
+    background:none; border:1px solid transparent; border-radius:999px; cursor:pointer; padding:5px 9px;
+    transition:transform .15s, background .15s, border-color .15s; color:var(--text-3);
   }
-  .like-btn:active{transform:scale(0.88);}
-  .like-btn .like-icon{width:19px; height:19px; flex-shrink:0;}
-  .like-btn .like-count{font-size:12.5px; font-weight:700; color:var(--text-3); font-variant-numeric:tabular-nums; min-width:5px;}
-  .like-btn.liked{color:#e0567a;}
-  .like-btn.liked .like-icon{fill:#e0567a; stroke:#e0567a;}
-  .like-btn.liked .like-count{color:#e0567a;}
+  .like-btn:active{transform:scale(0.9);}
+  .like-summary{font-size:14px; font-weight:700; color:var(--text-2); font-variant-numeric:tabular-nums; letter-spacing:0.01em;}
+  .like-summary-empty{opacity:0.4; filter:grayscale(0.6);}
+  .like-btn.liked{background:rgba(232,163,61,0.12); border-color:var(--hairline-strong);}
   .like-btn.self{opacity:0.55;}
+  .reaction-pop{
+    position:fixed; z-index:70; display:none; align-items:center; gap:1px;
+    background:var(--surface-2); border:1px solid var(--hairline-strong); border-radius:999px;
+    padding:5px 6px; box-shadow:var(--shadow-float);
+  }
+  .reaction-pop.show{display:flex; animation:fade .14s;}
+  .reaction-pop button{
+    width:36px; height:36px; border-radius:50%; border:none; background:none; font-size:19px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:transform .12s, background .12s;
+  }
+  .reaction-pop button:active{transform:scale(0.85);}
+  .reaction-pop button.active{background:rgba(232,163,61,0.2);}
   .foot-date{font-size:12.5px; color:var(--text-3); font-variant-numeric:tabular-nums;}
   .byline.dim{color:var(--text-3); font-weight:500;}
   .mini-avatar{width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9.5px; font-weight:700; color:#fff; flex-shrink:0;}
@@ -1435,7 +1448,16 @@
             <button type="button" class="seg-btn" data-context="cesta">🚗 Na cestách</button>
           </div>
         </div>
-        <div class="field" id="where-field"><label for="f-where">Kde jsem ochutnal</label><input type="text" id="f-where" placeholder="U Medvídků…" autocomplete="off" list="venue-list"><datalist id="venue-list"></datalist></div>
+        <div class="field" id="where-field">
+          <label for="f-where">Kde jsem ochutnal</label>
+          <div class="input-clear-wrap">
+            <input type="text" id="f-where" placeholder="U Medvídků…" autocomplete="off" list="venue-list">
+            <button type="button" class="search-clear" id="f-where-clear" style="display:none" aria-label="Vymazat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <datalist id="venue-list"></datalist>
+        </div>
         <div class="field"><label for="f-date">Datum</label><input type="text" id="f-date" placeholder="RRRR-MM-DD" autocomplete="off" inputmode="numeric"></div>
         <div class="field"><label for="f-note">Poznámka k chuti</label><textarea id="f-note" placeholder="Nahořklá, plná chuť, jemná pěna…"></textarea></div>
 
@@ -1942,6 +1964,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
 
   <!-- floating card action menu -->
   <div class="cardmenu-pop" id="cardmenu-pop"></div>
+  <div class="reaction-pop" id="reaction-pop"></div>
 
   <!-- beer detail sheet -->
   <div class="overlay" id="detail-overlay">
@@ -2708,7 +2731,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     } catch(e){}
   }
   /* ---------- likes (per-entry, from the party) ---------- */
-  let likesMap={}; // { [beerId]: Set<osoba> }
+  let likesMap={}; // { [beerId]: Map<osoba, typ> }
   async function likesPull(){
     if(!sbConfigured()){ likesMap={}; return; }
     try {
@@ -2718,19 +2741,19 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const map={};
       rows.forEach(row=>{
         if(!row.pivo_id||!row.osoba) return;
-        if(!map[row.pivo_id]) map[row.pivo_id]=new Set();
-        map[row.pivo_id].add(row.osoba);
+        if(!map[row.pivo_id]) map[row.pivo_id]=new Map();
+        map[row.pivo_id].set(row.osoba, row.typ||'srdce');
       });
       likesMap=map;
     } catch(e){}
   }
-  async function likeAdd(pivoId){
+  async function likeAdd(pivoId, typ){
     if(!sbConfigured()) return false;
     try {
       const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/liky', {
         method:'POST',
         headers: Object.assign(sbHeaders(), { 'Prefer':'resolution=merge-duplicates' }),
-        body: JSON.stringify({ pivo_id:pivoId, osoba:cfg.name })
+        body: JSON.stringify({ pivo_id:pivoId, osoba:cfg.name, typ:typ||'srdce' })
       });
       return r.ok;
     } catch(e){ return false; }
@@ -2744,38 +2767,94 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       return r.ok;
     } catch(e){ return false; }
   }
-  function likeIcon(){
-    return '<svg viewBox="0 0 24 24" class="like-icon" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 20.5s-7.2-4.4-9.6-8.7C.7 8.6 2.2 5 5.8 4.5c2-.3 3.7.8 6.2 3.3 2.5-2.5 4.2-3.6 6.2-3.3 3.6.5 5.1 4.1 3.4 7.3C19.2 16.1 12 20.5 12 20.5z"/></svg>';
-  }
+  const REACTIONS=[
+    {key:'srdce', emoji:'❤️', label:'Líbí se mi'},
+    {key:'pivo', emoji:'🍻', label:'Na zdraví'},
+    {key:'chci', emoji:'😍', label:'Chci taky'},
+    {key:'ne', emoji:'😬', label:'To radši ne'}
+  ];
+  function reactionEmoji(typ){ const r=REACTIONS.find(x=>x.key===typ); return r?r.emoji:'❤️'; }
   function likeButtonHtml(b){
-    const set=likesMap[b.id]; const count=set?set.size:0;
+    const map=likesMap[b.id];
     const mine=b.osoba===cfg.name;
-    const iLiked=!!(cfg.name && set && set.has(cfg.name));
-    const cls='like-btn'+(iLiked?' liked':'')+(mine?' self':'');
-    return '<button class="'+cls+'" data-like-btn="'+b.id+'" data-like-owner="'+esc(b.osoba||'')+'" aria-label="Lajk">'+likeIcon()+'<span class="like-count">'+(count>0?count:'')+'</span></button>';
+    const myReaction = (map && cfg.name) ? map.get(cfg.name) : null;
+    let summary='';
+    if(map && map.size){
+      const seen=[];
+      map.forEach(typ=>{ if(!seen.includes(typ)) seen.push(typ); });
+      summary=seen.slice(0,3).map(reactionEmoji).join('')+' '+map.size;
+    }
+    const cls='like-btn'+(myReaction?' liked':'')+(mine?' self':'');
+    return '<button class="'+cls+'" data-like-btn="'+b.id+'" data-like-owner="'+esc(b.osoba||'')+'" aria-label="Reagovat">'
+      +'<span class="like-summary'+(summary?'':' like-summary-empty')+'">'+(summary||reactionEmoji('srdce'))+'</span>'
+      +'</button>';
   }
   function refreshLikeUI(pivoId){
-    const set=likesMap[pivoId]; const count=set?set.size:0;
-    const mine=!!(cfg.name && set && set.has(cfg.name));
+    const map=likesMap[pivoId];
+    const mine=!!(cfg.name && map && map.has(cfg.name));
+    let summary='';
+    if(map && map.size){
+      const seen=[];
+      map.forEach(typ=>{ if(!seen.includes(typ)) seen.push(typ); });
+      summary=seen.slice(0,3).map(reactionEmoji).join('')+' '+map.size;
+    }
     document.querySelectorAll('.like-btn').forEach(btn=>{
       if(btn.dataset.likeBtn!==pivoId) return;
       btn.classList.toggle('liked', mine);
-      const c=btn.querySelector('.like-count');
-      if(c) c.textContent = count>0 ? String(count) : '';
+      const s=btn.querySelector('.like-summary');
+      if(s){ s.textContent = summary || reactionEmoji('srdce'); s.classList.toggle('like-summary-empty', !summary); }
     });
   }
-  async function toggleLike(pivoId, ownerName){
-    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš lajkovat', true); return; }
-    if(ownerName===cfg.name){ toast('Vlastní pivo lajkovat nejde 😄'); return; }
-    const set = likesMap[pivoId] || (likesMap[pivoId]=new Set());
-    const already = set.has(cfg.name);
-    if(already) set.delete(cfg.name); else set.add(cfg.name);
-    refreshLikeUI(pivoId);
-    const ok = already ? await likeRemove(pivoId) : await likeAdd(pivoId);
-    if(!ok){
-      if(already) set.add(cfg.name); else set.delete(cfg.name);
+  function closeReactionPop(){ const pop=$('#reaction-pop'); if(!pop) return; pop.classList.remove('show'); pop.dataset.owner=''; }
+  function openReactionPop(btn){
+    const id=btn.dataset.likeBtn;
+    const ownerName=btn.dataset.likeOwner;
+    if(ownerName===cfg.name){ toast('Vlastní pivo takhle hodnotit nejde 😄'); return; }
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš reagovat', true); return; }
+    const pop=$('#reaction-pop');
+    const map=likesMap[id];
+    const mine=(map && cfg.name) ? map.get(cfg.name) : null;
+    pop.innerHTML=REACTIONS.map(r=>
+      '<button data-reaction="'+r.key+'" data-reaction-id="'+id+'" data-reaction-owner="'+esc(ownerName)+'" class="'+(mine===r.key?'active':'')+'" aria-label="'+esc(r.label)+'" title="'+esc(r.label)+'">'+r.emoji+'</button>'
+    ).join('');
+    pop.dataset.owner=id;
+    pop.classList.add('show');
+    const r=btn.getBoundingClientRect();
+    const pr=pop.getBoundingClientRect();
+    const appEl=document.querySelector('.app'); const ar=appEl.getBoundingClientRect();
+    let top=r.top-pr.height-8, left=r.left+r.width/2-pr.width/2;
+    if(left<ar.left+8) left=ar.left+8;
+    if(left+pr.width>ar.right-8) left=ar.right-8-pr.width;
+    if(top<ar.top+8) top=r.bottom+8;
+    pop.style.top=Math.round(top)+'px';
+    pop.style.left=Math.round(left)+'px';
+  }
+  function toggleReactionPop(btn){
+    const pop=$('#reaction-pop');
+    if(pop.classList.contains('show') && pop.dataset.owner===btn.dataset.likeBtn){ closeReactionPop(); return; }
+    openReactionPop(btn);
+  }
+  async function pickReaction(pivoId, ownerName, typ){
+    if(ownerName===cfg.name){ toast('Vlastní pivo takhle hodnotit nejde 😄'); return; }
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš reagovat', true); return; }
+    const map = likesMap[pivoId] || (likesMap[pivoId]=new Map());
+    const current=map.get(cfg.name);
+    closeReactionPop();
+    if(current===typ){
+      map.delete(cfg.name);
       refreshLikeUI(pivoId);
-      toast('Lajk se nepodařilo uložit', true);
+      const ok=await likeRemove(pivoId);
+      if(!ok){ map.set(cfg.name, current); refreshLikeUI(pivoId); toast('Nepodařilo se uložit', true); }
+      return;
+    }
+    const prevTyp=current;
+    map.set(cfg.name, typ);
+    refreshLikeUI(pivoId);
+    const ok=await likeAdd(pivoId, typ);
+    if(!ok){
+      if(prevTyp) map.set(cfg.name, prevTyp); else map.delete(cfg.name);
+      refreshLikeUI(pivoId);
+      toast('Nepodařilo se uložit', true);
     }
   }
   /* ---------- comments (per-entry, from the party) ---------- */
@@ -3656,11 +3735,12 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#session-card-overlay').classList.add('show');
   }
   let addContext='podnik';
+  let lastWhere='', lastContext='podnik';
   function setAddContext(ctx){
     addContext=ctx;
     document.querySelectorAll('#context-seg .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.context===ctx));
     $('#where-field').style.display = ctx==='podnik' ? 'block' : 'none';
-    if(ctx!=='podnik') $('#f-where').value='';
+    if(ctx!=='podnik'){ $('#f-where').value=''; if($('#f-where-clear')) $('#f-where-clear').style.display='none'; }
   }
   function resetForm(){
     editId=null; currentRating=0; currentPhoto=''; currentPhotoPos='center';
@@ -3669,6 +3749,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     setAddContext('podnik');
     $('#f-date').value=todayISO(); paintRating();
     if(tasting){ $('#f-where').value=tasting.where; $('#f-date').value=tasting.date; }
+    else { setAddContext(lastContext); if(lastContext==='podnik') $('#f-where').value=lastWhere; }
+    if($('#f-where-clear')) $('#f-where-clear').style.display = $('#f-where').value ? 'flex' : 'none';
     if($('#f-photo')) $('#f-photo').value='';
     setPhotoUI('', false);
     $('#form-title').textContent='Nový záznam';
@@ -3723,6 +3805,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       beers.unshift(rec);
     }
     const wasEdit=!!editId;
+    if(!wasEdit){ lastContext=rec.context||'podnik'; lastWhere=rec.context ? '' : rec.where; }
     let wishCelebrate=false;
     if(!wasEdit && rec.brewery){
       const bKey=norm(rec.brewery), nKey=norm(rec.name);
@@ -3780,6 +3863,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#f-abv').value=b.abv||''; $('#f-price').value=b.price||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
     setAddContext(b.context && b.context!=='podnik' ? b.context : 'podnik');
     $('#f-where').value = (!b.context || b.context==='podnik') ? (b.where||'') : '';
+    if($('#f-where-clear')) $('#f-where-clear').style.display = $('#f-where').value ? 'flex' : 'none';
     currentRating=b.rating||0; paintRating();
     currentPhoto=b.foto||''; setPhotoPos(b.photoPos||'center'); setPhotoUI(currentPhoto, false);
     $('#form-title').textContent='Úprava záznamu';
@@ -8432,7 +8516,7 @@ var qrcode = function() {
     const cm=e.target.closest('[data-cardmenu]');
     if(cm){ e.stopPropagation(); toggleCardMenu(cm); return; }
     const lk=e.target.closest('[data-like-btn]');
-    if(lk){ e.stopPropagation(); toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
+    if(lk){ e.stopPropagation(); toggleReactionPop(lk); return; }
     const bw=e.target.closest('[data-open-brewery]');
     if(bw){ e.stopPropagation(); openBreweryDetail(bw.dataset.openBrewery); return; }
     const vn=e.target.closest('[data-open-venue]');
@@ -8487,7 +8571,7 @@ var qrcode = function() {
     const vn=e.target.closest('[data-open-venue]');
     if(vn){ openVenueDetail(vn.dataset.openVenue); return; }
     const lk=e.target.closest('[data-like-btn]');
-    if(lk){ toggleLike(lk.dataset.likeBtn, lk.dataset.likeOwner); return; }
+    if(lk){ toggleReactionPop(lk); return; }
     const ct=e.target.closest('[data-comment-toggle]');
     if(ct){
       const thread=ct.nextElementSibling;
@@ -8896,6 +8980,12 @@ var qrcode = function() {
     const b=e.target.closest('[data-photopos]'); if(!b) return;
     setPhotoPos(b.dataset.photopos);
   });
+  $('#f-where').addEventListener('input', e=>{
+    if($('#f-where-clear')) $('#f-where-clear').style.display = e.target.value ? 'flex' : 'none';
+  });
+  $('#f-where-clear').addEventListener('click', ()=>{
+    $('#f-where').value=''; $('#f-where-clear').style.display='none'; $('#f-where').focus();
+  });
   $('#context-seg').addEventListener('click', e=>{
     const b=e.target.closest('[data-context]'); if(!b) return;
     setAddContext(b.dataset.context);
@@ -8965,7 +9055,7 @@ var qrcode = function() {
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#placemerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#venuewish-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#placemerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#venuewish-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); closeReactionPop(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
@@ -8978,6 +9068,10 @@ var qrcode = function() {
       return;
     }
     if(!e.target.closest('.cardmenu-pop')) closeCardMenu();
+    if(e.target.closest('[data-like-btn]')) return; // already handled by #feed / #detail-body listeners
+    const rx=e.target.closest('[data-reaction]');
+    if(rx){ pickReaction(rx.dataset.reactionId, rx.dataset.reactionOwner, rx.dataset.reaction); return; }
+    if(!e.target.closest('.reaction-pop')) closeReactionPop();
   });
   setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); venueWishPull(); partyGoalPull().then(renderPartyGoal); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
