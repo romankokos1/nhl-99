@@ -7,7 +7,7 @@
 <title>Pivní deník</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
 <style>
   :root{
     /* palette — dark brown, warm amber */
@@ -109,7 +109,7 @@
     display:flex; align-items:center; gap:9px;
   }
   .topbar.blur{background:var(--glass); backdrop-filter:blur(20px) saturate(1.3); -webkit-backdrop-filter:blur(20px) saturate(1.3); border-bottom:1px solid var(--hairline);}
-  .tb-title{font-family:'Fraunces',serif; font-weight:600; font-size:26px; letter-spacing:-0.01em; color:var(--foam); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
+  .tb-title{font-family:'EB Garamond',serif; font-weight:600; font-size:26px; letter-spacing:-0.01em; color:var(--foam); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
   .tb-sub{font-size:12.5px; color:var(--text-3); margin-top:-2px;}
   .logo-mug{flex-shrink:0;}
   .icon-round{
@@ -129,7 +129,7 @@
   .feed-flash{animation:feedFlash 1.5s ease-out; border-radius:var(--r-card);}
 
   /* section title */
-  .sec-title{font-family:'Fraunces',serif; font-weight:600; font-size:21px; letter-spacing:-0.01em; color:var(--foam); margin:var(--s6) 0 var(--s3);}
+  .sec-title{font-family:'EB Garamond',serif; font-weight:600; font-size:21px; letter-spacing:-0.01em; color:var(--foam); margin:var(--s6) 0 var(--s3);}
   .sec-title.first{margin-top:var(--s2);}
   .sec-sub{font-size:13px; color:var(--text-3); margin:-6px 0 var(--s4);}
 
@@ -285,7 +285,7 @@
     text-align:center; padding:14px 12px; height:100%; width:100%; gap:5px;
   }
   .gt-name{
-    font-family:'Fraunces',serif; font-size:13.5px; font-weight:700; color:var(--foam); line-height:1.22;
+    font-family:'EB Garamond',serif; font-size:13.5px; font-weight:700; color:var(--foam); line-height:1.22;
     display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; letter-spacing:0.002em;
   }
   .gt-brewery{
@@ -375,19 +375,19 @@
   .wp-outro{background:radial-gradient(circle at 50% 60%, #3a2810, #120c07);}
   .wp-deco{margin-bottom:24px; opacity:0.9; color:var(--amber);}
   .wp-deco svg{width:64px; height:76px;}
-  .wp-title{font-family:'Fraunces',serif; font-size:28px; font-weight:600; color:#f7edd6; line-height:1.25; max-width:280px;}
+  .wp-title{font-family:'EB Garamond',serif; font-size:28px; font-weight:600; color:#f7edd6; line-height:1.25; max-width:280px;}
   .wp-period{font-size:16px; font-weight:700; color:var(--amber-bright); margin-top:10px; letter-spacing:0.02em;}
   .wp-hint{font-size:12.5px; color:rgba(255,255,255,0.4); margin-top:40px;}
   .wp-label{font-size:14px; font-weight:600; color:rgba(255,255,255,0.55); text-transform:uppercase; letter-spacing:0.04em;}
-  .wp-big{font-family:'Fraunces',serif; font-size:88px; font-weight:700; color:#fff; line-height:1; margin:10px 0; letter-spacing:-0.02em;}
+  .wp-big{font-family:'EB Garamond',serif; font-size:88px; font-weight:700; color:#fff; line-height:1; margin:10px 0; letter-spacing:-0.02em;}
   .wp-big-text{font-size:38px; line-height:1.15; max-width:300px; text-transform:capitalize;}
   .wp-line{font-size:15px; color:rgba(255,255,255,0.7); line-height:1.5; margin-top:6px; max-width:280px;}
   .wp-line b{color:var(--amber-bright);}
   .wp-fade{position:absolute; inset:0; background:linear-gradient(180deg, rgba(13,8,5,0.15) 0%, rgba(13,8,5,0.55) 55%, rgba(13,8,5,0.92) 100%);}
   .wp-c4 .wp-label, .wp-c4 .wp-beer-name, .wp-c4 .wp-beer-brewery, .wp-c4 .wp-score{position:relative; z-index:1;}
-  .wp-beer-name{font-family:'Fraunces',serif; font-size:34px; font-weight:600; color:#fff; line-height:1.2; margin-top:8px; max-width:300px;}
+  .wp-beer-name{font-family:'EB Garamond',serif; font-size:34px; font-weight:600; color:#fff; line-height:1.2; margin-top:8px; max-width:300px;}
   .wp-beer-brewery{font-size:14px; color:rgba(255,255,255,0.6); margin-top:6px;}
-  .wp-score{font-family:'Fraunces',serif; font-size:40px; font-weight:700; color:var(--amber-bright); margin-top:16px;}
+  .wp-score{font-family:'EB Garamond',serif; font-size:40px; font-weight:700; color:var(--amber-bright); margin-top:16px;}
   .wp-score span{font-size:16px; color:rgba(255,255,255,0.5); font-family:'Inter',sans-serif;}
   .wp-recap{width:100%; max-width:300px; margin-top:20px; background:rgba(255,255,255,0.06); border-radius:16px; padding:6px 18px;}
   .wp-recap-row{display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.1); gap:12px;}
@@ -422,7 +422,7 @@
   .detail-photo{margin:calc(-1*var(--s5) - 30px) calc(-1*var(--s5)) var(--s4); cursor:zoom-in; background:var(--bg-2);}
   .detail-photo img{display:block; width:100%; max-height:260px; object-fit:cover;}
   .detail-head{padding:0 2px;}
-  .detail-name{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--foam); line-height:1.2;}
+  .detail-name{font-family:'EB Garamond',serif; font-size:24px; font-weight:600; color:var(--foam); line-height:1.2;}
   .detail-brewery{font-size:14.5px; color:var(--text-2); margin-top:4px;}
   .detail-brewery.linkish{
     background:none; border:none; padding:2px 0; font-family:inherit; cursor:pointer; display:inline-block;
@@ -635,7 +635,7 @@
   #feed.feed-grid .feed-more{grid-column:1 / -1;}
   #feed.feed-grid .feed-month-head{grid-column:1 / -1;}
   .feed-month-head{
-    font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--amber-bright);
+    font-family:'EB Garamond',serif; font-weight:600; font-size:15px; color:var(--amber-bright);
     padding:10px 2px 6px;
   }
   .feed-more{text-align:center; padding:var(--s5) 0;}
@@ -913,7 +913,7 @@
     font-size:32px; font-weight:800; color:#fff; margin-bottom:var(--s4);
     box-shadow:0 10px 30px -8px rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.1);
   }
-  .profile-name{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--foam);}
+  .profile-name{font-family:'EB Garamond',serif; font-size:24px; font-weight:600; color:var(--foam);}
   .profile-role{font-size:13px; color:var(--text-3); margin-top:3px;}
   /* trophies */
   .trophy-head{display:flex; align-items:center; justify-content:space-between; margin:var(--s6) 0 var(--s4);}
@@ -1087,7 +1087,7 @@
   }
   @keyframes slideup{from{transform:translateY(30px); opacity:0.5;} to{transform:none; opacity:1;}}
   .grabber{width:38px; height:5px; border-radius:99px; background:var(--hairline-strong); margin:0 auto var(--s5);}
-  .sheet h2{font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--foam); margin-bottom:6px;}
+  .sheet h2{font-family:'EB Garamond',serif; font-size:22px; font-weight:600; color:var(--foam); margin-bottom:6px;}
   .sheet p.lead{font-size:14px; color:var(--text-2); margin-bottom:var(--s5); line-height:1.55;}
   .sheet ol{margin:0 0 var(--s4) 18px; font-size:13.5px; color:var(--text-2); line-height:1.6;}
   .sheet ol li{margin-bottom:7px;}
@@ -1174,14 +1174,14 @@
   .yb-cover{text-align:center; padding:70px 46px;}
   .yb-cover-mark{color:#b07a24; margin-bottom:20px;}
   .yb-cover-mark svg{width:56px; height:66px;}
-  .yb-title{font-family:'Fraunces',serif; font-size:42px; font-weight:700; line-height:1.15; color:#2b2118;}
-  .yb-year{font-family:'Fraunces',serif; font-size:76px; font-weight:700; color:#b07a24; line-height:1; margin:6px 0 4px;}
+  .yb-title{font-family:'EB Garamond',serif; font-size:42px; font-weight:700; line-height:1.15; color:#2b2118;}
+  .yb-year{font-family:'EB Garamond',serif; font-size:76px; font-weight:700; color:#b07a24; line-height:1; margin:6px 0 4px;}
   .yb-owner{font-size:15px; color:#7a6a58; letter-spacing:0.04em; text-transform:uppercase; font-weight:600;}
   .yb-cover-stats{display:flex; justify-content:center; gap:34px; flex-wrap:wrap; margin-top:38px; padding-top:30px; border-top:1px solid #e3d8c6;}
   .yb-cs{min-width:88px;}
-  .yb-cs b{display:block; font-family:'Fraunces',serif; font-size:34px; font-weight:700; color:#2b2118; line-height:1;}
+  .yb-cs b{display:block; font-family:'EB Garamond',serif; font-size:34px; font-weight:700; color:#2b2118; line-height:1;}
   .yb-cs span{display:block; font-size:11.5px; color:#8a7a66; margin-top:5px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;}
-  .yb-h2{font-family:'Fraunces',serif; font-size:26px; font-weight:600; color:#2b2118; margin-bottom:4px;}
+  .yb-h2{font-family:'EB Garamond',serif; font-size:26px; font-weight:600; color:#2b2118; margin-bottom:4px;}
   .yb-sub{font-size:13px; color:#8a7a66; margin-bottom:22px;}
   .yb-tworow{display:flex; gap:34px; flex-wrap:wrap;}
   .yb-col{flex:1; min-width:210px;}
@@ -1203,7 +1203,7 @@
   .yb-it{flex:1; min-width:0;}
   .yb-it-top{display:flex; align-items:baseline; gap:8px;}
   .yb-it-name{flex:1; font-size:14.5px; font-weight:700; color:#2b2118; line-height:1.25;}
-  .yb-it-score{font-family:'Fraunces',serif; font-size:17px; font-weight:700; color:#b07a24; flex-shrink:0;}
+  .yb-it-score{font-family:'EB Garamond',serif; font-size:17px; font-weight:700; color:#b07a24; flex-shrink:0;}
   .yb-it-meta{font-size:11.5px; color:#8a7a66; margin-top:3px;}
   .yb-it-note{font-size:11.5px; color:#6b5c4c; font-style:italic; margin-top:5px; line-height:1.4;}
   .yb-foot{text-align:center; font-size:11px; color:#a8988a; margin-top:26px; letter-spacing:0.05em;}
@@ -1228,7 +1228,7 @@
   /* style map */
   .sm-progress{margin:var(--s3) 0 var(--s5);}
   .sm-prog-top{display:flex; align-items:baseline; gap:8px; margin-bottom:8px;}
-  .sm-prog-top b{font-family:'Fraunces',serif; font-size:34px; font-weight:700; color:var(--amber-bright); line-height:1;}
+  .sm-prog-top b{font-family:'EB Garamond',serif; font-size:34px; font-weight:700; color:var(--amber-bright); line-height:1;}
   .sm-prog-top span{font-size:13.5px; color:var(--text-2);}
   .sm-bar{height:7px; border-radius:99px; background:var(--bg-2); overflow:hidden; border:1px solid var(--hairline);}
   .sm-fill{height:100%; background:linear-gradient(90deg,var(--amber),var(--amber-bright)); border-radius:99px; transition:width .4s;}
@@ -1270,7 +1270,7 @@
   .taste-row:last-of-type{border-bottom:none;}
   .taste-top{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
   .taste-name{font-size:14px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .taste-avg{font-family:'Fraunces',serif; font-size:17px; font-weight:700; color:var(--amber-bright); flex-shrink:0; font-variant-numeric:tabular-nums;}
+  .taste-avg{font-family:'EB Garamond',serif; font-size:17px; font-weight:700; color:var(--amber-bright); flex-shrink:0; font-variant-numeric:tabular-nums;}
   .taste-bar{height:5px; border-radius:99px; background:var(--bg-2); overflow:hidden; margin-top:6px;}
   .taste-fill{height:100%; background:linear-gradient(90deg,var(--amber-deep),var(--amber-bright)); border-radius:99px;}
   .taste-sub{font-size:11.5px; color:var(--text-3); margin-top:5px;}
@@ -1281,11 +1281,11 @@
   .habit-place{font-size:11.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .habit-beer{font-size:14.5px; font-weight:600; color:var(--text); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .habit-n{flex-shrink:0; text-align:right;}
-  .habit-n b{display:block; font-family:'Fraunces',serif; font-size:19px; font-weight:700; color:var(--amber-bright); line-height:1; font-variant-numeric:tabular-nums;}
+  .habit-n b{display:block; font-family:'EB Garamond',serif; font-size:19px; font-weight:700; color:var(--amber-bright); line-height:1; font-variant-numeric:tabular-nums;}
   .habit-n span{display:block; font-size:11px; color:var(--text-3); margin-top:3px;}
   /* price trend */
   .price-head{display:flex; gap:var(--s5); padding-bottom:var(--s3);}
-  .price-stat b{display:block; font-family:'Fraunces',serif; font-size:22px; font-weight:700; color:var(--amber-bright); line-height:1;}
+  .price-stat b{display:block; font-family:'EB Garamond',serif; font-size:22px; font-weight:700; color:var(--amber-bright); line-height:1;}
   .price-stat span{display:block; font-size:11px; color:var(--text-3); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;}
   .pr-months{display:flex; align-items:flex-end; gap:4px; height:76px; padding-top:var(--s3); border-top:1px solid var(--hairline);}
   .pr-m{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; height:100%;}
