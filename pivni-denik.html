@@ -1021,6 +1021,15 @@
   .incomplete-badge{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:var(--amber-bright); margin-left:6px; cursor:pointer; text-decoration:underline; text-underline-offset:2px;}
   .incomplete-badge::before{content:'✏️';}
   .card-incomplete-tag{font-size:10.5px; font-weight:700; color:var(--amber-bright); background:rgba(232,163,61,0.12); border-radius:6px; padding:2px 7px; margin-left:6px; white-space:nowrap;}
+  .card-vitrina-tag{
+    font-size:10.5px; font-weight:700; color:#241703; margin-left:6px; white-space:nowrap;
+    background:linear-gradient(160deg, var(--amber-bright), var(--amber)); border-radius:6px; padding:2px 7px;
+  }
+  .vitrina-badge-photo{
+    position:absolute; top:10px; left:10px; z-index:2; font-size:11px; font-weight:700; color:#241703;
+    background:linear-gradient(160deg, var(--amber-bright), var(--amber)); padding:4px 10px; border-radius:999px;
+    display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 10px -2px rgba(0,0,0,0.5);
+  }
   .pending-dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--amber-bright); box-shadow:0 0 6px var(--amber-bright); flex-shrink:0; margin-left:6px;}
   .gt-pending{position:absolute; top:6px; left:6px; margin-left:0;}
   @keyframes pulse{50%{opacity:0.3;}}
@@ -4013,12 +4022,13 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const dateShort = b.date ? esc(b.date) : '';
     const menuBtn = mine ? '<button class="card-menu-btn" data-cardmenu="'+b.id+'" aria-label="Možnosti">'+cardMenuDots()+'</button>' : '';
     return '<article class="card beer'+(mine?' mine':'')+(b.foto?' has-photo':'')+'" data-open="'+b.id+'">'
-      + (b.foto?('<div class="beer-photo" data-photo="'+esc(b.foto)+'"><img loading="lazy" style="'+photoPosStyle(b)+'" src="'+esc(storageUrl(b.foto))+'" alt="Foto '+esc(b.name)+'">'+menuBtn+'</div>'):'')
+      + (b.foto?('<div class="beer-photo" data-photo="'+esc(b.foto)+'"><img loading="lazy" style="'+photoPosStyle(b)+'" src="'+esc(storageUrl(b.foto))+'" alt="Foto '+esc(b.name)+'">'+(b.vitrina?'<span class="vitrina-badge-photo">✨ Vitrína</span>':'')+menuBtn+'</div>'):'')
       + '<div class="beer-main">'
       +   '<div class="beer-top">'
       +     '<h3 class="beer-name">'+esc(b.name)+'</h3>'
       +     (!b.synced?'<span class="pending-dot" title="Čeká na odeslání do sdílené databáze"></span>':'')
       +     (b.incomplete?'<span class="card-incomplete-tag">Doplnit</span>':'')
+      +     (b.vitrina && !b.foto?'<span class="card-vitrina-tag">✨ Vitrína</span>':'')
       +     '<div class="score-plain"><span class="score-num">'+(b.rating||'–')+'</span><span class="score-den">/10</span></div>'
       +     (!b.foto?menuBtn:'')
       +   '</div>'
