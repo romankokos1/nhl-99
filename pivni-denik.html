@@ -2669,6 +2669,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(!sbConfigured()) return;
     try {
       await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/piva?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+      // don't leave orphaned comments/reactions behind for a beer that no longer exists
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/komentare?pivo_id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/liky?pivo_id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
     } catch(e){}
   }
   /* ---------- shared places (geocoded venue positions, synced so corrections reach everyone) ---------- */
@@ -3924,6 +3927,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(!confirm('Smazat „'+b.name+'"?')) return;
     const photoPath=b.foto; // remember before removing the record
     beers=beers.filter(x=>x.id!==id);
+    delete commentsMap[id];
+    delete likesMap[id];
     if(editId===id) resetForm();
     saveLocal(); renderAll();
     await sbDelete(id);
@@ -4549,7 +4554,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     switchView('home');
     const inp=$('#search-all');
     if(inp){ inp.value=name; inp.blur(); }
-    renderHome();
+    renderHome(true);
     toast('Filtr: '+name);
   }
 
@@ -4562,7 +4567,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
 
   function renderMine(){ /* legacy no-op kept for compatibility */ renderHome(); }
 
-  function renderHome(){
+  function renderHome(resetPaging){
     const q=($('#search-all')?$('#search-all').value:'').trim().toLowerCase();
     if($('#search-all-clear')) $('#search-all-clear').style.display = q ? 'flex' : 'none';
     const mineOnly = homeScope==='mine';
@@ -4571,7 +4576,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       && (!monthFilter || (b.date && b.date.slice(0,7)===thisMonthKey())));
     arr=sortBeers(arr, homeSort);
     feedFull=arr;
-    feedShown=Math.min(FEED_PAGE, feedFull.length);
+    // a background sync or data edit shouldn't yank the feed back to page 1 while
+    // someone's mid-scroll through older entries — only reset when the view itself changed
+    feedShown = resetPaging ? Math.min(FEED_PAGE, feedFull.length) : Math.min(Math.max(feedShown, FEED_PAGE), feedFull.length);
     paintFeed(mineOnly);
     // person filter select — repopulate only if the set of people changed
     const psel=$('#person-filter');
@@ -8471,18 +8478,18 @@ var qrcode = function() {
   // search/sort/segment
   if($('#search-all')) $('#search-all').addEventListener('input', e=>{
     $('#search-all-clear').style.display = e.target.value ? 'flex' : 'none';
-    renderHome();
+    renderHome(true);
   });
   if($('#search-all-clear')) $('#search-all-clear').addEventListener('click', ()=>{
     $('#search-all').value='';
     $('#search-all-clear').style.display='none';
-    renderHome();
+    renderHome(true);
     $('#search-all').focus();
   });
   if($('#sort-toggle')) $('#sort-toggle').addEventListener('click', ()=>{
     const i=SORT_CYCLE.findIndex(s=>s[0]===homeSort);
     const next=SORT_CYCLE[(i+1)%SORT_CYCLE.length];
-    homeSort=next[0]; toast('Řazení: '+next[1]); renderHome();
+    homeSort=next[0]; toast('Řazení: '+next[1]); renderHome(true);
   });
   function updateViewToggleIcon(){
     const icon=$('#view-toggle-icon'); if(!icon) return;
@@ -8498,7 +8505,7 @@ var qrcode = function() {
   document.querySelectorAll('.seg-btn[data-scope]').forEach(b=>b.addEventListener('click',()=>{
     homeScope=b.dataset.scope;
     document.querySelectorAll('.seg-btn[data-scope]').forEach(x=>x.classList.toggle('active',x===b));
-    renderHome();
+    renderHome(true);
   }));
   if($('#export-btn')) $('#export-btn').addEventListener('click', exportTSV);
   if($('#backup-btn')) $('#backup-btn').addEventListener('click', exportFullBackup);
@@ -8513,12 +8520,12 @@ var qrcode = function() {
     $('#filters-toggle').classList.toggle('open', !open);
   });
   if($('#person-filter')) $('#person-filter').addEventListener('change', e=>{
-    personFilter=e.target.value; renderHome();
+    personFilter=e.target.value; renderHome(true);
   });
   if($('#month-filter-btn')) $('#month-filter-btn').addEventListener('click', ()=>{
     monthFilter=!monthFilter;
     $('#month-filter-btn').classList.toggle('active', monthFilter);
-    renderHome();
+    renderHome(true);
   });
   if($('#quickfilter-row')) $('#quickfilter-row').addEventListener('click', e=>{
     const del=e.target.closest('[data-qf-del]');
@@ -8544,7 +8551,7 @@ var qrcode = function() {
       if($('#person-filter')) $('#person-filter').value=personFilter;
       if($('#month-filter-btn')) $('#month-filter-btn').classList.toggle('active', monthFilter);
       if($('#search-all')) $('#search-all').value=f.query||'';
-      renderHome();
+      renderHome(true);
       return;
     }
   });
