@@ -2772,6 +2772,25 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       return r.ok;
     } catch(e){ return false; }
   }
+  async function likeRename(pivoId, oldName, newName, typ){
+    if(!sbConfigured()) return;
+    try {
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/liky?pivo_id=eq.'+encodeURIComponent(pivoId)+'&osoba=eq.'+encodeURIComponent(oldName), { method:'DELETE', headers: sbHeaders() });
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/liky', {
+        method:'POST', headers: Object.assign(sbHeaders(), {'Prefer':'resolution=merge-duplicates'}),
+        body: JSON.stringify({ pivo_id:pivoId, osoba:newName, typ:typ||'srdce' })
+      });
+    } catch(e){}
+  }
+  async function sbPatchOsoba(table, id, newName){
+    if(!sbConfigured()) return false;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(id), {
+        method:'PATCH', headers: sbHeaders(), body: JSON.stringify({ osoba:newName })
+      });
+      return r.ok;
+    } catch(e){ return false; }
+  }
   const REACTIONS=[
     {key:'srdce', emoji:'❤️', label:'Líbí se mi'},
     {key:'pivo', emoji:'🍻', label:'Na zdraví'},
@@ -8738,10 +8757,36 @@ var qrcode = function() {
       if(taken && !confirm('Jméno „'+n+'" už v deníku někdo používá. Pokud jsi jiná osoba, zvol radši jiné jméno (třeba s příjmením), ať se vám zápisy nesmíchají.\n\nJsi ale opravdu ta samá osoba, jen na novém zařízení? Pokračuj.')) return;
     }
     cfg.name=n; saveCfg(); paintName();
-    if(old && old!==n){ beers.forEach(b=>{ if(b.osoba===old){ b.osoba=n; b.synced=false; } }); saveLocal(); }
+    if(old && old!==n){
+      // every place that remembers "who" needs to follow the rename, not just piva —
+      // otherwise old comments/reactions/wishlist entries look like they belong to a stranger
+      beers.forEach(b=>{ if(b.osoba===old){ b.osoba=n; b.synced=false; } });
+      saveLocal();
+      const commentPatches=[];
+      Object.values(commentsMap).forEach(list=>list.forEach(c=>{ if(c.osoba===old){ c.osoba=n; commentPatches.push(c.id); } }));
+      const likePatches=[];
+      Object.keys(likesMap).forEach(pivoId=>{
+        const m=likesMap[pivoId];
+        if(m && m.has(old)){ const typ=m.get(old); m.delete(old); m.set(n, typ); likePatches.push({pivoId, typ}); }
+      });
+      const wishPatches=[];
+      Object.values(wishMap).forEach(list=>list.forEach(w=>{ if(w.osoba===old){ w.osoba=n; wishPatches.push(w.id); } }));
+      const venuePatches=[];
+      venueWish.forEach(w=>{ if(w.osoba===old){ w.osoba=n; venuePatches.push(w.id); } });
+      const tripPatches=[];
+      trips.forEach(t=>{ if(t.osoba===old){ t.osoba=n; tripPatches.push(t); } });
+      saveTripsLocal();
+      if(sbConfigured()){
+        beers.filter(b=>!b.synced).forEach(sbPush);
+        commentPatches.forEach(id=>sbPatchOsoba('komentare', id, n));
+        likePatches.forEach(p=>likeRename(p.pivoId, old, n, p.typ));
+        wishPatches.forEach(id=>sbPatchOsoba('prani', id, n));
+        venuePatches.forEach(id=>sbPatchOsoba('mista_prani', id, n));
+        tripPatches.forEach(t=>tripPush(t));
+      }
+    }
     $('#name-overlay').classList.remove('show');
     renderAll();
-    if(sbConfigured()){ beers.filter(b=>!b.synced).forEach(sbPush); }
     toast('Jméno uloženo');
   });
   // setup / sharing
