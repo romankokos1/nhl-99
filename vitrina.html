@@ -64,6 +64,22 @@
     border:none; padding:13px 24px; border-radius:999px; cursor:pointer;
   }
 
+  /* ---------- hero showcase (one random pick, full screen) ---------- */
+  .hero-showcase{position:relative; height:100vh; height:100dvh; overflow:hidden; background:var(--bg);}
+  .hero-showcase img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .hero-scrim{position:absolute; inset:0; background:linear-gradient(to bottom, rgba(10,7,4,0.1) 0%, rgba(10,7,4,0.2) 45%, rgba(10,7,4,0.96) 100%);}
+  .hero-content{position:absolute; left:0; right:0; bottom:calc(70px + env(safe-area-inset-bottom)); padding:0 24px; text-align:center;}
+  .hero-eyebrow{font-size:13px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--amber-bright); margin-bottom:14px;}
+  .hero-name{font-family:'EB Garamond',serif; font-weight:600; font-size:clamp(34px,9vw,64px); color:#f7edd6; line-height:1.05; letter-spacing:-0.01em;}
+  .hero-brewery{font-size:16px; color:#c3ab86; margin-top:10px;}
+  .hero-score{font-family:'EB Garamond',serif; font-weight:700; font-size:22px; color:var(--amber-bright); margin-top:14px;}
+  .hero-scroll-hint{
+    position:absolute; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    color:#c3ab86; animation:heroBounce 1.8s ease-in-out infinite;
+  }
+  .hero-scroll-hint svg{width:22px; height:22px;}
+  @keyframes heroBounce{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,8px);}}
+
   /* ---------- header ---------- */
   header{
     max-width:1100px; margin:0 auto; padding:calc(72px + env(safe-area-inset-top)) 20px 28px;
@@ -189,6 +205,19 @@
   </button>
 
   <div id="page" style="display:none">
+    <div class="hero-showcase" id="hero-showcase">
+      <img id="hero-img" alt="">
+      <div class="hero-scrim"></div>
+      <div class="hero-content">
+        <div class="hero-eyebrow">Vitrína</div>
+        <h1 class="hero-name" id="hero-name"></h1>
+        <div class="hero-brewery" id="hero-brewery"></div>
+        <div class="hero-score" id="hero-score"></div>
+      </div>
+      <div class="hero-scroll-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
     <header>
       <div class="h-eyebrow">Vitrína</div>
       <h1 class="h-title">Nejlepší kousky z deníku</h1>
@@ -372,24 +401,59 @@
     $('#top-link').href=backHref();
     basePicks=picks;
 
+    // hero: one random pick, full screen, before the mosaic even loads
+    const hero=picks[Math.floor(Math.random()*picks.length)];
+    if(hero){
+      $('#hero-img').src=storageUrl(hero.foto);
+      $('#hero-img').alt=hero.nazev||'';
+      $('#hero-name').textContent=hero.nazev||'';
+      $('#hero-brewery').textContent=hero.pivovar||'';
+      $('#hero-score').innerHTML = hero.hodnoceni ? fmtScore(hero.hodnoceni)+'<small style="font-family:Inter,sans-serif;font-size:13px;color:#8f795a">/10</small>' : '';
+    } else {
+      $('#hero-showcase').style.display='none';
+    }
+
     const sg=$('#summary-grid');
     sg.innerHTML=
-      '<div class="summary-tile"><div class="summary-n">'+stats.beers+'</div><div class="summary-l">zapsaných piv</div></div>'
-      +'<div class="summary-tile"><div class="summary-n">'+stats.breweries+'</div><div class="summary-l">pivovarů</div></div>'
-      +'<div class="summary-tile"><div class="summary-n">'+stats.places+'</div><div class="summary-l">míst</div></div>'
-      +'<div class="summary-tile"><div class="summary-n">'+stats.styles+'</div><div class="summary-l">stylů</div></div>';
+      '<div class="summary-tile"><div class="summary-n" data-count="'+stats.beers+'">0</div><div class="summary-l">zapsaných piv</div></div>'
+      +'<div class="summary-tile"><div class="summary-n" data-count="'+stats.breweries+'">0</div><div class="summary-l">pivovarů</div></div>'
+      +'<div class="summary-tile"><div class="summary-n" data-count="'+stats.places+'">0</div><div class="summary-l">míst</div></div>'
+      +'<div class="summary-tile"><div class="summary-n" data-count="'+stats.styles+'">0</div><div class="summary-l">stylů</div></div>';
+    setupCountUp();
 
     renderGrid(sortedPicks());
     initModalOnce();
+  }
+
+  function setupCountUp(){
+    const nums=[...document.querySelectorAll('.summary-n')];
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(!e.isIntersecting) return;
+        io.unobserve(e.target);
+        const target=parseInt(e.target.dataset.count,10)||0;
+        const start=performance.now(), duration=700;
+        function step(now){
+          const p=Math.min(1,(now-start)/duration);
+          const eased=1-Math.pow(1-p,3);
+          e.target.textContent=Math.round(eased*target);
+          if(p<1) requestAnimationFrame(step); else e.target.textContent=target;
+        }
+        requestAnimationFrame(step);
+      });
+    }, { threshold:0.4 });
+    nums.forEach(n=>io.observe(n));
   }
 
   function renderGrid(picks){
     modalPicks=picks;
     $('#h-count').textContent=picks.length+' vybraných zápisů';
     const grid=$('#grid');
+    const cols = window.innerWidth<=600 ? 2 : window.innerWidth<=860 ? 3 : 4;
     grid.innerHTML=picks.map((b,i)=>{
       const size=SIZE_CYCLE[i%SIZE_CYCLE.length];
-      return '<div class="tile '+size+'" data-i="'+i+'">'
+      const delay=(i%(cols*2))*70; // gentle wave, resets every couple of rows so it never lags far down the page
+      return '<div class="tile '+size+'" data-i="'+i+'" style="transition-delay:'+delay+'ms">'
         +'<img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.nazev)+'">'
         +'<div class="tile-scrim"></div>'
         +(b.hodnoceni?'<div class="tile-score">'+fmtScore(b.hodnoceni)+'</div>':'')
