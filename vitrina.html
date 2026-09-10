@@ -7,7 +7,7 @@
 <title>Vitrína · Pivní deník</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
 <style>
   :root{
     /* same palette as the main app — dark brown, warm amber */
@@ -24,6 +24,20 @@
     --text-3:#8f795a;
     --text-4:#6b593f;
   }
+  html[data-theme="light"]{
+    --bg:#faf5ea;
+    --surface:#ffffff;
+    --glass:rgba(255,255,255,0.78);
+    --hairline:rgba(90,60,20,0.12);
+    --hairline-strong:rgba(90,60,20,0.22);
+    --amber:#b8791f;
+    --amber-bright:#a8660f;
+    --foam:#2b2011;
+    --text:#2e2213;
+    --text-2:#5c4a34;
+    --text-3:#7d6a4e;
+    --text-4:#a4906f;
+  }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html{-webkit-text-size-adjust:100%;}
   body{
@@ -38,11 +52,11 @@
   .state-screen{
     position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
     text-align:center; padding:40px; gap:16px;
-    background:radial-gradient(ellipse at 50% 30%, #241708 0%, var(--bg) 70%);
+    background:radial-gradient(ellipse at 50% 30%, var(--surface) 0%, var(--bg) 70%);
   }
   .state-glass{opacity:0.85; animation:bob 2.6s ease-in-out infinite;}
   @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-  .state-title{font-family:'Fraunces',serif; font-weight:600; font-size:24px; color:var(--foam);}
+  .state-title{font-family:'EB Garamond',serif; font-weight:600; font-size:24px; color:var(--foam);}
   .state-sub{font-size:14.5px; color:var(--text-2); max-width:340px; line-height:1.5;}
   .state-btn{
     margin-top:8px; font-family:inherit; font-size:14px; font-weight:700; color:#241703;
@@ -56,7 +70,7 @@
     text-align:center;
   }
   .h-eyebrow{font-size:12.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--amber-bright); margin-bottom:10px;}
-  .h-title{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(28px,6vw,42px); color:var(--foam); letter-spacing:-0.01em;}
+  .h-title{font-family:'EB Garamond',serif; font-weight:600; font-size:clamp(28px,6vw,42px); color:var(--foam); letter-spacing:-0.01em;}
   .h-sub{font-size:14.5px; color:var(--text-2); margin-top:10px;}
   .h-tour{
     margin-top:22px; display:inline-flex; align-items:center; gap:8px; font-family:inherit; font-size:13.5px; font-weight:700;
@@ -64,6 +78,19 @@
     padding:10px 18px; border-radius:999px; cursor:pointer;
   }
   .h-tour svg{width:14px; height:14px;}
+  .theme-toggle{
+    position:fixed; top:calc(16px + env(safe-area-inset-top)); right:16px; z-index:20;
+    width:36px; height:36px; border-radius:50%;
+    background:var(--glass); backdrop-filter:blur(16px); border:1px solid var(--hairline);
+    color:var(--text-2); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .theme-toggle svg{width:16px; height:16px;}
+  .h-sort{display:flex; width:max-content; gap:4px; margin:16px auto 0; background:var(--surface); border:1px solid var(--hairline); border-radius:999px; padding:3px;}
+  .h-sort button{
+    font-family:inherit; font-size:12px; font-weight:700; color:var(--text-3); background:none; border:none; cursor:pointer;
+    padding:7px 13px; border-radius:999px;
+  }
+  .h-sort button.active{background:var(--amber); color:#241703;}
 
   /* ---------- mosaic grid ---------- */
   .grid{
@@ -84,11 +111,11 @@
   .tile:active img{transform:scale(1.04);}
   .tile-scrim{position:absolute; inset:0; background:linear-gradient(to bottom, rgba(12,8,4,0) 45%, rgba(10,7,4,0.88) 100%);}
   .tile-tx{position:absolute; left:0; right:0; bottom:0; padding:12px 14px;}
-  .tile-name{font-family:'Fraunces',serif; font-weight:600; color:var(--foam); font-size:15px; line-height:1.2;}
+  .tile-name{font-family:'EB Garamond',serif; font-weight:600; color:var(--foam); font-size:15px; line-height:1.2;}
   .tile.big .tile-name{font-size:22px;}
   .tile-brewery{font-size:11.5px; color:var(--text-2); margin-top:2px;}
   .tile-score{
-    position:absolute; top:10px; right:10px; font-family:'Fraunces',serif; font-weight:700; font-size:13px; color:#241703;
+    position:absolute; top:10px; right:10px; font-family:'EB Garamond',serif; font-weight:700; font-size:13px; color:#241703;
     background:var(--amber-bright); padding:3px 8px; border-radius:999px; line-height:1.3;
   }
 
@@ -97,7 +124,7 @@
   .summary-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
   @media(max-width:600px){ .summary-grid{grid-template-columns:repeat(2,1fr);} }
   .summary-tile{background:var(--surface); border:1px solid var(--hairline); border-radius:16px; padding:18px 10px; text-align:center;}
-  .summary-n{font-family:'Fraunces',serif; font-weight:700; font-size:28px; color:var(--amber-bright);}
+  .summary-n{font-family:'EB Garamond',serif; font-weight:700; font-size:28px; color:var(--amber-bright);}
   .summary-l{font-size:12px; color:var(--text-3); margin-top:4px;}
 
   /* ---------- fixed chrome ---------- */
@@ -134,14 +161,14 @@
   .modal-prev{left:12px;} .modal-next{right:12px;}
   .modal-body{padding:22px 22px calc(26px + env(safe-area-inset-bottom));}
   .modal-eyebrow{font-size:12.5px; font-weight:700; color:var(--amber-bright); text-transform:uppercase; letter-spacing:0.06em;}
-  .modal-name{font-family:'Fraunces',serif; font-weight:600; font-size:26px; color:var(--foam); margin-top:8px; line-height:1.15;}
+  .modal-name{font-family:'EB Garamond',serif; font-weight:600; font-size:26px; color:var(--foam); margin-top:8px; line-height:1.15;}
   .modal-row{display:flex; align-items:baseline; gap:14px; margin-top:14px; flex-wrap:wrap;}
-  .modal-score{font-family:'Fraunces',serif; font-weight:700; font-size:24px; color:var(--amber-bright);}
+  .modal-score{font-family:'EB Garamond',serif; font-weight:700; font-size:24px; color:var(--amber-bright);}
   .modal-score small{font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--text-3);}
   .modal-chip{font-size:11.5px; font-weight:600; color:var(--text-2); background:rgba(232,163,61,0.1); border:1px solid var(--hairline-strong); padding:3px 10px; border-radius:999px; margin-right:6px;}
   .modal-meta{font-size:12.5px; color:var(--text-3); margin-top:12px;}
   .modal-meta span:not(:last-child)::after{content:'·'; margin-left:7px; color:var(--text-4);}
-  .modal-note{font-family:'Fraunces',serif; font-style:italic; font-size:15.5px; line-height:1.45; color:var(--text); margin-top:16px;}
+  .modal-note{font-family:'EB Garamond',serif; font-style:italic; font-size:15.5px; line-height:1.45; color:var(--text); margin-top:16px;}
 </style>
 </head>
 <body>
@@ -157,12 +184,20 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Deník
   </a>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Přepnout motiv">
+    <svg id="theme-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+  </button>
 
   <div id="page" style="display:none">
     <header>
       <div class="h-eyebrow">Vitrína</div>
       <h1 class="h-title">Nejlepší kousky z deníku</h1>
       <div class="h-sub" id="h-count">— vybraných zápisů</div>
+      <div class="h-sort" id="h-sort">
+        <button data-sort="best" class="active">Nejlepší</button>
+        <button data-sort="new">Nejnovější</button>
+        <button data-sort="random">Náhodně</button>
+      </div>
       <button class="h-tour" id="tour-btn">
         <svg id="tour-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l13 7-13 7V5z"/></svg>
         <span id="tour-label">Spustit prohlídku</span>
@@ -208,6 +243,25 @@
 
   const CFG_KEY='pivni-denik-cfg-v1';
   const BUCKET='fotky';
+  const THEME_KEY='pivni-denik-vitrina-theme';
+  function applyVitrinaTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    const mc=document.querySelector('meta[name="theme-color"]');
+    if(mc) mc.setAttribute('content', t==='light' ? '#faf5ea' : '#1a130b');
+    const icon=$('#theme-toggle-icon');
+    if(icon) icon.innerHTML = t==='light'
+      ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"/>'
+      : '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+  }
+  let vitrinaTheme='dark';
+  try{ vitrinaTheme=localStorage.getItem(THEME_KEY)||'dark'; }catch(e){}
+  applyVitrinaTheme(vitrinaTheme);
+  $('#theme-toggle').addEventListener('click', ()=>{
+    vitrinaTheme = vitrinaTheme==='light' ? 'dark' : 'light';
+    try{ localStorage.setItem(THEME_KEY, vitrinaTheme); }catch(e){}
+    applyVitrinaTheme(vitrinaTheme);
+  });
+  function fmtScore(n){ n=Number(n); return Number.isInteger(n) ? String(n) : n.toFixed(1); }
   let cfg={url:'',key:''};
   try{ cfg=Object.assign(cfg, JSON.parse(localStorage.getItem(CFG_KEY))||{}); }catch(e){}
 
@@ -299,24 +353,24 @@
   }
 
   const SIZE_CYCLE=['big','normal','normal','wide','normal','normal'];
+  let basePicks=[], modalPicks=[], sortMode='best', modalInited=false;
+
+  function sortedPicks(){
+    if(sortMode==='new') return basePicks.slice().sort((a,b)=>(b.datum||'').localeCompare(a.datum||''));
+    if(sortMode==='random'){
+      const arr=basePicks.slice();
+      for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+      return arr;
+    }
+    return basePicks; // 'best' — already rating-desc from boot()
+  }
 
   function renderPage(picks, stats){
     $('#state').style.display='none';
     $('#page').style.display='block';
     $('#top-link').style.display='inline-flex';
     $('#top-link').href=backHref();
-    $('#h-count').textContent=picks.length+' vybraných zápisů';
-
-    const grid=$('#grid');
-    grid.innerHTML=picks.map((b,i)=>{
-      const size=SIZE_CYCLE[i%SIZE_CYCLE.length];
-      return '<div class="tile '+size+'" data-i="'+i+'">'
-        +'<img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.nazev)+'">'
-        +'<div class="tile-scrim"></div>'
-        +(b.hodnoceni?'<div class="tile-score">'+Number(b.hodnoceni).toFixed(1)+'</div>':'')
-        +'<div class="tile-tx"><div class="tile-name">'+esc(b.nazev)+'</div>'+(b.pivovar?'<div class="tile-brewery">'+esc(b.pivovar)+'</div>':'')+'</div>'
-        +'</div>';
-    }).join('');
+    basePicks=picks;
 
     const sg=$('#summary-grid');
     sg.innerHTML=
@@ -325,9 +379,32 @@
       +'<div class="summary-tile"><div class="summary-n">'+stats.places+'</div><div class="summary-l">míst</div></div>'
       +'<div class="summary-tile"><div class="summary-n">'+stats.styles+'</div><div class="summary-l">stylů</div></div>';
 
-    setupReveal();
-    setupModal(picks);
+    renderGrid(sortedPicks());
+    initModalOnce();
   }
+
+  function renderGrid(picks){
+    modalPicks=picks;
+    $('#h-count').textContent=picks.length+' vybraných zápisů';
+    const grid=$('#grid');
+    grid.innerHTML=picks.map((b,i)=>{
+      const size=SIZE_CYCLE[i%SIZE_CYCLE.length];
+      return '<div class="tile '+size+'" data-i="'+i+'">'
+        +'<img loading="lazy" src="'+esc(storageUrl(b.foto))+'" alt="'+esc(b.nazev)+'">'
+        +'<div class="tile-scrim"></div>'
+        +(b.hodnoceni?'<div class="tile-score">'+fmtScore(b.hodnoceni)+'</div>':'')
+        +'<div class="tile-tx"><div class="tile-name">'+esc(b.nazev)+'</div>'+(b.pivovar?'<div class="tile-brewery">'+esc(b.pivovar)+'</div>':'')+'</div>'
+        +'</div>';
+    }).join('');
+    setupReveal();
+  }
+
+  $('#h-sort').addEventListener('click', e=>{
+    const btn=e.target.closest('[data-sort]'); if(!btn) return;
+    sortMode=btn.dataset.sort;
+    document.querySelectorAll('#h-sort button').forEach(b=>b.classList.toggle('active', b===btn));
+    renderGrid(sortedPicks());
+  });
 
   function setupReveal(){
     const tiles=[...document.querySelectorAll('.tile')];
@@ -337,20 +414,21 @@
     tiles.forEach(t=>io.observe(t));
   }
 
-  function setupModal(picks){
+  function initModalOnce(){
+    if(modalInited) return; modalInited=true;
     const modal=$('#modal');
     let openIndex=-1;
     let timer=null;
 
     function paint(i){
-      const b=picks[i]; if(!b) return;
+      const b=modalPicks[i]; if(!b) return;
       openIndex=i;
       const city=b.pivovar ? cityByKey[norm(b.pivovar)] : '';
       $('#modal-img').src=storageUrl(b.foto);
       $('#modal-img').alt=b.nazev||'';
       $('#modal-brewery').textContent=(b.pivovar||'')+(city?' · '+city:'');
       $('#modal-name').textContent=b.nazev||'';
-      $('#modal-score').innerHTML = b.hodnoceni ? Number(b.hodnoceni).toFixed(1)+'<small>/10</small>' : '';
+      $('#modal-score').innerHTML = b.hodnoceni ? fmtScore(b.hodnoceni)+'<small>/10</small>' : '';
       const chips=[];
       if(b.styl) chips.push('<span class="modal-chip">'+esc(b.styl)+'</span>');
       if(b.abv) chips.push('<span class="modal-chip">'+esc(b.abv)+'%</span>');
@@ -369,7 +447,7 @@
     function close(){ modal.classList.remove('show'); stopTour(); }
     function step(dir){
       const next=openIndex+dir;
-      if(next<0 || next>=picks.length){ if(dir>0) stopTour(); return; }
+      if(next<0 || next>=modalPicks.length){ if(dir>0) stopTour(); return; }
       paint(next);
     }
 
