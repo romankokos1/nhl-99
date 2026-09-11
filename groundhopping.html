@@ -376,6 +376,88 @@
   .record-ico{font-size:21px; flex-shrink:0; width:30px; text-align:center;}
   .record-label{font-size:10.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:.03em;}
   .record-value{font-size:13.5px; font-weight:600; color:var(--text); margin-top:2px;}
+
+  /* ---------- trophies ---------- */
+  .trophy-head{display:flex; align-items:center; justify-content:space-between; margin:var(--s6) 0 var(--s4);}
+  .trophy-open{width:100%; background:none; border:none; padding:0; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:var(--s3); text-align:left;}
+  .trophy-open:active .trophy-chev{color:var(--light); transform:translateX(2px);}
+  .trophy-chev{display:flex; align-items:center; color:var(--text-3); flex-shrink:0; transition:transform .15s, color .15s;}
+  .trophy-chev svg{width:19px; height:19px;}
+  .trophy-grid.preview{margin-bottom:var(--s2);}
+  #trophy-grid-all{margin-top:var(--s3);}
+  .trophy-count{font-size:13px; font-weight:700; color:var(--light-bright); font-variant-numeric:tabular-nums; background:rgba(200,167,75,0.1); border:1px solid var(--hairline); border-radius:var(--r-pill); padding:3px 12px;}
+  .trophy-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s3);}
+  .trophy{display:flex; flex-direction:column; align-items:center; text-align:center; padding:var(--s4) 8px var(--s4); border-radius:18px; background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--hairline); position:relative; overflow:hidden;}
+  .trophy.done{border-color:var(--hairline-strong); background:linear-gradient(180deg, rgba(200,167,75,0.12), var(--surface)); box-shadow:0 0 22px -12px rgba(227,200,120,0.5);}
+  .tr-medal{width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:10px; position:relative; flex-shrink:0;}
+  .trophy.done .tr-medal{background:radial-gradient(circle at 38% 30%, #fff3d0 0%, #ffd274 30%, #e0a53a 65%, #b07a24 100%); box-shadow:0 4px 14px -4px rgba(176,122,36,0.7), inset 0 1px 2px rgba(255,255,255,0.6), inset 0 -3px 6px rgba(120,80,10,0.4);}
+  .trophy.done .tr-medal svg{color:#5a3a08; width:30px; height:30px; filter:drop-shadow(0 1px 0 rgba(255,255,255,0.4));}
+  .trophy.locked .tr-medal{background:var(--bg-2); border:1px solid var(--hairline); box-shadow:inset 0 2px 6px rgba(0,0,0,0.4);}
+  .trophy.locked .tr-medal svg{color:var(--text-4); width:28px; height:28px;}
+  .trophy.locked{opacity:0.9;}
+  .trophy.locked .tr-title{color:var(--text-2);}
+  .tr-shine{position:absolute; inset:0; border-radius:50%; overflow:hidden; pointer-events:none;}
+  .tr-shine::after{content:''; position:absolute; top:-60%; left:-60%; width:60%; height:220%; transform:rotate(25deg); background:linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent); animation:shineSweep 4.5s ease-in-out infinite;}
+  @keyframes shineSweep{0%,70%{left:-60%;} 85%{left:120%;} 100%{left:120%;}}
+  .trophy.tier-bronze{border-color:rgba(193,127,69,0.5); background:linear-gradient(180deg, rgba(193,127,69,0.14), var(--surface)); box-shadow:0 0 22px -12px rgba(193,127,69,0.45);}
+  .trophy.tier-bronze .tr-medal{background:radial-gradient(circle at 38% 30%, #e8b98a 0%, #c17f45 30%, #8f5a28 65%, #6b3f18 100%); box-shadow:0 4px 14px -4px rgba(139,90,40,0.7), inset 0 1px 2px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(80,40,10,0.4);}
+  .trophy.tier-bronze .tr-medal svg{color:#4a2810;}
+  .trophy.tier-silver{border-color:rgba(190,190,198,0.5); background:linear-gradient(180deg, rgba(190,190,198,0.14), var(--surface)); box-shadow:0 0 22px -12px rgba(190,190,198,0.4);}
+  .trophy.tier-silver .tr-medal{background:radial-gradient(circle at 38% 30%, #f5f5f7 0%, #d8d8dc 30%, #a8a8b0 65%, #7a7a82 100%); box-shadow:0 4px 14px -4px rgba(120,120,130,0.6), inset 0 1px 2px rgba(255,255,255,0.7), inset 0 -3px 6px rgba(60,60,66,0.35);}
+  .trophy.tier-silver .tr-medal svg{color:#3a3a40;}
+  .tr-dots{display:flex; gap:4px; margin-bottom:6px;}
+  .tr-dot{width:5px; height:5px; border-radius:50%; background:var(--bg-2); border:1px solid var(--hairline);}
+  .tr-dot.on{background:var(--light); border-color:var(--light);}
+  .trophy.tier-bronze .tr-dot.on{background:#c17f45; border-color:#c17f45;}
+  .trophy.tier-silver .tr-dot.on{background:#b8b8c0; border-color:#b8b8c0;}
+  .trophy.tier-gold .tr-dot.on{background:#e0a53a; border-color:#e0a53a;}
+  .tr-title{font-size:12.5px; font-weight:700; color:var(--chalk); line-height:1.25; margin-bottom:2px;}
+  .tr-desc{font-size:10.5px; color:var(--text-3); line-height:1.3; margin-bottom:8px; min-height:26px;}
+  .tr-unlocked{font-size:10px; font-weight:700; color:var(--light-bright); text-transform:uppercase; letter-spacing:0.06em;}
+  .tr-unlocked.gold{display:flex; align-items:center; justify-content:center; gap:5px;}
+  .tr-goldnum{font-size:10.5px; font-weight:800; color:#241703; letter-spacing:0; background:linear-gradient(150deg,#ffd274,#e0a53a); border-radius:99px; padding:1px 7px; font-variant-numeric:tabular-nums;}
+  .tr-prog{display:flex; align-items:center; gap:6px; width:100%; padding:0 2px;}
+  .tr-bar{flex:1; height:5px; border-radius:99px; background:var(--bg-2); overflow:hidden;}
+  .tr-fill{height:100%; border-radius:99px; background:linear-gradient(90deg, var(--light-deep), var(--light-bright));}
+  .tr-pct{font-size:9.5px; color:var(--text-4); font-variant-numeric:tabular-nums; font-weight:600; flex-shrink:0;}
+
+  /* ---------- board badges ---------- */
+  .badge-pips{display:inline-flex; gap:4px; align-items:center; vertical-align:middle; margin-left:6px;}
+  .pip{width:17px; height:17px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 1px 3px -1px rgba(0,0,0,0.4);}
+  .pip svg{width:11px; height:11px; fill:currentColor; stroke:currentColor; stroke-width:1.4; stroke-linejoin:round;}
+  .pip svg [fill="none"], .pip svg path[stroke]{fill:none;}
+  .pip-pioneer{background:linear-gradient(150deg,#ffe08a,#e0a53a); color:#3a2503;}
+  .pip-connoisseur{background:linear-gradient(150deg,#e8c56a,#c79028); color:#3a2503;}
+  .pip-explorer{background:linear-gradient(150deg,#7fb4d6,#4a7fa0); color:#0a2230;}
+  .pip-collector{background:linear-gradient(150deg,#cbab78,#9a7a4a); color:#2a1c08;}
+  .pip-loyal{background:linear-gradient(150deg,#e08a8a,#b04a4a); color:#2e0a0a;}
+  .pip-critic{background:linear-gradient(150deg,#b0a8c0,#7a6f92); color:#1a1226;}
+
+  /* ---------- home filters + year index ---------- */
+  .filter-chips{display:flex; gap:6px; overflow-x:auto; margin-bottom:var(--s3); padding-bottom:2px;}
+  .filter-chips::-webkit-scrollbar{display:none;}
+  .filter-chip{flex-shrink:0; background:var(--surface-2); border:1px solid var(--hairline); border-radius:var(--r-pill); padding:6px 13px; font-size:12px; font-weight:600; color:var(--text-2); cursor:pointer; white-space:nowrap;}
+  .filter-chip.active{background:rgba(200,167,75,0.14); border-color:var(--light-deep); color:var(--light-bright);}
+  .year-divider{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; color:var(--text-3); letter-spacing:.06em; margin:var(--s4) 2px 8px;}
+  .year-index{display:none; position:absolute; right:4px; top:50%; transform:translateY(-50%); flex-direction:column; gap:3px; z-index:15;}
+  .year-index.show{display:flex;}
+  .year-index button{background:none; border:none; color:var(--text-4); font-size:10px; font-weight:700; font-family:'IBM Plex Mono',monospace; padding:2px 6px; cursor:pointer;}
+  .year-index button.active{color:var(--light);}
+
+  /* ---------- trips ---------- */
+  .trip-row{display:flex; align-items:center; gap:var(--s3); padding:12px; background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-sm); margin-bottom:var(--s3); cursor:pointer;}
+  .trip-row .trip-thumb{width:52px; height:52px; border-radius:12px; background:var(--surface-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:var(--text-4); overflow:hidden;}
+  .trip-row .trip-thumb svg{width:22px; height:22px;}
+  .trip-row .trip-thumb img{width:100%; height:100%; object-fit:cover;}
+  .trip-row .t{font-size:14.5px; font-weight:700;}
+  .trip-row .s{font-size:12px; color:var(--text-3); margin-top:2px;}
+  .trip-cand-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--hairline); font-size:13px;}
+  .trip-cand-row:last-of-type{border-bottom:none;}
+  .trip-cand-row small{display:block; color:var(--text-3); font-size:11px;}
+
+  /* ---------- incomplete badge ---------- */
+  .incomplete-badge{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:var(--light-bright); margin-top:6px; cursor:pointer; text-decoration:underline; text-underline-offset:2px;}
+  .incomplete-badge::before{content:'✏️';}
 </style>
 </head>
 <body>
@@ -426,6 +508,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
           <input type="text" id="search-all" placeholder="Hledat klub, stadion, soutěž…" autocomplete="off">
         </div>
+
+        <div class="filter-chips" id="person-chips"></div>
+        <div class="filter-chips" id="month-chips"></div>
 
         <div id="feed"></div>
         <div class="bottom-space"></div>
@@ -564,11 +649,20 @@
         <div class="profile-head">
           <div class="avatar-big" id="prof-avatar">?</div>
           <div class="profile-name" id="prof-name">–</div>
+          <span class="incomplete-badge" id="incomplete-badge" data-incomplete-open style="display:none"></span>
         </div>
         <div class="stat-grid">
           <div class="stat-card"><div class="n" id="prof-stadiums">0</div><div class="l">stadionů</div></div>
           <div class="stat-card"><div class="n" id="prof-matches">0</div><div class="l">zápasů</div></div>
         </div>
+
+        <button class="trophy-head trophy-open" id="trophy-open">
+          <div class="section-title" style="margin:0">Trofeje</div>
+          <span class="trophy-count" id="trophy-count">0 / 0</span>
+          <span class="trophy-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="trophy-grid preview" id="trophy-grid"></div>
+
         <div class="row-list">
           <div class="row-item" id="rename-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
@@ -596,10 +690,21 @@
             <div class="t">Roční přehled</div>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
           </div>
+          <div class="row-item" id="trips-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-6-2V6l6 2 6-2 6 2v12l-6-2-6 2z"/><path d="M9 8v12M15 6v12"/></svg>
+            <div class="t">Výlety</div>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
           <div class="row-item" id="dup-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="12" height="12" rx="2"/><rect x="9" y="9" width="12" height="12" rx="2"/></svg>
             <div class="t">Sloučit duplicitní stadiony</div>
             <span class="tiny-note" id="dup-count" style="margin:0 6px 0 0"></span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="row-item" id="clubdup-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="12" height="12" rx="2"/><rect x="9" y="9" width="12" height="12" rx="2"/></svg>
+            <div class="t">Sloučit duplicitní kluby</div>
+            <span class="tiny-note" id="clubdup-count" style="margin:0 6px 0 0"></span>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
           </div>
           <div class="row-item" id="challenge-btn">
@@ -615,6 +720,8 @@
       </div>
     </section>
   </div>
+
+  <div class="year-index" id="year-index"></div>
 
   <!-- bottom nav -->
   <nav class="tabbar">
@@ -728,11 +835,26 @@ alter table vyzva enable row level security;
 grant select, insert, update, delete on public.vyzva to anon;
 create policy "vyzva cist" on vyzva for select using (true);
 create policy "vyzva pridat" on vyzva for insert with check (true);
-create policy "vyzva mazat" on vyzva for delete using (true);</div>
+create policy "vyzva mazat" on vyzva for delete using (true);
+
+alter table navstevy add column if not exists vylet_id text;
+
+create table vylety (
+  id text primary key,
+  nazev text not null, datum_od text, datum_do text,
+  poznamka text, osoba text, foto text,
+  vytvoreno timestamptz default now()
+);
+alter table vylety enable row level security;
+grant select, insert, update, delete on public.vylety to anon;
+create policy "vylety cist" on vylety for select using (true);
+create policy "vylety pridat" on vylety for insert with check (true);
+create policy "vylety upravit" on vylety for update using (true);
+create policy "vylety mazat" on vylety for delete using (true);</div>
       <ol start="3">
         <li>V <code>Settings → Data API</code> zkopíruj <code>Project URL</code> a <code>publishable</code> klíč.</li>
       </ol>
-      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Podle toho, co ti chybí, spusť: <code>alter table navstevy add column if not exists typ text default 'zapas';</code> a/nebo <code>alter table navstevy add column if not exists pivo int; alter table navstevy add column if not exists klobasa int;</code> a/nebo <code>alter table navstevy add column if not exists spolu text;</code> a/nebo <code>alter table navstevy add column if not exists vitrina boolean default false;</code> a pro skupinovou výzvu blok od „vyzva" výše.</p>
+      <p class="tiny-note" style="margin-bottom:var(--s4)">Máš už tabulku z dřívějška? Podle toho, co ti chybí, spusť: <code>alter table navstevy add column if not exists typ text default 'zapas';</code> a/nebo <code>alter table navstevy add column if not exists pivo int; alter table navstevy add column if not exists klobasa int;</code> a/nebo <code>alter table navstevy add column if not exists spolu text;</code> a/nebo <code>alter table navstevy add column if not exists vitrina boolean default false;</code> a/nebo <code>alter table navstevy add column if not exists vylet_id text;</code> a pro skupinovou výzvu blok od „vyzva" výše a pro výlety blok od „vylety" výše.</p>
       <div class="field"><label for="sb-url">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
       <div class="field"><label for="sb-key">Publishable / anon klíč</label><input type="text" id="sb-key" placeholder="sb_publishable_… nebo eyJhbG…" autocomplete="off"></div>
       <p class="tiny-note">Do prohlížeče patří jen publishable/anon klíč — je bezpečné ho sdílet. Nikdy sem nedávej secret / service_role klíč.</p>
@@ -812,9 +934,62 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     <div class="sheet">
       <div class="grabber"></div>
       <h2>Roční přehled</h2>
+      <div class="segment" id="wrapped-scope-seg">
+        <button class="seg-btn active" data-wscope="me">Moje</button>
+        <button class="seg-btn" data-wscope="party">Celá parta</button>
+      </div>
       <div class="year-pick" id="wrapped-years"></div>
       <div id="wrapped-content"></div>
       <button class="btn btn-ghost" id="wrapped-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
+  <!-- trophies -->
+  <div class="overlay" id="trophies-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <div style="display:flex; align-items:center; gap:var(--s3); margin-bottom:var(--s4)">
+        <h2 style="margin:0; flex:1">Trofeje</h2>
+        <span class="trophy-count" id="trophy-count-all">0 / 0</span>
+      </div>
+      <div class="trophy-grid" id="trophy-grid-all"></div>
+      <button class="btn btn-ghost" id="trophies-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
+  <!-- trips -->
+  <div class="overlay" id="trips-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2 id="trips-title">Výlety</h2>
+      <p class="lead">Víkendovky s víc stadiony najednou — seskup je pod jeden výlet.</p>
+      <button class="btn btn-ghost" id="trip-new-btn" style="margin-bottom:var(--s4)">+ Nový výlet</button>
+      <div id="trip-new-form" style="display:none; margin-bottom:var(--s4)">
+        <div class="field"><label for="trip-new-name">Název výletu</label><input type="text" id="trip-new-name" placeholder="Jižní Anglie"></div>
+        <div class="field-row">
+          <div class="field"><label for="trip-new-from">Od</label><input type="date" id="trip-new-from"></div>
+          <div class="field"><label for="trip-new-to">Do</label><input type="date" id="trip-new-to"></div>
+        </div>
+        <button class="btn btn-primary" id="trip-new-save">Založit výlet</button>
+      </div>
+      <div id="trips-list"></div>
+      <button class="btn btn-ghost" id="trips-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
+  <!-- trip detail -->
+  <div class="overlay" id="trip-detail-overlay">
+    <div class="sheet" id="trip-detail-content"></div>
+  </div>
+
+  <!-- duplicate club merge -->
+  <div class="overlay" id="clubdup-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Sloučit duplicitní kluby</h2>
+      <p class="lead">Když je stejný klub zapsaný pod dvěma různými názvy, sloučí se pod ten, který vybereš.</p>
+      <div id="clubdup-list"></div>
+      <button class="btn btn-ghost" id="clubdup-close" style="margin-top:var(--s4)">Zavřít</button>
     </div>
   </div>
 
@@ -863,6 +1038,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   const $$ = s => Array.from(document.querySelectorAll(s));
 
   const LKEY='gh_navstevy', CFG='gh_cfg', STAD_CACHE='gh_stadion_cache', GEOCACHE='gh_geocache', WISH='gh_wishlist', DUPDISMISS='gh_dup_dismiss', LASTSEEN='gh_lastseen';
+  const TRIPS_KEY='gh_vylety', CLUBDUPDISMISS='gh_clubdup_dismiss';
   const BUCKET='fotky';
 
   let visits = [];
@@ -886,6 +1062,11 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   let likesMap = {};   // navstevy_id -> Set(osoba)
   let commentsMap = {}; // navstevy_id -> [{id,osoba,text,vytvoreno}]
   let challengeItems = []; // shared group challenge target stadiums
+  let personFilter = null; // filter feed to one person (osoba or spolu)
+  let monthFilter = null;  // filter feed to one YYYY-MM
+  let wrappedScope = 'me'; // 'me' | 'party'
+  let trips = []; // groundhopping trips (weekend outings grouping several visits)
+  let tripPickerVisitId = null;
 
   function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -910,6 +1091,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     try { geoCache = JSON.parse(localStorage.getItem(GEOCACHE))||{}; } catch(e){ geoCache={}; }
     try { wishlist = JSON.parse(localStorage.getItem(WISH))||[]; } catch(e){ wishlist=[]; }
     try { lastSeenAt = localStorage.getItem(LASTSEEN)||null; } catch(e){ lastSeenAt=null; }
+    loadTripsLocal();
   }
   function saveLocal(){ try { localStorage.setItem(LKEY, JSON.stringify(visits)); } catch(e){ toast('Nelze uložit lokálně', true); } }
   function saveCfg(){ try { localStorage.setItem(CFG, JSON.stringify(cfg)); } catch(e){} }
@@ -919,6 +1101,10 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   function saveLastSeen(ts){ lastSeenAt=ts; try { localStorage.setItem(LASTSEEN, ts); } catch(e){} }
   function getDismissed(){ try { return new Set(JSON.parse(localStorage.getItem(DUPDISMISS))||[]); } catch(e){ return new Set(); } }
   function saveDismissed(set){ try { localStorage.setItem(DUPDISMISS, JSON.stringify([...set])); } catch(e){} }
+  function getClubDismissed(){ try { return new Set(JSON.parse(localStorage.getItem(CLUBDUPDISMISS))||[]); } catch(e){ return new Set(); } }
+  function saveClubDismissed(set){ try { localStorage.setItem(CLUBDUPDISMISS, JSON.stringify([...set])); } catch(e){} }
+  function loadTripsLocal(){ try{ trips=JSON.parse(localStorage.getItem(TRIPS_KEY))||[]; }catch(e){ trips=[]; } }
+  function saveTripsLocal(){ try{ localStorage.setItem(TRIPS_KEY, JSON.stringify(trips)); }catch(e){} }
 
   /* ---------- supabase ---------- */
   function sbHeaders(){ return { 'apikey':cfg.key, 'Authorization':'Bearer '+cfg.key, 'Content-Type':'application/json' }; }
@@ -1117,7 +1303,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         id:x.id, osoba:x.osoba, typ:x.typ||'zapas', domaci:x.domaci, hoste:x.hoste||'', skoreD:x.skore_d, skoreH:x.skore_h,
         soutez:x.soutez||'', stadion:x.stadion||'', mesto:x.mesto||'', zeme:x.zeme||'',
         datum:x.datum, divaku:x.divaku, poznamka:x.poznamka||'', hodnoceni:x.hodnoceni||0, pivo:x.pivo||0, klobasa:x.klobasa||0, foto:x.foto||'',
-        spolu:(x.spolu||'').split(',').map(s=>s.trim()).filter(Boolean), vitrina:!!x.vitrina, vytvoreno:x.vytvoreno, synced:true
+        spolu:(x.spolu||'').split(',').map(s=>s.trim()).filter(Boolean), vitrina:!!x.vitrina, vyletId:x.vylet_id||null, vytvoreno:x.vytvoreno, synced:true
       }));
       const unsynced=visits.filter(v=>!v.synced);
       const remoteIds=new Set(remote.map(r=>r.id));
@@ -1126,7 +1312,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       saveLocal();
       online=true; setSync('online','Připojeno · '+remote.length+' návštěv');
       for(const v of stillUnsynced){ await sbPush(v); }
-      await Promise.all([likesPull(), commentsPull(), stadionyPull(), challengePull()]);
+      await Promise.all([likesPull(), commentsPull(), stadionyPull(), challengePull(), tripsPull()]);
       renderAll();
     } catch(e){ online=false; setSync('offline','Offline — pracuji lokálně'); }
   }
@@ -1136,7 +1322,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       skore_d:(v.skoreD===''||v.skoreD==null)?null:v.skoreD, skore_h:(v.skoreH===''||v.skoreH==null)?null:v.skoreH,
       soutez:v.soutez||null, stadion:v.stadion||null, mesto:v.mesto||null, zeme:v.zeme||null,
       datum:v.datum, divaku:(v.divaku===''||v.divaku==null)?null:v.divaku, poznamka:v.poznamka||null,
-      hodnoceni:v.hodnoceni||0, pivo:v.pivo||0, klobasa:v.klobasa||0, foto:v.foto||'', spolu:(v.spolu||[]).join(',')||null, vitrina:!!v.vitrina };
+      hodnoceni:v.hodnoceni||0, pivo:v.pivo||0, klobasa:v.klobasa||0, foto:v.foto||'', spolu:(v.spolu||[]).join(',')||null, vitrina:!!v.vitrina, vylet_id:v.vyletId||null };
     try {
       const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navstevy?on_conflict=id', {
         method:'POST', headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates'}), body:JSON.stringify(body)
@@ -1170,6 +1356,193 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
         body:JSON.stringify({ klic:key, nazev:data.nazev, mesto:data.mesto, zeme:data.zeme, klub:data.klub||null, kapacita:data.kapacita||null, lat:data.lat, lng:data.lng })
       });
     }catch(e){}
+  }
+
+  /* ---------- trips (výlety): group several visits into one outing ---------- */
+  async function tripsPull(){
+    if(!sbConfigured()) return;
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vylety?select=*', {headers:sbHeaders()});
+      if(!r.ok) return;
+      const rows=await r.json();
+      const localOnly=trips.filter(t=>!rows.find(row=>row.id===t.id));
+      trips=rows.map(row=>({ id:row.id, nazev:row.nazev, datumOd:row.datum_od, datumDo:row.datum_do, poznamka:row.poznamka||'', osoba:row.osoba||'', foto:row.foto||'' })).concat(localOnly);
+      saveTripsLocal();
+    }catch(e){}
+  }
+  async function tripPush(t){
+    if(!sbConfigured()) return false;
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vylety?on_conflict=id', {
+        method:'POST', headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates'}),
+        body: JSON.stringify({ id:t.id, nazev:t.nazev, datum_od:t.datumOd||null, datum_do:t.datumDo||null, poznamka:t.poznamka||null, osoba:t.osoba||cfg.name, foto:t.foto||null })
+      });
+      return r.ok;
+    }catch(e){ return false; }
+  }
+  async function tripDeleteRemote(id){
+    if(!sbConfigured()) return false;
+    try{
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/vylety?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+      return r.ok;
+    }catch(e){ return false; }
+  }
+  function tripVisits(tripId){ return visits.filter(v=>v.vyletId===tripId); }
+  function tripStats(tripId){
+    const vs=tripVisits(tripId);
+    const stadiums=new Set(vs.map(stadionKey).filter(Boolean));
+    const clubs=new Set(); vs.forEach(v=>{ [v.domaci,v.hoste].filter(Boolean).forEach(c=>clubs.add(norm(c))); });
+    const countries=new Set(vs.map(v=>v.zeme&&norm(v.zeme)).filter(Boolean));
+    return { count:vs.length, stadiums:stadiums.size, clubs:clubs.size, countries:countries.size };
+  }
+  function tripDateLabel(t){
+    if(!t.datumOd) return '';
+    if(!t.datumDo || t.datumDo===t.datumOd) return czDateFull(t.datumOd);
+    return czDateFull(t.datumOd)+' – '+czDateFull(t.datumDo);
+  }
+  function tripCoverPhoto(t){
+    if(t.foto) return t.foto;
+    const withPhoto=tripVisits(t.id).filter(v=>v.foto).sort((a,b)=>(a.datum||'').localeCompare(b.datum||''));
+    return withPhoto.length ? withPhoto[0].foto : null;
+  }
+  function candidateVisitsForTrip(t){
+    if(!t.datumOd) return [];
+    const to=t.datumDo||t.datumOd;
+    return visits.filter(v=>v.datum && v.datum>=t.datumOd && v.datum<=to && !v.vyletId)
+      .sort((a,b)=>(a.datum||'').localeCompare(b.datum||''));
+  }
+  function renderTripsList(){
+    const box=$('#trips-list'); if(!box) return;
+    const sorted=trips.slice().sort((a,b)=>(b.datumOd||'').localeCompare(a.datumOd||''));
+    if(!sorted.length){ box.innerHTML='<p class="tiny-note">Zatím žádné výlety — založ první nahoře.</p>'; return; }
+    box.innerHTML=sorted.map(t=>{
+      const stats=tripStats(t.id);
+      const cover=tripCoverPhoto(t);
+      const thumb = cover
+        ? '<span class="trip-thumb"><img loading="lazy" src="'+esc(storageUrl(cover))+'" alt=""></span>'
+        : '<span class="trip-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 20l-6-2V6l6 2 6-2 6 2v12l-6-2-6 2z"/></svg></span>';
+      let sub=tripDateLabel(t);
+      if(stats.count) sub+=' · '+stats.count+(stats.count===1?' návštěva':(stats.count<5?' návštěvy':' návštěv'));
+      return '<div class="trip-row" data-tripopen="'+t.id+'">'
+        +thumb
+        +'<div><div class="t">'+esc(t.nazev)+'</div><div class="s">'+esc(sub)+'</div></div>'
+        +'</div>';
+    }).join('');
+  }
+  function openTripsOverlay(pickForVisitId){
+    tripPickerVisitId=pickForVisitId||null;
+    $('#trips-title').textContent = tripPickerVisitId ? 'Přidat do výletu' : 'Výlety';
+    $('#trip-new-form').style.display='none';
+    renderTripsList();
+    $('#trips-overlay').classList.add('show');
+  }
+  async function saveNewTrip(){
+    const nazev=$('#trip-new-name').value.trim();
+    if(!nazev){ toast('Zadej název výletu', true); return; }
+    const from=$('#trip-new-from').value || todayISO();
+    const to=$('#trip-new-to').value || from;
+    const t={ id:uid(), nazev, datumOd:from, datumDo:to, poznamka:'', osoba:cfg.name, foto:'' };
+    trips.push(t); saveTripsLocal();
+    $('#trip-new-form').style.display='none';
+    $('#trip-new-name').value=''; $('#trip-new-from').value=''; $('#trip-new-to').value='';
+    if(sbConfigured()) await tripPush(t);
+    if(tripPickerVisitId){ linkVisitToTrip(tripPickerVisitId, t.id); return; }
+    renderTripsList();
+    toast('Výlet založen');
+  }
+  async function linkVisitToTrip(visitId, tripId){
+    const v=visits.find(x=>x.id===visitId); if(!v) return;
+    v.vyletId=tripId; v.synced=false;
+    saveLocal(); renderAll();
+    $('#trips-overlay').classList.remove('show');
+    tripPickerVisitId=null;
+    if(sbConfigured()) await sbPush(v);
+    toast('Přidáno do výletu');
+  }
+  function renderTripCandidatesPanel(tripId){
+    const panel=$('#trip-cand-panel'); if(!panel) return;
+    const t=trips.find(x=>x.id===tripId); if(!t) return;
+    const cands=candidateVisitsForTrip(t);
+    if(!cands.length){ panel.innerHTML='<p class="tiny-note">Žádné další návštěvy ve stejném období, co ještě nejsou přiřazené k výletu.</p>'; return; }
+    panel.innerHTML = cands.map(v=>
+      '<label class="trip-cand-row"><input type="checkbox" data-tripcand="'+v.id+'"><span>'+esc(v.domaci||'')+(v.hoste?' – '+esc(v.hoste):'')+(v.stadion?' · '+esc(v.stadion):'')+'<small>'+esc(v.osoba||'')+' · '+esc(czDateFull(v.datum))+'</small></span></label>'
+    ).join('') + '<button class="btn btn-primary" id="trip-cand-confirm" data-tripconfirm="'+tripId+'" style="margin-top:10px">Přidat vybrané</button>';
+  }
+  async function confirmAddTripCandidates(tripId){
+    const boxes=[...document.querySelectorAll('[data-tripcand]:checked')];
+    if(!boxes.length) return;
+    const changed=[];
+    boxes.forEach(cb=>{
+      const v=visits.find(x=>x.id===cb.dataset.tripcand);
+      if(v){ v.vyletId=tripId; v.synced=false; changed.push(v); }
+    });
+    saveLocal(); renderAll();
+    for(const v of changed){ if(sbConfigured()) await sbPush(v); }
+    toast(changed.length+' přidáno do výletu');
+    openTripDetail(tripId);
+  }
+  function openTripDetail(id){
+    const t=trips.find(x=>x.id===id); if(!t) return;
+    const vs=tripVisits(id).sort((a,b)=>(a.datum||'').localeCompare(b.datum||''));
+    const stats=tripStats(id);
+    const cover=tripCoverPhoto(t);
+    let html='<div class="grabber"></div>';
+    if(cover) html+='<img class="detail-photo" src="'+esc(storageUrl(cover))+'" alt="'+esc(t.nazev)+'">';
+    html+='<h2>'+esc(t.nazev)+'</h2>';
+    html+='<p class="lead">'+esc(tripDateLabel(t))+'</p>';
+    html+='<div class="detail-chips"><span class="chip">'+stats.count+(stats.count===1?' návštěva':(stats.count<5?' návštěvy':' návštěv'))+'</span><span class="chip">'+stats.stadiums+' '+(stats.stadiums===1?'stadion':(stats.stadiums<5?'stadiony':'stadionů'))+'</span><span class="chip">'+stats.clubs+' '+(stats.clubs===1?'klub':(stats.clubs<5?'kluby':'klubů'))+'</span><span class="chip">'+stats.countries+' '+(stats.countries===1?'země':'zemí')+'</span></div>';
+    if(t.poznamka) html+='<p class="detail-note">'+esc(t.poznamka)+'</p>';
+    if(stats.stadiums>0) html+='<div class="map-frame" style="height:36vh" id="trip-map-canvas"></div>';
+    html+='<div class="section-title">Návštěvy z výletu</div>';
+    html+= vs.length ? vs.map(v=>ticketCard(v,true)).join('') : '<p class="tiny-note">Zatím žádné návštěvy.</p>';
+    html+='<button class="btn btn-ghost" data-tripaddcand="'+t.id+'" style="margin-top:var(--s4)">+ Přidat návštěvy ze stejného období</button>';
+    html+='<div id="trip-cand-panel" style="display:none; margin-top:var(--s3)"></div>';
+    html+='<button class="btn btn-danger btn-sm" data-tripdelete="'+t.id+'" style="margin-top:var(--s6); width:100%">Smazat výlet</button>';
+    $('#trip-detail-content').innerHTML=html;
+    $('#trips-overlay').classList.remove('show');
+    $('#trip-detail-overlay').classList.add('show');
+    if(stats.stadiums>0) renderTripMap(id);
+  }
+  let tripMapInstance=null;
+  async function renderTripMap(tripId){
+    const wrap=document.getElementById('trip-map-canvas'); if(!wrap) return;
+    const stops=[]; const seen=new Set();
+    tripVisits(tripId).forEach(v=>{
+      const k=stadionKey(v); if(!k || seen.has(k)) return;
+      seen.add(k);
+      stops.push({key:k, stadion:v.stadion, mesto:v.mesto, zeme:v.zeme});
+    });
+    if(!stops.length){ wrap.style.display='none'; return; }
+    try{ await loadLeaflet(); }catch(e){ wrap.style.display='none'; return; }
+    if(tripMapInstance){ tripMapInstance.remove(); tripMapInstance=null; }
+    tripMapInstance=L.map(wrap, { zoomControl:false, attributionControl:false, scrollWheelZoom:false }).setView([49.8,15.5], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ maxZoom:19 }).addTo(tripMapInstance);
+    const bounds=[];
+    for(const s of stops){
+      let coord = stadionCache[s.key] && stadionCache[s.key].lat!=null ? {lat:stadionCache[s.key].lat, lng:stadionCache[s.key].lng} : null;
+      if(!coord){ coord=await geocodeStadion([s.stadion,s.mesto,s.zeme].filter(Boolean).join(', ')); if(coord){ stadionCache[s.key]={...stadionCache[s.key], nazev:s.stadion, mesto:s.mesto, zeme:s.zeme, lat:coord.lat, lng:coord.lng}; saveStadionCache(); if(sbConfigured()) stadionyPush(s.key, stadionCache[s.key]); } }
+      if(!coord) continue;
+      bounds.push([coord.lat, coord.lng]);
+      L.marker([coord.lat, coord.lng]).addTo(tripMapInstance).bindPopup(esc(s.stadion));
+    }
+    if(bounds.length>1) tripMapInstance.fitBounds(bounds, { padding:[20,20] });
+    else if(bounds.length===1) tripMapInstance.setView(bounds[0], 11);
+    setTimeout(()=>{ tripMapInstance && tripMapInstance.invalidateSize(); }, 200);
+  }
+  async function deleteTrip(id){
+    if(!confirm('Smazat výlet? Návštěvy zůstanou v deníku, jen se od výletu odpojí.')) return;
+    const affected=visits.filter(v=>v.vyletId===id);
+    affected.forEach(v=>{ v.vyletId=null; v.synced=false; });
+    saveLocal();
+    trips=trips.filter(t=>t.id!==id);
+    saveTripsLocal();
+    $('#trip-detail-overlay').classList.remove('show');
+    if(sbConfigured()){
+      await tripDeleteRemote(id);
+      for(const v of affected){ await sbPush(v); }
+    }
+    renderAll();
+    toast('Výlet smazán');
   }
 
   /* ---------- likes ---------- */
@@ -1481,21 +1854,78 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   }
   function sortVisits(arr){ return arr.slice().sort((a,b)=> (b.datum||'').localeCompare(a.datum||'') || (b.id||'').localeCompare(a.id||'')); }
 
+  function allKnownPeople(){
+    const set=new Set();
+    if(cfg.name) set.add(cfg.name);
+    visits.forEach(v=>{ if(v.osoba) set.add(v.osoba); (v.spolu||[]).forEach(s=>{ if(s) set.add(s); }); });
+    const rest=[...set].filter(n=>n!==cfg.name).sort((a,b)=>a.localeCompare(b));
+    return cfg.name ? [cfg.name, ...rest] : rest;
+  }
+  function knownMonths(){
+    const set=new Set();
+    visits.forEach(v=>{ if(v.datum) set.add(v.datum.slice(0,7)); });
+    return [...set].sort().reverse().slice(0,8);
+  }
+  function monthLabelCZ(ym){
+    const names=['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
+    const idx=parseInt((ym||'').slice(5,7),10)-1;
+    return (names[idx]||'?')+' '+ym.slice(2,4);
+  }
+  function renderQuickFilters(){
+    const pbox=$('#person-chips'), mbox=$('#month-chips');
+    if(pbox){
+      const people=allKnownPeople();
+      if(people.length<2){ pbox.innerHTML=''; }
+      else {
+        pbox.innerHTML='<button class="filter-chip'+(!personFilter?' active':'')+'" data-personf="">Všichni</button>'
+          + people.map(p=>'<button class="filter-chip'+(personFilter===p?' active':'')+'" data-personf="'+esc(p)+'">'+esc(p===cfg.name?'Já':p)+'</button>').join('');
+      }
+    }
+    if(mbox){
+      const months=knownMonths();
+      if(months.length<2){ mbox.innerHTML=''; }
+      else {
+        mbox.innerHTML='<button class="filter-chip'+(!monthFilter?' active':'')+'" data-monthf="">Celé období</button>'
+          + months.map(m=>'<button class="filter-chip'+(monthFilter===m?' active':'')+'" data-monthf="'+m+'">'+monthLabelCZ(m)+'</button>').join('');
+      }
+    }
+  }
+  function renderYearIndex(arr){
+    const idx=$('#year-index'); if(!idx) return;
+    const years=[...new Set(arr.map(v=>(v.datum||'').slice(0,4)).filter(y=>y.length===4))];
+    if(viewMode!=='list' || years.length<2){ idx.classList.remove('show'); idx.innerHTML=''; return; }
+    idx.innerHTML=years.map(y=>'<button data-yjump="'+y+'">'+y+'</button>').join('');
+    idx.classList.add('show');
+  }
+  function jumpToFeedYear(y){
+    const el=document.querySelector('[data-yeardivider="'+y+'"]');
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
   function renderFeed(){
     let arr=sortVisits(visits);
     if(feedScope==='mine') arr=arr.filter(v=>visitInvolves(v,cfg.name));
+    if(personFilter) arr=arr.filter(v=>visitInvolves(v,personFilter));
+    if(monthFilter) arr=arr.filter(v=>(v.datum||'').slice(0,7)===monthFilter);
     const q=norm($('#search-all').value);
     if(q) arr=arr.filter(v=> norm(v.domaci+' '+v.hoste+' '+v.stadion+' '+v.soutez+' '+v.mesto).includes(q));
     const feed=$('#feed');
     if(!arr.length){
       feed.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20l-6-2V6l6 2 6-2 6 2v12l-6-2-6 2z"/></svg><div class="t">Zatím žádné návštěvy</div><div class="s">Přidej svůj první zápas přes tlačítko +</div></div>';
+      $('#year-index').classList.remove('show');
       return;
     }
     if(viewMode==='grid'){
       feed.innerHTML='<div class="feed-grid">'+arr.map(gridTile).join('')+'</div>';
     } else {
-      feed.innerHTML=arr.map(v=>ticketCard(v, feedScope==='all')).join('');
+      let lastYear=null, html='';
+      arr.forEach(v=>{
+        const y=(v.datum||'').slice(0,4);
+        if(y && y!==lastYear){ html+='<div class="year-divider" data-yeardivider="'+esc(y)+'">'+esc(y)+'</div>'; lastYear=y; }
+        html+=ticketCard(v, feedScope==='all');
+      });
+      feed.innerHTML=html;
     }
+    renderYearIndex(arr);
   }
 
   /* ---------- "co je nového od party" banner ---------- */
@@ -1619,18 +2049,67 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     $('#bar-zeme').innerHTML=topBars(v=>v.zeme, 6, true);
   }
 
-  function renderBoard(){
+  /* ---------- board superlative badges ---------- */
+  function computePeopleStats(){
     const per={};
     visits.forEach(v=>{
       const people=[v.osoba, ...(v.spolu||[])].filter(Boolean);
       const k=stadionKey(v);
       people.forEach(o=>{
-        per[o]=per[o]||{stadiums:new Set(), matches:0};
-        if(k) per[o].stadiums.add(k);
-        per[o].matches++;
+        per[o]=per[o]||{name:o, stadiums:new Set(), matches:0, countries:new Set(), clubs:{}, rated:0, sum:0};
+        const p=per[o];
+        if(k) p.stadiums.add(k);
+        p.matches++;
+        if(v.zeme) p.countries.add(norm(v.zeme));
+        [v.domaci, v.hoste].filter(Boolean).forEach(c=>{
+          const ck=norm(c); const e=p.clubs[ck]=p.clubs[ck]||{n:0,label:c}; e.n++;
+        });
+        if(v.hodnoceni>0){ p.rated++; p.sum+=v.hodnoceni; }
       });
     });
-    let rows=Object.entries(per).map(([name,d])=>({name, stadiums:d.stadiums.size, matches:d.matches}));
+    let people=Object.values(per).map(p=>{
+      const clubEntries=Object.values(p.clubs).sort((a,b)=>b.n-a.n);
+      const favClub=clubEntries.length?clubEntries[0].label:'';
+      const favShare=clubEntries.length?clubEntries[0].n/p.matches:0;
+      return {...p, stadiumsN:p.stadiums.size, countriesN:p.countries.size, avg:p.rated?p.sum/p.rated:0, favClub, favShare};
+    });
+    if(people.length){
+      const most=people.slice().sort((a,b)=>b.stadiumsN-a.stadiumsN)[0];
+      const mostCountries=people.slice().sort((a,b)=>b.countriesN-a.countriesN)[0];
+      const qualifiedAvg=people.filter(p=>p.rated>=3);
+      const topAvg=qualifiedAvg.slice().sort((a,b)=>b.avg-a.avg)[0];
+      const lowAvg=qualifiedAvg.slice().sort((a,b)=>a.avg-b.avg)[0];
+      people.forEach(p=>{
+        p.badges=[];
+        if(most && p.name===most.name && p.stadiumsN>0) p.badges.push({k:'pioneer',t:'Průkopník',d:'Nejvíc navštívených stadionů'});
+        if(mostCountries && p.name===mostCountries.name && p.countriesN>=2) p.badges.push({k:'explorer',t:'Cestovatel',d:'Nejvíc navštívených zemí'});
+        if(topAvg && p.name===topAvg.name && qualifiedAvg.length>1) p.badges.push({k:'connoisseur',t:'Znalec atmosféry',d:'Nejvyšší průměrné hodnocení'});
+        if(p.matches>=10) p.badges.push({k:'collector',t:'Sběratel',d:'10+ navštívených zápasů'});
+        if(p.favShare>=0.5 && p.matches>=4) p.badges.push({k:'loyal',t:'Věrný '+(p.favClub||''),d:'Dominantní oblíbený klub'});
+        if(lowAvg && p.name===lowAvg.name && qualifiedAvg.length>2 && lowAvg.avg<topAvg.avg) p.badges.push({k:'critic',t:'Přísný jazyk',d:'Nejpřísnější hodnotitel'});
+      });
+    }
+    return people;
+  }
+  function badgePips(badges, max){
+    if(!badges||!badges.length) return '';
+    const shown=badges.slice(0,max||3);
+    return '<span class="badge-pips">'+shown.map(b=>'<span class="pip pip-'+b.k+'" title="'+esc(b.t)+' — '+esc(b.d)+'">'+badgeIcon(b.k)+'</span>').join('')+'</span>';
+  }
+  function badgeIcon(k){
+    const ic={
+      pioneer:'<svg viewBox="0 0 24 24"><path d="M12 2l2.4 5 5.6.6-4.2 3.8 1.2 5.6L12 20l-5 2.9 1.2-5.6L4 13.6 9.6 13z"/></svg>',
+      connoisseur:'<svg viewBox="0 0 24 24"><path d="M6 3h12l-1 7a5 5 0 0 1-10 0z"/><path d="M12 15v4M8 21h8" stroke-linecap="round"/></svg>',
+      explorer:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18" opacity=".5"/></svg>',
+      collector:'<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M8 8V5h8v3" fill="none" stroke-linecap="round"/></svg>',
+      loyal:'<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>',
+      critic:'<svg viewBox="0 0 24 24"><path d="M4 20l7-7M13 5l6 6-7 7-3 1 1-3z"/></svg>'
+    };
+    return ic[k]||'';
+  }
+  function renderBoard(){
+    const people=computePeopleStats();
+    let rows=people.map(p=>({name:p.name, stadiums:p.stadiumsN, matches:p.matches, badges:p.badges}));
     rows.sort((a,b)=> boardMode==='stadiums' ? (b.stadiums-a.stadiums) : (b.matches-a.matches));
     const list=$('#board-list');
     if(!rows.length){ list.innerHTML='<div class="empty-state"><div class="t">Zatím žádný žebříček</div><div class="s">Přidej první návštěvu.</div></div>'; return; }
@@ -1638,8 +2117,139 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       const cls='rank-row'+(i===0?' top1':i===1?' top2':i===2?' top3':'');
       const n = boardMode==='stadiums' ? r.stadiums : r.matches;
       const l = boardMode==='stadiums' ? 'stadionů' : 'zápasů';
-      return '<div class="'+cls+'"><div class="rank-pos">'+(i+1)+'</div><span class="avatar" style="background:'+avatarColor(r.name)+'; width:26px; height:26px; font-size:10px">'+esc(initials(r.name))+'</span><div class="rank-name">'+esc(r.name)+'</div><div style="text-align:right"><div class="rank-n">'+n+'</div><div class="rank-l">'+l+'</div></div></div>';
+      return '<div class="'+cls+'"><div class="rank-pos">'+(i+1)+'</div><span class="avatar" style="background:'+avatarColor(r.name)+'; width:26px; height:26px; font-size:10px">'+esc(initials(r.name))+'</span><div class="rank-name">'+esc(r.name)+badgePips(r.badges,3)+'</div><div style="text-align:right"><div class="rank-n">'+n+'</div><div class="rank-l">'+l+'</div></div></div>';
     }).join('');
+  }
+
+  /* ---------- trophies / achievements ---------- */
+  function trophyIcon(name){
+    const P={
+      ball:'<circle cx="12" cy="12" r="9"/><path d="M12 6l3.6 2.6-1.4 4.2H9.8L8.4 8.6 12 6z"/><path d="M3 12h4M17 12h4M12 3v4M12 17v4" opacity=".6"/>',
+      stadium:'<path d="M3 16c0-6.5 4-12 9-12s9 5.5 9 12"/><ellipse cx="12" cy="16" rx="9" ry="3"/><path d="M7 16v-3M17 16v-3" opacity=".6"/>',
+      globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" opacity=".65"/>',
+      pin:'<path d="M12 21c4-4.5 6.5-8 6.5-11a6.5 6.5 0 0 0-13 0c0 3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+      flight:'<path d="M4 8h16l-1.5 9a2 2 0 0 1-2 1.8H7.5a2 2 0 0 1-2-1.8z"/><path d="M8 8V5M12 8V5M16 8V5" stroke-linecap="round" opacity=".7"/>',
+      ribbon:'<circle cx="12" cy="9" r="5.5"/><path d="M9 13.5L7 21l5-2.5L17 21l-2-7.5" /><path d="M12 6.5l1 2 2 .2-1.5 1.4.4 2L12 13l-1.9 1 .4-2L9 10.7l2-.2z" opacity=".5"/>',
+      crowd:'<circle cx="8" cy="9" r="2.6"/><circle cx="16" cy="9" r="2.6"/><path d="M2.5 19c0-3.2 2.6-5 5.5-5s5.5 1.8 5.5 5M10.5 19c0-3.2 2.6-5 5.5-5s5.5 1.8 5.5 5" opacity=".7"/>',
+      quill:'<path d="M4 20c8-1 13-6 16-16-9 2-14 7-16 16z"/><path d="M9 15c2-2 4-3.5 7-4.5" opacity=".6"/><path d="M4 20l3-3" stroke-linecap="round"/>',
+      book:'<path d="M5 4h9a3 3 0 0 1 3 3v13a3 3 0 0 0-3-3H5z"/><path d="M19 4h0a0 0 0 0 1 0 0v13" opacity=".5"/><path d="M8 8h6M8 11h6" opacity=".6" stroke-linecap="round"/>',
+      camera:'<path d="M4 8h3.2l1.4-2.2h6.8L16.8 8H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.2" r="3.6"/>',
+      flame:'<path d="M12 3c3 3.5 5 6.5 5 9.5a5 5 0 0 1-10 0c0-1.5.6-3 1.6-4.3.4 1 1.2 1.8 2 2.1-.4-2.4.3-5 1.4-7.3z"/>',
+      heart:'<path d="M12 20.2s-7-4.3-9.3-8.4C1.1 8.7 2.5 5.3 5.9 4.8c1.9-.3 3.5.7 6.1 3.2 2.6-2.5 4.2-3.5 6.1-3.2 3.4.5 4.8 3.9 3.2 7-2.3 4.1-9.3 8.4-9.3 8.4z"/>',
+      chat:'<path d="M4 5h16v11H8l-4 4V5z"/><path d="M8 9h8M8 12.5h5" opacity=".6" stroke-linecap="round"/>',
+      shirt:'<path d="M8.5 3L12 5l3.5-2 4 3.5-3 3V21H7.5V9.5l-3-3z"/>',
+      star:'<path d="M12 3.5l2.6 5.3 5.9.86-4.25 4.14 1 5.86L12 17l-5.25 2.76 1-5.86L3.5 9.66l5.9-.86z"/>',
+    };
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">'+(P[name]||P.ball)+'</svg>';
+  }
+  function trophyDots(tier){
+    return '<div class="tr-dots">'+[1,2,3].map(i=>'<span class="tr-dot'+(tier>=i?' on':'')+'"></span>').join('')+'</div>';
+  }
+  function trophyCardHtml(a){
+    if(a.tiered){
+      const tierCls = a.tier===3?'tier-gold':(a.tier===2?'tier-silver':(a.tier===1?'tier-bronze':''));
+      const cls='trophy'+(a.done?' done '+tierCls:' locked');
+      const prog = a.tier===3
+        ? '<div class="tr-unlocked gold">Zlato<span class="tr-goldnum">'+a.cur+'</span></div>'
+        : '<div class="tr-prog"><div class="tr-bar"><div class="tr-fill" style="width:'+Math.round(a.pct*100)+'%"></div></div><span class="tr-pct">'+a.cur+'/'+a.nextGoal+'</span></div>';
+      return '<div class="'+cls+'">'
+        +'<div class="tr-medal">'+trophyIcon(a.i)+(a.done?'<span class="tr-shine"></span>':'')+'</div>'
+        +trophyDots(a.tier)
+        +'<div class="tr-title">'+esc(a.t)+'</div>'
+        +'<div class="tr-desc">'+esc(a.d)+'</div>'
+        +prog
+        +'</div>';
+    }
+    const cls=a.done?'trophy done':'trophy locked';
+    const prog = a.done ? '<div class="tr-unlocked">Odemčeno</div>'
+      : '<div class="tr-prog"><div class="tr-bar"><div class="tr-fill" style="width:'+Math.round(a.pct*100)+'%"></div></div><span class="tr-pct">'+a.cur+'/'+a.goal+'</span></div>';
+    return '<div class="'+cls+'">'
+      +'<div class="tr-medal">'+trophyIcon(a.i)+(a.done?'<span class="tr-shine"></span>':'')+'</div>'
+      +'<div class="tr-title">'+esc(a.t)+'</div>'
+      +'<div class="tr-desc">'+esc(a.d)+'</div>'
+      +prog
+      +'</div>';
+  }
+  function computeAchievements(){
+    const mine=visits.filter(v=>v.osoba===cfg.name);
+    const matchesOnly=mine.filter(v=>v.typ!=='prohlidka');
+    const tourCount=mine.filter(v=>v.typ==='prohlidka').length;
+    const rated=mine.filter(v=>v.hodnoceni>0);
+    const distinctStadiumsN=new Set(mine.map(stadionKey).filter(Boolean)).size;
+    const distinctCountries=new Set(mine.map(v=>v.zeme&&norm(v.zeme)).filter(Boolean)).size;
+    const clubSet=new Set(); const clubMap={};
+    mine.forEach(v=>{
+      [v.domaci, v.hoste].filter(Boolean).forEach(c=>{ const k=norm(c); clubSet.add(k); clubMap[k]=(clubMap[k]||0)+1; });
+    });
+    const topClub=Object.values(clubMap).reduce((a,b)=>Math.max(a,b),0);
+    const notes=mine.filter(v=>v.poznamka&&v.poznamka.trim().length>0).length;
+    const photoCount=mine.filter(v=>v.foto).length;
+    const bigCrowd=mine.filter(v=>v.divaku && v.divaku>=10000).length;
+    const months=new Set(mine.map(v=>(v.datum||'').slice(0,7)).filter(Boolean)).size;
+    const likesReceived=mine.reduce((s,v)=>s+((likesMap[v.id]&&likesMap[v.id].size)||0),0);
+    let commentsWritten=0;
+    Object.values(commentsMap).forEach(list=>{ list.forEach(c=>{ if(c.osoba===cfg.name) commentsWritten++; }); });
+    const squadCount=mine.filter(v=>v.spolu && v.spolu.length>0).length;
+    const perfect=mine.filter(v=>v.hodnoceni>=5).length;
+
+    const T=[
+      {key:'matches',   t:'Sběratel zápasů',    d:'Navštiv zápasy',                     i:'ball',    cur:matchesOnly.length, tiers:[5,25,100]},
+      {key:'stadiums',  t:'Stadionový sběratel',d:'Navštiv různé stadiony',             i:'stadium', cur:distinctStadiumsN,  tiers:[3,10,30]},
+      {key:'countries', t:'Cestovatel',         d:'Stadiony v různých zemích',          i:'globe',   cur:distinctCountries,  tiers:[2,5,10]},
+      {key:'clubs',     t:'Sběratel klubů',     d:'Vidět různé kluby hrát',             i:'flight',  cur:clubSet.size,       tiers:[10,25,50]},
+      {key:'loyal',     t:'Věrný fanoušek',     d:'Zápasy jednoho klubu',               i:'ribbon',  cur:topClub,            tiers:[5,15,30]},
+      {key:'tourist',   t:'Turista',            d:'Prohlídky stadionu bez zápasu',      i:'pin',     cur:tourCount,          tiers:[1,5,15]},
+      {key:'crowd',     t:'Do velkého kotle',   d:'Zápasy s návštěvou 10 000+',         i:'crowd',   cur:bigCrowd,           tiers:[1,5,15]},
+      {key:'critic',    t:'Recenzent',          d:'Ohodnoť zápasy',                     i:'quill',   cur:rated.length,       tiers:[10,25,50]},
+      {key:'chron',     t:'Kronikář',           d:'Napiš poznámku k zápasům',           i:'book',    cur:notes,              tiers:[10,25,50]},
+      {key:'photog',    t:'Fotograf',           d:'Zápasy doplněné o fotku',            i:'camera',  cur:photoCount,         tiers:[5,15,40]},
+      {key:'endurance', t:'Vytrvalec',          d:'Aktivní v různých měsících',         i:'flame',   cur:months,             tiers:[3,6,12]},
+      {key:'popular',   t:'Oblíbenec party',    d:'Lajky posbírané od party',           i:'heart',   cur:likesReceived,      tiers:[5,20,50]},
+      {key:'chatty',    t:'Diskutér',           d:'Komentáře napsané pod zápasy',       i:'chat',    cur:commentsWritten,    tiers:[5,20,50]},
+      {key:'squad',     t:'Parta na cestách',   d:'Zápasy zažité s ostatními',          i:'shirt',   cur:squadCount,         tiers:[5,15,30]},
+    ];
+    const tiered=T.map(a=>{
+      const [bronze,silver,gold]=a.tiers;
+      let tier=0, tierName=null, nextGoal=bronze;
+      if(a.cur>=gold){ tier=3; tierName='gold'; nextGoal=null; }
+      else if(a.cur>=silver){ tier=2; tierName='silver'; nextGoal=gold; }
+      else if(a.cur>=bronze){ tier=1; tierName='bronze'; nextGoal=silver; }
+      const pct = nextGoal ? Math.min(1, a.cur/nextGoal) : 1;
+      return {...a, tiered:true, tier, tierName, nextGoal, pct, done:tier>0};
+    });
+    const flat=[
+      {key:'perfect', t:'Zápas snů', d:'Dej zápasu plných 5/5', i:'star', cur:perfect, goal:1, tiered:false, done:perfect>=1, pct:Math.min(1,perfect/1)},
+    ];
+    return tiered.concat(flat);
+  }
+  function renderTrophies(){
+    const list=computeAchievements();
+    const done=list.filter(a=>a.done).length;
+    const label=done+' / '+list.length;
+    const cntEl=$('#trophy-count'); if(cntEl) cntEl.textContent=label;
+    const cntAll=$('#trophy-count-all'); if(cntAll) cntAll.textContent=label;
+    const preview=list.slice().sort((a,b)=>(b.tier||(b.done?1:0))-(a.tier||(a.done?1:0)) || b.pct-a.pct).slice(0,3);
+    const prevBox=$('#trophy-grid');
+    if(prevBox) prevBox.innerHTML=preview.map(trophyCardHtml).join('');
+    const allBox=$('#trophy-grid-all');
+    if(allBox) allBox.innerHTML=list.map(trophyCardHtml).join('');
+  }
+
+  /* ---------- incomplete visits ---------- */
+  function incompleteVisits(){
+    return visits.filter(v=>v.osoba===cfg.name && v.typ!=='prohlidka' && !(v.hodnoceni>0));
+  }
+  function updateIncompleteBadge(){
+    const n=incompleteVisits().length;
+    const el=$('#incomplete-badge');
+    if(!el) return;
+    if(n>0){ el.style.display='inline-flex'; el.textContent=n+' bez hodnocení'; }
+    else { el.style.display='none'; el.textContent=''; }
+  }
+  function openNextIncomplete(){
+    const list=incompleteVisits();
+    if(!list.length) return;
+    editVisit(list[0].id);
   }
 
   function renderProfile(){
@@ -1653,12 +2263,17 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     if(!mine.length){ feed.innerHTML='<div class="empty-state"><div class="t">Zatím žádné návštěvy</div></div>'; }
     else feed.innerHTML=sortVisits(mine).map(v=>ticketCard(v,false)).join('');
     $('#invite-btn2').style.display=sbConfigured()?'flex':'none';
+    renderTrophies();
+    updateIncompleteBadge();
   }
 
-  function renderAll(){ renderHero(); renderFeed(); renderStats(); renderBoard(); renderProfile(); renderWishlist(); renderDupOverlay(); renderChallenge(); renderActivityBanner(); }
+  function renderAll(){ renderHero(); renderFeed(); renderStats(); renderBoard(); renderProfile(); renderWishlist(); renderDupOverlay(); renderClubDupOverlay(); renderChallenge(); renderActivityBanner(); renderQuickFilters(); updateIncompleteBadge(); }
 
   /* ---------- yearly wrapped ---------- */
-  function wrappedYearsList(){ return [...new Set(visits.map(v=>(v.datum||'').slice(0,4)).filter(y=>y.length===4))].sort().reverse(); }
+  function wrappedYearsList(){
+    const src = wrappedScope==='party' ? visits : visits.filter(v=>v.osoba===cfg.name);
+    return [...new Set(src.map(v=>(v.datum||'').slice(0,4)).filter(y=>y.length===4))].sort().reverse();
+  }
   function renderWrappedYears(){
     const years=wrappedYearsList();
     if(!wrappedYear || !years.includes(wrappedYear)) wrappedYear=years[0]||null;
@@ -1668,7 +2283,8 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     renderWrappedYears();
     const content=$('#wrapped-content');
     if(!wrappedYear){ content.innerHTML='<div class="empty-state"><div class="t">Zatím žádná data</div><div class="s">Přidej první návštěvu a přehled se tu objeví.</div></div>'; return; }
-    const arr=visits.filter(v=>(v.datum||'').startsWith(wrappedYear));
+    const base = wrappedScope==='party' ? visits : visits.filter(v=>v.osoba===cfg.name);
+    const arr=base.filter(v=>(v.datum||'').startsWith(wrappedYear));
     const stadiums=new Set(arr.map(stadionKey).filter(Boolean));
     const countries=new Set(arr.map(v=>norm(v.zeme)).filter(Boolean));
     const rated=arr.filter(v=>v.hodnoceni>0);
@@ -1676,13 +2292,20 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     const soutezCounts={}; arr.forEach(v=>{ if(v.soutez) soutezCounts[v.soutez]=(soutezCounts[v.soutez]||0)+1; });
     const topSoutez=Object.entries(soutezCounts).sort((a,b)=>b[1]-a[1])[0];
     const sorted=arr.slice().sort((a,b)=>(a.datum||'').localeCompare(b.datum||''));
+    let mvpCard='';
+    if(wrappedScope==='party'){
+      const personCounts={}; arr.forEach(v=>{ if(v.osoba) personCounts[v.osoba]=(personCounts[v.osoba]||0)+1; });
+      const mvp=Object.entries(personCounts).sort((a,b)=>b[1]-a[1])[0];
+      if(mvp) mvpCard='<div class="stat-card"><div class="n">'+esc(mvp[0])+'</div><div class="l">MVP party · '+mvp[1]+'&times;</div></div>';
+    }
     content.innerHTML =
-      '<div class="wrapped-hero"><div class="yr">'+wrappedYear+'</div><div class="sub">'+arr.length+' zápasů &middot; '+stadiums.size+' stadionů &middot; '+countries.size+' zemí</div></div>'
+      '<div class="wrapped-hero"><div class="yr">'+wrappedYear+'</div><div class="sub">'+(wrappedScope==='party'?'Celá parta · ':'')+arr.length+' zápasů &middot; '+stadiums.size+' stadionů &middot; '+countries.size+' zemí</div></div>'
       +'<div class="stat-grid">'
         +'<div class="stat-card"><div class="n">'+arr.length+'</div><div class="l">zápasů</div></div>'
         +'<div class="stat-card"><div class="n">'+stadiums.size+'</div><div class="l">stadionů</div></div>'
         +'<div class="stat-card"><div class="n">'+countries.size+'</div><div class="l">zemí</div></div>'
         +'<div class="stat-card"><div class="n">'+(topSoutez?topSoutez[1]:'–')+'</div><div class="l">'+(topSoutez?esc(topSoutez[0]):'nejčastější soutěž')+'</div></div>'
+        +mvpCard
       +'</div>'
       +(best ? '<div class="section-title">Nejlepší atmosféra</div>'+ticketCard(best,true) : '')
       +(sorted[0] ? '<div class="section-title">První a poslední zápas roku</div>'+ticketCard(sorted[0],true)+(sorted.length>1?ticketCard(sorted[sorted.length-1],true):'') : '');
@@ -1800,12 +2423,14 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       +(v.foto && sbConfigured() ? '<button class="btn btn-ghost btn-sm" id="detail-vitrina" style="margin-bottom:var(--s4)'+(v.vitrina?'; border-color:var(--light-deep); color:var(--light-bright)':'')+'">'+(v.vitrina?'✓ Ve vitríně':'Přidat do vitríny')+'</button>' : '')
       +'<div id="comment-thread">'+comments.map(c=>'<div class="comment-row"><span class="avatar" style="background:'+avatarColor(c.osoba)+'">'+esc(initials(c.osoba))+'</span><div class="comment-bubble"><div class="who">'+esc(c.osoba)+'</div>'+esc(c.text)+'</div>'+(c.osoba===cfg.name?'<button data-delcomment="'+c.id+'" style="background:none; border:none; color:var(--text-4); flex-shrink:0; padding:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M6 6l12 12M18 6L6 18"/></svg></button>':'')+'</div>').join('')+'</div>'
       +(sbConfigured() && cfg.name ? '<div class="comment-input-row"><input type="text" id="comment-input" placeholder="Napiš komentář…" autocomplete="off"><button id="comment-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 12l16-8-6 8 6 8-16-8z"/></svg></button></div>' : '')
+      +(v.osoba===cfg.name ? '<button class="btn btn-ghost btn-sm" id="detail-addtrip" style="margin-bottom:var(--s3)">'+(v.vyletId && trips.find(t=>t.id===v.vyletId) ? '📍 '+esc(trips.find(t=>t.id===v.vyletId).nazev) : '+ Přidat do výletu')+'</button>' : '')
       +(v.osoba===cfg.name ? '<div class="btn-row"><button class="btn btn-ghost btn-sm" id="detail-edit">Upravit</button><button class="btn btn-danger btn-sm" id="detail-delete">Smazat</button></div>' : '');
     $('#detail-overlay').classList.add('show');
     const img=$('#detail-photo-img'); if(img) img.addEventListener('click', ()=>openLightbox(img.src));
     const likeBtn=$('#detail-sheet-content [data-like]'); if(likeBtn) likeBtn.addEventListener('click', ()=>toggleLike(v.id));
     const shareBtn=$('#detail-share'); if(shareBtn) shareBtn.addEventListener('click', ()=>shareVisitImage(v));
     const vitrinaBtn=$('#detail-vitrina'); if(vitrinaBtn) vitrinaBtn.addEventListener('click', ()=>toggleVitrina(v));
+    const tripBtn=$('#detail-addtrip'); if(tripBtn) tripBtn.addEventListener('click', ()=>{ if(v.vyletId){ openTripDetail(v.vyletId); } else { openTripsOverlay(v.id); } });
     const editBtn=$('#detail-edit'); if(editBtn) editBtn.addEventListener('click', ()=>{ closeAllOverlays(); editVisit(v.id); });
     const delBtn=$('#detail-delete'); if(delBtn) delBtn.addEventListener('click', ()=>{ if(confirm('Opravdu smazat tuto návštěvu?')) delVisit(v.id); });
     const sendBtn=$('#comment-send'); if(sendBtn) sendBtn.addEventListener('click', ()=>{ const inp=$('#comment-input'); if(inp.value.trim()){ commentAdd(v.id, inp.value); inp.value=''; } });
@@ -2026,6 +2651,62 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
     ).join('');
   }
 
+  /* ---------- duplicate club detection & merge (domaci/hoste names) ---------- */
+  function distinctClubs(){
+    const map={};
+    visits.forEach(v=>{
+      [v.domaci, v.hoste].filter(Boolean).forEach(c=>{
+        const k=norm(c); if(!k) return;
+        if(!map[k]) map[k]={key:k, nazev:c, count:0};
+        map[k].count++;
+      });
+    });
+    return Object.values(map);
+  }
+  function findClubDupCandidates(){
+    const list=distinctClubs();
+    const dismissed=getClubDismissed();
+    const pairs=[];
+    for(let i=0;i<list.length;i++){
+      for(let j=i+1;j<list.length;j++){
+        const a=list[i], b=list[j];
+        const pairKey=[a.key,b.key].sort().join('~');
+        if(dismissed.has(pairKey)) continue;
+        const s=sim(a.nazev, b.nazev);
+        if(s>=0.72 && s<1) pairs.push({a,b,pairKey,score:s});
+      }
+    }
+    pairs.sort((x,y)=>y.score-x.score);
+    return pairs;
+  }
+  async function mergeClubs(winner, loser){
+    let changed=false;
+    visits.forEach(v=>{
+      if(v.domaci && norm(v.domaci)===loser.key){ v.domaci=winner.nazev; v.synced=false; changed=true; }
+      if(v.hoste && norm(v.hoste)===loser.key){ v.hoste=winner.nazev; v.synced=false; changed=true; }
+    });
+    if(changed){
+      saveLocal();
+      if(sbConfigured()){ for(const v of visits.filter(v=>v.synced===false)) await sbPush(v); }
+    }
+    toast('Kluby sloučeny');
+    renderAll(); renderClubDupOverlay();
+  }
+  function dismissClubDupPair(pairKey){ const d=getClubDismissed(); d.add(pairKey); saveClubDismissed(d); renderClubDupOverlay(); }
+  function renderClubDupOverlay(){
+    const pairs=findClubDupCandidates();
+    const cnt=$('#clubdup-count'); if(cnt) cnt.textContent = pairs.length ? pairs.length : '';
+    const list=$('#clubdup-list'); if(!list) return;
+    if(!pairs.length){ list.innerHTML='<div class="tiny-note">Žádné podezřelé duplicity nenalezeny.</div>'; return; }
+    list.innerHTML=pairs.map(p=>
+      '<div class="dup-card">'
+      +'<div class="dup-opt"><div><div class="t">'+esc(p.a.nazev)+'</div><div class="s">'+p.a.count+'&times; v zápisech</div></div><button data-clubmergewin="'+p.a.key+'" data-clubmergelose="'+p.b.key+'">Sloučit sem</button></div>'
+      +'<div class="dup-opt"><div><div class="t">'+esc(p.b.nazev)+'</div><div class="s">'+p.b.count+'&times; v zápisech</div></div><button data-clubmergewin="'+p.b.key+'" data-clubmergelose="'+p.a.key+'">Sloučit sem</button></div>'
+      +'<button class="dup-skip" data-clubdupskip="'+p.pairKey+'">Nejsou to duplicity</button>'
+      +'</div>'
+    ).join('');
+  }
+
   /* ---------- group challenge (shared bucket list, tracked against everyone's visits) ---------- */
   async function challengePull(){
     if(!sbConfigured()) return;
@@ -2155,11 +2836,18 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   }
 
   /* ---------- yearly wrapped ui ---------- */
-  $('#wrapped-btn').addEventListener('click', ()=>{ renderWrapped(); $('#wrapped-overlay').classList.add('show'); });
+  $('#wrapped-btn').addEventListener('click', ()=>{ wrappedScope='me'; $$('#wrapped-scope-seg .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.wscope==='me')); wrappedYear=null; renderWrapped(); $('#wrapped-overlay').classList.add('show'); });
   $('#wrapped-close').addEventListener('click', ()=>$('#wrapped-overlay').classList.remove('show'));
   $('#wrapped-years').addEventListener('click', e=>{
     const b=e.target.closest('[data-wyear]'); if(!b) return;
     wrappedYear=b.dataset.wyear; renderWrapped();
+  });
+  $('#wrapped-scope-seg').addEventListener('click', e=>{
+    const b=e.target.closest('[data-wscope]'); if(!b) return;
+    wrappedScope=b.dataset.wscope;
+    $$('#wrapped-scope-seg .seg-btn').forEach(x=>x.classList.toggle('active', x===b));
+    wrappedYear=null;
+    renderWrapped();
   });
 
   /* ---------- group challenge ui ---------- */
@@ -2183,6 +2871,9 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   });
 
   /* ---------- duplicate merge ui ---------- */
+  $('#trophy-open').addEventListener('click', ()=>{ renderTrophies(); $('#trophies-overlay').classList.add('show'); });
+  $('#trophies-close').addEventListener('click', ()=>$('#trophies-overlay').classList.remove('show'));
+  $('#incomplete-badge').addEventListener('click', openNextIncomplete);
   $('#dup-btn').addEventListener('click', ()=>{ renderDupOverlay(); $('#dup-overlay').classList.add('show'); });
   $('#dup-close').addEventListener('click', ()=>$('#dup-overlay').classList.remove('show'));
   $('#dup-list').addEventListener('click', e=>{
@@ -2195,6 +2886,48 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
       const winner=flat.find(x=>x.key===winKey), loser=flat.find(x=>x.key===loseKey);
       if(winner && loser) mergeStadiums(winner, loser);
     }
+  });
+
+  /* ---------- duplicate club merge ui ---------- */
+  $('#clubdup-btn').addEventListener('click', ()=>{ renderClubDupOverlay(); $('#clubdup-overlay').classList.add('show'); });
+  $('#clubdup-close').addEventListener('click', ()=>$('#clubdup-overlay').classList.remove('show'));
+  $('#clubdup-list').addEventListener('click', e=>{
+    const skip=e.target.closest('[data-clubdupskip]'); if(skip){ dismissClubDupPair(skip.dataset.clubdupskip); return; }
+    const btn=e.target.closest('[data-clubmergewin]');
+    if(btn){
+      const pairs=findClubDupCandidates();
+      const winKey=btn.dataset.clubmergewin, loseKey=btn.dataset.clubmergelose;
+      const flat=[].concat(...pairs.map(p=>[p.a,p.b]));
+      const winner=flat.find(x=>x.key===winKey), loser=flat.find(x=>x.key===loseKey);
+      if(winner && loser) mergeClubs(winner, loser);
+    }
+  });
+
+  /* ---------- trips ui ---------- */
+  $('#trips-btn').addEventListener('click', ()=>openTripsOverlay(null));
+  $('#trips-close').addEventListener('click', ()=>{ tripPickerVisitId=null; $('#trips-overlay').classList.remove('show'); });
+  $('#trip-new-btn').addEventListener('click', ()=>{
+    const f=$('#trip-new-form'); f.style.display = f.style.display==='none' ? 'block' : 'none';
+  });
+  $('#trip-new-save').addEventListener('click', saveNewTrip);
+  $('#trips-list').addEventListener('click', e=>{
+    const row=e.target.closest('[data-tripopen]'); if(!row) return;
+    if(tripPickerVisitId){ linkVisitToTrip(tripPickerVisitId, row.dataset.tripopen); return; }
+    openTripDetail(row.dataset.tripopen);
+  });
+  $('#trip-detail-content').addEventListener('click', e=>{
+    const addBtn=e.target.closest('[data-tripaddcand]');
+    if(addBtn){
+      const panel=$('#trip-cand-panel');
+      const open=panel.style.display!=='none';
+      if(open){ panel.style.display='none'; panel.innerHTML=''; }
+      else { panel.style.display='block'; renderTripCandidatesPanel(addBtn.dataset.tripaddcand); }
+      return;
+    }
+    const confirmBtn=e.target.closest('[data-tripconfirm]');
+    if(confirmBtn){ confirmAddTripCandidates(confirmBtn.dataset.tripconfirm); return; }
+    const delBtn=e.target.closest('[data-tripdelete]');
+    if(delBtn){ deleteTrip(delBtn.dataset.tripdelete); return; }
   });
 
   /* ---------- navigation ---------- */
@@ -2249,6 +2982,20 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   $$('.seg-btn[data-statscope]').forEach(b=>b.addEventListener('click', ()=>{ statScope=b.dataset.statscope; $$('.seg-btn[data-statscope]').forEach(x=>x.classList.toggle('active',x===b)); renderStats(); }));
   $$('.seg-btn[data-boardmode]').forEach(b=>b.addEventListener('click', ()=>{ boardMode=b.dataset.boardmode; $$('.seg-btn[data-boardmode]').forEach(x=>x.classList.toggle('active',x===b)); renderBoard(); }));
   $('#search-all').addEventListener('input', renderFeed);
+  $('#person-chips').addEventListener('click', e=>{
+    const b=e.target.closest('[data-personf]'); if(!b) return;
+    personFilter=b.dataset.personf||null;
+    renderQuickFilters(); renderFeed();
+  });
+  $('#month-chips').addEventListener('click', e=>{
+    const b=e.target.closest('[data-monthf]'); if(!b) return;
+    monthFilter=b.dataset.monthf||null;
+    renderQuickFilters(); renderFeed();
+  });
+  $('#year-index').addEventListener('click', e=>{
+    const b=e.target.closest('[data-yjump]'); if(!b) return;
+    jumpToFeedYear(b.dataset.yjump);
+  });
   $('#view-toggle').addEventListener('click', ()=>{
     viewMode = viewMode==='list' ? 'grid' : 'list';
     $('#view-toggle-icon').innerHTML = viewMode==='grid'
@@ -2273,7 +3020,7 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   });
 
   /* ---------- overlay close handling ---------- */
-  ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay','#trophies-overlay','#trips-overlay','#trip-detail-overlay','#clubdup-overlay'].forEach(sel=>{
     $(sel).addEventListener('click', e=>{
       if(e.target===$(sel)){
         if(sel==='#name-overlay' && $(sel).dataset.force==='1' && !cfg.name) return;
@@ -2283,12 +3030,12 @@ create policy "vyzva mazat" on vyzva for delete using (true);</div>
   });
   document.addEventListener('keydown', e=>{
     if(e.key==='Escape'){
-      ['#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>$(sel).classList.remove('show'));
+      ['#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay','#trophies-overlay','#trips-overlay','#trip-detail-overlay','#clubdup-overlay'].forEach(sel=>$(sel).classList.remove('show'));
       closeCardMenu();
       if(cfg.name) $('#name-overlay').classList.remove('show');
     }
   });
-  function closeAllOverlays(){ ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay'].forEach(sel=>$(sel).classList.remove('show')); }
+  function closeAllOverlays(){ ['#name-overlay','#setup-overlay','#invite-overlay','#detail-overlay','#stadion-overlay','#klub-overlay','#map-overlay','#wish-overlay','#wrapped-overlay','#dup-overlay','#challenge-overlay','#trophies-overlay','#trips-overlay','#trip-detail-overlay','#clubdup-overlay'].forEach(sel=>$(sel).classList.remove('show')); }
 
   /* ---------- boot ---------- */
   loadLocal();
