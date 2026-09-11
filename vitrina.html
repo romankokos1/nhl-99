@@ -65,20 +65,33 @@
   }
 
   /* ---------- hero showcase (one random pick, full screen) ---------- */
-  .hero-showcase{position:relative; height:100vh; height:100dvh; overflow:hidden; background:var(--bg);}
+  .hero-showcase{position:relative; height:100vh; height:100dvh; overflow:hidden; background:var(--bg); display:flex; align-items:center; justify-content:center;}
   .hero-showcase img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .hero-bg{display:block;}
+  .hero-frame{display:none;}
   .hero-scrim{position:absolute; inset:0; background:linear-gradient(to bottom, rgba(10,7,4,0.1) 0%, rgba(10,7,4,0.2) 45%, rgba(10,7,4,0.96) 100%);}
-  .hero-content{position:absolute; left:0; right:0; bottom:calc(70px + env(safe-area-inset-bottom)); padding:0 24px; text-align:center;}
+  .hero-content{position:absolute; left:0; right:0; bottom:calc(70px + env(safe-area-inset-bottom)); padding:0 24px; text-align:center; z-index:2;}
   .hero-eyebrow{font-size:13px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--amber-bright); margin-bottom:14px;}
   .hero-name{font-family:'EB Garamond',serif; font-weight:600; font-size:clamp(34px,9vw,64px); color:#f7edd6; line-height:1.05; letter-spacing:-0.01em;}
   .hero-brewery{font-size:16px; color:#c3ab86; margin-top:10px;}
   .hero-score{font-family:'EB Garamond',serif; font-weight:700; font-size:22px; color:var(--amber-bright); margin-top:14px;}
   .hero-scroll-hint{
-    position:absolute; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    position:absolute; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:2;
     color:#c3ab86; animation:heroBounce 1.8s ease-in-out infinite;
   }
   .hero-scroll-hint svg{width:22px; height:22px;}
   @keyframes heroBounce{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,8px);}}
+  /* wide screens: a phone photo stretched full-bleed just looks soft — blur it as a backdrop
+     and show a properly sized, sharp copy framed on top instead */
+  @media(min-width:700px){
+    .hero-bg{display:block; filter:blur(50px) brightness(0.55) saturate(1.25); transform:scale(1.15);}
+    .hero-frame{
+      display:block; position:relative; z-index:1; max-width:min(70vw, 480px); max-height:62vh;
+      margin-bottom:130px; border-radius:20px; overflow:hidden; box-shadow:0 40px 90px -20px rgba(0,0,0,0.7);
+    }
+    .hero-frame img{position:static; width:100%; height:100%; max-height:62vh; object-fit:cover;}
+    .hero-content{bottom:calc(46px + env(safe-area-inset-bottom));}
+  }
 
   /* ---------- header ---------- */
   header{
@@ -206,8 +219,9 @@
 
   <div id="page" style="display:none">
     <div class="hero-showcase" id="hero-showcase">
-      <img id="hero-img" alt="">
+      <img id="hero-bg" class="hero-bg" alt="">
       <div class="hero-scrim"></div>
+      <div class="hero-frame" id="hero-frame"><img id="hero-img" alt=""></div>
       <div class="hero-content">
         <div class="hero-eyebrow">Vitrína</div>
         <h1 class="hero-name" id="hero-name"></h1>
@@ -404,6 +418,7 @@
     // hero: one random pick, full screen, before the mosaic even loads
     const hero=picks[Math.floor(Math.random()*picks.length)];
     if(hero){
+      $('#hero-bg').src=storageUrl(hero.foto);
       $('#hero-img').src=storageUrl(hero.foto);
       $('#hero-img').alt=hero.nazev||'';
       $('#hero-name').textContent=hero.nazev||'';
