@@ -1457,12 +1457,13 @@
           <label>Kde jsi pil?</label>
           <div class="segment" id="context-seg" style="margin:8px 0 0">
             <button type="button" class="seg-btn active" data-context="podnik">📍 V podniku</button>
+            <button type="button" class="seg-btn" data-context="festival">🎪 Na festivalu</button>
             <button type="button" class="seg-btn" data-context="doma">🏠 Doma</button>
             <button type="button" class="seg-btn" data-context="cesta">🚗 Na cestách</button>
           </div>
         </div>
         <div class="field" id="where-field">
-          <label for="f-where">Kde jsem ochutnal</label>
+          <label for="f-where" id="f-where-label">Kde jsem ochutnal</label>
           <div class="input-clear-wrap">
             <input type="text" id="f-where" placeholder="U Medvídků…" autocomplete="off" list="venue-list">
             <button type="button" class="search-clear" id="f-where-clear" style="display:none" aria-label="Vymazat">
@@ -3788,8 +3789,11 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   function setAddContext(ctx){
     addContext=ctx;
     document.querySelectorAll('#context-seg .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.context===ctx));
-    $('#where-field').style.display = ctx==='podnik' ? 'block' : 'none';
-    if(ctx!=='podnik'){ $('#f-where').value=''; if($('#f-where-clear')) $('#f-where-clear').style.display='none'; }
+    const showWhere = ctx==='podnik' || ctx==='festival';
+    $('#where-field').style.display = showWhere ? 'block' : 'none';
+    if($('#f-where-label')) $('#f-where-label').textContent = ctx==='festival' ? 'Který festival' : 'Kde jsem ochutnal';
+    if($('#f-where')) $('#f-where').placeholder = ctx==='festival' ? 'Pivní slavnosti…' : 'U Medvídků…';
+    if(!showWhere){ $('#f-where').value=''; if($('#f-where-clear')) $('#f-where-clear').style.display='none'; }
   }
   function resetForm(){
     editId=null; currentRating=0; currentPhoto=''; currentPhotoPos='center';
@@ -3798,7 +3802,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     setAddContext('podnik');
     $('#f-date').value=todayISO(); paintRating();
     if(tasting){ $('#f-where').value=tasting.where; $('#f-date').value=tasting.date; }
-    else { setAddContext(lastContext); if(lastContext==='podnik') $('#f-where').value=lastWhere; }
+    else { setAddContext(lastContext); if(lastContext==='podnik'||lastContext==='festival') $('#f-where').value=lastWhere; }
     if($('#f-where-clear')) $('#f-where-clear').style.display = $('#f-where').value ? 'flex' : 'none';
     if($('#f-photo')) $('#f-photo').value='';
     setPhotoUI('', false);
@@ -3854,7 +3858,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       beers.unshift(rec);
     }
     const wasEdit=!!editId;
-    if(!wasEdit){ lastContext=rec.context||'podnik'; lastWhere=rec.context ? '' : rec.where; }
+    if(!wasEdit){ lastContext=rec.context||'podnik'; lastWhere=(rec.context==='doma'||rec.context==='cesta') ? '' : rec.where; }
     let wishCelebrate=false;
     if(!wasEdit && rec.brewery){
       const bKey=norm(rec.brewery), nKey=norm(rec.name);
@@ -3911,7 +3915,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#collab-field').style.display = b.collab ? 'block' : 'none';
     $('#f-abv').value=b.abv||''; $('#f-price').value=b.price||''; $('#f-date').value=b.date||''; $('#f-note').value=b.note||'';
     setAddContext(b.context && b.context!=='podnik' ? b.context : 'podnik');
-    $('#f-where').value = (!b.context || b.context==='podnik') ? (b.where||'') : '';
+    $('#f-where').value = (!b.context || b.context==='podnik' || b.context==='festival') ? (b.where||'') : '';
     if($('#f-where-clear')) $('#f-where-clear').style.display = $('#f-where').value ? 'flex' : 'none';
     currentRating=b.rating||0; paintRating();
     currentPhoto=b.foto||''; setPhotoPos(b.photoPos||'center'); setPhotoUI(currentPhoto, false);
@@ -4018,6 +4022,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(b.abv) metaBits.push('<span class="bm-item plain">'+esc(b.abv)+'%</span>');
     if(b.context==='doma') metaBits.push('<span class="bm-item plain">🏠 Doma</span>');
     else if(b.context==='cesta') metaBits.push('<span class="bm-item plain">🚗 Na cestách</span>');
+    else if(b.context==='festival' && b.where) metaBits.push('<button class="bm-item linkish" data-open-venue="'+esc(norm(b.where))+'">🎪<span>'+esc(b.where)+'</span></button>');
     else if(b.where) metaBits.push('<button class="bm-item linkish" data-open-venue="'+esc(norm(b.where))+'">'+metaPinIcon()+'<span>'+esc(b.where)+'</span></button>');
     const dateShort = b.date ? esc(b.date) : '';
     const menuBtn = mine ? '<button class="card-menu-btn" data-cardmenu="'+b.id+'" aria-label="Možnosti">'+cardMenuDots()+'</button>' : '';
@@ -4195,6 +4200,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const mine=x.osoba===cfg.name;
       const tags=[ '<span class="lb-fav">'+esc(x.date||'')+'</span>',
         x.context==='doma' ? '<span class="lb-fav">🏠 Doma</span>' : x.context==='cesta' ? '<span class="lb-fav">🚗 Na cestách</span>'
+          : x.context==='festival' && x.where ? '<button class="lb-fav linkish" data-open-venue="'+esc(norm(x.where))+'">🎪 '+esc(x.where)+'</button>'
           : x.where?'<button class="lb-fav linkish" data-open-venue="'+esc(norm(x.where))+'">'+esc(x.where)+'</button>':'',
         x.price?'<span class="lb-fav">'+esc(x.price)+' Kč</span>':'' ].filter(Boolean).join('');
       return '<div class="rater-entry">'
