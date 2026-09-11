@@ -69,12 +69,24 @@
   .hero-showcase img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
   .hero-bg{display:block;}
   .hero-frame{display:none;}
-  .hero-scrim{position:absolute; inset:0; background:linear-gradient(to bottom, rgba(10,7,4,0.1) 0%, rgba(10,7,4,0.2) 45%, rgba(10,7,4,0.96) 100%);}
-  .hero-content{position:absolute; left:0; right:0; bottom:calc(70px + env(safe-area-inset-bottom)); padding:0 24px; text-align:center; z-index:2;}
-  .hero-eyebrow{font-size:13px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--amber-bright); margin-bottom:14px;}
-  .hero-name{font-family:'EB Garamond',serif; font-weight:600; font-size:clamp(34px,9vw,64px); color:#f7edd6; line-height:1.05; letter-spacing:-0.01em;}
-  .hero-brewery{font-size:16px; color:#c3ab86; margin-top:10px;}
-  .hero-score{font-family:'EB Garamond',serif; font-weight:700; font-size:22px; color:var(--amber-bright); margin-top:14px;}
+  .hero-scrim{position:absolute; inset:0; background:linear-gradient(to bottom, rgba(10,7,4,0.15) 0%, rgba(10,7,4,0.05) 30%, rgba(10,7,4,0.3) 60%, rgba(10,7,4,0.97) 100%);}
+  .hero-mast{
+    position:absolute; z-index:3; top:calc(20px + env(safe-area-inset-top)); left:22px;
+    font-family:'EB Garamond',serif; font-weight:600; font-size:15px; letter-spacing:0.02em; color:#f7edd6; opacity:0.9;
+  }
+  .hero-score-badge{
+    position:absolute; z-index:3; top:calc(14px + env(safe-area-inset-top)); right:18px;
+    width:50px; height:50px; border-radius:50%; flex-direction:column;
+    background:linear-gradient(160deg, var(--amber-bright), var(--amber)); color:#241703;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'EB Garamond',serif; font-weight:700; font-size:18px; line-height:1;
+    box-shadow:0 8px 22px -6px rgba(0,0,0,0.55);
+  }
+  .hero-score-badge small{font-family:'Inter',sans-serif; font-size:8.5px; font-weight:700; opacity:0.75; margin-top:2px; letter-spacing:0.02em;}
+  .hero-content{position:absolute; left:0; right:0; bottom:calc(74px + env(safe-area-inset-bottom)); padding:0 28px; text-align:center; z-index:2;}
+  .hero-byline{font-size:11.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--amber-bright); margin-bottom:12px; opacity:0.95;}
+  .hero-name{font-family:'EB Garamond',serif; font-weight:600; font-size:clamp(32px,8.5vw,58px); color:#f7edd6; line-height:1.08; letter-spacing:-0.01em;}
+  .hero-brewery{font-size:12.5px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#c3ab86; margin-top:14px;}
   .hero-scroll-hint{
     position:absolute; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:2;
     color:#c3ab86; animation:heroBounce 1.8s ease-in-out infinite;
@@ -86,11 +98,11 @@
   @media(min-width:700px){
     .hero-bg{display:block; filter:blur(50px) brightness(0.55) saturate(1.25); transform:scale(1.15);}
     .hero-frame{
-      display:block; position:relative; z-index:1; max-width:min(70vw, 480px); max-height:62vh;
-      margin-bottom:130px; border-radius:20px; overflow:hidden; box-shadow:0 40px 90px -20px rgba(0,0,0,0.7);
+      display:block; position:relative; z-index:1; max-width:min(70vw, 480px); max-height:56vh;
+      margin-bottom:150px; border-radius:20px; overflow:hidden; box-shadow:0 40px 90px -20px rgba(0,0,0,0.7);
     }
-    .hero-frame img{position:static; width:100%; height:100%; max-height:62vh; object-fit:cover;}
-    .hero-content{bottom:calc(46px + env(safe-area-inset-bottom));}
+    .hero-frame img{position:static; width:100%; height:100%; max-height:56vh; object-fit:cover;}
+    .hero-content{bottom:calc(56px + env(safe-area-inset-bottom));}
   }
 
   /* ---------- header ---------- */
@@ -222,11 +234,12 @@
       <img id="hero-bg" class="hero-bg" alt="">
       <div class="hero-scrim"></div>
       <div class="hero-frame" id="hero-frame"><img id="hero-img" alt=""></div>
+      <div class="hero-mast">Vitrína</div>
+      <div class="hero-score-badge" id="hero-score"></div>
       <div class="hero-content">
-        <div class="hero-eyebrow">Vitrína</div>
+        <div class="hero-byline" id="hero-byline"></div>
         <h1 class="hero-name" id="hero-name"></h1>
         <div class="hero-brewery" id="hero-brewery"></div>
-        <div class="hero-score" id="hero-score"></div>
       </div>
       <div class="hero-scroll-hint">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -423,7 +436,9 @@
       $('#hero-img').alt=hero.nazev||'';
       $('#hero-name').textContent=hero.nazev||'';
       $('#hero-brewery').textContent=hero.pivovar||'';
-      $('#hero-score').innerHTML = hero.hodnoceni ? fmtScore(hero.hodnoceni)+'<small style="font-family:Inter,sans-serif;font-size:13px;color:#8f795a">/10</small>' : '';
+      $('#hero-byline').textContent = hero.osoba ? 'Zapsal(a) '+hero.osoba : '';
+      $('#hero-score').innerHTML = hero.hodnoceni ? fmtScore(hero.hodnoceni)+'<small>/10</small>' : '';
+      $('#hero-score').style.display = hero.hodnoceni ? 'flex' : 'none';
     } else {
       $('#hero-showcase').style.display='none';
     }
