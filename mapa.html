@@ -71,8 +71,15 @@
     width:300px; flex-shrink:0; border-left:1px solid var(--hairline); background:var(--surface);
     display:flex; flex-direction:column; min-height:0;
   }
-  .sidebar-head{padding:14px 16px 10px; flex-shrink:0;}
+  .sidebar-head{padding:14px 16px 10px; flex-shrink:0; display:flex; flex-direction:column; gap:10px;}
   .sidebar-count{font-size:12.5px; color:var(--text-3); font-weight:600;}
+  .color-seg{display:flex; gap:3px; background:var(--surface-2); border:1px solid var(--hairline); border-radius:999px; padding:3px;}
+  .color-seg button{flex:1; font-family:inherit; font-size:11.5px; font-weight:700; color:var(--text-3); background:none; border:none; padding:6px 8px; border-radius:999px; cursor:pointer;}
+  .color-seg button.active{background:var(--amber); color:#241703;}
+  .trip-select{
+    width:100%; font-family:inherit; font-size:12.5px; font-weight:600; color:var(--text-2);
+    background:var(--surface-2); border:1px solid var(--hairline); border-radius:10px; padding:8px 10px; cursor:pointer;
+  }
   .legend{display:flex; flex-wrap:wrap; gap:10px; padding:0 16px 12px; font-size:11px; font-weight:600; color:var(--text-3); flex-shrink:0;}
   .legend span{display:flex; align-items:center; gap:5px;}
   .legend i{width:9px; height:9px; border-radius:50%; display:inline-block; box-shadow:0 0 0 1px rgba(0,0,0,0.25);}
@@ -104,6 +111,10 @@
     width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     color:#241703; font-weight:800; font-size:12px; border:2px solid rgba(255,255,255,0.85); box-shadow:0 2px 6px rgba(0,0,0,0.4);
   }
+  .route-pin-inner{
+    width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:#f7edd6; font-weight:800; font-size:12px; background:#5c4a34; border:2px solid var(--amber-bright); box-shadow:0 2px 6px rgba(0,0,0,0.5);
+  }
 </style>
 </head>
 <body>
@@ -126,6 +137,9 @@
         <button data-mode="venues" class="active">Podniky</button>
         <button data-mode="breweries">Pivovary</button>
       </div>
+      <button class="icon-btn" id="fit-btn" aria-label="Přizpůsobit místům" title="Přizpůsobit místům">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+      </button>
       <button class="icon-btn" id="theme-toggle" aria-label="Přepnout motiv">
         <svg id="theme-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       </button>
@@ -135,12 +149,24 @@
       <div class="sidebar">
         <div class="sidebar-head">
           <div class="sidebar-count" id="sidebar-count">— míst</div>
+          <div class="color-seg" id="color-seg">
+            <button data-color="count" class="active">Podle počtu</button>
+            <button data-color="rating">Podle hodnocení</button>
+          </div>
+          <select class="trip-select" id="trip-select">
+            <option value="">Všechna místa</option>
+          </select>
         </div>
-        <div class="legend">
+        <div class="legend" id="legend-count">
           <span><i style="background:#8f795a"></i>1×</span>
           <span><i style="background:#c07d24"></i>2–4×</span>
           <span><i style="background:#e8a33d"></i>5–9×</span>
           <span><i style="background:#ffc35a"></i>10×+</span>
+        </div>
+        <div class="legend" id="legend-rating" style="display:none">
+          <span><i style="background:#b23a3a"></i>nízké</span>
+          <span><i style="background:#c07d24"></i>střední</span>
+          <span><i style="background:#ffc35a"></i>vysoké</span>
         </div>
         <div class="place-list" id="place-list"></div>
       </div>
@@ -222,13 +248,15 @@
   }
   function beerWord(n){ return n===1?'pivo':(n<5?'piva':'piv'); }
 
-  let piva=[], pivovary=[], mista=[];
-  let mapInstance=null, markersLayer=null;
-  let mode='venues';
+  const CZ_BOUNDS=[[48.5,12.0],[51.1,18.9]];
+  let piva=[], pivovary=[], mista=[], vylety=[];
+  let lastBounds=[];
+  let mapInstance=null, markersLayer=null, routeLayer=null;
+  let mode='venues', colorMode='count', activeTripId='';
 
   async function boot(){
     try{
-      const r=await fetch(base+'/rest/v1/piva?select=pivovar,spolupivovar,kde,hodnoceni,osoba', { headers });
+      const r=await fetch(base+'/rest/v1/piva?select=pivovar,spolupivovar,kde,hodnoceni,osoba,vylet_id,datum,nazev', { headers });
       if(!r.ok) throw new Error('HTTP '+r.status);
       piva=await r.json();
     }catch(e){
@@ -243,12 +271,26 @@
       const r3=await fetch(base+'/rest/v1/mista?select=*', { headers });
       if(r3.ok) mista=await r3.json();
     }catch(e){}
+    try{
+      const r4=await fetch(base+'/rest/v1/vylety?select=id,nazev,datum_od,datum_do&order=datum_od.desc', { headers });
+      if(r4.ok) vylety=await r4.json();
+    }catch(e){}
 
     $('#state').style.display='none';
     $('#page').style.display='flex';
     $('#top-link').href=backHref();
+    populateTripSelect();
     await initMap();
     renderMode();
+  }
+
+  function populateTripSelect(){
+    const sel=$('#trip-select'); if(!sel) return;
+    const withStops=vylety.filter(t=>piva.some(b=>b.vylet_id===t.id && b.kde));
+    sel.innerHTML='<option value="">Všechna místa</option>'+withStops.map(t=>{
+      const label=t.datum_od ? t.nazev+' ('+t.datum_od.slice(0,4)+')' : t.nazev;
+      return '<option value="'+esc(t.id)+'">'+esc(label)+'</option>';
+    }).join('');
   }
 
   function loadLeaflet(){
@@ -261,10 +303,22 @@
   }
   async function initMap(){
     await loadLeaflet();
-    mapInstance=L.map('map', { zoomControl:true }).setView([49.8, 15.5], 7);
+    mapInstance=L.map('map', { zoomControl:true }).fitBounds(CZ_BOUNDS);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(mapInstance);
     markersLayer=L.layerGroup().addTo(mapInstance);
+    routeLayer=L.layerGroup().addTo(mapInstance);
   }
+  function colorForRating(avg){
+    if(!avg) return '#6b593f';
+    const stops=[[0,[178,58,58]],[5,[192,125,36]],[10,[255,195,90]]];
+    let lo=stops[0], hi=stops[stops.length-1];
+    for(let i=0;i<stops.length-1;i++){ if(avg>=stops[i][0] && avg<=stops[i+1][0]){ lo=stops[i]; hi=stops[i+1]; break; } }
+    const t=(avg-lo[0])/((hi[0]-lo[0])||1);
+    const rgb=lo[1].map((c,i)=>Math.round(c+(hi[1][i]-c)*t));
+    return 'rgb('+rgb.join(',')+')';
+  }
+  function pinColor(it){ return colorMode==='rating' ? colorForRating(it.avg) : visitBucket(it.count); }
+  function pinLabel(it){ return colorMode==='rating' ? (it.avg? it.avg.toFixed(1) : '–') : String(it.count); }
 
   function distinctPlaces(){
     const map=new Map();
@@ -292,6 +346,8 @@
   }
 
   function renderMode(){
+    routeLayer.clearLayers();
+    markersLayer.clearLayers();
     const isBrew = mode==='breweries';
     const items = isBrew ? distinctBreweries() : distinctPlaces();
     const coordFor = key => isBrew
@@ -308,18 +364,19 @@
 
     $('#sidebar-count').textContent = withCoord.length+' '+(isBrew?'pivovarů na mapě':'podniků na mapě')+(withoutCoord.length?' · '+withoutCoord.length+' bez polohy':'');
 
-    markersLayer.clearLayers();
     const bounds=[];
     const markerByKey={};
     withCoord.forEach(it=>{
-      const color=visitBucket(it.count);
-      const icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner" style="background:'+color+'">'+it.count+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
+      const color=pinColor(it);
+      const icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner" style="background:'+color+'">'+pinLabel(it)+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
       const m=L.marker([it.coord.lat,it.coord.lng], { icon }).addTo(markersLayer);
       m.bindPopup('<div class="map-pin-popup"><b>'+esc(it.label)+'</b><span>'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</span></div>');
       markerByKey[it.key]=m;
       bounds.push([it.coord.lat,it.coord.lng]);
     });
-    if(bounds.length) mapInstance.fitBounds(bounds, { padding:[30,30], maxZoom:14 });
+    // start fixed on the whole country, not auto-zoomed to whatever markers exist —
+    // gives the map a consistent, recognizable "home" view every time
+    lastBounds=bounds;
 
     const list=$('#place-list');
     if(!withCoord.length){
@@ -327,7 +384,7 @@
     } else {
       list.innerHTML=withCoord.map(it=>
         '<div class="place-row" data-key="'+esc(it.key)+'">'
-        +'<span class="place-dot" style="background:'+visitBucket(it.count)+'">'+it.count+'</span>'
+        +'<span class="place-dot" style="background:'+pinColor(it)+'">'+pinLabel(it)+'</span>'
         +'<span class="place-info"><div class="place-name">'+esc(it.label)+'</div><div class="place-sub">'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</div></span>'
         +'</div>'
       ).join('');
@@ -342,11 +399,79 @@
     }
   }
 
+  function renderTripRoute(tripId){
+    markersLayer.clearLayers();
+    routeLayer.clearLayers();
+    const trip=vylety.find(t=>t.id===tripId); if(!trip) return;
+    const stops=piva.filter(b=>b.vylet_id===tripId && b.kde)
+      .sort((a,b)=>(a.datum||'').localeCompare(b.datum||''));
+    // one stop per distinct venue, kept in the order it was first visited that trip
+    const seen=new Set(); const ordered=[];
+    stops.forEach(b=>{
+      const key=norm(b.kde);
+      if(seen.has(key)) return; seen.add(key);
+      const p=mista.find(x=>x.klic===key);
+      if(p && p.lat!=null) ordered.push({ key, label:b.kde, coord:{lat:p.lat,lng:p.lng} });
+    });
+
+    $('#sidebar-count').textContent = ordered.length+' zastávek na výletu „'+trip.nazev+'"'+(ordered.length<stops.length?' (zbytek bez polohy)':'');
+
+    const bounds=[];
+    ordered.forEach((s,i)=>{
+      const icon=L.divIcon({ className:'visit-pin', html:'<div class="route-pin-inner">'+(i+1)+'</div>', iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-13] });
+      L.marker([s.coord.lat,s.coord.lng], { icon }).addTo(routeLayer).bindPopup('<div class="map-pin-popup"><b>'+esc(s.label)+'</b><span>zastávka '+(i+1)+'</span></div>');
+      bounds.push([s.coord.lat,s.coord.lng]);
+    });
+    if(ordered.length>1){
+      L.polyline(bounds, { color:'#ffc35a', weight:3, opacity:0.8, dashArray:'2 8', lineCap:'round' }).addTo(routeLayer);
+    }
+    lastBounds=bounds;
+    if(bounds.length) mapInstance.fitBounds(bounds, { padding:[50,50], maxZoom:15 });
+
+    const list=$('#place-list');
+    list.innerHTML = ordered.length
+      ? ordered.map((s,i)=>
+          '<div class="place-row" data-idx="'+i+'">'
+          +'<span class="place-dot" style="background:#5c4a34; border:2px solid var(--amber-bright)">'+(i+1)+'</span>'
+          +'<span class="place-info"><div class="place-name">'+esc(s.label)+'</div><div class="place-sub">zastávka '+(i+1)+' z '+ordered.length+'</div></span>'
+          +'</div>'
+        ).join('')
+      : '<div class="place-list-empty">Žádná ze zastávek tohohle výletu ještě nemá polohu.</div>';
+    list.querySelectorAll('.place-row').forEach(row=>{
+      row.addEventListener('click', ()=>{
+        const s=ordered[+row.dataset.idx];
+        if(s) mapInstance.setView([s.coord.lat,s.coord.lng], Math.max(mapInstance.getZoom(),14), { animate:true });
+      });
+    });
+  }
+
+  $('#trip-select').addEventListener('change', e=>{
+    activeTripId=e.target.value;
+    const showingRoute=!!activeTripId;
+    $('#mode-seg').style.opacity = showingRoute ? '0.4' : '1';
+    $('#mode-seg').style.pointerEvents = showingRoute ? 'none' : 'auto';
+    $('#color-seg').style.display = showingRoute ? 'none' : 'flex';
+    $('#legend-count').style.display = (!showingRoute && colorMode==='count') ? 'flex' : 'none';
+    $('#legend-rating').style.display = (!showingRoute && colorMode==='rating') ? 'flex' : 'none';
+    if(showingRoute) renderTripRoute(activeTripId); else renderMode();
+  });
+
   $('#mode-seg').addEventListener('click', e=>{
     const btn=e.target.closest('[data-mode]'); if(!btn) return;
     mode=btn.dataset.mode;
     document.querySelectorAll('#mode-seg button').forEach(b=>b.classList.toggle('active', b===btn));
     renderMode();
+  });
+  $('#color-seg').addEventListener('click', e=>{
+    const btn=e.target.closest('[data-color]'); if(!btn) return;
+    colorMode=btn.dataset.color;
+    document.querySelectorAll('#color-seg button').forEach(b=>b.classList.toggle('active', b===btn));
+    $('#legend-count').style.display = colorMode==='count' ? 'flex' : 'none';
+    $('#legend-rating').style.display = colorMode==='rating' ? 'flex' : 'none';
+    renderMode();
+  });
+  $('#fit-btn').addEventListener('click', ()=>{
+    if(lastBounds.length) mapInstance.fitBounds(lastBounds, { padding:[30,30], maxZoom:14 });
   });
 
   boot();
