@@ -118,8 +118,6 @@
     color:#f7edd6; font-weight:800; font-size:12px; background:#5c4a34; border:2px solid var(--amber-bright); box-shadow:0 2px 6px rgba(0,0,0,0.5);
   }
   .map-pin-popup{width:180px;}
-  .map-pin-popup img{width:100%; height:90px; object-fit:cover; border-radius:8px; margin-bottom:8px; display:block;}
-  .map-pin-names{margin-top:6px; padding-top:6px; border-top:1px solid var(--hairline); font-size:11.5px; color:var(--text-2); line-height:1.5;}
   .timeline-bar{
     position:absolute; left:16px; right:16px; bottom:16px; z-index:500;
     display:flex; align-items:center; gap:10px;
@@ -129,6 +127,38 @@
   .timeline-bar input[type="range"]{flex:1; accent-color:var(--amber-bright); cursor:pointer;}
   .timeline-label{font-size:12px; font-weight:700; color:var(--text-2); white-space:nowrap; min-width:70px; text-align:right;}
   #timeline-play svg{width:14px; height:14px;}
+
+  /* ---------- place detail, Vitrína-style ---------- */
+  .place-modal-backdrop{
+    position:fixed; inset:0; z-index:900; background:rgba(10,7,4,0.88); backdrop-filter:blur(6px);
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .place-modal-backdrop.show{display:flex;}
+  .place-modal-card{
+    width:100%; max-width:420px; max-height:calc(100vh - 40px); overflow-y:auto; border-radius:22px;
+    background:var(--surface); border:1px solid var(--hairline-strong); position:relative;
+    box-shadow:0 40px 90px -20px rgba(0,0,0,0.7);
+  }
+  .pm-photo{position:relative; aspect-ratio:4/3.3; background:#0f0a05;}
+  .pm-photo img{width:100%; height:100%; object-fit:cover; display:block;}
+  .pm-photo::after{content:''; position:absolute; inset:0; background:linear-gradient(to top, rgba(10,7,4,0.55), transparent 45%);}
+  .place-modal-close{
+    position:absolute; top:14px; right:14px; z-index:2; width:36px; height:36px; border-radius:50%;
+    background:rgba(10,7,4,0.55); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15); color:#f7edd6;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .place-modal-close svg{width:16px; height:16px;}
+  .pm-thumbs{display:flex; gap:6px; padding:10px 20px 0; overflow-x:auto;}
+  .pm-thumbs img{width:52px; height:52px; border-radius:10px; object-fit:cover; cursor:pointer; opacity:0.55; border:2px solid transparent; flex-shrink:0;}
+  .pm-thumbs img.active{opacity:1; border-color:var(--amber-bright);}
+  .pm-body{padding:18px 22px calc(24px + env(safe-area-inset-bottom));}
+  .pm-eyebrow{font-size:11.5px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--amber-bright);}
+  .pm-name{font-family:'EB Garamond',serif; font-weight:600; font-size:28px; color:var(--foam); margin-top:8px; line-height:1.12;}
+  .pm-stats{display:flex; align-items:baseline; gap:16px; margin-top:14px;}
+  .pm-stat-n{font-family:'EB Garamond',serif; font-weight:700; font-size:22px; color:var(--amber-bright);}
+  .pm-stat-l{font-size:11px; color:var(--text-3); margin-left:3px;}
+  .pm-beers{margin-top:16px; padding-top:14px; border-top:1px solid var(--hairline); display:flex; flex-wrap:wrap; gap:7px;}
+  .pm-beer-chip{font-size:12px; font-weight:600; color:var(--text-2); background:rgba(232,163,61,0.1); border:1px solid var(--hairline-strong); padding:5px 11px; border-radius:999px;}
 </style>
 </head>
 <body>
@@ -195,6 +225,22 @@
           <span><i style="background:#ffc35a"></i>vysoké</span>
         </div>
         <div class="place-list" id="place-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="place-modal-backdrop" id="place-modal">
+    <div class="place-modal-card">
+      <button class="place-modal-close" id="place-modal-close" aria-label="Zavřít">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="pm-photo" id="pm-photo"><img id="pm-img" alt=""></div>
+      <div class="pm-thumbs" id="pm-thumbs"></div>
+      <div class="pm-body">
+        <div class="pm-eyebrow" id="pm-eyebrow"></div>
+        <h2 class="pm-name" id="pm-name"></h2>
+        <div class="pm-stats" id="pm-stats"></div>
+        <div class="pm-beers" id="pm-beers"></div>
       </div>
     </div>
   </div>
@@ -400,10 +446,11 @@
   function pinColor(it){ return colorMode==='rating' ? colorForRating(it.avg) : visitBucket(it.count); }
   function pinLabel(it){ return colorMode==='rating' ? (it.avg? it.avg.toFixed(1) : '–') : String(it.count); }
 
-  function distinctPlaces(){
+  function distinctPlaces(cutoff){
     const map=new Map();
     piva.forEach(b=>{
       const raw=(b.kde||'').trim(); if(!raw) return;
+      if(cutoff && !(b.datum && b.datum.slice(0,7)<=cutoff)) return;
       const key=norm(raw);
       if(!map.has(key)) map.set(key,{key,label:raw,count:0,sum:0,rated:0,beers:[],firstDate:null});
       const e=map.get(key); e.count++;
@@ -413,9 +460,10 @@
     });
     return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
   }
-  function distinctBreweries(){
+  function distinctBreweries(cutoff){
     const map=new Map();
     piva.forEach(b=>{
+      if(cutoff && !(b.datum && b.datum.slice(0,7)<=cutoff)) return;
       [b.pivovar, b.spolupivovar].filter(Boolean).forEach(raw=>{
         const key=norm(raw);
         const known=pivovary.find(p=>p.klic===key);
@@ -428,12 +476,14 @@
     });
     return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
   }
-  function bestPhoto(entries){
+  function bestPhotos(entries, n){
     const withPhoto=entries.filter(x=>x.foto);
-    if(!withPhoto.length) return null;
-    const rated=withPhoto.filter(x=>x.hodnoceni>0).sort((a,b)=>b.hodnoceni-a.hodnoceni);
-    if(rated.length) return rated[0].foto;
-    return withPhoto.slice().sort((a,b)=>(b.datum||'').localeCompare(a.datum||''))[0].foto;
+    const seen=new Set(); const out=[];
+    withPhoto.slice().sort((a,b)=>(b.hodnoceni||0)-(a.hodnoceni||0) || (b.datum||'').localeCompare(a.datum||'')).forEach(x=>{
+      if(seen.has(x.foto)) return; seen.add(x.foto);
+      out.push(x);
+    });
+    return out.slice(0, n||5);
   }
   function topNames(entries, n){
     const seen=new Set(); const out=[];
@@ -449,7 +499,8 @@
     routeLayer.clearLayers();
     markersLayer.clearLayers();
     const isBrew = mode==='breweries';
-    const items = isBrew ? distinctBreweries() : distinctPlaces();
+    const cutoff = timelineActive ? timelineCutoff : null;
+    const items = isBrew ? distinctBreweries(cutoff) : distinctPlaces(cutoff);
     const coordFor = key => isBrew
       ? (()=>{ const p=pivovary.find(x=>x.klic===key); return (p && p.lat!=null) ? {lat:p.lat,lng:p.lng} : null; })()
       : (()=>{ const p=mista.find(x=>x.klic===key); return (p && p.lat!=null) ? {lat:p.lat,lng:p.lng} : null; })();
@@ -457,7 +508,6 @@
     const withCoord=[], withoutCoord=[];
     items.forEach(it=>{
       if(isBrew && it.kocovny) return; // no fixed home by design — nothing to plot
-      if(timelineActive && !(it.firstDate && it.firstDate.slice(0,7)<=timelineCutoff)) return; // not "discovered" yet at this point in time
       const c=coordFor(it.key);
       if(c){ it.coord=c; withCoord.push(it); } else withoutCoord.push(it);
     });
@@ -471,7 +521,7 @@
       const color=pinColor(it);
       const icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner" style="background:'+color+'">'+pinLabel(it)+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
       const m=L.marker([it.coord.lat,it.coord.lng], { icon }).addTo(markersLayer);
-      m.bindPopup(popupHtml(it));
+      m.on('click', ()=>openPlaceModal(it));
       markerByKey[it.key]=m;
       bounds.push([it.coord.lat,it.coord.lng]);
     });
@@ -493,23 +543,52 @@
         row.addEventListener('click', ()=>{
           list.querySelectorAll('.place-row').forEach(r=>r.classList.remove('active'));
           row.classList.add('active');
+          const it=withCoord.find(x=>x.key===row.dataset.key);
           const m=markerByKey[row.dataset.key];
-          if(m){ mapInstance.setView(m.getLatLng(), Math.max(mapInstance.getZoom(),13), { animate:true }); m.openPopup(); }
+          if(m) mapInstance.setView(m.getLatLng(), Math.max(mapInstance.getZoom(),13), { animate:true });
+          if(it) openPlaceModal(it);
         });
       });
     }
   }
 
-  function popupHtml(it){
-    const photo=bestPhoto(it.beers||[]);
-    const names=topNames(it.beers||[], 3);
-    let html='<div class="map-pin-popup">';
-    if(photo) html+='<img loading="lazy" src="'+esc(storageUrl(photo))+'" alt="">';
-    html+='<b>'+esc(it.label)+'</b><span>'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</span>';
-    if(names.length) html+='<div class="map-pin-names">'+names.map(esc).join(', ')+'</div>';
-    html+='</div>';
-    return html;
+  let currentPlacePhotos=[];
+  function openPlaceModal(it){
+    const photos=bestPhotos(it.beers||[], 6);
+    currentPlacePhotos=photos;
+    if(photos.length){
+      $('#pm-photo').style.display='block';
+      $('#pm-img').src=storageUrl(photos[0].foto);
+      $('#pm-img').alt=it.label||'';
+    } else {
+      $('#pm-photo').style.display='none';
+    }
+    const thumbs=$('#pm-thumbs');
+    if(photos.length>1){
+      thumbs.style.display='flex';
+      thumbs.innerHTML=photos.map((p,i)=>'<img data-i="'+i+'" class="'+(i===0?'active':'')+'" loading="lazy" src="'+esc(storageUrl(p.foto))+'" alt="">').join('');
+    } else {
+      thumbs.style.display='none'; thumbs.innerHTML='';
+    }
+    $('#pm-eyebrow').textContent = mode==='breweries' ? 'Pivovar' : 'Podnik';
+    $('#pm-name').textContent=it.label||'';
+    let stats='<div><span class="pm-stat-n">'+it.count+'</span><span class="pm-stat-l">'+beerWord(it.count)+'</span></div>';
+    if(it.avg) stats+='<div><span class="pm-stat-n">'+it.avg.toFixed(1)+'</span><span class="pm-stat-l">průměr</span></div>';
+    $('#pm-stats').innerHTML=stats;
+    const names=topNames(it.beers||[], 8);
+    $('#pm-beers').innerHTML = names.length ? names.map(n=>'<span class="pm-beer-chip">'+esc(n)+'</span>').join('') : '';
+    $('#place-modal').classList.add('show');
   }
+  $('#pm-thumbs').addEventListener('click', e=>{
+    const img=e.target.closest('img[data-i]'); if(!img) return;
+    const p=currentPlacePhotos[+img.dataset.i]; if(!p) return;
+    $('#pm-img').src=storageUrl(p.foto);
+    $('#pm-thumbs').querySelectorAll('img').forEach(t=>t.classList.remove('active'));
+    img.classList.add('active');
+  });
+  $('#place-modal-close').addEventListener('click', ()=>$('#place-modal').classList.remove('show'));
+  $('#place-modal').addEventListener('click', e=>{ if(e.target.id==='place-modal') $('#place-modal').classList.remove('show'); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') $('#place-modal').classList.remove('show'); });
 
   function renderTripRoute(tripId){
     markersLayer.clearLayers();
