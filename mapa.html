@@ -55,6 +55,7 @@
     color:var(--text-2); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
   }
   .icon-btn svg{width:16px; height:16px;}
+  .icon-btn.active-icon{background:var(--amber); border-color:var(--amber); color:#241703;}
   .top-link{
     font-size:12.5px; font-weight:700; color:var(--text-2); text-decoration:none; flex-shrink:0;
     background:var(--surface-2); border:1px solid var(--hairline); padding:8px 13px; border-radius:999px;
@@ -66,6 +67,7 @@
   .mode-seg button.active{background:var(--amber); color:#241703;}
 
   .body{flex:1; display:flex; min-height:0;}
+  .map-wrap{position:relative; flex:1; min-width:0; display:flex;}
   #map{flex:1; min-width:0;}
   .sidebar{
     width:300px; flex-shrink:0; border-left:1px solid var(--hairline); background:var(--surface);
@@ -97,7 +99,7 @@
   /* mobile: sidebar becomes a bottom sheet you can scroll, map keeps most of the height */
   @media(max-width:760px){
     .body{flex-direction:column;}
-    #map{flex:1 1 55%;}
+    .map-wrap{flex:1 1 55%;}
     .sidebar{width:100%; flex:1 1 45%; border-left:none; border-top:1px solid var(--hairline);}
   }
 
@@ -115,6 +117,18 @@
     width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     color:#f7edd6; font-weight:800; font-size:12px; background:#5c4a34; border:2px solid var(--amber-bright); box-shadow:0 2px 6px rgba(0,0,0,0.5);
   }
+  .map-pin-popup{width:180px;}
+  .map-pin-popup img{width:100%; height:90px; object-fit:cover; border-radius:8px; margin-bottom:8px; display:block;}
+  .map-pin-names{margin-top:6px; padding-top:6px; border-top:1px solid var(--hairline); font-size:11.5px; color:var(--text-2); line-height:1.5;}
+  .timeline-bar{
+    position:absolute; left:16px; right:16px; bottom:16px; z-index:500;
+    display:flex; align-items:center; gap:10px;
+    background:var(--glass); backdrop-filter:blur(16px); border:1px solid var(--hairline-strong);
+    border-radius:999px; padding:8px 16px 8px 8px; box-shadow:0 10px 30px -10px rgba(0,0,0,0.5);
+  }
+  .timeline-bar input[type="range"]{flex:1; accent-color:var(--amber-bright); cursor:pointer;}
+  .timeline-label{font-size:12px; font-weight:700; color:var(--text-2); white-space:nowrap; min-width:70px; text-align:right;}
+  #timeline-play svg{width:14px; height:14px;}
 </style>
 </head>
 <body>
@@ -140,12 +154,24 @@
       <button class="icon-btn" id="fit-btn" aria-label="Přizpůsobit místům" title="Přizpůsobit místům">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
       </button>
+      <button class="icon-btn" id="timeline-toggle" aria-label="Časová osa" title="Časová osa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+      </button>
       <button class="icon-btn" id="theme-toggle" aria-label="Přepnout motiv">
         <svg id="theme-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       </button>
     </header>
     <div class="body">
-      <div id="map"></div>
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="timeline-bar" id="timeline-bar" style="display:none">
+          <button class="icon-btn" id="timeline-play" aria-label="Přehrát">
+            <svg id="timeline-play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l13 7-13 7V5z"/></svg>
+          </button>
+          <input type="range" id="timeline-range" min="0" max="0" value="0" step="1">
+          <span class="timeline-label" id="timeline-label">—</span>
+        </div>
+      </div>
       <div class="sidebar">
         <div class="sidebar-head">
           <div class="sidebar-count" id="sidebar-count">— míst</div>
@@ -239,6 +265,8 @@
 
   const base=cfg.url.replace(/\/$/,'');
   const headers={ apikey:cfg.key, Authorization:'Bearer '+cfg.key };
+  const BUCKET='fotky';
+  function storageUrl(path){ return base+'/storage/v1/object/public/'+BUCKET+'/'+path; }
 
   function visitBucket(count){
     if(count>=10) return '#ffc35a';
@@ -253,10 +281,11 @@
   let lastBounds=[];
   let mapInstance=null, markersLayer=null, routeLayer=null;
   let mode='venues', colorMode='count', activeTripId='';
+  let timelineActive=false, timelineCutoff=null, timelineMonths=[], timelinePlaying=null;
 
   async function boot(){
     try{
-      const r=await fetch(base+'/rest/v1/piva?select=pivovar,spolupivovar,kde,hodnoceni,osoba,vylet_id,datum,nazev', { headers });
+      const r=await fetch(base+'/rest/v1/piva?select=pivovar,spolupivovar,kde,hodnoceni,osoba,vylet_id,datum,nazev,foto', { headers });
       if(!r.ok) throw new Error('HTTP '+r.status);
       piva=await r.json();
     }catch(e){
@@ -280,9 +309,60 @@
     $('#page').style.display='flex';
     $('#top-link').href=backHref();
     populateTripSelect();
+    setupTimeline();
     await initMap();
     renderMode();
   }
+
+  function setupTimeline(){
+    const months=new Set();
+    piva.forEach(b=>{ if(b.datum) months.add(b.datum.slice(0,7)); });
+    timelineMonths=[...months].sort();
+    const btn=$('#timeline-toggle');
+    if(timelineMonths.length<3){ btn.style.display='none'; return; } // not enough history for this to mean anything
+    const range=$('#timeline-range');
+    range.min=0; range.max=timelineMonths.length-1; range.value=timelineMonths.length-1;
+    timelineCutoff=timelineMonths[timelineMonths.length-1];
+    updateTimelineLabel();
+  }
+  function monthLabelCZ(ym){
+    const MONTHS=['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
+    const idx=parseInt(ym.slice(5,7),10)-1;
+    return (MONTHS[idx]||ym)+' '+ym.slice(0,4);
+  }
+  function updateTimelineLabel(){
+    $('#timeline-label').textContent = timelineCutoff ? monthLabelCZ(timelineCutoff) : '—';
+  }
+  function stopTimelinePlay(){
+    if(timelinePlaying){ clearInterval(timelinePlaying); timelinePlaying=null; }
+    $('#timeline-play-icon').innerHTML='<path d="M7 5l13 7-13 7V5z"/>';
+  }
+  $('#timeline-toggle').addEventListener('click', ()=>{
+    timelineActive=!timelineActive;
+    $('#timeline-toggle').classList.toggle('active-icon', timelineActive);
+    $('#timeline-bar').style.display = timelineActive ? 'flex' : 'none';
+    if(!timelineActive) stopTimelinePlay();
+    if(!activeTripId) renderMode();
+  });
+  $('#timeline-range').addEventListener('input', e=>{
+    timelineCutoff=timelineMonths[+e.target.value];
+    updateTimelineLabel();
+    if(!activeTripId) renderMode();
+  });
+  $('#timeline-play').addEventListener('click', ()=>{
+    if(timelinePlaying){ stopTimelinePlay(); return; }
+    const range=$('#timeline-range');
+    if(+range.value>=timelineMonths.length-1) range.value=0; // restart from the beginning if already at the end
+    $('#timeline-play-icon').innerHTML='<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>';
+    timelinePlaying=setInterval(()=>{
+      let v=+range.value;
+      if(v>=timelineMonths.length-1){ stopTimelinePlay(); return; }
+      range.value=v+1;
+      timelineCutoff=timelineMonths[v+1];
+      updateTimelineLabel();
+      if(!activeTripId) renderMode();
+    }, 550);
+  });
 
   function populateTripSelect(){
     const sel=$('#trip-select'); if(!sel) return;
@@ -325,9 +405,11 @@
     piva.forEach(b=>{
       const raw=(b.kde||'').trim(); if(!raw) return;
       const key=norm(raw);
-      if(!map.has(key)) map.set(key,{key,label:raw,count:0,sum:0,rated:0});
+      if(!map.has(key)) map.set(key,{key,label:raw,count:0,sum:0,rated:0,beers:[],firstDate:null});
       const e=map.get(key); e.count++;
       if(b.hodnoceni>0){ e.sum+=b.hodnoceni; e.rated++; }
+      e.beers.push({nazev:b.nazev, hodnoceni:b.hodnoceni, foto:b.foto, datum:b.datum});
+      if(b.datum && (!e.firstDate || b.datum<e.firstDate)) e.firstDate=b.datum;
     });
     return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
   }
@@ -337,12 +419,30 @@
       [b.pivovar, b.spolupivovar].filter(Boolean).forEach(raw=>{
         const key=norm(raw);
         const known=pivovary.find(p=>p.klic===key);
-        if(!map.has(key)) map.set(key,{key,label:(known&&known.nazev)||raw,count:0,sum:0,rated:0,kocovny:known&&known.kocovny});
+        if(!map.has(key)) map.set(key,{key,label:(known&&known.nazev)||raw,count:0,sum:0,rated:0,kocovny:known&&known.kocovny,beers:[],firstDate:null});
         const e=map.get(key); e.count++;
         if(b.hodnoceni>0){ e.sum+=b.hodnoceni; e.rated++; }
+        e.beers.push({nazev:b.nazev, hodnoceni:b.hodnoceni, foto:b.foto, datum:b.datum});
+        if(b.datum && (!e.firstDate || b.datum<e.firstDate)) e.firstDate=b.datum;
       });
     });
     return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
+  }
+  function bestPhoto(entries){
+    const withPhoto=entries.filter(x=>x.foto);
+    if(!withPhoto.length) return null;
+    const rated=withPhoto.filter(x=>x.hodnoceni>0).sort((a,b)=>b.hodnoceni-a.hodnoceni);
+    if(rated.length) return rated[0].foto;
+    return withPhoto.slice().sort((a,b)=>(b.datum||'').localeCompare(a.datum||''))[0].foto;
+  }
+  function topNames(entries, n){
+    const seen=new Set(); const out=[];
+    entries.slice().sort((a,b)=>(b.hodnoceni||0)-(a.hodnoceni||0)).forEach(x=>{
+      if(!x.nazev) return;
+      const k=norm(x.nazev); if(seen.has(k)) return; seen.add(k);
+      out.push(x.nazev);
+    });
+    return out.slice(0, n||3);
   }
 
   function renderMode(){
@@ -357,6 +457,7 @@
     const withCoord=[], withoutCoord=[];
     items.forEach(it=>{
       if(isBrew && it.kocovny) return; // no fixed home by design — nothing to plot
+      if(timelineActive && !(it.firstDate && it.firstDate.slice(0,7)<=timelineCutoff)) return; // not "discovered" yet at this point in time
       const c=coordFor(it.key);
       if(c){ it.coord=c; withCoord.push(it); } else withoutCoord.push(it);
     });
@@ -370,7 +471,7 @@
       const color=pinColor(it);
       const icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner" style="background:'+color+'">'+pinLabel(it)+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
       const m=L.marker([it.coord.lat,it.coord.lng], { icon }).addTo(markersLayer);
-      m.bindPopup('<div class="map-pin-popup"><b>'+esc(it.label)+'</b><span>'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</span></div>');
+      m.bindPopup(popupHtml(it));
       markerByKey[it.key]=m;
       bounds.push([it.coord.lat,it.coord.lng]);
     });
@@ -397,6 +498,17 @@
         });
       });
     }
+  }
+
+  function popupHtml(it){
+    const photo=bestPhoto(it.beers||[]);
+    const names=topNames(it.beers||[], 3);
+    let html='<div class="map-pin-popup">';
+    if(photo) html+='<img loading="lazy" src="'+esc(storageUrl(photo))+'" alt="">';
+    html+='<b>'+esc(it.label)+'</b><span>'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</span>';
+    if(names.length) html+='<div class="map-pin-names">'+names.map(esc).join(', ')+'</div>';
+    html+='</div>';
+    return html;
   }
 
   function renderTripRoute(tripId){
@@ -453,7 +565,10 @@
     $('#color-seg').style.display = showingRoute ? 'none' : 'flex';
     $('#legend-count').style.display = (!showingRoute && colorMode==='count') ? 'flex' : 'none';
     $('#legend-rating').style.display = (!showingRoute && colorMode==='rating') ? 'flex' : 'none';
-    if(showingRoute) renderTripRoute(activeTripId); else renderMode();
+    $('#timeline-toggle').style.opacity = showingRoute ? '0.4' : '1';
+    $('#timeline-toggle').style.pointerEvents = showingRoute ? 'none' : 'auto';
+    if(showingRoute){ $('#timeline-bar').style.display='none'; renderTripRoute(activeTripId); }
+    else { if(timelineActive) $('#timeline-bar').style.display='flex'; renderMode(); }
   });
 
   $('#mode-seg').addEventListener('click', e=>{
