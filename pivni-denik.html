@@ -865,6 +865,23 @@
   .wish-tx b{font-size:13.5px; font-weight:700; color:var(--text);}
   .wish-tx small{font-size:11.5px; color:var(--text-3);}
   .wish-empty{font-size:13px; color:var(--text-3); padding:4px 0 10px;}
+  .vote-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--hairline);}
+  .vote-row:last-of-type{border-bottom:none;}
+  .vote-btn{
+    flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:1px; width:46px; padding:6px 0;
+    background:var(--bg-2); border:1px solid var(--hairline); border-radius:12px; cursor:pointer;
+  }
+  .vote-btn .vote-count{font-size:14px; font-weight:800; color:var(--text-2); font-variant-numeric:tabular-nums;}
+  .vote-btn .vote-thumb{font-size:14px; filter:grayscale(1); opacity:0.5;}
+  .vote-btn.voted{background:rgba(232,163,61,0.14); border-color:var(--amber);}
+  .vote-btn.voted .vote-count{color:var(--amber-bright);}
+  .vote-btn.voted .vote-thumb{filter:none; opacity:1;}
+  .vote-info{flex:1; display:flex; flex-direction:column; gap:1px; overflow-wrap:anywhere; min-width:0;}
+  .vote-info b{font-size:13.5px; font-weight:700; color:var(--text);}
+  .vote-info small{font-size:11.5px; color:var(--text-3);}
+  .import-preview-row{padding:8px 0; border-bottom:1px solid var(--hairline); font-size:13px; color:var(--text-2);}
+  .import-preview-row b{color:var(--text);}
+  .import-preview-row small{display:block; color:var(--text-3); margin-top:2px;}
   .lb-fav{font-size:11px; font-weight:600; color:var(--text-3); background:var(--bg-2); border:1px solid var(--hairline); border-radius:6px; padding:1px 7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;}
   button.lb-fav.linkish{font-family:inherit; cursor:pointer;}
   button.lb-fav.linkish:active{color:var(--amber-bright); border-color:var(--amber-deep);}
@@ -1099,6 +1116,13 @@
   .dup-arrow{text-align:center; color:var(--text-3); font-size:18px; margin:6px 0;}
   /* merge clusters */
   .merge-cluster{background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-card); padding:var(--s4); margin-bottom:var(--s3);}
+  .compare-head{display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:end; margin-bottom:var(--s4); text-align:center;}
+  .compare-col-name{font-family:'EB Garamond',serif; font-weight:600; font-size:16px; color:var(--foam); line-height:1.2;}
+  .compare-row{display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; padding:11px 0; border-bottom:1px solid var(--hairline);}
+  .compare-row:last-of-type{border-bottom:none;}
+  .compare-label{font-size:10.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; text-align:center; white-space:nowrap;}
+  .compare-val{font-size:14px; font-weight:600; color:var(--text-2); text-align:center;}
+  .compare-val.win{color:var(--amber-bright); font-weight:800;}
   .mc-head{font-size:12.5px; font-weight:600; color:var(--text-2); margin-bottom:10px;}
   .merge-opt{display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; cursor:pointer; transition:background .15s;}
   .merge-opt:active{background:var(--surface-2);}
@@ -1691,6 +1715,12 @@
             <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
 
+          <div class="row-item" data-vote>
+            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3zm0 0 4.5-8a2 2 0 0 1 3.6 1.4L14 8h5a2 2 0 0 1 2 2.2l-1 7A2 2 0 0 1 18 19H9"/></svg></div>
+            <div class="row-tx"><div class="t">Co dáme příště</div><div class="d">Navrhněte pivo a nechte partu hlasovat</div></div>
+            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+
           <a class="row-item" href="vitrina.html" target="_blank" rel="noopener">
             <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M8 15l3-4 3 2.5L18 8"/></svg></div>
             <div class="row-tx"><div class="t">Vitrína</div><div class="d">Sdílená ukázka nejlepších piv</div></div>
@@ -1751,6 +1781,12 @@
           <div class="row-item" data-placemerge>
             <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c4-4.5 6.5-8 6.5-11a6.5 6.5 0 0 0-13 0c0 3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div>
             <div class="row-tx"><div class="t">Sloučit místa</div><div class="d">Sjednotit různě psané podniky</div></div>
+            <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+
+          <div class="row-item" data-import>
+            <div class="row-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+            <div class="row-tx"><div class="t">Jednorázový import</div><div class="d">Vlož starou evidenci piv naráz</div></div>
             <span class="row-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
         </div>
@@ -2035,6 +2071,21 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     </div>
   </div>
 
+  <div class="overlay" id="compare-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Srovnání piv</h2>
+      <div id="compare-picker">
+        <p class="lead">Vyber druhé pivo k porovnání s <b id="compare-a-name"></b>.</p>
+        <div class="field"><input type="text" id="compare-search" placeholder="Hledat pivo…" autocomplete="off"></div>
+        <div id="compare-results"></div>
+      </div>
+      <div id="compare-result" style="display:none"></div>
+      <button class="btn btn-ghost" id="compare-again" style="display:none; margin-top:var(--s3)">Vybrat jiné pivo</button>
+      <button class="btn btn-ghost" id="compare-close" style="margin-top:var(--s3)">Zavřít</button>
+    </div>
+  </div>
+
   <div class="overlay" id="placemerge-overlay">
     <div class="sheet">
       <div class="grabber"></div>
@@ -2042,6 +2093,19 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <p class="lead">Stejný podnik zapsaný různě? Vyber správný název a zbytek se pod něj sloučí.</p>
       <div id="placemerge-body"></div>
       <button class="btn btn-ghost" id="placemerge-close" style="margin-top:var(--s4)">Zavřít</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="import-overlay">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <h2>Jednorázový import</h2>
+      <p class="lead">Vlož data oddělená tabulátory (jako z Excelu) v pořadí <b>Název, Pivovar, Styl, ABV, Cena, Kde, Datum (RRRR-MM-DD), Hodnocení, Poznámka</b>. Hlavičkový řádek appka sama pozná a přeskočí.</p>
+      <div class="field"><textarea id="import-text" placeholder="Vlož sem data…" style="min-height:140px"></textarea></div>
+      <button class="btn btn-ghost" id="import-preview-btn">Zkontrolovat</button>
+      <div id="import-preview" style="margin-top:var(--s3)"></div>
+      <button class="btn btn-primary" id="import-commit" style="display:none; margin-top:var(--s3)">Importovat</button>
+      <button class="btn btn-ghost" id="import-close" style="margin-top:var(--s3)">Zavřít</button>
     </div>
   </div>
 
@@ -2104,6 +2168,21 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       <div class="field"><label for="venuewish-note">Poznámka (nepovinné)</label><input type="text" id="venuewish-note" placeholder="Prý mají skvělý výčep…"></div>
       <button class="btn btn-primary" id="venuewish-save">Přidat na seznam</button>
       <button class="btn btn-ghost" id="venuewish-cancel" style="display:none; margin-top:8px">Zrušit úpravu</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="vote-overlay">
+    <div class="sheet map-sheet">
+      <div class="grabber"></div>
+      <div class="map-head">
+        <div class="sec-title first" style="margin:0">Co dáme příště</div>
+        <button class="detail-close" id="vote-close" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      </div>
+      <div id="vote-list" style="margin-bottom:var(--s4)"></div>
+      <div class="field"><label for="vote-name">Název piva</label><input type="text" id="vote-name" placeholder="Co chceš navrhnout…"></div>
+      <div class="field"><label for="vote-brewery">Pivovar (nepovinné)</label><input type="text" id="vote-brewery" placeholder="…"></div>
+      <div class="field"><label for="vote-note">Poznámka (nepovinné)</label><input type="text" id="vote-note" placeholder="Prý skvělá IPA…"></div>
+      <button class="btn btn-primary" id="vote-save">Přidat návrh</button>
     </div>
   </div>
 
@@ -3103,6 +3182,113 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(!ok){ venueWish.splice(idx,0,removed); renderVenueWishList(); toast('Nepodařilo se smazat', true); }
   }
 
+  /* ---------- party voting: "co dáme příště" ---------- */
+  let navrhy=[]; // [{id,nazev,pivovar,poznamka,osoba,vytvoreno}]
+  let navrhyHlasy={}; // { [navrhId]: Set<osoba> }
+  async function navrhyPull(){
+    if(!sbConfigured()){ navrhy=[]; navrhyHlasy={}; return; }
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navrhy?select=*&order=vytvoreno.asc', { headers: sbHeaders() });
+      if(r.ok) navrhy=(await r.json()).map(row=>({ id:row.id, nazev:row.nazev, pivovar:row.pivovar||'', poznamka:row.poznamka||'', osoba:row.osoba||'', vytvoreno:row.vytvoreno }));
+    } catch(e){}
+    try {
+      const r2=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navrhy_hlasy?select=*', { headers: sbHeaders() });
+      if(r2.ok){
+        const rows=await r2.json();
+        const map={};
+        rows.forEach(row=>{ if(!row.navrh_id||!row.osoba) return; if(!map[row.navrh_id]) map[row.navrh_id]=new Set(); map[row.navrh_id].add(row.osoba); });
+        navrhyHlasy=map;
+      }
+    } catch(e){}
+  }
+  async function navrhAdd(nazev, pivovar, poznamka){
+    if(!sbConfigured()) return null;
+    const id=uid();
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navrhy', {
+        method:'POST', headers:sbHeaders(),
+        body: JSON.stringify({ id, nazev, pivovar:pivovar||null, poznamka:poznamka||null, osoba:cfg.name })
+      });
+      return r.ok ? id : null;
+    } catch(e){ return null; }
+  }
+  async function navrhRemove(id){
+    if(!sbConfigured()) return false;
+    try {
+      await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navrhy_hlasy?navrh_id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navrhy?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers: sbHeaders() });
+      return r.ok;
+    } catch(e){ return false; }
+  }
+  async function navrhVoteAdd(id){
+    if(!sbConfigured()) return false;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navrhy_hlasy', {
+        method:'POST', headers: Object.assign(sbHeaders(), {'Prefer':'resolution=merge-duplicates'}),
+        body: JSON.stringify({ navrh_id:id, osoba:cfg.name })
+      });
+      return r.ok;
+    } catch(e){ return false; }
+  }
+  async function navrhVoteRemove(id){
+    if(!sbConfigured()) return false;
+    try {
+      const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/navrhy_hlasy?navrh_id=eq.'+encodeURIComponent(id)+'&osoba=eq.'+encodeURIComponent(cfg.name), { method:'DELETE', headers: sbHeaders() });
+      return r.ok;
+    } catch(e){ return false; }
+  }
+  function openVoteOverlay(){ renderVoteList(); $('#vote-overlay').classList.add('show'); }
+  function renderVoteList(){
+    const box=$('#vote-list'); if(!box) return;
+    const sorted=navrhy.slice().sort((a,b)=>{
+      const ca=(navrhyHlasy[a.id]&&navrhyHlasy[a.id].size)||0;
+      const cb=(navrhyHlasy[b.id]&&navrhyHlasy[b.id].size)||0;
+      return cb-ca || (a.vytvoreno||'').localeCompare(b.vytvoreno||'');
+    });
+    box.innerHTML = sorted.length ? sorted.map(n=>{
+      const set=navrhyHlasy[n.id];
+      const count=set?set.size:0;
+      const mine=!!(set && cfg.name && set.has(cfg.name));
+      return '<div class="vote-row">'
+        +'<button class="vote-btn'+(mine?' voted':'')+'" data-vote-id="'+n.id+'" aria-label="Hlasovat"><span class="vote-count">'+count+'</span><span class="vote-thumb">👍</span></button>'
+        +'<span class="vote-info"><b>'+esc(n.nazev)+'</b>'
+        +(n.pivovar?'<small>'+esc(n.pivovar)+'</small>':'')
+        +(n.poznamka?'<small>'+esc(n.poznamka)+'</small>':'')
+        +(n.osoba?'<small>navrhl(a) '+esc(n.osoba)+'</small>':'')+'</span>'
+        +(n.osoba===cfg.name?'<button class="comment-del" data-vote-del="'+n.id+'" aria-label="Smazat">'+delIconSmall()+'</button>':'')
+        +'</div>';
+    }).join('') : '<p class="muted center">Zatím žádné návrhy — přidejte první pivo, co chcete příště zkusit.</p>';
+  }
+  async function saveNewProposal(){
+    const nazev=$('#vote-name').value.trim();
+    if(!nazev){ toast('Zadej název piva', true); return; }
+    const pivovar=$('#vote-brewery').value.trim();
+    const poznamka=$('#vote-note').value.trim();
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš přidávat', true); return; }
+    const id=await navrhAdd(nazev, pivovar, poznamka);
+    if(id){
+      navrhy.push({ id, nazev, pivovar, poznamka, osoba:cfg.name, vytvoreno:new Date().toISOString() });
+      $('#vote-name').value=''; $('#vote-brewery').value=''; $('#vote-note').value='';
+      renderVoteList();
+    } else { toast('Nepodařilo se přidat', true); }
+  }
+  async function toggleVote(id){
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš hlasovat', true); return; }
+    const set = navrhyHlasy[id] || (navrhyHlasy[id]=new Set());
+    const already=set.has(cfg.name);
+    if(already) set.delete(cfg.name); else set.add(cfg.name);
+    renderVoteList();
+    const ok = already ? await navrhVoteRemove(id) : await navrhVoteAdd(id);
+    if(!ok){ if(already) set.add(cfg.name); else set.delete(cfg.name); renderVoteList(); toast('Nepodařilo se uložit', true); }
+  }
+  async function removeProposal(id){
+    const idx=navrhy.findIndex(n=>n.id===id); if(idx<0) return;
+    const removed=navrhy.splice(idx,1)[0];
+    renderVoteList();
+    const ok=await navrhRemove(id);
+    if(!ok){ navrhy.splice(idx,0,removed); renderVoteList(); toast('Nepodařilo se smazat', true); }
+  }
+
   async function sendWish(brewKey){
     const input=document.querySelector('[data-wish-input="'+brewKey+'"]');
     if(!input) return;
@@ -3786,6 +3972,39 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#session-card-doc').innerHTML=html;
     $('#session-card-overlay').classList.add('show');
   }
+  function openBeerPrintCard(id){
+    const b=beers.find(x=>x.id===id); if(!b) return;
+    const key=beerKey(b);
+    const all=beers.filter(x=>beerKey(x)===key).sort((a,c)=>(c.date||'').localeCompare(a.date||''));
+    const rated=all.filter(x=>x.rating>0);
+    const avg=rated.length? rated.reduce((s,x)=>s+x.rating,0)/rated.length : 0;
+    const meta=[b.style,(b.abv?b.abv+'%':'')].filter(Boolean).join(' · ');
+    let html='<div class="yb-page yb-cover" style="padding-top:60px">'
+      +'<div class="yb-cover-mark">'+bigGlass()+'</div>'
+      +'<div class="yb-title">'+esc(b.name)+'</div>'
+      +(b.brewery?'<div class="yb-year" style="font-size:22px">'+esc(b.brewery)+(isCollab(b)?' × '+esc(b.collab):'')+'</div>':'')
+      +(meta?'<div class="yb-owner">'+esc(meta)+'</div>':'')
+      +'</div>';
+    html+='<div class="yb-page">';
+    html+='<div class="yb-list" style="grid-template-columns:1fr">';
+    html+='<div class="yb-item" style="align-items:flex-start">'
+      +'<div class="yb-it"><div class="yb-it-top"><span class="yb-it-name">Průměr party</span>'
+      +'<span class="yb-it-score">'+(avg?avg.toFixed(1):'–')+'</span></div></div></div>';
+    all.forEach(x=>{
+      html+='<div class="yb-item" style="align-items:flex-start">'
+        +'<div class="yb-it">'
+        +'<div class="yb-it-top"><span class="yb-it-name">'+esc(x.osoba||'')+'</span>'
+        +(x.rating?'<span class="yb-it-score">'+x.rating+'</span>':'')+'</div>'
+        +(x.date?'<div class="yb-it-meta">'+esc(czDate(x.date))+(x.where?' · '+esc(x.where):'')+'</div>':'')
+        +(x.note?'<div class="yb-it-meta">„'+esc(x.note)+'"</div>':'')
+        +'</div></div>';
+    });
+    html+='</div>';
+    html+='<div class="yb-foot">'+all.length+' '+beerWord(all.length)+' zapsáno · Pivní deník</div>';
+    html+='</div>';
+    $('#session-card-doc').innerHTML=html;
+    $('#session-card-overlay').classList.add('show');
+  }
   let addContext='podnik';
   let lastWhere='', lastContext='podnik';
   function setAddContext(ctx){
@@ -4080,6 +4299,76 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     openCardMenu(btn);
   }
   function beerKey(b){ return norm(b.name)+'|||'+norm(b.brewery||''); }
+
+  /* ---------- compare two beers side by side ---------- */
+  function distinctBeersForCompare(){
+    const m=new Map();
+    beers.forEach(b=>{ if(!b.name) return; const k=beerKey(b); if(!m.has(k)) m.set(k,b); });
+    return [...m.values()];
+  }
+  function beerCompareStats(b){
+    const key=beerKey(b);
+    const all=beers.filter(x=>beerKey(x)===key);
+    const rated=all.filter(x=>x.rating>0);
+    const avg=rated.length? rated.reduce((s,x)=>s+x.rating,0)/rated.length : 0;
+    const prices=all.filter(x=>x.price).map(x=>Number(x.price)).filter(n=>!isNaN(n));
+    const avgPrice=prices.length? Math.round(prices.reduce((s,n)=>s+n,0)/prices.length) : null;
+    return { beer:b, count:all.length, avg, avgPrice };
+  }
+  let compareBeerAId=null;
+  function openCompareOverlay(idA){
+    const a=beers.find(x=>x.id===idA); if(!a) return;
+    compareBeerAId=idA;
+    $('#compare-a-name').textContent=a.name;
+    $('#compare-search').value='';
+    renderCompareResults('');
+    $('#compare-picker').style.display='block';
+    $('#compare-result').style.display='none';
+    $('#compare-again').style.display='none';
+    $('#compare-overlay').classList.add('show');
+  }
+  function renderCompareResults(q){
+    const box=$('#compare-results'); if(!box) return;
+    const a=beers.find(x=>x.id===compareBeerAId);
+    const akey=a?beerKey(a):null;
+    const nq=norm(q);
+    let list=distinctBeersForCompare().filter(b=>beerKey(b)!==akey);
+    if(nq) list=list.filter(b=>norm(b.name).includes(nq) || norm(b.brewery||'').includes(nq));
+    list=list.slice(0,20);
+    box.innerHTML = list.length ? list.map(b=>
+      '<div class="lb-row clickable" data-compare-pick-b="'+esc(b.id)+'">'
+      +'<span class="lb-beerinfo"><b>'+esc(b.name)+'</b><small>'+esc(b.brewery||'')+'</small></span>'
+      +'</div>'
+    ).join('') : '<p class="muted center">Nic nenalezeno.</p>';
+  }
+  function renderCompareResult(idB){
+    const a=beers.find(x=>x.id===compareBeerAId);
+    const b=beers.find(x=>x.id===idB);
+    if(!a||!b) return;
+    const sa=beerCompareStats(a), sb=beerCompareStats(b);
+    const rows=[
+      ['Pivovar', esc(sa.beer.brewery||'–'), esc(sb.beer.brewery||'–')],
+      ['Styl', esc(sa.beer.style||'–'), esc(sb.beer.style||'–')],
+      ['Alkohol', sa.beer.abv?sa.beer.abv+'%':'–', sb.beer.abv?sb.beer.abv+'%':'–'],
+      ['Hodnocení', sa.avg?sa.avg.toFixed(1):'–', sb.avg?sb.avg.toFixed(1):'–'],
+      ['Cena', sa.avgPrice?sa.avgPrice+' Kč':'–', sb.avgPrice?sb.avgPrice+' Kč':'–'],
+      ['Zapsáno', sa.count+'×', sb.count+'×']
+    ];
+    let html='<div class="compare-head"><div class="compare-col-name">'+esc(sa.beer.name)+'</div><div></div><div class="compare-col-name">'+esc(sb.beer.name)+'</div></div>';
+    rows.forEach(r=>{
+      const aWin = (r[0]==='Hodnocení' && sa.avg>sb.avg) || (r[0]==='Cena' && sa.avgPrice!=null && sb.avgPrice!=null && sa.avgPrice<sb.avgPrice);
+      const bWin = (r[0]==='Hodnocení' && sb.avg>sa.avg) || (r[0]==='Cena' && sa.avgPrice!=null && sb.avgPrice!=null && sb.avgPrice<sa.avgPrice);
+      html+='<div class="compare-row">'
+        +'<div class="compare-val'+(aWin?' win':'')+'">'+r[1]+'</div>'
+        +'<div class="compare-label">'+r[0]+'</div>'
+        +'<div class="compare-val'+(bWin?' win':'')+'">'+r[2]+'</div>'
+        +'</div>';
+    });
+    $('#compare-result').innerHTML=html;
+    $('#compare-picker').style.display='none';
+    $('#compare-result').style.display='block';
+    $('#compare-again').style.display='block';
+  }
   /* ---------- price history: group same-day purchases into one point first,
      so two different beers on one visit never look like a price change ---------- */
   function priceHistory(entries){
@@ -4193,6 +4482,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr party</span></div>';
     html+='<button class="btn btn-ghost" data-log-again="'+esc(b.id)+'" style="margin-top:12px">↻ Zapsat znovu</button>';
     html+='<button class="btn btn-ghost" data-trip-pick="'+esc(b.id)+'" style="margin-top:8px">🧭 Přidat do výletu</button>';
+    html+='<button class="btn btn-ghost" data-print-card="'+esc(b.id)+'" style="margin-top:8px">🖨️ Vytisknout kartičku</button>';
+    html+='<button class="btn btn-ghost" data-compare-pick="'+esc(b.id)+'" style="margin-top:8px">⚖️ Srovnat s jiným pivem</button>';
     const beerTrend=priceTrendHtml(all);
     if(beerTrend) html+='<div class="price-block">'+beerTrend+priceChartHtml(all)+'</div>';
     html+='</div>';
@@ -5604,6 +5895,67 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
     toast('Záloha stažena');
+  }
+
+  /* ---------- one-time bulk import from an old spreadsheet/export ---------- */
+  function parseImportTSV(text){
+    const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    if(!lines.length) return [];
+    let rows=lines.map(l=>l.split('\t'));
+    if(rows.length && /^nazev|^n[aá]zev/i.test((rows[0][0]||'').trim())) rows=rows.slice(1);
+    const out=[];
+    rows.forEach(cols=>{
+      const nazev=(cols[0]||'').trim();
+      if(!nazev) return;
+      const pivovar=(cols[1]||'').trim();
+      const styl=(cols[2]||'').trim();
+      const abv=(cols[3]||'').trim();
+      const cena=(cols[4]||'').trim();
+      const kde=(cols[5]||'').trim();
+      let datum=(cols[6]||'').trim();
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(datum)) datum=todayISO();
+      let hodnoceni=parseInt(cols[7],10);
+      if(isNaN(hodnoceni)) hodnoceni=0;
+      hodnoceni=Math.max(0,Math.min(10,hodnoceni));
+      const poznamka=(cols[8]||'').trim();
+      out.push({ nazev, pivovar, styl, abv, cena, kde, datum, hodnoceni, poznamka });
+    });
+    return out;
+  }
+  let pendingImportRows=[];
+  function previewImport(){
+    const text=$('#import-text').value;
+    pendingImportRows=parseImportTSV(text);
+    const box=$('#import-preview');
+    if(!pendingImportRows.length){
+      box.innerHTML='<p class="muted center">Nic k importu — zkontroluj, že jsou sloupce oddělené tabulátorem (Tab), ne čárkou nebo mezerou.</p>';
+      $('#import-commit').style.display='none';
+      return;
+    }
+    const shown=pendingImportRows.slice(0,5);
+    box.innerHTML='<p class="lead">Připraveno k importu: <b>'+pendingImportRows.length+'</b> '+beerWord(pendingImportRows.length)+'.</p>'
+      + shown.map(r=>'<div class="import-preview-row"><b>'+esc(r.nazev)+'</b>'+(r.pivovar?' — '+esc(r.pivovar):'')+'<small>'+esc(r.datum)+(r.hodnoceni?' · '+r.hodnoceni+'/10':'')+'</small></div>').join('')
+      + (pendingImportRows.length>5 ? '<p class="muted center" style="padding-top:8px">… a dalších '+(pendingImportRows.length-5)+'</p>' : '');
+    $('#import-commit').style.display='block';
+  }
+  function commitImport(){
+    if(!pendingImportRows.length) return;
+    if(!cfg.name){ openName(); return; }
+    if(!confirm('Naimportovat '+pendingImportRows.length+' '+beerWord(pendingImportRows.length)+' pod jméno „'+cfg.name+'"?')) return;
+    const recs=pendingImportRows.map(r=>({
+      id: uid(), osoba: cfg.name, name: r.nazev, brewery: r.pivovar, collab: '',
+      style: r.styl, abv: r.abv, price: r.cena, where: r.kde, context: '',
+      date: r.datum, note: r.poznamka, rating: r.hodnoceni, foto: '', photoPos: 'center',
+      vitrina: false, tripId: null, incomplete: false, synced: false
+    }));
+    beers=beers.concat(recs);
+    saveLocal(); renderAll();
+    $('#import-text').value=''; $('#import-preview').innerHTML=''; $('#import-commit').style.display='none';
+    const n=pendingImportRows.length;
+    pendingImportRows=[];
+    toast(n+' '+beerWord(n)+' naimportováno'+(sbConfigured()?' · odesílám…':' lokálně'));
+    if(sbConfigured()){ recs.forEach(r=>sbPush(r)); }
+    $('#import-overlay').classList.remove('show');
   }
 
   /* ---------- views / modals ---------- */
@@ -8369,7 +8721,7 @@ var qrcode = function() {
   resetForm();
   renderAll();
 
-  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); venueWishPull(); partyGoalPull().then(renderPartyGoal); }
+  if(sbConfigured()){ setSync('syncing','Připojuji…'); sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); venueWishPull(); navrhyPull(); partyGoalPull().then(renderPartyGoal); }
   else setSync('offline','Nepřipojeno — data jen v tomto prohlížeči');
 
   if(!cfg.name) setTimeout(openName, 400);
@@ -8531,6 +8883,10 @@ var qrcode = function() {
   }));
   if($('#export-btn')) $('#export-btn').addEventListener('click', exportTSV);
   if($('#backup-btn')) $('#backup-btn').addEventListener('click', exportFullBackup);
+  document.querySelectorAll('[data-import]').forEach(b=>b.addEventListener('click', ()=>$('#import-overlay').classList.add('show')));
+  $('#import-close').addEventListener('click', ()=>$('#import-overlay').classList.remove('show'));
+  $('#import-preview-btn').addEventListener('click', previewImport);
+  $('#import-commit').addEventListener('click', commitImport);
   if($('#theme-seg')) $('#theme-seg').addEventListener('click', e=>{
     const b=e.target.closest('[data-theme-btn]'); if(!b) return;
     cfg.theme=b.dataset.themeBtn; saveCfg(); applyTheme();
@@ -8692,6 +9048,10 @@ var qrcode = function() {
     if(la){ logAgain(la.dataset.logAgain); return; }
     const tp=e.target.closest('[data-trip-pick]');
     if(tp){ openTripsOverlay(tp.dataset.tripPick); return; }
+    const pc=e.target.closest('[data-print-card]');
+    if(pc){ openBeerPrintCard(pc.dataset.printCard); return; }
+    const cmp=e.target.closest('[data-compare-pick]');
+    if(cmp){ $('#detail-overlay').classList.remove('show'); openCompareOverlay(cmp.dataset.comparePick); return; }
     const tgal=e.target.closest('[data-trip-gallery]');
     if(tgal){ openPhotoGallery(lastTripPhotos, tgal.dataset.tripGallery); return; }
     const tph=e.target.closest('[data-trip-photo]');
@@ -9067,6 +9427,16 @@ var qrcode = function() {
     const del=e.target.closest('[data-venuewish-del]'); if(!del) return;
     removeVenueWish(del.dataset.venuewishDel);
   });
+  // party voting
+  document.querySelectorAll('[data-vote]').forEach(b=>b.addEventListener('click', openVoteOverlay));
+  $('#vote-close').addEventListener('click', ()=>$('#vote-overlay').classList.remove('show'));
+  $('#vote-save').addEventListener('click', saveNewProposal);
+  $('#vote-list').addEventListener('click', e=>{
+    const v=e.target.closest('[data-vote-id]');
+    if(v){ toggleVote(v.dataset.voteId); return; }
+    const del=e.target.closest('[data-vote-del]'); if(!del) return;
+    if(confirm('Smazat tenhle návrh?')) removeProposal(del.dataset.voteDel);
+  });
   // global search
   $('#globalsearch-open').addEventListener('click', ()=>{
     $('#globalsearch-input').value='';
@@ -9124,6 +9494,19 @@ var qrcode = function() {
   });
   $('#brl-dedup').addEventListener('click', openBrewMerge);
   $('#brewmerge-close').addEventListener('click', ()=>$('#brewmerge-overlay').classList.remove('show'));
+  $('#compare-close').addEventListener('click', ()=>$('#compare-overlay').classList.remove('show'));
+  $('#compare-again').addEventListener('click', ()=>{
+    $('#compare-search').value='';
+    renderCompareResults('');
+    $('#compare-picker').style.display='block';
+    $('#compare-result').style.display='none';
+    $('#compare-again').style.display='none';
+  });
+  $('#compare-search').addEventListener('input', e=>renderCompareResults(e.target.value));
+  $('#compare-results').addEventListener('click', e=>{
+    const row=e.target.closest('[data-compare-pick-b]'); if(!row) return;
+    renderCompareResult(row.dataset.comparePickB);
+  });
   $('#brewmerge-body').addEventListener('click', e=>{
     const go=e.target.closest('.brewmerge-go'); if(!go) return;
     const ci=+go.dataset.ci;
@@ -9175,13 +9558,13 @@ var qrcode = function() {
     toast(online?'Připojeno · vše sesynchronizováno':'Nepodařilo se připojit — zkontroluj URL/klíč', !online);
   });
   // close modals on backdrop
-  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#placemerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay','#venuewish-overlay','#globalsearch-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  ['#name-overlay','#setup-overlay','#invite-overlay','#dup-overlay','#merge-overlay','#goals-overlay','#detail-overlay','#placefix-overlay','#brewery-edit-overlay','#brewmerge-overlay','#placemerge-overlay','#tasting-overlay','#trophies-overlay','#stylemap-overlay','#trips-overlay','#venuewish-overlay','#compare-overlay','#vote-overlay','#import-overlay','#globalsearch-overlay'].forEach(sel=>$(sel).addEventListener('click',e=>{
     if(e.target===$(sel) && sel!=='#name-overlay') $(sel).classList.remove('show');
   }));
   // shortcuts
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); saveBeer(); }
-    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#placemerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#venuewish-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); closeReactionPop(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
+    if(e.key==='Escape'){ $('#setup-overlay').classList.remove('show'); $('#invite-overlay').classList.remove('show'); $('#dup-overlay').classList.remove('show'); $('#merge-overlay').classList.remove('show'); $('#goals-overlay').classList.remove('show'); $('#lightbox-swipe-overlay').classList.remove('show'); $('#detail-overlay').classList.remove('show'); $('#placefix-overlay').classList.remove('show'); $('#brewery-edit-overlay').classList.remove('show'); $('#wrapped-overlay').classList.remove('show'); $('#brewmerge-overlay').classList.remove('show'); $('#placemerge-overlay').classList.remove('show'); $('#tasting-overlay').classList.remove('show'); $('#yearbook-overlay').classList.remove('show'); $('#session-card-overlay').classList.remove('show'); $('#trophies-overlay').classList.remove('show'); $('#stylemap-overlay').classList.remove('show'); $('#trips-overlay').classList.remove('show'); $('#venuewish-overlay').classList.remove('show'); $('#compare-overlay').classList.remove('show'); $('#vote-overlay').classList.remove('show'); $('#import-overlay').classList.remove('show'); $('#globalsearch-overlay').classList.remove('show'); { const w=$('#map-canvas-wrap'); if(w && w.classList.contains('is-fullscreen')){ w.classList.remove('is-fullscreen'); document.body.style.overflow=''; setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),260); } } closeCardMenu(); closeReactionPop(); if(cfg.name) $('#name-overlay').classList.remove('show'); }
   });
   document.addEventListener('click', e=>{
     if(e.target.closest('[data-cardmenu]')) return; // already handled by #feed listener
@@ -9199,7 +9582,7 @@ var qrcode = function() {
     if(rx){ pickReaction(rx.dataset.reactionId, rx.dataset.reactionOwner, rx.dataset.reaction); return; }
     if(!e.target.closest('.reaction-pop')) closeReactionPop();
   });
-  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); venueWishPull(); partyGoalPull().then(renderPartyGoal); } }, 30000);
+  setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); venueWishPull(); navrhyPull(); partyGoalPull().then(renderPartyGoal); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
 })();
 
