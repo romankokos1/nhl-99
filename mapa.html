@@ -90,7 +90,7 @@
     display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:12px; cursor:pointer; border:1px solid transparent;
   }
   .place-row:hover, .place-row.active{background:var(--surface-2); border-color:var(--hairline);}
-  .place-dot{width:26px; height:26px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#241703;}
+  .place-dot{width:26px; height:26px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#241703; border:1.4px solid rgba(255,255,255,0.7);}
   .place-info{min-width:0; flex:1;}
   .place-name{font-size:13.5px; font-weight:700; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .place-sub{font-size:11.5px; color:var(--text-3); margin-top:1px;}
@@ -349,7 +349,7 @@
       return;
     }
     try{
-      const r2=await fetch(base+'/rest/v1/pivovary?select=klic,nazev,lat,lng,mesto,kocovny', { headers });
+      const r2=await fetch(base+'/rest/v1/pivovary?select=klic,nazev,lat,lng,mesto,kocovny,foto', { headers });
       if(r2.ok) pivovary=await r2.json();
     }catch(e){}
     try{
@@ -454,6 +454,12 @@
     return 'rgb('+rgb.join(',')+')';
   }
   function pinColor(it){ return colorMode==='rating' ? colorForRating(it.avg) : visitBucket(it.count); }
+  function pinBorderWidth(count){
+    if(count>=10) return 4;
+    if(count>=5) return 3.2;
+    if(count>=2) return 2.4;
+    return 1.4;
+  }
   function pinLabel(it){ return colorMode==='rating' ? (it.avg? it.avg.toFixed(1) : '–') : String(it.count); }
 
   function distinctPlaces(cutoff){
@@ -477,7 +483,7 @@
       [b.pivovar, b.spolupivovar].filter(Boolean).forEach(raw=>{
         const key=norm(raw);
         const known=pivovary.find(p=>p.klic===key);
-        if(!map.has(key)) map.set(key,{key,label:(known&&known.nazev)||raw,count:0,sum:0,rated:0,kocovny:known&&known.kocovny,beers:[],firstDate:null});
+        if(!map.has(key)) map.set(key,{key,label:(known&&known.nazev)||raw,count:0,sum:0,rated:0,kocovny:known&&known.kocovny,profileFoto:known&&known.foto,beers:[],firstDate:null});
         const e=map.get(key); e.count++;
         if(b.hodnoceni>0){ e.sum+=b.hodnoceni; e.rated++; }
         e.beers.push({nazev:b.nazev, hodnoceni:b.hodnoceni, foto:b.foto, datum:b.datum});
@@ -531,7 +537,7 @@
     withCoord.forEach(it=>{
       currentPlaceItems[it.key]=it;
       const color=pinColor(it);
-      const icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner" style="background:'+color+'">'+pinLabel(it)+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
+      const icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner" style="background:'+color+'; border-width:'+pinBorderWidth(it.count)+'px">'+pinLabel(it)+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
       const m=L.marker([it.coord.lat,it.coord.lng], { icon }).addTo(markersLayer);
       m.bindPopup(smallPopupHtml(it));
       markerByKey[it.key]=m;
@@ -547,7 +553,7 @@
     } else {
       list.innerHTML=withCoord.map(it=>
         '<div class="place-row" data-key="'+esc(it.key)+'">'
-        +'<span class="place-dot" style="background:'+pinColor(it)+'">'+pinLabel(it)+'</span>'
+        +'<span class="place-dot" style="background:'+pinColor(it)+'; border-width:'+pinBorderWidth(it.count)+'px">'+pinLabel(it)+'</span>'
         +'<span class="place-info"><div class="place-name">'+esc(it.label)+'</div><div class="place-sub">'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</div></span>'
         +'</div>'
       ).join('');
@@ -564,9 +570,9 @@
   }
 
   function smallPopupHtml(it){
-    const photo=bestPhotos(it.beers||[],1)[0];
+    const photoPath = it.profileFoto || (bestPhotos(it.beers||[],1)[0] && bestPhotos(it.beers||[],1)[0].foto);
     let html='<div class="map-pin-popup">';
-    if(photo) html+='<img loading="lazy" src="'+esc(storageUrl(photo.foto))+'" alt="">';
+    if(photoPath) html+='<img loading="lazy" src="'+esc(storageUrl(photoPath))+'" alt="">';
     html+='<b>'+esc(it.label)+'</b><span>'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</span>';
     html+='<button class="map-pin-more" data-open-detail="'+esc(it.key)+'">Zobrazit detail →</button>';
     html+='</div>';
