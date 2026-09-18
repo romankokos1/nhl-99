@@ -28,6 +28,20 @@
     "photo": "https://www.hokej.cz/static/images/hraci/a/adamsky_martin/adamsky_martin.jpg"
   },
   {
+    "surname": "Ahl",
+    "firstname": "Filip",
+    "city": "Jönköping",
+    "lat": 57.78278,
+    "lon": 14.16056,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/ahl_filip.jpg"
+  },
+  {
     "surname": "Aibl",
     "firstname": "Otomar",
     "city": "Basilej",
@@ -143,6 +157,20 @@
     "photo": "https://hcmotor.cz/foto_ceb/ANDERLE.jpg",
     "photoPos": "53% 19%",
     "photoZoom": 3.5
+  },
+  {
+    "surname": "Andersen",
+    "firstname": "Ole Einar Engeland",
+    "city": "Ingolstadt",
+    "lat": 48.76306,
+    "lon": 11.425,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/andersen_ole.jpg"
   },
   {
     "surname": "Antipin",
@@ -385,6 +413,20 @@
     "photo": "https://hcmotor.cz/img/management/bednarik_stanislav_2025.jpg"
   },
   {
+    "surname": "Bell",
+    "firstname": "Parker",
+    "city": "Estevan",
+    "lat": 49.13917,
+    "lon": -102.98611,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/bell_parker.jpg"
+  },
+  {
     "surname": "Bělohlav",
     "firstname": "Radek",
     "city": "České Budějovice",
@@ -469,9 +511,9 @@
     "born": "14.04.2001",
     "died": "",
     "deathcity": "",
-    "seasons": "8",
-    "seasonsRange": "2017-22, 2023-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/beranek_martin.jpg"
+    "seasons": "9",
+    "seasonsRange": "2017-22, 2023-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/beranek_martin.jpg"
   },
   {
     "surname": "Berek",
@@ -868,9 +910,9 @@
     "born": "12.08.1991",
     "died": "",
     "deathcity": "",
-    "seasons": "1",
-    "seasonsRange": "2025-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/bulir_michal.jpg",
+    "seasons": "2",
+    "seasonsRange": "2025-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/bulir_michal.jpg",
     "captainYears": "2025-2026"
   },
   {
@@ -1539,9 +1581,9 @@
     "born": "04.02.2006",
     "died": "",
     "deathcity": "",
-    "seasons": "1",
-    "seasonsRange": "2022-23",
-    "photo": "https://hcmotor.cz/foto/hraci/2022/drancak_samuel.jpg"
+    "seasons": "2",
+    "seasonsRange": "2022-23, 2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/drancak_samuel.jpg"
   },
   {
     "surname": "Duda",
@@ -2311,6 +2353,20 @@
     "photo": ""
   },
   {
+    "surname": "Hejduk",
+    "firstname": "Marek",
+    "city": "Parker",
+    "lat": 39.5186,
+    "lon": -104.7614,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/hejduk_marek.jpg"
+  },
+  {
     "surname": "Hejna",
     "firstname": "Josef",
     "city": "České Budějovice",
@@ -2462,9 +2518,9 @@
     "born": "11.10.2006",
     "died": "",
     "deathcity": "",
-    "seasons": "3",
-    "seasonsRange": "2023-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/hoch_stepan.jpg"
+    "seasons": "4",
+    "seasonsRange": "2023-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/hoch_stepan.jpg"
   },
   {
     "surname": "Holec",
@@ -2892,9 +2948,9 @@
     "born": "08.12.2006",
     "died": "",
     "deathcity": "",
-    "seasons": "2",
-    "seasonsRange": "2024-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/humenik_matyas.jpg"
+    "seasons": "3",
+    "seasonsRange": "2024-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/humenik_matyas.jpg"
   },
   {
     "surname": "Huml",
@@ -2980,9 +3036,9 @@
     "born": "06.07.2002",
     "died": "",
     "deathcity": "",
-    "seasons": "5",
-    "seasonsRange": "2021-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/chlubna_tomas.jpg"
+    "seasons": "6",
+    "seasonsRange": "2021-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/chlubna_tomas.jpg"
   },
   {
     "surname": "Chmelíř",
@@ -3320,9 +3376,9 @@
     "born": "30.04.1998",
     "died": "",
     "deathcity": "",
-    "seasons": "8",
-    "seasonsRange": "2014-15, 2017-20, 2022-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/kachyna_ondrej.jpg"
+    "seasons": "9",
+    "seasonsRange": "2014-15, 2017-20, 2022-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/kachyna_ondrej.jpg"
   },
   {
     "surname": "Kalista",
@@ -3547,9 +3603,9 @@
     "born": "30.04.1998",
     "died": "",
     "deathcity": "",
-    "seasons": "3",
-    "seasonsRange": "2019-20, 2024-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/kloucek_milan.jpg"
+    "seasons": "4",
+    "seasonsRange": "2019-20, 2024-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/kloucek_milan.jpg"
   },
   {
     "surname": "Kloz",
@@ -3702,9 +3758,9 @@
     "born": "06.09.2002",
     "died": "",
     "deathcity": "",
-    "seasons": "5",
-    "seasonsRange": "2021-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/kolacek_josef.jpg"
+    "seasons": "6",
+    "seasonsRange": "2021-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/kolacek_josef.jpg"
   },
   {
     "surname": "Kolar",
@@ -4095,6 +4151,20 @@
     "photo": "https://www.hokej.cz/static/images/hraci/k/krajicek_lukas/krajicek_lukas1.jpg"
   },
   {
+    "surname": "Krastenbergs",
+    "firstname": "Renars",
+    "city": "Jelgava",
+    "lat": 56.64833,
+    "lon": 23.71389,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/krastenbergs_renars.jpg"
+  },
+  {
     "surname": "Král",
     "firstname": "Milan",
     "city": "České Budějovice",
@@ -4421,6 +4491,20 @@
     "photo": "https://hcmotor.cz/foto/hraci/2016/kuchejda_david.jpg"
   },
   {
+    "surname": "Kundrátek",
+    "firstname": "Tomáš",
+    "city": "Přerov",
+    "lat": 49.4547,
+    "lon": 17.4505,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/kundratek_tomas.jpg"
+  },
+  {
     "surname": "Kuneš",
     "firstname": "Miroslav",
     "city": "Praha",
@@ -4603,9 +4687,9 @@
     "born": "24.09.1995",
     "died": "",
     "deathcity": "",
-    "seasons": "1",
-    "seasonsRange": "2025-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/lantosi_robert.jpg"
+    "seasons": "2",
+    "seasonsRange": "2025-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/lantosi_robert.jpg"
   },
   {
     "surname": "Laukkanen",
@@ -4659,9 +4743,9 @@
     "born": "26.03.2007",
     "died": "",
     "deathcity": "",
-    "seasons": "1",
-    "seasonsRange": "2025-26",
-    "photo": "https://hcmotor.cz/foto/hraci/mladez/2022/lev_jakub.jpg"
+    "seasons": "2",
+    "seasonsRange": "2025-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/lev_jakub.jpg"
   },
   {
     "surname": "Lidický",
@@ -4971,9 +5055,9 @@
     "born": "11.09.2006",
     "died": "",
     "deathcity": "",
-    "seasons": "1",
-    "seasonsRange": "2025-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/marik_matyas.jpg"
+    "seasons": "2",
+    "seasonsRange": "2025-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/marik_matyas.jpg"
   },
   {
     "surname": "Mařík",
@@ -5676,9 +5760,9 @@
     "born": "16.03.1982",
     "died": "",
     "deathcity": "",
-    "seasons": "4",
-    "seasonsRange": "1999-2001, 2006-07, 2017-18",
-    "photo": "https://hcmotor.cz/foto/hraci/2017/nedorost_vaclav.jpg"
+    "seasons": "5",
+    "seasonsRange": "1999-2001, 2006-07, 2017-18, 2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/nedorost_vaclav.jpg"
   },
   {
     "surname": "Nedvěd",
@@ -5812,6 +5896,20 @@
     "photo": ""
   },
   {
+    "surname": "Nordsäter",
+    "firstname": "Lucas",
+    "city": "Sunne",
+    "lat": 59.833,
+    "lon": 13.133,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/nordsater_lucas.jpg"
+  },
+  {
     "surname": "Nouza",
     "firstname": "Tomáš",
     "city": "Písek",
@@ -5893,9 +5991,9 @@
     "born": "16.04.2002",
     "died": "",
     "deathcity": "",
-    "seasons": "4",
-    "seasonsRange": "2018-19, 2020-21, 2024-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/novak_pavel.jpg"
+    "seasons": "5",
+    "seasonsRange": "2018-19, 2020-21, 2024-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/novak_pavel.jpg"
   },
   {
     "surname": "Novotný",
@@ -5937,9 +6035,9 @@
     "born": "14.11.1995",
     "died": "",
     "deathcity": "",
-    "seasons": "2",
-    "seasonsRange": "2024-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2024/olesen_nick.jpg"
+    "seasons": "3",
+    "seasonsRange": "2024-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/olesen_nick.jpg"
   },
   {
     "surname": "Ondráček",
@@ -5995,9 +6093,9 @@
     "born": "18.09.1996",
     "died": "",
     "deathcity": "",
-    "seasons": "3",
-    "seasonsRange": "2023-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/ordos_jan.jpg"
+    "seasons": "4",
+    "seasonsRange": "2023-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/ordos_jan.jpg"
   },
   {
     "surname": "Paderta",
@@ -6585,6 +6683,20 @@
     "photo": "https://hcmotor.cz/foto/hraci/2007/posmyk_marek.jpg"
   },
   {
+    "surname": "Pour",
+    "firstname": "Jakub",
+    "city": "Rokycany",
+    "lat": 49.7425,
+    "lon": 13.59556,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/pour_jakub.jpg"
+  },
+  {
     "surname": "Pouzar",
     "firstname": "Jaroslav",
     "city": "Čakovec",
@@ -6862,9 +6974,9 @@
     "born": "02.02.1996",
     "died": "",
     "deathcity": "",
-    "seasons": "9",
-    "seasonsRange": "2015-21, 2023-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/pycha_pavel.jpg",
+    "seasons": "10",
+    "seasonsRange": "2015-21, 2023-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/pycha_pavel.jpg",
     "captainYears": "2019-2020"
   },
   {
@@ -7433,9 +7545,9 @@
     "born": "26.12.1991",
     "died": "",
     "deathcity": "",
-    "seasons": "8",
-    "seasonsRange": "2018-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/strmen_jan.jpg"
+    "seasons": "9",
+    "seasonsRange": "2018-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/strmen_jan.jpg"
   },
   {
     "surname": "Strnad",
@@ -7865,9 +7977,9 @@
     "born": "26.02.1995",
     "died": "",
     "deathcity": "",
-    "seasons": "6",
-    "seasonsRange": "2020-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/stencel_jan.jpg"
+    "seasons": "7",
+    "seasonsRange": "2020-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/stencel_jan.jpg"
   },
   {
     "surname": "Štich",
@@ -8091,9 +8203,9 @@
     "born": "15.01.2001",
     "died": "",
     "deathcity": "",
-    "seasons": "7",
-    "seasonsRange": "2017-18, 2020-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/toman_matej.jpg"
+    "seasons": "8",
+    "seasonsRange": "2017-18, 2020-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/toman_matej.jpg"
   },
   {
     "surname": "Toman",
@@ -8460,9 +8572,9 @@
     "born": "13.04.1998",
     "died": "",
     "deathcity": "",
-    "seasons": "1",
-    "seasonsRange": "2025-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/vala_ondrej.jpg"
+    "seasons": "2",
+    "seasonsRange": "2025-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/vala_ondrej.jpg"
   },
   {
     "surname": "Vališ",
@@ -8887,9 +8999,9 @@
     "born": "25.01.1990",
     "died": "",
     "deathcity": "",
-    "seasons": "13",
-    "seasonsRange": "2008-09, 2011-18, 2021-26",
-    "photo": "https://hcmotor.cz/foto/hraci/2026/vrablik_roman.jpg"
+    "seasons": "14",
+    "seasonsRange": "2008-09, 2011-18, 2021-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/vrablik_roman.jpg"
   },
   {
     "surname": "Výborný",
@@ -9016,6 +9128,20 @@
     "seasons": "1",
     "seasonsRange": "1966-67",
     "photo": ""
+  },
+  {
+    "surname": "Zachar",
+    "firstname": "Marek",
+    "city": "Liberec",
+    "lat": 50.7663,
+    "lon": 15.0543,
+    "display": "",
+    "born": "?",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": "https://hcmotor.cz/foto/hraci/2027/zachar_marek.jpg"
   },
   {
     "surname": "Zasadil",
