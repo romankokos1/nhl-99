@@ -4594,6 +4594,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='<div class="detail-brewery">'+mine.length+' '+beerWord(mine.length)+' zapsáno v partě</div>';
     html+='<div class="detail-avg"><span class="score-num">'+(avg?avg.toFixed(1):'–')+'</span><span class="score-den">/10 průměr piv na místě</span></div>';
     html+=priceLezakHtml(mine)+priceFamilyHtml(mine);
+    html+='<button class="btn btn-ghost" data-venue-map="'+esc(placeKey)+'" style="margin-top:12px">📍 Zobrazit na mapě</button>';
     html+='</div>';
     html+='<div class="sec-title" style="margin-top:var(--s5)">Piva ochutnaná tady</div>';
     html+='<div class="card list-card detail-list">';
@@ -4664,6 +4665,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   }
   let mapInstance=null;
   let mapMode='venues';
+  let mapMarkers={};
+  let mapFocusKey=null;
+  function showVenueOnMap(placeKey){
+    if(!placeKey) return;
+    mapMode='venues';
+    mapFocusKey=placeKey;
+    switchView('map');
+  }
   function beerWord(n){ return n===1?'pivo':(n<5?'piva':'piv'); }
   async function openMap(mode, skipPull){
     mapMode = mode || mapMode || 'venues';
@@ -4698,6 +4707,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     } else {
       mapInstance.eachLayer(l=>{ if(l instanceof L.Marker) mapInstance.removeLayer(l); });
     }
+    mapMarkers={};
     const bounds=[]; const fallback=[];
     for(const p of items){
       let coord = isBrew
@@ -4731,8 +4741,16 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       } else fallback.push(p);
     }
     $('#map-loading').classList.remove('show');
-    if(bounds.length) mapInstance.fitBounds(bounds,{padding:[30,30], maxZoom:14});
-    setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),200);
+    if(mapFocusKey && mapMarkers[mapFocusKey]){
+      const fk=mapFocusKey; mapFocusKey=null;
+      const mk=mapMarkers[fk];
+      mapInstance.setView(mk.getLatLng(), 15);
+      setTimeout(()=>{ mapInstance&&mapInstance.invalidateSize(); mk.openPopup(); }, 250);
+    } else {
+      mapFocusKey=null;
+      if(bounds.length) mapInstance.fitBounds(bounds,{padding:[30,30], maxZoom:14});
+      setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),200);
+    }
     $('#map-fallback').innerHTML = fallback.length
       ? fallback.map(p=>{
           const kocovny = isBrew && breweryCache[p.key] && breweryCache[p.key].kocovny;
@@ -4762,6 +4780,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(isBrew) html+='<button class="pf-btn" data-pf-open="'+esc(p.key)+'">Detail pivovaru</button>';
     html+='<button class="pf-btn" data-pf="'+esc(p.key)+'" data-pf-label="'+esc(p.label)+'" data-pf-kind="'+(isBrew?'brewery':'place')+'">Opravit polohu</button></div>';
     m.bindPopup(html);
+    mapMarkers[p.key]=m;
     m.on('dragend', ()=>{
       const ll=m.getLatLng();
       const newCoord={lat:ll.lat,lng:ll.lng};
@@ -9052,6 +9071,8 @@ var qrcode = function() {
     if(pc){ openBeerPrintCard(pc.dataset.printCard); return; }
     const cmp=e.target.closest('[data-compare-pick]');
     if(cmp){ $('#detail-overlay').classList.remove('show'); openCompareOverlay(cmp.dataset.comparePick); return; }
+    const vm=e.target.closest('[data-venue-map]');
+    if(vm){ $('#detail-overlay').classList.remove('show'); showVenueOnMap(vm.dataset.venueMap); return; }
     const tgal=e.target.closest('[data-trip-gallery]');
     if(tgal){ openPhotoGallery(lastTripPhotos, tgal.dataset.tripGallery); return; }
     const tph=e.target.closest('[data-trip-photo]');
