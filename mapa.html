@@ -108,6 +108,26 @@
   .discover-tag{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; padding:1px 6px; border-radius:5px; margin-left:6px;}
   .discover-tag.visited{background:rgba(232,163,61,0.16); color:var(--amber-bright);}
   .discover-tag.waiting{background:var(--surface-2); color:var(--text-3); border:1px solid var(--hairline);}
+  .discover-missing{margin:0 16px 12px; padding:10px 12px; border-radius:12px; background:var(--surface-2); border:1px solid var(--hairline); flex-shrink:0;}
+  .discover-missing-title{font-size:11.5px; font-weight:700; color:var(--text-3); margin-bottom:4px;}
+  .discover-missing-row{display:flex; align-items:center; gap:8px; padding:5px 0; font-size:12.5px;}
+  .discover-missing-row span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-2);}
+  .discover-missing-row button{flex-shrink:0; font-family:inherit; font-size:11px; font-weight:700; color:var(--amber-bright); background:none; border:1px solid var(--hairline-strong); padding:5px 10px; border-radius:999px; cursor:pointer;}
+
+  /* manual location fix, for watchlist breweries Nominatim can't resolve by name alone */
+  .dfix-backdrop{position:fixed; inset:0; z-index:950; background:rgba(10,7,4,0.88); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; padding:20px;}
+  .dfix-backdrop.show{display:flex;}
+  .dfix-card{width:100%; max-width:380px; max-height:calc(100vh - 40px); overflow-y:auto; border-radius:20px; background:var(--surface); border:1px solid var(--hairline-strong); padding:20px; box-shadow:0 40px 90px -20px rgba(0,0,0,0.7);}
+  .dfix-title{font-family:'EB Garamond',serif; font-weight:600; font-size:17px; color:var(--foam); margin-bottom:12px;}
+  .dfix-search{display:flex; gap:6px; margin-bottom:10px;}
+  .dfix-search input{flex:1; min-width:0; font-family:inherit; font-size:13.5px; padding:9px 11px; border-radius:10px; border:1px solid var(--hairline); background:var(--surface-2); color:var(--text);}
+  .dfix-search button{flex-shrink:0; padding:0 14px; border-radius:10px; border:none; background:var(--amber); color:#241703; font-weight:800; font-family:inherit; font-size:13px; cursor:pointer;}
+  .dfix-row{padding:10px 8px; border-radius:10px; cursor:pointer;}
+  .dfix-row:hover{background:var(--surface-2);}
+  .dfix-row b{display:block; font-size:13.5px;}
+  .dfix-row small{font-size:11.5px; color:var(--text-3);}
+  .dfix-close{display:block; width:100%; margin-top:10px; padding:10px; border-radius:10px; border:1px solid var(--hairline); background:none; color:var(--text-3); font-family:inherit; font-weight:700; font-size:13px; cursor:pointer;}
+  .muted.center{text-align:center; color:var(--text-3); font-size:12.5px; padding:10px 0;}
 
   /* mobile: sidebar becomes a bottom sheet you can scroll, map keeps most of the height */
   @media(max-width:760px){
@@ -256,8 +276,24 @@
           <input type="text" id="discover-input" placeholder="Přidat pivovar na seznam…" autocomplete="off">
           <button id="discover-add-btn" aria-label="Přidat">+</button>
         </div>
+        <div class="discover-missing" id="discover-missing" style="display:none">
+          <div class="discover-missing-title">Nepodařilo se najít polohu (<span id="discover-missing-count">0</span>)</div>
+          <div id="discover-missing-list"></div>
+        </div>
         <div class="place-list" id="place-list"></div>
       </div>
+    </div>
+  </div>
+
+  <div class="dfix-backdrop" id="dfix-overlay">
+    <div class="dfix-card">
+      <div class="dfix-title" id="dfix-label">Ruční hledání polohy</div>
+      <div class="dfix-search">
+        <input type="text" id="dfix-query" placeholder="Zkus přidat město…" autocomplete="off">
+        <button id="dfix-search-btn">Hledat</button>
+      </div>
+      <div id="dfix-results"></div>
+      <button class="dfix-close" id="dfix-close">Zavřít</button>
     </div>
   </div>
 
@@ -428,6 +464,7 @@
     $('#legend-rating').style.display = (!isDiscover && colorMode==='rating') ? 'flex' : 'none';
     $('#legend-discover').style.display = isDiscover ? 'flex' : 'none';
     $('#discover-add').style.display = isDiscover ? 'flex' : 'none';
+    if(!isDiscover) $('#discover-missing').style.display='none';
     $('#timeline-toggle').style.display = (isDiscover || !timelineAvailable) ? 'none' : '';
     if(isDiscover && timelineActive){ timelineActive=false; $('#timeline-bar').style.display='none'; stopTimelinePlay(); }
   }
@@ -618,6 +655,54 @@
     }
     discoverGeocoding=false;
   }
+  // manual fallback for names Nominatim can't resolve on its own (small craft breweries
+  // especially) — same idea as "Opravit polohu" in the main deník, just for this list
+  let dfixCtx=null; // {key, label}
+  function openDiscoverFix(key, label){
+    dfixCtx={key, label};
+    $('#dfix-label').textContent='Ruční hledání polohy pro „'+label+'"';
+    $('#dfix-query').value=label;
+    $('#dfix-results').innerHTML='';
+    $('#dfix-overlay').classList.add('show');
+    setTimeout(()=>$('#dfix-query').focus(),150);
+  }
+  async function geocodeSearchMulti(q, limit){
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit='+(limit||6)+'&q='+encodeURIComponent(q));
+    if(!r.ok) throw new Error('http '+r.status);
+    return r.json();
+  }
+  async function runDiscoverFix(){
+    const q=$('#dfix-query').value.trim(); if(!q||!dfixCtx) return;
+    $('#dfix-results').innerHTML='<p class="muted center">Hledám…</p>';
+    try{
+      const results=await geocodeSearchMulti(q,6);
+      if(!results.length){ $('#dfix-results').innerHTML='<p class="muted center">Nic nenalezeno. Zkus přidat město.</p>'; return; }
+      $('#dfix-results').innerHTML=results.map((r,i)=>{
+        const title=(r.display_name||'').split(',')[0];
+        return '<div class="dfix-row" data-i="'+i+'"><b>'+esc(title)+'</b><small>'+esc(r.display_name)+'</small></div>';
+      }).join('');
+      $('#dfix-results')._data=results;
+    }catch(e){ $('#dfix-results').innerHTML='<p class="muted center">Hledání selhalo, zkus to znovu.</p>'; }
+  }
+  function pickDiscoverFix(i){
+    const data=$('#dfix-results')._data; if(!data||!data[i]||!dfixCtx) return;
+    const r=data[i];
+    const coord={ lat:parseFloat(r.lat), lng:parseFloat(r.lon) };
+    $('#dfix-overlay').classList.remove('show');
+    pivovary.push({ klic:dfixCtx.key, nazev:dfixCtx.label, lat:coord.lat, lng:coord.lng });
+    pushBreweryCoord(dfixCtx.key, dfixCtx.label, coord);
+    delete geoFail[dfixCtx.key]; saveGeoFail();
+    if(mode==='discover') renderMode();
+  }
+  $('#dfix-search-btn').addEventListener('click', runDiscoverFix);
+  $('#dfix-query').addEventListener('keydown', e=>{ if(e.key==='Enter') runDiscoverFix(); });
+  $('#dfix-results').addEventListener('click', e=>{
+    const row=e.target.closest('[data-i]'); if(!row) return;
+    pickDiscoverFix(+row.dataset.i);
+  });
+  $('#dfix-close').addEventListener('click', ()=>$('#dfix-overlay').classList.remove('show'));
+  $('#dfix-overlay').addEventListener('click', e=>{ if(e.target.id==='dfix-overlay') $('#dfix-overlay').classList.remove('show'); });
+
   async function addDiscoverTarget(nazev){
     const id=uid();
     try{
@@ -676,9 +761,22 @@
     });
     withCoord.sort((a,b)=> isDiscover ? ((b.visited?1:0)-(a.visited?1:0)) || (b.count-a.count) : b.count-a.count);
 
+    let failedItems=[], pendingItems=[];
     if(isDiscover){
+      withoutCoord.forEach(it=> (geoFail[it.key] ? failedItems : pendingItems).push(it));
       const visitedN=withCoord.filter(it=>it.visited).length;
-      $('#sidebar-count').textContent = visitedN+' navštíveno · '+(withCoord.length-visitedN)+' čeká'+(withoutCoord.length?' · hledám polohu pro '+withoutCoord.length:'');
+      $('#sidebar-count').textContent = visitedN+' navštíveno · '+(withCoord.length-visitedN)+' čeká'+(pendingItems.length?' · hledám polohu pro '+pendingItems.length:'');
+      const missBox=$('#discover-missing');
+      if(failedItems.length){
+        missBox.style.display='block';
+        $('#discover-missing-count').textContent=failedItems.length;
+        $('#discover-missing-list').innerHTML=failedItems.map(it=>
+          '<div class="discover-missing-row"><span>'+esc(it.label)+'</span><button data-fix-key="'+esc(it.key)+'" data-fix-label="'+esc(it.label)+'">Najít ručně</button></div>'
+        ).join('');
+      } else {
+        missBox.style.display='none';
+        $('#discover-missing-list').innerHTML='';
+      }
     } else {
       $('#sidebar-count').textContent = withCoord.length+' '+(isBrew?'pivovarů na mapě':'podniků na mapě')+(withoutCoord.length?' · '+withoutCoord.length+' bez polohy':'');
     }
@@ -740,8 +838,12 @@
       });
     }
 
-    if(isDiscover && withoutCoord.length) fillMissingDiscoverCoords(withoutCoord);
+    if(isDiscover && pendingItems.length) fillMissingDiscoverCoords(pendingItems);
   }
+  $('#discover-missing-list').addEventListener('click', e=>{
+    const btn=e.target.closest('[data-fix-key]'); if(!btn) return;
+    openDiscoverFix(btn.dataset.fixKey, btn.dataset.fixLabel);
+  });
 
   function smallPopupHtml(it){
     if(it.visited===false){
@@ -805,7 +907,7 @@
   });
   $('#place-modal-close').addEventListener('click', ()=>$('#place-modal').classList.remove('show'));
   $('#place-modal').addEventListener('click', e=>{ if(e.target.id==='place-modal') $('#place-modal').classList.remove('show'); });
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') $('#place-modal').classList.remove('show'); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ $('#place-modal').classList.remove('show'); $('#dfix-overlay').classList.remove('show'); } });
 
   function renderTripRoute(tripId){
     markersLayer.clearLayers();
@@ -860,6 +962,7 @@
     $('#mode-seg').style.pointerEvents = showingRoute ? 'none' : 'auto';
     $('#legend-discover').style.display = 'none';
     $('#discover-add').style.display = 'none';
+    $('#discover-missing').style.display = 'none';
     $('#color-seg').style.display = showingRoute ? 'none' : (mode==='discover' ? 'none' : 'flex');
     $('#legend-count').style.display = (!showingRoute && mode!=='discover' && colorMode==='count') ? 'flex' : 'none';
     $('#legend-rating').style.display = (!showingRoute && mode!=='discover' && colorMode==='rating') ? 'flex' : 'none';
