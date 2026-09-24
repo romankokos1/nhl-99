@@ -108,8 +108,12 @@
   .discover-tag{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; padding:1px 6px; border-radius:5px; margin-left:6px;}
   .discover-tag.visited{background:rgba(232,163,61,0.16); color:var(--amber-bright);}
   .discover-tag.waiting{background:var(--surface-2); color:var(--text-3); border:1px solid var(--hairline);}
-  .discover-missing{margin:0 16px 12px; padding:10px 12px; border-radius:12px; background:var(--surface-2); border:1px solid var(--hairline); flex-shrink:0;}
-  .discover-missing-title{font-size:11.5px; font-weight:700; color:var(--text-3); margin-bottom:4px;}
+  .discover-missing{margin:0 16px 12px; border-radius:12px; background:var(--surface-2); border:1px solid var(--hairline); flex-shrink:0; overflow:hidden;}
+  .discover-missing-title{display:flex; align-items:center; gap:6px; padding:10px 12px; font-size:11.5px; font-weight:700; color:var(--text-3); cursor:pointer; user-select:none;}
+  .discover-missing-title svg{width:12px; height:12px; flex-shrink:0; transition:transform .15s;}
+  .discover-missing.open .discover-missing-title svg{transform:rotate(90deg);}
+  #discover-missing-list{display:none; max-height:180px; overflow-y:auto; padding:0 12px 10px;}
+  .discover-missing.open #discover-missing-list{display:block;}
   .discover-missing-row{display:flex; align-items:center; gap:8px; padding:5px 0; font-size:12.5px;}
   .discover-missing-row span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-2);}
   .discover-missing-row button{flex-shrink:0; font-family:inherit; font-size:11px; font-weight:700; color:var(--amber-bright); background:none; border:1px solid var(--hairline-strong); padding:5px 10px; border-radius:999px; cursor:pointer;}
@@ -277,7 +281,10 @@
           <button id="discover-add-btn" aria-label="Přidat">+</button>
         </div>
         <div class="discover-missing" id="discover-missing" style="display:none">
-          <div class="discover-missing-title">Nepodařilo se najít polohu (<span id="discover-missing-count">0</span>)</div>
+          <div class="discover-missing-title" id="discover-missing-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+            Nepodařilo se najít polohu (<span id="discover-missing-count">0</span>)
+          </div>
           <div id="discover-missing-list"></div>
         </div>
         <div class="place-list" id="place-list"></div>
@@ -646,7 +653,9 @@
       try{
         const coord=await geocodeBrewery(it.label);
         if(coord){
-          pivovary.push({klic:it.key, nazev:it.label, lat:coord.lat, lng:coord.lng});
+          const idx=pivovary.findIndex(x=>x.klic===it.key);
+          if(idx>=0) pivovary[idx]=Object.assign({}, pivovary[idx], coord);
+          else pivovary.push({klic:it.key, nazev:it.label, lat:coord.lat, lng:coord.lng});
           pushBreweryCoord(it.key, it.label, coord);
           if(mode==='discover' && !activeTripId) renderMode();
         } else { geoFail[it.key]=true; saveGeoFail(); }
@@ -689,7 +698,10 @@
     const r=data[i];
     const coord={ lat:parseFloat(r.lat), lng:parseFloat(r.lon) };
     $('#dfix-overlay').classList.remove('show');
-    pivovary.push({ klic:dfixCtx.key, nazev:dfixCtx.label, lat:coord.lat, lng:coord.lng });
+    // replace any existing (wrong) entry rather than stacking a second one behind it
+    const idx=pivovary.findIndex(x=>x.klic===dfixCtx.key);
+    if(idx>=0) pivovary[idx]=Object.assign({}, pivovary[idx], { lat:coord.lat, lng:coord.lng });
+    else pivovary.push({ klic:dfixCtx.key, nazev:dfixCtx.label, lat:coord.lat, lng:coord.lng });
     pushBreweryCoord(dfixCtx.key, dfixCtx.label, coord);
     delete geoFail[dfixCtx.key]; saveGeoFail();
     if(mode==='discover') renderMode();
@@ -844,17 +856,23 @@
     const btn=e.target.closest('[data-fix-key]'); if(!btn) return;
     openDiscoverFix(btn.dataset.fixKey, btn.dataset.fixLabel);
   });
+  $('#discover-missing-toggle').addEventListener('click', ()=>{
+    $('#discover-missing').classList.toggle('open');
+  });
 
   function smallPopupHtml(it){
+    const fixBtn = mode==='discover'
+      ? '<button class="map-pin-more" data-fix-pin="'+esc(it.key)+'" data-fix-pin-label="'+esc(it.label)+'">Opravit polohu →</button>'
+      : '';
     if(it.visited===false){
       const note = it.hasBeer ? ('Ochutnáno '+it.count+'× jinde — ještě jsi u pivovaru nebyl(a)') : 'Ještě nenavštíveno';
-      return '<div class="map-pin-popup"><b>'+esc(it.label)+'</b><span>'+note+'</span></div>';
+      return '<div class="map-pin-popup"><b>'+esc(it.label)+'</b><span>'+note+'</span>'+fixBtn+'</div>';
     }
     const photoPath = it.profileFoto || (bestPhotos(it.beers||[],1)[0] && bestPhotos(it.beers||[],1)[0].foto);
     let html='<div class="map-pin-popup">';
     if(photoPath) html+='<img loading="lazy" src="'+esc(storageUrl(photoPath))+'" alt="">';
     html+='<b>'+esc(it.label)+'</b><span>'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</span>';
-    html+='<button class="map-pin-more" data-open-detail="'+esc(it.key)+'">Zobrazit detail →</button>';
+    html+= mode==='discover' ? fixBtn : '<button class="map-pin-more" data-open-detail="'+esc(it.key)+'">Zobrazit detail →</button>';
     html+='</div>';
     return html;
   }
@@ -896,6 +914,11 @@
     const it=currentPlaceItems[btn.dataset.openDetail]; if(!it) return;
     if(mapInstance) mapInstance.closePopup();
     openPlaceModal(it);
+  });
+  document.addEventListener('click', e=>{
+    const btn=e.target.closest('[data-fix-pin]'); if(!btn) return;
+    if(mapInstance) mapInstance.closePopup();
+    openDiscoverFix(btn.dataset.fixPin, btn.dataset.fixPinLabel);
   });
   $('#pm-thumbs').addEventListener('click', e=>{
     const img=e.target.closest('img[data-i]'); if(!img) return;
