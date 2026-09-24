@@ -96,6 +96,19 @@
   .place-sub{font-size:11.5px; color:var(--text-3); margin-top:1px;}
   .place-list-empty{padding:30px 16px; text-align:center; font-size:13px; color:var(--text-3);}
 
+  /* ---------- objevování: navštívené vs. čekající pivovary ---------- */
+  .discover-wait{background:transparent !important; border:2px dashed var(--text-3) !important; color:var(--text-3) !important; box-shadow:none !important;}
+  .place-row.waiting{opacity:0.7;}
+  .place-row.waiting .place-dot{background:transparent; border:2px dashed var(--text-3); color:var(--text-3);}
+  .discover-add{display:flex; gap:6px; margin:0 16px 12px;}
+  .discover-add input{flex:1; min-width:0; font-family:inherit; font-size:13px; padding:9px 11px; border-radius:10px; border:1px solid var(--hairline); background:var(--surface-2); color:var(--text);}
+  .discover-add button{flex-shrink:0; width:36px; border-radius:10px; border:none; background:var(--amber); color:#241703; font-weight:800; font-size:17px; cursor:pointer;}
+  .place-row-del{margin-left:6px; flex-shrink:0; width:22px; height:22px; border-radius:50%; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text-3); display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .place-row-del svg{width:11px; height:11px;}
+  .discover-tag{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; padding:1px 6px; border-radius:5px; margin-left:6px;}
+  .discover-tag.visited{background:rgba(232,163,61,0.16); color:var(--amber-bright);}
+  .discover-tag.waiting{background:var(--surface-2); color:var(--text-3); border:1px solid var(--hairline);}
+
   /* mobile: sidebar becomes a bottom sheet you can scroll, map keeps most of the height */
   @media(max-width:760px){
     .body{flex-direction:column;}
@@ -190,6 +203,7 @@
       <div class="mode-seg" id="mode-seg">
         <button data-mode="venues" class="active">Podniky</button>
         <button data-mode="breweries">Pivovary</button>
+        <button data-mode="discover">Objevit</button>
       </div>
       <button class="icon-btn" id="fit-btn" aria-label="Přizpůsobit místům" title="Přizpůsobit místům">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
@@ -234,6 +248,14 @@
           <span><i style="background:#c07d24"></i>střední</span>
           <span><i style="background:#ffc35a"></i>vysoké</span>
         </div>
+        <div class="legend" id="legend-discover" style="display:none">
+          <span><i style="background:#e8a33d"></i>navštíveno</span>
+          <span><i style="background:transparent; border:2px dashed var(--text-3)"></i>čeká</span>
+        </div>
+        <div class="discover-add" id="discover-add" style="display:none">
+          <input type="text" id="discover-input" placeholder="Přidat pivovar na seznam…" autocomplete="off">
+          <button id="discover-add-btn" aria-label="Přidat">+</button>
+        </div>
         <div class="place-list" id="place-list"></div>
       </div>
     </div>
@@ -260,6 +282,10 @@
   const $ = s => document.querySelector(s);
   function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/pivovar\s+/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,9); }
+
+  // built-in watchlist for "Objevov\u00e1n\u00ed" mode \u2014 same list the main den\u00edk uses for autocomplete
+  const CZ_BREWERIES = ["Plze\u0148sk\u00fd Prazdroj","Bud\u011bjovick\u00fd Budvar","Pivovar Staropramen","Pivovar Kozel","Pivovar Gambrinus","Pivovar Radegast","Pivovar Velk\u00e9 Popovice","Pivovar No\u0161ovice","Bernard","Pivovar Svijany","Pivovar Kru\u0161ovice","Pivovar Starobrno","Pivovar Litovel","Pivovar Zubr","Pivovar Holba","Pivovar Chodovar","Pivovar Ferdinand","Pivovar Herold","Pivovar Kl\u00e1\u0161ter","Pivovar Kout na \u0160umav\u011b","Pivovar \u00dan\u011btice","Pivovar Matu\u0161ka","Pivovar Clock","Pivovar Zichovec","Pivovar Cvikov","Pivovar Falkon","Pivovar Anto\u0161","Pivovar Raven","Pivovar Chroust","Pivovar Sibeeria","Pivovar Nom\u00e1d","Pivovar Permon","Pivovar Vinohradsk\u00fd","Pivovar Kunc","Pivovar Zh\u016f\u0159\u00e1k","Pivovar Wild Creatures","Pivovar Lucky Bastard","Pivovar Rambousek","Pivovar Kocour","Pivovar Nachmelen\u00e1 opice","Pivovar B\u0159evnovsk\u00fd kl\u00e1\u0161tern\u00ed","Pivovar Strahov","Pivovar U Flek\u016f","Pivovar Novom\u011bstsk\u00fd","Pivovar Pivovarsk\u00fd d\u016fm","Pivovar Zl\u00fd \u010dasy","Pivovar Bad Flash","Pivovar Zimage","Pivovar Wywar","Pivovar Beskydsk\u00fd","Pivovar Rohozec","Pivovar Nov\u00e1 Paka","Pivovar Prim\u00e1tor","Pivovar N\u00e1chod","Pivovar Trautenberk","Pivovar Krakono\u0161","Pivovar Poutn\u00edk","Pivovar Bohemia Regent","Pivovar Samson","Pivovar Platan","Pivovar Protiv\u00edn","Pivovar Strakonice","Pivovar Dud\u00e1k","Pivovar Vysok\u00fd Chlumec","Pivovar Konrad","Pivovar Vratislav","Pivovar Broumov","Pivovar Opat","Pivovar \u010cern\u00e1 Hora","Pivovar Pegas","Pivovar Richard","Pivovar \u00dan\u011btick\u00fd","Pivovar Kru\u0161ovice","Pivovar Hostivar","Pivovar Marina","Pivovar Kyt\u00edn","Pivovar Podkov\u00e1\u0148","Pivovar Vy\u0161kov","Pivovar Jihlava","Pivovar Havl\u00ed\u010dk\u016fv Brod","Pivovar Rebel","Pivovar Da\u010dick\u00fd","Pivovar Pardubice","Pivovar Rycht\u00e1\u0159","Pivovar Hlinsko","Pivovar Poli\u010dka","Pivovar Svijany","Pivovar Vratislavice","Pivovar Je\u017eek","Pivovar Bakal\u00e1\u0159","Pivovar Rakovn\u00edk","Pivovar Berounsk\u00fd medv\u011bd","Pivovar Proud","Pivovar Zbraslav","Pivovar Kohout","Pivovar Two Tales","Pivovar Z\u00e1zvorka","Pivovar Obora","Pivovar Nachmelen\u00fd jelen","Pivovar Ch\u0159\u00ed\u010d","Pivovar Modr\u00e1 hv\u011bzda","Pivovar Bombar\u010f\u00e1k","Pivovar Clock Pot\u0161tejn"];
 
   const THEME_KEY='pivni-denik-mapa-theme';
   function applyTheme(t){
@@ -333,11 +359,17 @@
   function beerWord(n){ return n===1?'pivo':(n<5?'piva':'piv'); }
 
   const CZ_BOUNDS=[[48.5,12.0],[51.1,18.9]];
-  let piva=[], pivovary=[], mista=[], vylety=[];
+  let piva=[], pivovary=[], mista=[], vylety=[], pivovaryCil=[];
   let lastBounds=[];
   let mapInstance=null, markersLayer=null, routeLayer=null;
   let mode='venues', colorMode='count', activeTripId='';
   let timelineActive=false, timelineCutoff=null, timelineMonths=[], timelinePlaying=null;
+
+  // "Objevování" needs Content-Type/Prefer headers the read-only GETs above don't
+  const writeHeaders=Object.assign({}, headers, {'Content-Type':'application/json'});
+  const GEOFAIL_KEY='pivni-denik-mapa-geofail-v1';
+  let geoFail={}; try{ geoFail=JSON.parse(localStorage.getItem(GEOFAIL_KEY))||{}; }catch(e){}
+  function saveGeoFail(){ try{ localStorage.setItem(GEOFAIL_KEY, JSON.stringify(geoFail)); }catch(e){} }
 
   async function boot(){
     try{
@@ -360,26 +392,44 @@
       const r4=await fetch(base+'/rest/v1/vylety?select=id,nazev,datum_od,datum_do&order=datum_od.desc', { headers });
       if(r4.ok) vylety=await r4.json();
     }catch(e){}
+    try{
+      const r5=await fetch(base+'/rest/v1/pivovary_cil?select=*', { headers });
+      if(r5.ok) pivovaryCil=await r5.json();
+    }catch(e){}
 
     $('#state').style.display='none';
     $('#page').style.display='flex';
     $('#top-link').href=backHref();
     populateTripSelect();
     setupTimeline();
+    updateModeChrome();
     await initMap();
     renderMode();
   }
 
+  let timelineAvailable=false;
   function setupTimeline(){
     const months=new Set();
     piva.forEach(b=>{ if(b.datum) months.add(b.datum.slice(0,7)); });
     timelineMonths=[...months].sort();
     const btn=$('#timeline-toggle');
-    if(timelineMonths.length<3){ btn.style.display='none'; return; } // not enough history for this to mean anything
+    timelineAvailable = timelineMonths.length>=3;
+    if(!timelineAvailable){ btn.style.display='none'; return; } // not enough history for this to mean anything
     const range=$('#timeline-range');
     range.min=0; range.max=timelineMonths.length-1; range.value=timelineMonths.length-1;
     timelineCutoff=timelineMonths[timelineMonths.length-1];
     updateTimelineLabel();
+  }
+  // "Objevování" has its own legend/add-form and doesn't use the count/rating color toggle or the timeline
+  function updateModeChrome(){
+    const isDiscover = mode==='discover';
+    $('#color-seg').style.display = isDiscover ? 'none' : 'flex';
+    $('#legend-count').style.display = (!isDiscover && colorMode==='count') ? 'flex' : 'none';
+    $('#legend-rating').style.display = (!isDiscover && colorMode==='rating') ? 'flex' : 'none';
+    $('#legend-discover').style.display = isDiscover ? 'flex' : 'none';
+    $('#discover-add').style.display = isDiscover ? 'flex' : 'none';
+    $('#timeline-toggle').style.display = (isDiscover || !timelineAvailable) ? 'none' : '';
+    if(isDiscover && timelineActive){ timelineActive=false; $('#timeline-bar').style.display='none'; stopTimelinePlay(); }
   }
   function monthLabelCZ(ym){
     const MONTHS=['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
@@ -492,6 +542,73 @@
     });
     return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
   }
+  // watchlist = built-in CZ_BREWERIES ∪ custom targets the party added, minus whatever's already been drunk
+  function distinctDiscover(){
+    const visited=distinctBreweries(null);
+    const seen=new Set(visited.map(it=>it.key));
+    const items=visited.map(it=>({...it, visited:true, custom:false}));
+    const watch=new Map(); // key -> {label, custom, cilId}
+    CZ_BREWERIES.forEach(n=>{ const k=norm(n); if(!watch.has(k)) watch.set(k,{label:n, custom:false}); });
+    pivovaryCil.forEach(c=>{ const k=norm(c.nazev); if(!watch.has(k) || !watch.get(k).custom) watch.set(k,{label:c.nazev, custom:true, cilId:c.id}); });
+    watch.forEach((v,k)=>{
+      if(seen.has(k)) return;
+      items.push({key:k, label:v.label, count:0, sum:0, rated:0, avg:0, beers:[], visited:false, custom:v.custom, cilId:v.cilId});
+    });
+    return items;
+  }
+  async function geocodeBrewery(label){
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(label));
+    if(!r.ok) throw new Error('http '+r.status);
+    const j=await r.json();
+    if(!j.length) return null;
+    return { lat:parseFloat(j[0].lat), lng:parseFloat(j[0].lon) };
+  }
+  async function pushBreweryCoord(key, label, coord){
+    try{
+      await fetch(base+'/rest/v1/pivovary', {
+        method:'POST', headers:Object.assign({},writeHeaders,{'Prefer':'resolution=merge-duplicates'}),
+        body: JSON.stringify({ klic:key, nazev:label, lat:coord.lat, lng:coord.lng })
+      });
+    }catch(e){}
+  }
+  let discoverGeocoding=false;
+  // fills in map pins for watchlist breweries nobody has geocoded yet (visited or not) —
+  // one at a time, respecting Nominatim's rate limit, sharing every find back to the party
+  async function fillMissingDiscoverCoords(missing){
+    if(discoverGeocoding || !missing.length) return;
+    discoverGeocoding=true;
+    for(const it of missing){
+      if(geoFail[it.key]) continue;
+      try{
+        const coord=await geocodeBrewery(it.label);
+        if(coord){
+          pivovary.push({klic:it.key, nazev:it.label, lat:coord.lat, lng:coord.lng});
+          pushBreweryCoord(it.key, it.label, coord);
+          if(mode==='discover' && !activeTripId) renderMode();
+        } else { geoFail[it.key]=true; saveGeoFail(); }
+      }catch(e){ /* network hiccup — leave it for the next pass, don't mark as a permanent miss */ }
+      await new Promise(r=>setTimeout(r,1100));
+    }
+    discoverGeocoding=false;
+  }
+  async function addDiscoverTarget(nazev){
+    const id=uid();
+    try{
+      const r=await fetch(base+'/rest/v1/pivovary_cil', { method:'POST', headers:writeHeaders, body:JSON.stringify({ id, nazev }) });
+      if(!r.ok) return false;
+    }catch(e){ return false; }
+    pivovaryCil.push({ id, nazev });
+    return true;
+  }
+  async function removeDiscoverTarget(id){
+    const idx=pivovaryCil.findIndex(c=>c.id===id); if(idx<0) return;
+    const removed=pivovaryCil.splice(idx,1)[0];
+    renderMode();
+    try{
+      const r=await fetch(base+'/rest/v1/pivovary_cil?id=eq.'+encodeURIComponent(id), { method:'DELETE', headers });
+      if(!r.ok) throw new Error('http '+r.status);
+    }catch(e){ pivovaryCil.splice(idx,0,removed); renderMode(); }
+  }
   function bestPhotos(entries, n){
     const withPhoto=entries.filter(x=>x.foto);
     const seen=new Set(); const out=[];
@@ -515,29 +632,40 @@
     routeLayer.clearLayers();
     markersLayer.clearLayers();
     const isBrew = mode==='breweries';
+    const isDiscover = mode==='discover';
     const cutoff = timelineActive ? timelineCutoff : null;
-    const items = isBrew ? distinctBreweries(cutoff) : distinctPlaces(cutoff);
-    const coordFor = key => isBrew
+    const items = isDiscover ? distinctDiscover() : (isBrew ? distinctBreweries(cutoff) : distinctPlaces(cutoff));
+    const coordFor = key => (isBrew||isDiscover)
       ? (()=>{ const p=pivovary.find(x=>x.klic===key); return (p && p.lat!=null) ? {lat:p.lat,lng:p.lng} : null; })()
       : (()=>{ const p=mista.find(x=>x.klic===key); return (p && p.lat!=null) ? {lat:p.lat,lng:p.lng} : null; })();
 
     const withCoord=[], withoutCoord=[];
     items.forEach(it=>{
-      if(isBrew && it.kocovny) return; // no fixed home by design — nothing to plot
+      if((isBrew||isDiscover) && it.kocovny) return; // no fixed home by design — nothing to plot
       const c=coordFor(it.key);
       if(c){ it.coord=c; withCoord.push(it); } else withoutCoord.push(it);
     });
-    withCoord.sort((a,b)=>b.count-a.count);
+    withCoord.sort((a,b)=> isDiscover ? ((b.visited?1:0)-(a.visited?1:0)) || (b.count-a.count) : b.count-a.count);
 
-    $('#sidebar-count').textContent = withCoord.length+' '+(isBrew?'pivovarů na mapě':'podniků na mapě')+(withoutCoord.length?' · '+withoutCoord.length+' bez polohy':'');
+    if(isDiscover){
+      const visitedN=withCoord.filter(it=>it.visited).length;
+      $('#sidebar-count').textContent = visitedN+' navštíveno · '+(withCoord.length-visitedN)+' čeká'+(withoutCoord.length?' · hledám polohu pro '+withoutCoord.length:'');
+    } else {
+      $('#sidebar-count').textContent = withCoord.length+' '+(isBrew?'pivovarů na mapě':'podniků na mapě')+(withoutCoord.length?' · '+withoutCoord.length+' bez polohy':'');
+    }
 
     const bounds=[];
     const markerByKey={};
     currentPlaceItems={};
     withCoord.forEach(it=>{
       currentPlaceItems[it.key]=it;
-      const color=pinColor(it);
-      const icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner" style="background:'+color+'; border-width:'+pinBorderWidth(it.count)+'px">'+pinLabel(it)+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
+      let icon;
+      if(isDiscover && !it.visited){
+        icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner discover-wait">?</div>', iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-13] });
+      } else {
+        const color=pinColor(it);
+        icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner" style="background:'+color+'; border-width:'+pinBorderWidth(it.count)+'px">'+pinLabel(it)+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
+      }
       const m=L.marker([it.coord.lat,it.coord.lng], { icon }).addTo(markersLayer);
       m.bindPopup(smallPopupHtml(it));
       markerByKey[it.key]=m;
@@ -549,16 +677,26 @@
 
     const list=$('#place-list');
     if(!withCoord.length){
-      list.innerHTML='<div class="place-list-empty">Zatím žádná poloha k zobrazení. Otevři appku a v Mapě je najdi, ať je appka umí zakreslit.</div>';
+      list.innerHTML = isDiscover
+        ? '<div class="place-list-empty">Hledám polohy pivovarů ze seznamu…</div>'
+        : '<div class="place-list-empty">Zatím žádná poloha k zobrazení. Otevři appku a v Mapě je najdi, ať je appka umí zakreslit.</div>';
     } else {
-      list.innerHTML=withCoord.map(it=>
-        '<div class="place-row" data-key="'+esc(it.key)+'">'
-        +'<span class="place-dot" style="background:'+pinColor(it)+'; border-width:'+pinBorderWidth(it.count)+'px">'+pinLabel(it)+'</span>'
-        +'<span class="place-info"><div class="place-name">'+esc(it.label)+'</div><div class="place-sub">'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</div></span>'
-        +'</div>'
-      ).join('');
+      list.innerHTML=withCoord.map(it=>{
+        const waiting=isDiscover && !it.visited;
+        const dot = waiting
+          ? '<span class="place-dot" style="background:transparent; border:2px dashed var(--text-3)">?</span>'
+          : '<span class="place-dot" style="background:'+pinColor(it)+'; border-width:'+pinBorderWidth(it.count)+'px">'+pinLabel(it)+'</span>';
+        const sub = waiting ? 'Ještě nenavštíveno' : (it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):''));
+        const del = (isDiscover && it.custom) ? '<span class="place-row-del" data-del-cil="'+esc(it.cilId)+'" aria-label="Odebrat ze seznamu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>' : '';
+        return '<div class="place-row'+(waiting?' waiting':'')+'" data-key="'+esc(it.key)+'">'
+          +dot
+          +'<span class="place-info"><div class="place-name">'+esc(it.label)+'</div><div class="place-sub">'+sub+'</div></span>'
+          +del
+          +'</div>';
+      }).join('');
       list.querySelectorAll('.place-row').forEach(row=>{
-        row.addEventListener('click', ()=>{
+        row.addEventListener('click', (e)=>{
+          if(e.target.closest('[data-del-cil]')) return;
           list.querySelectorAll('.place-row').forEach(r=>r.classList.remove('active'));
           row.classList.add('active');
           const m=markerByKey[row.dataset.key];
@@ -566,10 +704,18 @@
           if(m){ mapInstance.setView(m.getLatLng(), Math.max(mapInstance.getZoom(),13), { animate:true }); m.openPopup(); }
         });
       });
+      list.querySelectorAll('[data-del-cil]').forEach(btn=>{
+        btn.addEventListener('click', e=>{ e.stopPropagation(); removeDiscoverTarget(btn.dataset.delCil); });
+      });
     }
+
+    if(isDiscover && withoutCoord.length) fillMissingDiscoverCoords(withoutCoord);
   }
 
   function smallPopupHtml(it){
+    if(it.visited===false){
+      return '<div class="map-pin-popup"><b>'+esc(it.label)+'</b><span>Ještě nenavštíveno</span></div>';
+    }
     const photoPath = it.profileFoto || (bestPhotos(it.beers||[],1)[0] && bestPhotos(it.beers||[],1)[0].foto);
     let html='<div class="map-pin-popup">';
     if(photoPath) html+='<img loading="lazy" src="'+esc(storageUrl(photoPath))+'" alt="">';
@@ -680,21 +826,36 @@
     const showingRoute=!!activeTripId;
     $('#mode-seg').style.opacity = showingRoute ? '0.4' : '1';
     $('#mode-seg').style.pointerEvents = showingRoute ? 'none' : 'auto';
-    $('#color-seg').style.display = showingRoute ? 'none' : 'flex';
-    $('#legend-count').style.display = (!showingRoute && colorMode==='count') ? 'flex' : 'none';
-    $('#legend-rating').style.display = (!showingRoute && colorMode==='rating') ? 'flex' : 'none';
+    $('#legend-discover').style.display = 'none';
+    $('#discover-add').style.display = 'none';
+    $('#color-seg').style.display = showingRoute ? 'none' : (mode==='discover' ? 'none' : 'flex');
+    $('#legend-count').style.display = (!showingRoute && mode!=='discover' && colorMode==='count') ? 'flex' : 'none';
+    $('#legend-rating').style.display = (!showingRoute && mode!=='discover' && colorMode==='rating') ? 'flex' : 'none';
     $('#timeline-toggle').style.opacity = showingRoute ? '0.4' : '1';
     $('#timeline-toggle').style.pointerEvents = showingRoute ? 'none' : 'auto';
     if(showingRoute){ $('#timeline-bar').style.display='none'; renderTripRoute(activeTripId); }
-    else { if(timelineActive) $('#timeline-bar').style.display='flex'; renderMode(); }
+    else { if(timelineActive) $('#timeline-bar').style.display='flex'; updateModeChrome(); renderMode(); }
   });
 
   $('#mode-seg').addEventListener('click', e=>{
     const btn=e.target.closest('[data-mode]'); if(!btn) return;
     mode=btn.dataset.mode;
     document.querySelectorAll('#mode-seg button').forEach(b=>b.classList.toggle('active', b===btn));
+    updateModeChrome();
     renderMode();
   });
+  async function submitDiscoverAdd(){
+    const input=$('#discover-input');
+    const val=input.value.trim();
+    if(!val) return;
+    input.disabled=true;
+    const ok=await addDiscoverTarget(val);
+    input.disabled=false;
+    if(ok){ input.value=''; if(mode==='discover') renderMode(); }
+    else input.focus();
+  }
+  $('#discover-add-btn').addEventListener('click', submitDiscoverAdd);
+  $('#discover-input').addEventListener('keydown', e=>{ if(e.key==='Enter') submitDiscoverAdd(); });
   $('#color-seg').addEventListener('click', e=>{
     const btn=e.target.closest('[data-color]'); if(!btn) return;
     colorMode=btn.dataset.color;
