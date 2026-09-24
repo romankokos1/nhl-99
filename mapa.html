@@ -543,18 +543,44 @@
     return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
   }
   // watchlist = built-in CZ_BREWERIES ∪ custom targets the party added, minus whatever's already been drunk
+  // every brewery we've ever logged a beer from, PLUS the watchlist (built-in + custom targets)
+  // that haven't shown up yet. "visited" itself is decided later, once each item has a coordinate —
+  // see breweryVisitedNearby below.
   function distinctDiscover(){
-    const visited=distinctBreweries(null);
-    const seen=new Set(visited.map(it=>it.key));
-    const items=visited.map(it=>({...it, visited:true, custom:false}));
+    const tried=distinctBreweries(null);
+    const triedByKey=new Map(tried.map(it=>[it.key,it]));
     const watch=new Map(); // key -> {label, custom, cilId}
     CZ_BREWERIES.forEach(n=>{ const k=norm(n); if(!watch.has(k)) watch.set(k,{label:n, custom:false}); });
     pivovaryCil.forEach(c=>{ const k=norm(c.nazev); if(!watch.has(k) || !watch.get(k).custom) watch.set(k,{label:c.nazev, custom:true, cilId:c.id}); });
+    tried.forEach(it=>{ if(!watch.has(it.key)) watch.set(it.key, {label:it.label, custom:false}); });
+    const items=[];
     watch.forEach((v,k)=>{
-      if(seen.has(k)) return;
-      items.push({key:k, label:v.label, count:0, sum:0, rated:0, avg:0, beers:[], visited:false, custom:v.custom, cilId:v.cilId});
+      const t=triedByKey.get(k);
+      items.push({
+        key:k, label:(t&&t.label)||v.label, count:t?t.count:0, avg:t?t.avg:0,
+        beers:t?t.beers:[], kocovny:t&&t.kocovny, profileFoto:t&&t.profileFoto,
+        custom:v.custom, cilId:v.cilId, hasBeer:!!t
+      });
     });
     return items;
+  }
+  function haversineKm(lat1, lon1, lat2, lon2){
+    const R=6371, toRad=d=>d*Math.PI/180;
+    const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+    const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(a));
+  }
+  // how close a venue must be to the brewery's own address to count as actually having
+  // been there — drinking Plzeňský Prazdroj in a Prague pub shouldn't count as "visited"
+  const DISCOVER_NEAR_KM=10;
+  function breweryVisitedNearby(key, breweryCoord){
+    if(!breweryCoord) return false;
+    return piva.some(b=>{
+      if(!b.kde) return false;
+      if(![b.pivovar,b.spolupivovar].filter(Boolean).some(n=>norm(n)===key)) return false;
+      const p=mista.find(x=>x.klic===norm(b.kde));
+      return !!(p && p.lat!=null && haversineKm(p.lat,p.lng,breweryCoord.lat,breweryCoord.lng)<=DISCOVER_NEAR_KM);
+    });
   }
   async function geocodeBrewery(label){
     const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(label));
@@ -572,8 +598,9 @@
     }catch(e){}
   }
   let discoverGeocoding=false;
-  // fills in map pins for watchlist breweries nobody has geocoded yet (visited or not) —
-  // one at a time, respecting Nominatim's rate limit, sharing every find back to the party
+  // fills in map pins for watchlist breweries with no venue history to borrow a position from
+  // and no address on file yet — one at a time, respecting Nominatim's rate limit, sharing
+  // every find back to the party
   async function fillMissingDiscoverCoords(missing){
     if(discoverGeocoding || !missing.length) return;
     discoverGeocoding=true;
@@ -635,14 +662,16 @@
     const isDiscover = mode==='discover';
     const cutoff = timelineActive ? timelineCutoff : null;
     const items = isDiscover ? distinctDiscover() : (isBrew ? distinctBreweries(cutoff) : distinctPlaces(cutoff));
-    const coordFor = key => (isBrew||isDiscover)
-      ? (()=>{ const p=pivovary.find(x=>x.klic===key); return (p && p.lat!=null) ? {lat:p.lat,lng:p.lng} : null; })()
-      : (()=>{ const p=mista.find(x=>x.klic===key); return (p && p.lat!=null) ? {lat:p.lat,lng:p.lng} : null; })();
+    const coordFor = key => {
+      if(isBrew||isDiscover){ const p=pivovary.find(x=>x.klic===key); return (p && p.lat!=null) ? {lat:p.lat,lng:p.lng} : null; }
+      const p=mista.find(x=>x.klic===key); return (p && p.lat!=null) ? {lat:p.lat,lng:p.lng} : null;
+    };
 
     const withCoord=[], withoutCoord=[];
     items.forEach(it=>{
       if((isBrew||isDiscover) && it.kocovny) return; // no fixed home by design — nothing to plot
       const c=coordFor(it.key);
+      if(isDiscover) it.visited = !!(it.hasBeer && c && breweryVisitedNearby(it.key, c));
       if(c){ it.coord=c; withCoord.push(it); } else withoutCoord.push(it);
     });
     withCoord.sort((a,b)=> isDiscover ? ((b.visited?1:0)-(a.visited?1:0)) || (b.count-a.count) : b.count-a.count);
@@ -686,7 +715,9 @@
         const dot = waiting
           ? '<span class="place-dot" style="background:transparent; border:2px dashed var(--text-3)">?</span>'
           : '<span class="place-dot" style="background:'+pinColor(it)+'; border-width:'+pinBorderWidth(it.count)+'px">'+pinLabel(it)+'</span>';
-        const sub = waiting ? 'Ještě nenavštíveno' : (it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):''));
+        const sub = waiting
+          ? (it.hasBeer ? ('Ochutnáno '+it.count+'× jinde, ale ne u pivovaru') : 'Ještě nenavštíveno')
+          : (it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):''));
         const del = (isDiscover && it.custom) ? '<span class="place-row-del" data-del-cil="'+esc(it.cilId)+'" aria-label="Odebrat ze seznamu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>' : '';
         return '<div class="place-row'+(waiting?' waiting':'')+'" data-key="'+esc(it.key)+'">'
           +dot
@@ -714,7 +745,8 @@
 
   function smallPopupHtml(it){
     if(it.visited===false){
-      return '<div class="map-pin-popup"><b>'+esc(it.label)+'</b><span>Ještě nenavštíveno</span></div>';
+      const note = it.hasBeer ? ('Ochutnáno '+it.count+'× jinde — ještě jsi u pivovaru nebyl(a)') : 'Ještě nenavštíveno';
+      return '<div class="map-pin-popup"><b>'+esc(it.label)+'</b><span>'+note+'</span></div>';
     }
     const photoPath = it.profileFoto || (bestPhotos(it.beers||[],1)[0] && bestPhotos(it.beers||[],1)[0].foto);
     let html='<div class="map-pin-popup">';
