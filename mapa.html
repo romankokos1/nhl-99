@@ -99,6 +99,10 @@
   /* ---------- objevování: navštívené vs. čekající pivovary ---------- */
   .discover-wait{background:transparent !important; border:2px dashed var(--text-3) !important; color:var(--text-3) !important; box-shadow:none !important;}
   .place-row.waiting{opacity:0.7;}
+  .visit-pin-inner.is-closed{opacity:.55; filter:grayscale(.85); font-size:15px;}
+  .place-row.closed{opacity:0.6;}
+  .place-row.closed .place-dot{filter:grayscale(.85);}
+  .zaniklo-badge{font-size:10.5px; font-weight:600; color:#c9c2b8; background:rgba(150,150,150,0.16); border-radius:6px; padding:1px 6px; margin-left:4px; white-space:nowrap;}
   .place-row.waiting .place-dot{background:transparent; border:2px dashed var(--text-3); color:var(--text-3);}
   .discover-add{display:flex; gap:6px; margin:0 16px 12px;}
   .discover-add input{flex:1; min-width:0; font-family:inherit; font-size:13px; padding:9px 11px; border-radius:10px; border:1px solid var(--hairline); background:var(--surface-2); color:var(--text);}
@@ -402,7 +406,7 @@
   function beerWord(n){ return n===1?'pivo':(n<5?'piva':'piv'); }
 
   const CZ_BOUNDS=[[48.5,12.0],[51.1,18.9]];
-  let piva=[], pivovary=[], mista=[], vylety=[], pivovaryCil=[];
+  let piva=[], pivovary=[], mista=[], mistaFoto=[], vylety=[], pivovaryCil=[];
   let lastBounds=[];
   let mapInstance=null, markersLayer=null, routeLayer=null;
   let mode='venues', colorMode='count', activeTripId='';
@@ -424,12 +428,16 @@
       return;
     }
     try{
-      const r2=await fetch(base+'/rest/v1/pivovary?select=klic,nazev,lat,lng,mesto,kocovny,foto', { headers });
+      const r2=await fetch(base+'/rest/v1/pivovary?select=*', { headers });
       if(r2.ok) pivovary=await r2.json();
     }catch(e){}
     try{
       const r3=await fetch(base+'/rest/v1/mista?select=*', { headers });
       if(r3.ok) mista=await r3.json();
+    }catch(e){}
+    try{
+      const r3b=await fetch(base+'/rest/v1/mista_foto?select=klic,cesta,vytvoreno&order=vytvoreno.asc', { headers });
+      if(r3b.ok) mistaFoto=await r3b.json();
     }catch(e){}
     try{
       const r4=await fetch(base+'/rest/v1/vylety?select=id,nazev,datum_od,datum_do&order=datum_od.desc', { headers });
@@ -568,7 +576,10 @@
       e.beers.push({nazev:b.nazev, hodnoceni:b.hodnoceni, foto:b.foto, datum:b.datum});
       if(b.datum && (!e.firstDate || b.datum<e.firstDate)) e.firstDate=b.datum;
     });
-    return [...map.values()].map(e=>({...e, avg: e.rated? e.sum/e.rated : 0}));
+    return [...map.values()].map(e=>{
+      const vf=mistaFoto.find(x=>x.klic===e.key);
+      return {...e, avg: e.rated? e.sum/e.rated : 0, profileFoto: vf?vf.cesta:undefined};
+    });
   }
   function distinctBreweries(cutoff){
     const map=new Map();
@@ -614,6 +625,11 @@
     const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
     return 2*R*Math.asin(Math.sqrt(a));
   }
+  function closedRow(key, brewLike){
+    const r=(brewLike?pivovary:mista).find(x=>x.klic===key);
+    return (r && r.zaniklo) ? { closed:true, closedYear:r.zanik_rok||null } : null;
+  }
+  function closedBadge(y){ return '<span class="zaniklo-badge">✝ zaniklo'+(y?' '+esc(String(y)):'')+'</span>'; }
   // how close a venue must be to the brewery's own address to count as actually having
   // been there — drinking Plzeňský Prazdroj in a Prague pub shouldn't count as "visited"
   const DISCOVER_NEAR_KM=10;
@@ -768,7 +784,11 @@
     items.forEach(it=>{
       if((isBrew||isDiscover) && it.kocovny) return; // no fixed home by design — nothing to plot
       const c=coordFor(it.key);
+      const cl=closedRow(it.key, isBrew||isDiscover);
+      if(cl){ it.closed=true; it.closedYear=cl.closedYear; }
       if(isDiscover) it.visited = !!(it.hasBeer && c && breweryVisitedNearby(it.key, c));
+      // closed breweries drop off the "still waiting" list — but ones we've really been to stay visited
+      if(isDiscover && it.closed && !it.visited && (c || !it.hasBeer)) return;
       if(c){ it.coord=c; withCoord.push(it); } else withoutCoord.push(it);
     });
     withCoord.sort((a,b)=> isDiscover ? ((b.visited?1:0)-(a.visited?1:0)) || (b.count-a.count) : b.count-a.count);
@@ -799,7 +819,9 @@
     withCoord.forEach(it=>{
       currentPlaceItems[it.key]=it;
       let icon;
-      if(isDiscover && !it.visited){
+      if(it.closed){
+        icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner is-closed" style="background:'+pinColor(it)+'">✝</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
+      } else if(isDiscover && !it.visited){
         icon=L.divIcon({ className:'visit-pin', html:'<div class="visit-pin-inner discover-wait">?</div>', iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-13] });
       } else {
         const color=pinColor(it);
@@ -822,16 +844,18 @@
     } else {
       list.innerHTML=withCoord.map(it=>{
         const waiting=isDiscover && !it.visited;
-        const dot = waiting
+        const dot = it.closed
+          ? '<span class="place-dot" style="background:'+pinColor(it)+'">✝</span>'
+          : waiting
           ? '<span class="place-dot" style="background:transparent; border:2px dashed var(--text-3)">?</span>'
           : '<span class="place-dot" style="background:'+pinColor(it)+'; border-width:'+pinBorderWidth(it.count)+'px">'+pinLabel(it)+'</span>';
         const sub = waiting
           ? (it.hasBeer ? ('Ochutnáno '+it.count+'× jinde, ale ne u pivovaru') : 'Ještě nenavštíveno')
           : (it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):''));
         const del = (isDiscover && it.custom) ? '<span class="place-row-del" data-del-cil="'+esc(it.cilId)+'" aria-label="Odebrat ze seznamu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>' : '';
-        return '<div class="place-row'+(waiting?' waiting':'')+'" data-key="'+esc(it.key)+'">'
+        return '<div class="place-row'+(waiting?' waiting':'')+(it.closed?' closed':'')+'" data-key="'+esc(it.key)+'">'
           +dot
-          +'<span class="place-info"><div class="place-name">'+esc(it.label)+'</div><div class="place-sub">'+sub+'</div></span>'
+          +'<span class="place-info"><div class="place-name">'+esc(it.label)+(it.closed?closedBadge(it.closedYear):'')+'</div><div class="place-sub">'+sub+'</div></span>'
           +del
           +'</div>';
       }).join('');
@@ -866,12 +890,12 @@
       : '';
     if(it.visited===false){
       const note = it.hasBeer ? ('Ochutnáno '+it.count+'× jinde — ještě jsi u pivovaru nebyl(a)') : 'Ještě nenavštíveno';
-      return '<div class="map-pin-popup"><b>'+esc(it.label)+'</b><span>'+note+'</span>'+fixBtn+'</div>';
+      return '<div class="map-pin-popup"><b>'+esc(it.label)+'</b>'+(it.closed?closedBadge(it.closedYear):'')+'<span>'+note+'</span>'+fixBtn+'</div>';
     }
     const photoPath = it.profileFoto || (bestPhotos(it.beers||[],1)[0] && bestPhotos(it.beers||[],1)[0].foto);
     let html='<div class="map-pin-popup">';
     if(photoPath) html+='<img loading="lazy" src="'+esc(storageUrl(photoPath))+'" alt="">';
-    html+='<b>'+esc(it.label)+'</b><span>'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</span>';
+    html+='<b>'+esc(it.label)+'</b>'+(it.closed?closedBadge(it.closedYear):'')+'<span>'+it.count+' '+beerWord(it.count)+(it.avg?' · Ø '+it.avg.toFixed(1):'')+'</span>';
     html+= mode==='discover' ? fixBtn : '<button class="map-pin-more" data-open-detail="'+esc(it.key)+'">Zobrazit detail →</button>';
     html+='</div>';
     return html;
@@ -1006,6 +1030,7 @@
     const input=$('#discover-input');
     const val=input.value.trim();
     if(!val) return;
+    if(closedRow(norm(val), true)){ alert('Tenhle pivovar už zanikl — do seznamu k objevení ho nepřidáš.'); return; }
     input.disabled=true;
     const ok=await addDiscoverTarget(val);
     input.disabled=false;
