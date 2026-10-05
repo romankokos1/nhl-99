@@ -504,6 +504,25 @@
   .ts-info{flex:1; min-width:0;}
   .ts-head{font-size:13px; font-weight:700; color:var(--amber-bright); letter-spacing:0.02em;}
   .ts-sub{font-size:12.5px; color:var(--text-2); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  /* „Teď na čepu“ z hlídače čepů */
+  .ontap{margin-bottom:var(--s4); border-radius:var(--r-sm); border:1px solid var(--hairline-strong);
+    background:linear-gradient(150deg, rgba(232,163,61,0.14), rgba(232,163,61,0.04)); overflow:hidden;}
+  .ontap-head{display:flex; align-items:baseline; gap:8px; padding:11px 14px; cursor:pointer; user-select:none;}
+  .ontap-head .t{font-size:13px; font-weight:700; color:var(--amber-bright); letter-spacing:0.02em; flex:1; min-width:0;}
+  .ontap-head .u{font-size:11.5px; color:var(--text-3); white-space:nowrap;}
+  .ontap-head .chev{color:var(--text-3); font-size:12px; transition:transform .2s;}
+  .ontap.closed .chev{transform:rotate(-90deg);}
+  .ontap.closed .ontap-list,.ontap.closed .ontap-foot{display:none;}
+  .ontap-list{display:grid; gap:1px; background:var(--hairline);}
+  .ontap-item{display:grid; grid-template-columns:1fr auto; gap:2px 10px; align-items:center; padding:9px 14px;
+    background:var(--surface); cursor:pointer; text-align:left; border:0; font-family:inherit; color:inherit; width:100%;}
+  .ontap-item:active,.ontap-item.picked{background:var(--surface-hi);}
+  .ontap-item .n{font-family:'EB Garamond',serif; font-size:16.5px; font-weight:600; color:var(--foam); line-height:1.2;}
+  .ontap-item .b{grid-column:1; font-size:12.5px; color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ontap-item .v{grid-row:1 / span 2; grid-column:2; text-align:right; font-size:12px; color:var(--text-3); white-space:nowrap;}
+  .ontap-item .v b{display:block; font-size:13px; color:var(--text-2); font-weight:700;}
+  .ontap-item .known{color:var(--green); font-weight:700;}
+  .ontap-foot{padding:8px 14px; font-size:11.5px; color:var(--text-3);}
   .ts-end{
     flex-shrink:0; font-family:inherit; font-size:12.5px; font-weight:700; color:var(--text-2);
     background:var(--bg-2); border:1px solid var(--hairline); border-radius:var(--r-pill); padding:7px 14px; cursor:pointer;
@@ -1483,6 +1502,7 @@
           <button class="ts-end" id="tasting-card" style="background:none; border:1px solid var(--hairline-strong); color:var(--amber-bright);">Karta</button>
           <button class="ts-end" id="tasting-end">Ukončit</button>
         </div>
+        <div class="ontap" id="ontap" style="display:none"></div>
         <p class="tiny-note" id="incomplete-hint" style="display:none; color:var(--amber-bright); margin-bottom:var(--s3)">⚡ Tohle byl rychlý zápis — doplň, co chybí, a ulož.</p>
         <div class="field"><label for="f-name">Název piva</label><div class="ac-wrap"><input type="text" id="f-name" placeholder="Světlý ležák" autocomplete="off"><div class="ac-drop" id="beer-ac"></div></div></div>
         <div class="field"><label for="f-brewery">Pivovar</label><input type="text" id="f-brewery" placeholder="Budějovický Budvar" autocomplete="off" list="brewery-list"><datalist id="brewery-list"></datalist></div>
@@ -4203,6 +4223,119 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#session-card-doc').innerHTML=html;
     $('#session-card-overlay').classList.add('show');
   }
+  /* ---------- Teď na čepu: nabídka z hlídače čepů ----------
+     Hlídač (repo „gal“) vystavuje na GitHub Pages, co právě teče ve sledovaných podnicích.
+     Když je ve formuláři „V podniku“ a podnik odpovídá některému z nich, ukážeme nabídku –
+     klepnutím se vyplní název, pivovar, styl a alkohol. Bez sítě / bez shody se nic neukáže. */
+  const OT_BASE='https://romankokos1.github.io/gal/data/';
+  // jiné názvy, pod kterými může být podnik zapsaný v deníku (porovnává se přes norm())
+  const OT_ALIASES={
+    galerie:['galerie piva','galerie piva krymska','galerie'],
+    sedm:['sedm','sedm stupnu','7 stupnu','sedmstupnu','sedm karlin'],
+    clock:['pivnice clock','clock potstejn'],
+    kmp:['kmp','klub malych pivovaru','kmp plzen'],
+    zlatakrava:['zlata krava','zlata krava bandaska','bandaska'],
+    beerandfriends:['beer and friends','beer friends','beer and friends smecky'],
+    vratnice:['vratnice'],
+    polepsovna:['polepsovna','pivnice polepsovna']
+  };
+  const otCache={};          // url -> {t, data}
+  let otVenues=null, otPicked=null, otPaintSeq=0, otShownWhere=null;
+  async function otGet(url, maxAgeMs){
+    const c=otCache[url]; if(c && Date.now()-c.t<maxAgeMs) return c.data;
+    try{ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw 0; const d=await r.json(); otCache[url]={t:Date.now(),data:d}; return d; }
+    catch(e){ return c ? c.data : null; }
+  }
+  function otMatchVenue(where){
+    const w=norm(where); if(!w || !otVenues) return null;
+    const pad=x=>' '+x+' ';
+    for(const v of otVenues){
+      const names=[norm(v.nazev), ...(OT_ALIASES[v.id]||[])].filter(Boolean);
+      for(const n of names){
+        if(w===n || pad(w).includes(pad(n)) || (w.length>=4 && pad(n).includes(pad(w)))) return v;
+      }
+    }
+    return null;
+  }
+  // velikost písmen jako na stránce hlídače: „FINA CERVA“ → „Fina Cerva“, „pivorožec“ → „Pivorožec“
+  const OT_ACR=new Set('WC NE IPA APA NEIPA DIPA TIPA IIPA IPL DDH TDH NZ ESB XPA EPA PA BW KMP IBU ABV DH II III IV IT SK CZ DE BE US USA UK DK NL PL AT FR ES'.split(' '));
+  const OT_SMALL=new Set('of the and a an in on with to for at by de la'.split(' '));
+  function otNice(s, kind){
+    if(!s) return s||'';
+    const L=s.match(/\p{L}/gu)||[]; if(L.length<2) return s;
+    const upper=L.filter(c=>c!==c.toLowerCase()).length/L.length;
+    const cap=w=>w.charAt(0).toUpperCase()+w.slice(1);
+    if(upper>0.8){
+      const title = kind==='pivovar' || !/[ěščřžýáíéůúťďň]/i.test(s); let first=true;
+      return s.toLowerCase().replace(/\p{L}[\p{L}'’*]*/gu, w=>{
+        if(OT_ACR.has(w.toUpperCase())){ first=false; return w.toUpperCase(); }
+        const o = first ? cap(w) : (title && !OT_SMALL.has(w)) ? cap(w) : w; first=false; return o; });
+    }
+    if(upper===0) return kind==='pivovar' ? s.replace(/\p{L}+/gu, cap) : kind==='styl' ? s : cap(s);
+    return s;
+  }
+  function otBreweries(p){
+    return (p||'').split(/\s*(?:&|\+|\bx\b|\/|,)\s*/i)
+      .map(x=>x.replace(/\(\s*[A-Za-z]{2,3}\s*\)/g,'').replace(/^(mini)?pivovar\s+/i,'').trim()).filter(Boolean).map(x=>otNice(x,'pivovar'));
+  }
+  function otWhen(s){
+    if(!s) return '';
+    const d=new Date(s.replace(' ','T')); if(isNaN(d)) return '';
+    const t=new Date(); t.setHours(0,0,0,0); const dd=new Date(d); dd.setHours(0,0,0,0);
+    const hm=d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}); const diff=Math.round((t-dd)/864e5);
+    return diff===0 ? 'dnes '+hm : diff===1 ? 'včera '+hm : d.getDate()+'. '+(d.getMonth()+1)+'. '+hm;
+  }
+  // už to mám v deníku? (stejný název, pivovar podobný nebo neuvedený)
+  function otMine(name, brew){
+    const n=norm(name); if(!n) return null;
+    return beers.find(b=>b.osoba===cfg.name && norm(b.name)===n && (!brew || !b.brewery || sim(b.brewery,brew)>=0.6)) || null;
+  }
+  async function paintOnTap(){
+    const box=$('#ontap'); if(!box) return;
+    const seq=++otPaintSeq;
+    otShownWhere = editId || addContext!=='podnik' ? null : $('#f-where').value.trim();
+    const hide=()=>{ box.style.display='none'; box.innerHTML=''; };
+    if(editId || addContext!=='podnik'){ hide(); return; }
+    const where=$('#f-where').value.trim(); if(!where){ hide(); return; }
+    if(!otVenues){ const v=await otGet(OT_BASE+'podniky.json', 36e5); if(seq!==otPaintSeq) return; otVenues=Array.isArray(v)?v:null; }
+    const venue=otMatchVenue(where); if(!venue){ hide(); return; }
+    const [cur, beh] = await Promise.all([otGet(OT_BASE+venue.id+'/aktualne.json', 5*6e4), otGet(OT_BASE+'posledni_beh.json', 5*6e4)]);
+    if(seq!==otPaintSeq) return;
+    const list=(cur && Array.isArray(cur.piva)) ? cur.piva : [];
+    if(!list.length){ hide(); return; }
+    let closed=false; try{ closed=localStorage.getItem('ontap-closed')==='1'; }catch(e){}
+    box.className='ontap'+(closed?' closed':'');
+    box.innerHTML='<div class="ontap-head" id="ontap-head"><span class="t">🍺 Teď na čepu – '+esc(venue.nazev)+'</span>'
+      +'<span class="u">'+esc(beh&&beh.cas ? 'aktualizováno '+otWhen(beh.cas) : '')+'</span><span class="chev">▾</span></div>'
+      +'<div class="ontap-list">'+list.map((p,i)=>{
+        const name=otNice(p.nazev||p.raw,'nazev'), brews=otBreweries(p.pivovar), mine=otMine(name, brews[0]);
+        const vals=[p.stupen?String(p.stupen).replace('.',',')+'°':'', p.alkohol?String(p.alkohol).replace('.',',')+' %':''].filter(Boolean);
+        return '<button type="button" class="ontap-item'+(otPicked===venue.id+'|'+i?' picked':'')+'" data-ot="'+i+'">'
+          +'<span class="n">'+esc(name)+'</span>'
+          +'<span class="v">'+(vals[1]?'<b>'+esc(vals[1])+'</b>':'')+esc(vals[0]||'')
+          +(mine?'<br><span class="known">✓ '+(mine.rating?esc(mine.rating)+'/10':'máš')+'</span>':'')+'</span>'
+          +'<span class="b">'+esc([brews.join(' & '), otNice(p.styl,'styl')].filter(Boolean).join(' · '))+'</span></button>';
+      }).join('')+'</div>'
+      +'<div class="ontap-foot">Klepnutím vyplníš název, pivovar, styl a alkohol. ✓ = už máš v deníku.</div>';
+    box.style.display='block';
+    $('#ontap-head').onclick=()=>{ const c=!box.classList.contains('closed'); box.classList.toggle('closed',c); try{ localStorage.setItem('ontap-closed',c?'1':'0'); }catch(e){} };
+    box.querySelector('.ontap-list').onclick=e=>{
+      const it=e.target.closest('[data-ot]'); if(!it) return;
+      const p=list[+it.dataset.ot]; if(!p) return;
+      const brews=otBreweries(p.pivovar);
+      $('#f-name').value=otNice(p.nazev||p.raw,'nazev');
+      $('#f-brewery').value=brews[0]||'';
+      $('#f-collab').value=brews.slice(1).join(' & ');
+      $('#collab-field').style.display = brews.length>1 ? 'block' : 'none';
+      $('#f-style').value=otNice(p.styl,'styl')||'';
+      $('#f-abv').value=p.alkohol ? String(p.alkohol) : '';
+      otPicked=venue.id+'|'+it.dataset.ot;
+      box.querySelectorAll('.ontap-item').forEach(x=>x.classList.toggle('picked', x===it));
+      toast('Vyplněno: '+$('#f-name').value);
+      const rb=document.querySelector('.rate-block'); if(rb) rb.scrollIntoView({behavior:'smooth', block:'center'});
+    };
+  }
+
   let addContext='podnik';
   let lastWhere='', lastContext='podnik';
   function setAddContext(ctx){
@@ -4213,8 +4346,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if($('#f-where-label')) $('#f-where-label').textContent = ctx==='festival' ? 'Který festival' : 'Kde jsem ochutnal';
     if($('#f-where')) $('#f-where').placeholder = ctx==='festival' ? 'Pivní slavnosti…' : 'U Medvídků…';
     if(!showWhere){ $('#f-where').value=''; if($('#f-where-clear')) $('#f-where-clear').style.display='none'; }
+    paintOnTap();
   }
   function resetForm(){
+    otPicked=null;
     editId=null; currentRating=0; currentPhoto=''; currentPhotoPos='center';
     ['f-name','f-brewery','f-collab','f-style','f-abv','f-price','f-where','f-note'].forEach(id=>$('#'+id).value='');
     $('#collab-field').style.display='none';
@@ -4229,6 +4364,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     $('#save-btn').textContent='Uložit pivo';
     $('#cancel-btn').style.display='none';
     $('#incomplete-hint').style.display='none';
+    paintOnTap();
   }
   async function saveBeer(quick){
     const name=$('#f-name').value.trim();
@@ -9847,8 +9983,13 @@ var qrcode = function() {
   $('#f-where').addEventListener('input', e=>{
     if($('#f-where-clear')) $('#f-where-clear').style.display = e.target.value ? 'flex' : 'none';
   });
+  let otTimer=null;
+  // překreslit jen při skutečné změně podniku (ztráta fokusu při klepnutí na pivo nesmí blok přepsat)
+  const otRepaintIfChanged=()=>{ if($('#f-where').value.trim()!==otShownWhere) paintOnTap(); };
+  $('#f-where').addEventListener('input', ()=>{ clearTimeout(otTimer); otTimer=setTimeout(otRepaintIfChanged, 350); });
+  $('#f-where').addEventListener('change', otRepaintIfChanged);
   $('#f-where-clear').addEventListener('click', ()=>{
-    $('#f-where').value=''; $('#f-where-clear').style.display='none'; $('#f-where').focus();
+    $('#f-where').value=''; $('#f-where-clear').style.display='none'; $('#f-where').focus(); paintOnTap();
   });
   $('#context-seg').addEventListener('click', e=>{
     const b=e.target.closest('[data-context]'); if(!b) return;
