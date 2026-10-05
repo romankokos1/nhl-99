@@ -513,7 +513,7 @@
   .ontap-head .chev{color:var(--text-3); font-size:12px; transition:transform .2s;}
   .ontap.closed .chev{transform:rotate(-90deg);}
   .ontap.closed .ontap-list,.ontap.closed .ontap-foot{display:none;}
-  .ontap-list{display:grid; gap:1px; background:var(--hairline);}
+  .ontap-list{display:grid; gap:1px; background:var(--hairline); max-height:340px; overflow-y:auto; overscroll-behavior:contain;}
   .ontap-item{display:grid; grid-template-columns:1fr auto; gap:2px 10px; align-items:center; padding:9px 14px;
     background:var(--surface); cursor:pointer; text-align:left; border:0; font-family:inherit; color:inherit; width:100%;}
   .ontap-item:active,.ontap-item.picked{background:var(--surface-hi);}
@@ -4241,6 +4241,23 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   };
   const otCache={};          // url -> {t, data}
   let otVenues=null, otPicked=null, otPaintSeq=0, otShownWhere=null;
+  const otKey=()=>$('#f-where').value.trim()+'|'+$('#f-date').value.trim();
+  // překreslit jen při skutečné změně podniku nebo data (ztráta fokusu při klepnutí na pivo nesmí blok přepsat)
+  function otRepaintIfChanged(){ if(otKey()!==otShownWhere) paintOnTap(); }
+  // jednoduchý CSV parser pro historie.csv hlídače (uvozovky, čárky v textu)
+  function otParseCSV(t){
+    const rows=[]; let row=[], f='', q=false;
+    for(let i=0;i<t.length;i++){ const c=t[i];
+      if(q){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++} else q=false } else f+=c; }
+      else if(c==='"') q=true; else if(c===','){row.push(f);f=''} else if(c==='\n'){row.push(f);rows.push(row);row=[];f=''} else if(c!=='\r') f+=c; }
+    if(f||row.length){row.push(f);rows.push(row)}
+    const h=rows.shift()||[]; return rows.filter(r=>r.length>1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]||''])));
+  }
+  async function otGetText(url, maxAgeMs){
+    const c=otCache[url]; if(c && Date.now()-c.t<maxAgeMs) return c.data;
+    try{ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw 0; const d=await r.text(); otCache[url]={t:Date.now(),data:d}; return d; }
+    catch(e){ return c ? c.data : null; }
+  }
   async function otGet(url, maxAgeMs){
     const c=otCache[url]; if(c && Date.now()-c.t<maxAgeMs) return c.data;
     try{ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw 0; const d=await r.json(); otCache[url]={t:Date.now(),data:d}; return d; }
@@ -4293,21 +4310,49 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   async function paintOnTap(){
     const box=$('#ontap'); if(!box) return;
     const seq=++otPaintSeq;
-    otShownWhere = editId || addContext!=='podnik' ? null : $('#f-where').value.trim();
+    otShownWhere = editId || addContext!=='podnik' ? null : otKey();
     const hide=()=>{ box.style.display='none'; box.innerHTML=''; };
     if(editId || addContext!=='podnik'){ hide(); return; }
     const where=$('#f-where').value.trim(); if(!where){ hide(); return; }
     if(!otVenues){ const v=await otGet(OT_BASE+'podniky.json', 36e5); if(seq!==otPaintSeq) return; otVenues=Array.isArray(v)?v:null; }
     const venue=otMatchVenue(where); if(!venue){ hide(); return; }
-    const [cur, beh] = await Promise.all([otGet(OT_BASE+venue.id+'/aktualne.json', 5*6e4), otGet(OT_BASE+'posledni_beh.json', 5*6e4)]);
-    if(seq!==otPaintSeq) return;
-    const list=(cur && Array.isArray(cur.piva)) ? cur.piva : [];
-    if(!list.length){ hide(); return; }
+    const date=$('#f-date').value.trim();
+    const past = /^\d{4}-\d{2}-\d{2}$/.test(date) && date!==todayISO();
+    let list=[], title='Teď na čepu', sub='', note='';
+    if(!past){
+      const [cur, beh] = await Promise.all([otGet(OT_BASE+venue.id+'/aktualne.json', 5*6e4), otGet(OT_BASE+'posledni_beh.json', 5*6e4)]);
+      if(seq!==otPaintSeq) return;
+      list=(cur && Array.isArray(cur.piva)) ? cur.piva : [];
+      const vb=beh&&beh.podniky ? beh.podniky[venue.id] : null, cas=vb&&typeof vb==='object' ? vb.cas : (beh&&beh.cas);
+      sub = cas ? 'aktualizováno '+otWhen(cas) : '';
+    } else {
+      // co v podniku teklo ten den – včetně pozdní noci (do 6:00 dalšího dne)
+      const csv=await otGetText(OT_BASE+venue.id+'/historie.csv', 10*6e4);
+      if(seq!==otPaintSeq) return;
+      const rows=csv ? otParseCSV(csv) : [];
+      const start=date+' 00:00', endD=new Date(date+'T00:00'); endD.setDate(endD.getDate()+1);
+      const end=endD.getFullYear()+'-'+String(endD.getMonth()+1).padStart(2,'0')+'-'+String(endD.getDate()).padStart(2,'0')+' 06:00';
+      const seen=new Set();
+      list=rows.filter(r=>r.narazeno && r.narazeno<end && (!r.docepovano || r.docepovano>start))
+        .sort((a,b)=>a.narazeno<b.narazeno?-1:1)
+        .filter(r=>{ const k=norm(r.pivovar)+'|'+norm(r.nazev||r.raw); if(seen.has(k)) return false; seen.add(k); return true; });
+      const d=new Date(date+'T00:00'); title='Na čepu '+d.getDate()+'. '+(d.getMonth()+1)+'.';
+      sub='podle historie';
+      const first=rows.reduce((m,r)=>r.narazeno&&(!m||r.narazeno<m)?r.narazeno:m,'');
+      if(!list.length){
+        if(first && date+' 23:59'<first){
+          const f=new Date(first.replace(' ','T'));
+          note='Hlídač sleduje '+venue.nazev+' až od '+f.getDate()+'. '+(f.getMonth()+1)+'. '+f.getFullYear()+' – pro starší data nabídku nemá.';
+        } else { hide(); return; }
+      }
+    }
+    if(!list.length && !note){ hide(); return; }
     let closed=false; try{ closed=localStorage.getItem('ontap-closed')==='1'; }catch(e){}
     box.className='ontap'+(closed?' closed':'');
-    box.innerHTML='<div class="ontap-head" id="ontap-head"><span class="t">🍺 Teď na čepu – '+esc(venue.nazev)+'</span>'
-      +'<span class="u">'+esc(beh&&beh.cas ? 'aktualizováno '+otWhen(beh.cas) : '')+'</span><span class="chev">▾</span></div>'
-      +'<div class="ontap-list">'+list.map((p,i)=>{
+    box.innerHTML='<div class="ontap-head" id="ontap-head"><span class="t">🍺 '+esc(title)+' – '+esc(venue.nazev)+'</span>'
+      +'<span class="u">'+esc(sub)+'</span><span class="chev">▾</span></div>'
+      +(note ? '<div class="ontap-foot">'+esc(note)+'</div>' : '')
+      +(list.length ? '<div class="ontap-list">'+list.map((p,i)=>{
         const name=otNice(p.nazev||p.raw,'nazev'), brews=otBreweries(p.pivovar), mine=otMine(name, brews[0]);
         const vals=[p.stupen?String(p.stupen).replace('.',',')+'°':'', p.alkohol?String(p.alkohol).replace('.',',')+' %':''].filter(Boolean);
         return '<button type="button" class="ontap-item'+(otPicked===venue.id+'|'+i?' picked':'')+'" data-ot="'+i+'">'
@@ -4316,10 +4361,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
           +(mine?'<br><span class="known">✓ '+(mine.rating?esc(mine.rating)+'/10':'máš')+'</span>':'')+'</span>'
           +'<span class="b">'+esc([brews.join(' & '), otNice(p.styl,'styl')].filter(Boolean).join(' · '))+'</span></button>';
       }).join('')+'</div>'
-      +'<div class="ontap-foot">Klepnutím vyplníš název, pivovar, styl a alkohol. ✓ = už máš v deníku.</div>';
+      +'<div class="ontap-foot">Klepnutím vyplníš název, pivovar, styl a alkohol. ✓ = už máš v deníku.</div>' : '');
     box.style.display='block';
     $('#ontap-head').onclick=()=>{ const c=!box.classList.contains('closed'); box.classList.toggle('closed',c); try{ localStorage.setItem('ontap-closed',c?'1':'0'); }catch(e){} };
-    box.querySelector('.ontap-list').onclick=e=>{
+    if(list.length) box.querySelector('.ontap-list').onclick=e=>{
       const it=e.target.closest('[data-ot]'); if(!it) return;
       const p=list[+it.dataset.ot]; if(!p) return;
       const brews=otBreweries(p.pivovar);
@@ -9276,6 +9321,7 @@ var qrcode = function() {
     if(!/^image\//.test(file.type)){ toast('Vyber obrázek', true); return; }
     setPhotoUI(null, true);
     const metaPromise=applyExifMeta(file);   // runs alongside the upload, never blocks it
+    metaPromise.then(()=>otRepaintIfChanged()).catch(()=>{});   // datum/místo z fotky → nabídka čepu na ten den
     try{
       const blob=await compressImage(file, 1000, 0.7);
       const path=await uploadPhoto(blob);
@@ -9984,10 +10030,10 @@ var qrcode = function() {
     if($('#f-where-clear')) $('#f-where-clear').style.display = e.target.value ? 'flex' : 'none';
   });
   let otTimer=null;
-  // překreslit jen při skutečné změně podniku (ztráta fokusu při klepnutí na pivo nesmí blok přepsat)
-  const otRepaintIfChanged=()=>{ if($('#f-where').value.trim()!==otShownWhere) paintOnTap(); };
   $('#f-where').addEventListener('input', ()=>{ clearTimeout(otTimer); otTimer=setTimeout(otRepaintIfChanged, 350); });
   $('#f-where').addEventListener('change', otRepaintIfChanged);
+  $('#f-date').addEventListener('input', ()=>{ clearTimeout(otTimer); otTimer=setTimeout(otRepaintIfChanged, 350); });
+  $('#f-date').addEventListener('change', otRepaintIfChanged);
   $('#f-where-clear').addEventListener('click', ()=>{
     $('#f-where').value=''; $('#f-where-clear').style.display='none'; $('#f-where').focus(); paintOnTap();
   });
