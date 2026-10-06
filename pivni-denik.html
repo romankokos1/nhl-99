@@ -4291,6 +4291,40 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     if(upper===0) return kind==='pivovar' ? s.replace(/\p{L}+/gu, cap) : kind==='styl' ? s : cap(s);
     return s;
   }
+  /* Dlouhý styl z webu → základ do pole Styl, zbytek do poznámky.
+     „Milfshake New England Pale Ale s LAKTOZOU (talus, sabro, …)“
+       → styl „New England Pale Ale“, poznámka „Milfshake · s laktozou · chmele: talus, sabro, …“
+     Základ se ověřuje proti katalogu stylů deníku (STYLE_MAP), aby nevznikaly nesmysly. */
+  const OT_STYLE_EXTRA=[['kyselac','Sour ale'],['kyselace','Sour ale'],['lager','Světlý ležák'],['ipl','IPA'],['india pale lager','IPA']];
+  const OT_MODS=/^(milkshake|milfshake|smoothie|smootie|pastry|lassi|ddh|tdh|oak aged|barrel aged|fresh hop)\b\s*/i;
+  function otCatalog(text){          // nejdelší alias stylu z katalogu, který se v textu vyskytuje
+    const t=' '+norm(text)+' '; let best=null;
+    const test=(a,name)=>{ const k=norm(a); if(k && t.includes(' '+k+' ') && (!best || k.length>best.len)) best={len:k.length,name}; };
+    STYLE_MAP.forEach(f=>f.s.forEach(st=>{ test(st.n, st.n); (st.a||[]).forEach(a=>test(a, st.n)); }));
+    OT_STYLE_EXTRA.forEach(([a,n])=>test(a,n));
+    return best ? best.name : '';
+  }
+  function otSplitStyle(text){
+    const orig=(text||'').trim(); if(!orig) return {style:'', note:''};
+    const mods=[], extra=[], hops=[];
+    let t=orig.replace(/\s*\(([^()]*)\)\s*/g,(m,x)=>{ x=x.trim(); if(x) hops.push(x); return ' '; }).replace(/\s+/g,' ').trim();
+    let m=t.match(/^([^:]{2,30}):\s*(.+)$/);                    // „pinta měsíce: mexický ležák“
+    if(m){ extra.push(m[1].trim()); t=m[2].trim(); }
+    m=t.match(/^(.+?)\s+(s|se|z|ze|typu|with)\s+(.+)$/i);      // „Gose s hruškou…“, „ležák typu helles“
+    if(m){ t=m[1].trim(); extra.push((m[2]+' '+m[3]).trim()); }
+    if(otCatalog(t)){ const c=t.indexOf(', '); if(c>0){ extra.push(t.slice(c+2)); t=t.slice(0,c); } }
+    while(OT_MODS.test(t)){ const rest=t.replace(OT_MODS,''); if(!otCatalog(rest)) break; mods.push(t.match(OT_MODS)[1]); t=rest.trim(); }
+    let style=t;
+    const words=t.split(/\s+/).length;
+    if(!otCatalog(t) && words>2){ style=otCatalog(orig); return {style, note:orig}; }   // volný popis → do poznámky
+    if(style.length>40){ style=otCatalog(orig)||''; return {style, note:orig}; }
+    const lowerCaps=x=>x.replace(/\b[\p{Lu}]{3,}\b/gu, w=>w.toLowerCase());
+    const note=[...mods.map(x=>/^(ddh|tdh)$/i.test(x)?x.toUpperCase():x.charAt(0).toUpperCase()+x.slice(1).toLowerCase()), ...extra.map(lowerCaps),
+                ...hops.map(h=>h.split(',').some(x=>x.trim().split(/\s+/).length>3) ? h : 'chmele: '+h.replace(/\s*,\s*/g,', '))]
+                .filter(Boolean).join(' · ');
+    return {style: style.charAt(0).toUpperCase()+style.slice(1), note};
+  }
+  let otAutoNote='';                 // poznámka, kterou jsme vyplnili sami (ruční nepřepisujeme)
   function otBreweries(p){
     return (p||'').split(/\s*(?:&|\+|\bx\b|\/|,)\s*/i)
       .map(x=>x.replace(/\(\s*[A-Za-z]{2,3}\s*\)/g,'').replace(/^(mini)?pivovar\s+/i,'').trim()).filter(Boolean).map(x=>otNice(x,'pivovar'));
@@ -4359,7 +4393,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
           +'<span class="n">'+esc(name)+'</span>'
           +'<span class="v">'+(vals[1]?'<b>'+esc(vals[1])+'</b>':'')+esc(vals[0]||'')
           +(mine?'<br><span class="known">✓ '+(mine.rating?esc(mine.rating)+'/10':'máš')+'</span>':'')+'</span>'
-          +'<span class="b">'+esc([brews.join(' & '), otNice(p.styl,'styl')].filter(Boolean).join(' · '))+'</span></button>';
+          +'<span class="b">'+esc([brews.join(' & '), otSplitStyle(otNice(p.styl,'styl')).style || otNice(p.styl,'styl')].filter(Boolean).join(' · '))+'</span></button>';
       }).join('')+'</div>'
       +'<div class="ontap-foot">Klepnutím vyplníš název, pivovar, styl a alkohol. ✓ = už máš v deníku.</div>' : '');
     box.style.display='block';
@@ -4372,7 +4406,10 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       $('#f-brewery').value=brews[0]||'';
       $('#f-collab').value=brews.slice(1).join(' & ');
       $('#collab-field').style.display = brews.length>1 ? 'block' : 'none';
-      $('#f-style').value=otNice(p.styl,'styl')||'';
+      const sp=otSplitStyle(otNice(p.styl,'styl'));
+      $('#f-style').value=sp.style||'';
+      const curNote=$('#f-note').value.trim();
+      if(!curNote || curNote===otAutoNote){ $('#f-note').value=sp.note; otAutoNote=sp.note; }
       $('#f-abv').value=p.alkohol ? String(p.alkohol) : '';
       otPicked=venue.id+'|'+it.dataset.ot;
       box.querySelectorAll('.ontap-item').forEach(x=>x.classList.toggle('picked', x===it));
@@ -4394,7 +4431,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     paintOnTap();
   }
   function resetForm(){
-    otPicked=null;
+    otPicked=null; otAutoNote='';
     editId=null; currentRating=0; currentPhoto=''; currentPhotoPos='center';
     ['f-name','f-brewery','f-collab','f-style','f-abv','f-price','f-where','f-note'].forEach(id=>$('#'+id).value='');
     $('#collab-field').style.display='none';
