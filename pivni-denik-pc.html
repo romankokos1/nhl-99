@@ -1494,6 +1494,41 @@
   #feed.feed-grid{grid-template-columns:repeat(7,1fr);}
   #brl-list{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
+
+/* ===== table view + docked detail ===== */
+@media (min-width:900px){
+  .thead,.trow{display:grid; grid-template-columns:minmax(0,2.2fr) minmax(0,1.6fr) minmax(0,1.2fr) 54px minmax(0,1.5fr) 96px 82px minmax(0,1fr); column-gap:14px; align-items:center;}
+  .thead{border-left:3px solid transparent; position:sticky; top:var(--pc-topbar-h,78px); z-index:12; padding:9px 16px; margin-top:var(--s3);
+    background:var(--bg); border-bottom:1px solid var(--hairline-strong); font-size:11.5px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3);}
+  .thead .tc{cursor:pointer; user-select:none; white-space:nowrap;}
+  .thead .tc:hover{color:var(--text-2);}
+  .thead .tc.sorted{color:var(--amber-bright);}
+  #feed.feed-table{display:block;}
+  .trow{padding:0 16px; min-height:46px; cursor:pointer; border-bottom:1px solid var(--hairline); font-size:13.5px; color:var(--text-2); transition:background .12s; border-left:3px solid transparent;}
+  .trow:hover{background:var(--surface);}
+  .trow.sel{background:var(--surface-2); border-left-color:var(--amber-bright);}
+  .tc{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
+  .tc-name b{color:var(--foam); font-weight:700; font-size:14.5px;}
+  .tc-abv,.tc-rating{text-align:right;}
+  .thead .tc-abv,.thead .tc-rating{text-align:right;}
+  .tc-rating{font-weight:800; color:var(--amber-bright); font-size:15px;}
+  .tc-date{color:var(--text-3); font-variant-numeric:tabular-nums;}
+  .tc-who{display:flex; align-items:center; gap:7px;}
+  .tc-who i{width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-style:normal; font-size:9px; font-weight:800; color:#fff;}
+  .tc-who em{font-style:normal; overflow:hidden; text-overflow:ellipsis;}
+  #feed.feed-table .feed-month-head{padding:20px 16px 8px; border-bottom:1px solid var(--hairline);}
+
+  /* detail docks to the right instead of popping up */
+  #detail-overlay{inset:0 0 0 auto; width:500px; padding:0; background:none; backdrop-filter:none; align-items:stretch; justify-content:stretch;}
+  #detail-overlay .sheet{max-width:none; width:100%; height:100%; max-height:none; border-radius:0; border:0; border-left:1px solid var(--hairline-strong); box-shadow:-14px 0 40px -24px #000; animation:none;}
+  .app:has(#detail-overlay.show){grid-template-columns:248px minmax(0,1fr) 500px;}
+  .app:has(#detail-overlay.show) .thead,.app:has(#detail-overlay.show) .trow{grid-template-columns:minmax(0,2fr) minmax(0,1.5fr) 92px 50px;}
+  .app:has(#detail-overlay.show) .tc-style,.app:has(#detail-overlay.show) .tc-abv,.app:has(#detail-overlay.show) .tc-where,.app:has(#detail-overlay.show) .tc-who{display:none;}
+
+  .kbd-hint{margin-top:auto; padding:18px 14px 4px; font-size:12px; line-height:1.9; color:var(--text-4);}
+  .kbd-hint b{display:inline-block; min-width:30px; text-align:center; margin-right:8px; padding:0 6px; border:1px solid var(--hairline-strong); border-radius:6px; font-size:11px; color:var(--text-3); background:var(--surface);}
+}
+@media (max-width:899px){ .kbd-hint{display:none;} #pc-thead{display:none !important;} }
 </style>
 </head>
 <body>
@@ -1569,6 +1604,7 @@
           <button type="button" class="search-clear" id="search-all-clear" style="display:none" aria-label="Vymazat hledání"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         </div>
 
+        <div id="pc-thead" class="trow thead" style="display:none"></div>
         <div id="feed"></div>
         <div class="bottom-space"></div>
       </div>
@@ -1978,6 +2014,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke-linecap="round"/></svg>
       <span class="navitem-label">Profil</span>
     </button>
+  <div class="kbd-hint"><b>N</b> nové pivo<br><b>/</b> hledat<br><b>↑ ↓</b> procházet<br><b>Esc</b> zavřít</div>
   </nav>
 
   <!-- name sheet -->
@@ -2447,6 +2484,9 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   const CFG  = 'pivni-denik-cfg-v1';       // { name, url, key }
   let beers = [];      // all known beers (mine + synced others)
   let cfg = { name:'', url:'', key:'', goals:{ beers:10, styles:4, rated:8 }, viewMode:'list', theme:'dark', quickFilters:[] };
+  const PC_MQ = window.matchMedia('(min-width:900px)');
+  const PC_COLS = [['name','Pivo'],['brewery','Pivovar'],['style','Styl'],['abv','%'],['where','Místo'],['date','Datum'],['rating','Body'],['osoba','Kdo']];
+  function pcTable(){ return PC_MQ.matches && cfg.viewMode==='table'; }
   let editId = null;
   let currentRating = 0;
   let activeView = 'home';
@@ -5444,7 +5484,12 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         case 'rating-desc': return (b.rating||0)-(a.rating||0);
         case 'rating-asc': return (a.rating||0)-(b.rating||0);
         case 'name-asc': return (a.name||'').localeCompare(b.name||'','cs');
-        default: return 0;
+        default: {
+          const m=/^(\w+)-(asc|desc)$/.exec(mode||''); if(!m) return 0;
+          const k=m[1], s=m[2]==='asc'?1:-1;
+          if(k==='abv'||k==='rating'){ return s*((parseFloat(a[k])||0)-(parseFloat(b[k])||0)); }
+          return s*String(a[k]||'').localeCompare(String(b[k]||''),'cs');
+        }
       }
     });
   }
@@ -5533,7 +5578,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
           html+='<div class="feed-month-head" data-feed-month="'+mk+'">'+esc(monthNameCZ(mk))+' '+mk.slice(0,4)+'</div>';
         }
       }
-      html += isGrid ? gridTile(b) : beerCard(b, true);
+      html += pcTable() ? tableRow(b) : (isGrid ? gridTile(b) : beerCard(b, true));
     });
     return html;
   }
@@ -5541,7 +5586,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const list=$('#feed');
     if(!list) return;
     const isGrid = cfg.viewMode==='grid';
-    list.classList.toggle('feed-grid', isGrid);
+    list.classList.toggle('feed-grid', isGrid); list.classList.toggle('feed-table', pcTable()); updateThead();
     removeFeedSentinel();
     if(!feedFull.length){
       const msg = mineOnly
@@ -9514,12 +9559,12 @@ var qrcode = function() {
   });
   function updateViewToggleIcon(){
     const icon=$('#view-toggle-icon'); if(!icon) return;
-    icon.innerHTML = cfg.viewMode==='grid'
+    icon.innerHTML = (cfg.viewMode==='grid' || (cfg.viewMode==='table' && PC_MQ.matches))
       ? '<path d="M4 6h16M4 12h16M4 18h16"/>'
       : '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
   }
   if($('#view-toggle')) $('#view-toggle').addEventListener('click', ()=>{
-    cfg.viewMode = cfg.viewMode==='grid' ? 'list' : 'grid';
+    cfg.viewMode = PC_MQ.matches ? (cfg.viewMode==='table' ? 'list' : (cfg.viewMode==='list' ? 'grid' : 'table')) : (cfg.viewMode==='grid' ? 'list' : 'grid');
     saveCfg(); updateViewToggleIcon(); renderHome();
   });
   updateViewToggleIcon();
@@ -10268,6 +10313,71 @@ var qrcode = function() {
   });
   setInterval(()=>{ if(sbConfigured() && document.visibilityState==='visible'){ sbPull(); breweriesPull(); venuePhotosPull(); likesPull().then(onLikesUpdated); commentsPull(); wishPull(); tripsPull(); venueWishPull(); navrhyPull(); partyGoalPull().then(renderPartyGoal); soubojePull().then(()=>{ if(activeView==='board') renderBoard(); }); } }, 30000);
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && sbConfigured()) sbPull(); });
+  /* ===== PC module: table view, docked detail, keyboard ===== */
+  if(PC_MQ.matches && !cfg.pcViewInit){ cfg.viewMode='table'; cfg.pcViewInit=true; saveCfg(); updateViewToggleIcon(); renderHome(true); }
+  function tableRow(b){
+    const who=b.osoba||'';
+    return '<div class="trow" data-open="'+esc(b.id)+'">'
+      +'<span class="tc tc-name"><b>'+esc(b.name||'')+'</b></span>'
+      +'<span class="tc tc-brewery">'+esc(b.brewery||'')+(b.collab?' × '+esc(b.collab):'')+'</span>'
+      +'<span class="tc tc-style">'+esc(b.style||'')+'</span>'
+      +'<span class="tc tc-abv">'+(b.abv?esc(String(b.abv)):'')+'</span>'
+      +'<span class="tc tc-where">'+esc(b.where||'')+'</span>'
+      +'<span class="tc tc-date">'+esc(czDate(b.date)||'')+'</span>'
+      +'<span class="tc tc-rating">'+(b.rating>0?b.rating:'–')+'</span>'
+      +'<span class="tc tc-who" title="'+esc(who)+'"><i style="background:'+avatarColor(who)+'">'+esc(initials(who))+'</i><em>'+esc(who)+'</em></span>'
+      +'</div>';
+  }
+  function updateThead(){
+    const th=$('#pc-thead'); if(!th) return;
+    th.style.display = pcTable() ? 'grid' : 'none';
+    if(!pcTable()) return;
+    const [key,dir]=(homeSort||'date-desc').split('-');
+    th.innerHTML=PC_COLS.map(c=>'<span class="tc tc-'+(c[0]==='osoba'?'who':c[0])+(c[0]===key?' sorted':'')+'" data-pcsort="'+c[0]+'">'+c[1]+(c[0]===key?(dir==='asc'?' ▲':' ▼'):'')+'</span>').join('');
+    const tb=document.querySelector('#screen-home .topbar');
+    if(tb) document.documentElement.style.setProperty('--pc-topbar-h', tb.offsetHeight+'px');
+  }
+  $('#pc-thead').addEventListener('click', e=>{
+    const c=e.target.closest('[data-pcsort]'); if(!c) return;
+    const k=c.dataset.pcsort;
+    const [cur,dir]=(homeSort||'date-desc').split('-');
+    homeSort = (cur===k) ? k+'-'+(dir==='asc'?'desc':'asc') : k+'-'+((k==='date'||k==='rating'||k==='abv')?'desc':'asc');
+    renderHome(true);
+  });
+  function pcSelect(id){
+    document.querySelectorAll('#feed .trow.sel').forEach(r=>r.classList.remove('sel'));
+    const row=id?document.querySelector('#feed .trow[data-open="'+(window.CSS&&CSS.escape?CSS.escape(id):id)+'"]'):null;
+    if(row) row.classList.add('sel');
+    return row;
+  }
+  $('#feed').addEventListener('click', e=>{
+    const r=e.target.closest('.trow[data-open]'); if(r) pcSelect(r.dataset.open);
+  }, true);
+  new MutationObserver(()=>{ if(!$('#detail-overlay').classList.contains('show')) pcSelect(null); })
+    .observe($('#detail-overlay'), {attributes:true, attributeFilter:['class']});
+  PC_MQ.addEventListener('change', ()=>{ updateViewToggleIcon(); renderHome(true); });
+
+  document.addEventListener('keydown', e=>{
+    if(!PC_MQ.matches || e.ctrlKey || e.metaKey || e.altKey) return;
+    const t=e.target, tag=(t&&t.tagName)||'';
+    if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||(t&&t.isContentEditable)) return;
+    const openOverlays=[...document.querySelectorAll('.overlay.show')].filter(o=>o.id!=='detail-overlay');
+    if(openOverlays.length || document.getElementById('lightbox-swipe-overlay').classList.contains('show')) return;
+    if(e.key==='/'){ e.preventDefault(); switchView('home'); const i=$('#search-all'); if(i){ i.focus(); i.select(); } return; }
+    if(e.key==='n'||e.key==='N'){ e.preventDefault(); switchView('add'); return; }
+    if(activeView==='home' && pcTable()){
+      const down = e.key==='ArrowDown'||e.key==='j', up = e.key==='ArrowUp'||e.key==='k';
+      if(!down && !up) return;
+      e.preventDefault();
+      let rows=[...document.querySelectorAll('#feed .trow')];
+      let i=rows.findIndex(r=>r.classList.contains('sel'));
+      if(down && i===rows.length-1 && feedShown<feedFull.length){ loadMoreFeed(); rows=[...document.querySelectorAll('#feed .trow')]; }
+      i = down ? Math.min(rows.length-1, i+1) : Math.max(0, i<0?0:i-1);
+      const r=rows[i]; if(!r) return;
+      openBeerDetail(r.dataset.open); pcSelect(r.dataset.open);
+      r.scrollIntoView({block:'nearest'});
+    }
+  });
 })();
 
 </script>
