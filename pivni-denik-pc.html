@@ -1471,11 +1471,8 @@
   #screen-add .topbar, #screen-add .pad,
   #screen-profile .topbar, #screen-profile .pad{max-width:820px; margin-left:auto; margin-right:auto;}
   #screen-stats .topbar, #screen-stats .pad{max-width:980px; margin-left:auto; margin-right:auto;}
-  #screen-board .topbar, #screen-board .pad{max-width:980px; margin-left:auto; margin-right:auto;}
   #screen-breweries .search-wrap, #screen-breweries .segment{max-width:520px;}
   #brl-list{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:28px; padding-left:18px; padding-right:18px;}
-  /* map fills the window */
-  .map-canvas-wrap{height:calc(100vh - 300px); min-height:420px;}
 
   /* dialogs: centered cards instead of bottom sheets */
   .overlay{align-items:center; padding:24px;}
@@ -1529,6 +1526,36 @@
   .kbd-hint b{display:inline-block; min-width:30px; text-align:center; margin-right:8px; padding:0 6px; border:1px solid var(--hairline-strong); border-radius:6px; font-size:11px; color:var(--text-3); background:var(--surface);}
 }
 @media (max-width:899px){ .kbd-hint{display:none;} #pc-thead{display:none !important;} }
+
+/* ===== map: list + map side by side; leaderboard in two columns ===== */
+@media (min-width:900px){
+  #screen-map .pad{display:grid; grid-template-columns:340px minmax(0,1fr); grid-template-rows:auto minmax(0,1fr) auto; column-gap:22px; height:calc(100vh - 100px); padding-bottom:22px;}
+  #pc-map-side{grid-column:1; grid-row:1 / 4; display:flex; flex-direction:column; min-height:0; gap:10px;}
+  #pc-map-side .segment{margin:0 !important;}
+  #pc-map-q{width:100%; padding:10px 14px; border-radius:var(--r-pill); border:1px solid var(--hairline); background:var(--surface); color:var(--text); font:inherit; font-size:13.5px;}
+  #pc-map-list{flex:1; min-height:0; overflow-y:auto; border:1px solid var(--hairline); border-radius:var(--r-card); background:var(--surface);}
+  #pc-map-side .sec-title{margin:6px 0 0; font-size:16px;}
+  #map-fallback{max-height:26%; overflow-y:auto;}
+  #screen-map .map-legend{grid-column:2; grid-row:1; margin:0 0 10px; align-self:center;}
+  #screen-map .map-canvas-wrap{grid-column:2; grid-row:2; height:auto; min-height:0; margin:0;}
+  #screen-map .tiny-note{grid-column:2; grid-row:3; margin-top:8px;}
+  #screen-map .bottom-space{display:none;}
+  .pcm-row{display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--hairline); transition:background .12s;}
+  .pcm-row:hover{background:var(--surface-2);}
+  .pcm-row.sel{background:var(--surface-2); box-shadow:inset 3px 0 0 var(--amber-bright);}
+  .pcm-row.closed{opacity:.65;}
+  .pcm-n{min-width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--amber); color:#241703; font-weight:800; font-size:12.5px; flex-shrink:0;}
+  .pcm-t{display:flex; flex-direction:column; min-width:0;}
+  .pcm-t b{font-size:14px; color:var(--foam); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pcm-t em{font-style:normal; color:var(--text-3);}
+  .pcm-t small{font-size:12px; color:var(--text-3);}
+  #pc-board-cols{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:30px; align-items:start;}
+  #screen-board .pad{padding-bottom:20px;}
+}
+@media (max-width:899px){
+  #pc-map-side,#pc-board-cols,.pcb-left,.pcb-right{display:contents;}
+  #pc-map-q,#pc-map-list{display:none;}
+}
 </style>
 </head>
 <body>
@@ -2487,6 +2514,19 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   const PC_MQ = window.matchMedia('(min-width:900px)');
   const PC_COLS = [['name','Pivo'],['brewery','Pivovar'],['style','Styl'],['abv','%'],['where','Místo'],['date','Datum'],['rating','Body'],['osoba','Kdo']];
   function pcTable(){ return PC_MQ.matches && cfg.viewMode==='table'; }
+  let pcMapItems=[];
+  function pcMapList(items){
+    if(items) pcMapItems=items;
+    const box=document.getElementById('pc-map-list'); if(!box) return;
+    const qEl=document.getElementById('pc-map-q');
+    const q=((qEl&&qEl.value)||'').trim().toLowerCase();
+    const isBrew=mapMode==='breweries';
+    const rows=pcMapItems.filter(p=>mapMarkers[p.key] && (!q || String(p.label).toLowerCase().includes(q))).sort((a,b)=>b.count-a.count);
+    box.innerHTML = rows.length ? rows.map(p=>{
+      const closed = isBrew ? !!(breweryCache[p.key]&&breweryCache[p.key].zaniklo) : placeClosed(p.key);
+      return '<div class="pcm-row'+(closed?' closed':'')+'" data-pcm="'+esc(p.key)+'"><span class="pcm-n">'+p.count+'</span><span class="pcm-t"><b>'+esc(p.label)+'</b>'+(closed?' <em>✝</em>':'')+'<small>'+(p.avg?'Ø '+p.avg.toFixed(1):'bez hodnocení')+'</small></span></div>';
+    }).join('') : '<p class="muted center" style="padding:16px">Nic k zobrazení.</p>';
+  }
   let editId = null;
   let currentRating = 0;
   let activeView = 'home';
@@ -5365,6 +5405,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
           return '<div class="mf-row"><div class="mf-info"><b>'+esc(p.label)+(kocovny?' <span class="kocovny-badge">🎈 kočovný</span>':'')+'</b><small>'+p.count+' '+beerWord(p.count)+(kocovny?' · bez vlastního sídla':'')+'</small></div><button class="mf-fix" data-fix="'+esc(p.key)+'" data-fix-label="'+esc(p.label)+'" data-fix-kind="'+(mapMode==='breweries'?'brewery':'place')+'">Najít</button></div>';
         }).join('')
       : '<p class="muted center">'+(isBrew?'Všechny pivovary se podařilo najít na mapě.':'Všechna místa se podařilo najít na mapě.')+'</p>';
+    pcMapList(items);
   }
   function visitBucket(count){
     if(count>=10) return {color:'#ffc35a', label:'10+'};
@@ -10378,6 +10419,37 @@ var qrcode = function() {
       r.scrollIntoView({block:'nearest'});
     }
   });
+
+  /* ----- map: list on the left, map on the right ----- */
+  (function(){
+    const pad=document.querySelector('#screen-map .pad'); if(!pad) return;
+    const side=document.createElement('div'); side.id='pc-map-side';
+    const q=document.createElement('input'); q.type='text'; q.id='pc-map-q'; q.placeholder='Hledat v seznamu…'; q.autocomplete='off';
+    const list=document.createElement('div'); list.id='pc-map-list';
+    side.append($('#map-mode-seg'), q, list, $('#map-fallback-title'), $('#map-fallback'));
+    pad.prepend(side);
+    q.addEventListener('input', ()=>pcMapList());
+    list.addEventListener('click', e=>{
+      const r=e.target.closest('[data-pcm]'); if(!r) return;
+      const m=mapMarkers[r.dataset.pcm]; if(!m||!mapInstance) return;
+      list.querySelectorAll('.pcm-row.sel').forEach(x=>x.classList.remove('sel')); r.classList.add('sel');
+      mapInstance.setView(m.getLatLng(), Math.max(mapInstance.getZoom(),14), {animate:true});
+      setTimeout(()=>m.openPopup(), 250);
+    });
+  })();
+  /* ----- leaderboard: two columns ----- */
+  (function(){
+    const pad=document.querySelector('#screen-board .pad'); if(!pad) return;
+    const L=document.createElement('div'), R=document.createElement('div'), wrap=document.createElement('div');
+    wrap.id='pc-board-cols'; L.className='pcb-left'; R.className='pcb-right'; wrap.append(L,R);
+    const people=$('#lb-people'), brews=$('#lb-breweries'), head=pad.querySelector('.beer-lb-head');
+    L.append(people.previousElementSibling, people, $('#badge-legend'),
+             brews.previousElementSibling.previousElementSibling, brews.previousElementSibling, brews);
+    R.append(head.previousElementSibling, head, $('#lb-beers-sub'), $('#lb-beers'));
+    pad.insertBefore(wrap, pad.querySelector('.bottom-space'));
+  })();
+  new MutationObserver(()=>{ setTimeout(()=>{ if(typeof mapInstance!=='undefined' && mapInstance) mapInstance.invalidateSize(); }, 80); })
+    .observe($('#detail-overlay'), {attributes:true, attributeFilter:['class']});
 })();
 
 </script>
