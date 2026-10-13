@@ -4233,6 +4233,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     galerie:['galerie piva','galerie piva krymska','galerie'],
     sedm:['sedm','sedm stupnu','7 stupnu','sedmstupnu','sedm karlin'],
     clock:['pivnice clock','clock potstejn'],
+    kmpcb:['kmp cb','kmpcb','kmp ceske budejovice','kmp budejovice','klub malych pivovaru ceske budejovice','klub malych pivovaru cb','kmp husova'],
     kmp:['kmp','klub malych pivovaru','kmp plzen'],
     zlatakrava:['zlata krava','zlata krava bandaska','bandaska'],
     beerandfriends:['beer and friends','beer friends','beer and friends smecky'],
@@ -4266,13 +4267,17 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   function otMatchVenue(where){
     const w=norm(where); if(!w || !otVenues) return null;
     const pad=x=>' '+x+' ';
+    // nejlepší shoda vyhrává („KMP ČB“ → České Budějovice, ne Plzeň přes „kmp“)
+    let best=null, bestScore=0;
     for(const v of otVenues){
       const names=[norm(v.nazev), ...(OT_ALIASES[v.id]||[])].filter(Boolean);
       for(const n of names){
-        if(w===n || pad(w).includes(pad(n)) || (w.length>=4 && pad(n).includes(pad(w)))) return v;
+        const sc = w===n ? 1000 : pad(w).includes(pad(n)) ? 500+n.length
+                 : (w.length>=4 && pad(n).includes(pad(w))) ? 100-n.length : 0;
+        if(sc>bestScore){ bestScore=sc; best=v; }
       }
     }
-    return null;
+    return best;
   }
   // velikost písmen jako na stránce hlídače: „FINA CERVA“ → „Fina Cerva“, „pivorožec“ → „Pivorožec“
   const OT_ACR=new Set('WC NE IPA APA NEIPA DIPA TIPA IIPA IPL DDH TDH NZ ESB XPA EPA PA BW KMP IBU ABV DH II III IV IT SK CZ DE BE US USA UK DK NL PL AT FR ES'.split(' '));
