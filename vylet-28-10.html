@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
   :root {
     color-scheme: dark;
@@ -247,6 +248,81 @@
   section.backup li:last-child { padding-bottom: 0; }
   .mono { font-family: var(--mono); font-weight: 600; color: var(--accent); }
 
+  .detail a { color: var(--accent); }
+
+  .walk { margin: 8px 0 24px; }
+  .walk h2 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+  .walk .vsum { margin-bottom: 16px; }
+  .dir { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .dir button { min-height: 44px; }
+  .dir button[aria-pressed="true"] {
+    background: var(--btn);
+    border-color: var(--btn);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .stats div {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .stats dt { font-size: 13px; color: var(--muted); }
+  .stats dd { margin: 0; font-family: var(--mono); font-size: 20px; font-weight: 600; }
+  figure.chart {
+    margin: 0 0 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px;
+  }
+  figure.chart figcaption { font-size: 13px; color: var(--muted); padding: 0 4px 4px; }
+  figure.chart > svg { display: block; width: 100%; height: auto; }
+  .chart .route { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .area { fill: var(--accent); opacity: .15; stroke: none; }
+  .chart .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+  .chart .grid { stroke: var(--line); stroke-width: 1; }
+  .chart text { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+  .chart .lbl { fill: var(--text); font-size: 11px; font-weight: 600; }
+  .chart .pt-start { fill: var(--dot); stroke: var(--panel); stroke-width: 2; }
+  .chart .pt-end { fill: var(--panel); stroke: var(--dot); stroke-width: 3; }
+  .note { font-size: 13px; color: var(--muted); margin: 8px 0 12px; }
+
+  /* Mapa OpenStreetMap (Leaflet) */
+  .walkmap { height: 320px; border-radius: 8px; background: var(--panel); }
+  .walkmap[hidden] { display: none; }
+  .leaflet-container { font-family: var(--sans); }
+  :root[data-theme="dark"] .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(.92) contrast(.9);
+  }
+  .leaflet-bar a, .leaflet-bar a:hover, .leaflet-bar a:focus {
+    background-color: var(--panel);
+    color: var(--text);
+    border-color: var(--line);
+  }
+  .leaflet-control-attribution {
+    background: var(--panel) !important;
+    color: var(--muted) !important;
+    opacity: .92;
+    font-size: 11px;
+  }
+  .leaflet-control-attribution a { color: var(--accent) !important; }
+  path.route-casing { stroke: var(--bg); }
+  path.route-line { stroke: var(--accent); }
+  path.pt-start { stroke: var(--bg); fill: var(--text); fill-opacity: 1; }
+  path.pt-end { stroke: var(--bg); fill: var(--accent); fill-opacity: 1; }
+  .leaflet-tooltip.ptip {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    box-shadow: none;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .leaflet-tooltip-top.ptip::before { border-top-color: var(--panel); }
+
   footer {
     margin-top: 28px;
     color: var(--muted);
@@ -357,7 +433,7 @@
       <p class="time todo-time">čas doplnit</p>
       <h2>Autobusem do Cvikova</h2>
       <p class="place">Nový Bor → Cvikov</p>
-      <p class="detail">Linka 440, opačným směrem to trvá 13 až 16 minut. Odjezd z Nového Boru ještě doplnit z IDOS.</p>
+      <p class="detail">Linka 440, opačným směrem to trvá 13 až 16 minut. Odjezd z Nového Boru ještě doplnit z IDOS. Nebo pěšky, viz <a href="#walk">trasa níže</a>.</p>
     </li>
 
     <li class="stop main">
@@ -372,7 +448,7 @@
       <p class="time">15:55</p>
       <h2>Autobusem zpět do Nového Boru</h2>
       <p class="place">Cvikov, aut. st. → Nový Bor, aut. nádr.</p>
-      <p class="detail">Linka 440, jízda 16 minut.</p>
+      <p class="detail">Linka 440, jízda 16 minut. Nebo pěšky, viz <a href="#walk">trasa níže</a>.</p>
     </li>
 
     <li class="stop main">
@@ -399,6 +475,32 @@
     </li>
 
   </ol>
+
+  <section class="walk" id="walk" aria-labelledby="walk-title">
+    <h2 id="walk-title">Pěšky mezi Novým Borem a Cvikovem</h2>
+    <p class="vsum">Alternativa k autobusu 440, když bude hezky. Trasa vede od Bornu (nám. Míru 100) do Cvikova a jde jít oběma směry.</p>
+    <div class="dir" role="group" aria-label="Směr trasy">
+      <button type="button" data-dir="fwd" aria-pressed="true">Nový Bor → Cvikov</button>
+      <button type="button" data-dir="rev" aria-pressed="false">Cvikov → Nový Bor</button>
+    </div>
+    <dl class="stats">
+      <div><dt>Délka</dt><dd id="st-dist">–</dd></div>
+      <div><dt>Odhad času</dt><dd id="st-time">–</dd></div>
+      <div><dt>Stoupání</dt><dd id="st-up">–</dd></div>
+      <div><dt>Klesání</dt><dd id="st-down">–</dd></div>
+    </dl>
+    <figure class="chart">
+      <figcaption id="walk-cap">Průběh trasy, bez podkladové mapy</figcaption>
+      <div id="walk-leaflet" class="walkmap" hidden></div>
+      <svg id="walk-map" role="img" aria-label="Schéma pěší trasy z Nového Boru do Cvikova"></svg>
+    </figure>
+    <figure class="chart">
+      <figcaption>Výškový profil (m n. m.)</figcaption>
+      <svg id="walk-profile" role="img" aria-label="Výškový profil pěší trasy"></svg>
+    </figure>
+    <p class="note">Odhad času počítá 4,5 km/h a 10 minut navíc na každých 100 m stoupání, bez zastávek. Je to jen hrubý odhad. Trasa je export z Mapy.com, GPX si můžeš nahrát do navigace nebo do mapové aplikace.</p>
+    <a class="map" id="gpx-link" href="#walk" download="novy-bor-cvikov.gpx">Stáhnout GPX</a>
+  </section>
 
   <section class="backup" aria-labelledby="zaloha-b">
     <h2 id="zaloha-b">Kdybychom to nestihli</h2>
@@ -463,6 +565,7 @@
   });
   function fromHash() {
     var h = (location.hash || "").replace("#", "");
+    if (h === "walk") return 1;
     return keys.indexOf(h);
   }
   function initial() {
@@ -479,6 +582,193 @@
     if (i >= 0) show(i, false, false);
   });
   show(initial(), false, false);
+})();
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+/* Pěší trasa Nový Bor (Born) – Cvikov, data z GPX (lat,lon,výška v m) */
+(function () {
+  var RAW = "50.760246,14.557055,366;50.760205,14.557028,366;50.760132,14.556984,365;50.759893,14.556831,365;50.759654,14.556678,364;50.759587,14.557038,364;50.759552,14.557191,364;50.759507,14.557334,363;50.759461,14.557514,362;50.759064,14.559095,354;50.759029,14.559221,354;50.758967,14.559319,354;50.758876,14.559525,353;50.758842,14.559634,353;50.758473,14.560622,350;50.758393,14.560820,350;50.758290,14.561170,350;50.758268,14.561259,350;50.758262,14.561332,350;50.758274,14.561403,350;50.758290,14.561466,350;50.758336,14.561565,350;50.758398,14.561664,350;50.758893,14.562401,350;50.759132,14.562652,350;50.759177,14.562778,350;50.759194,14.562804,350;50.759222,14.562841,350;50.759376,14.562904,350;50.759444,14.562948,350;50.759507,14.562993,350;50.759717,14.563173,351;50.759814,14.563244,352;50.759888,14.563272,353;50.760058,14.563280,354;50.760177,14.563307,355;50.760354,14.563451,355;50.760456,14.563523,355;50.760410,14.563676,355;50.760234,14.564458,355;50.760308,14.564575,355;50.760450,14.564799,355;50.760558,14.565005,355;50.761007,14.566156,359;50.761195,14.566676,363;50.761195,14.566802,364;50.761206,14.566928,364;50.761268,14.567395,369;50.761291,14.567611,370;50.762189,14.567917,370;50.762587,14.568024,370;50.763007,14.568123,375;50.763110,14.568158,376;50.763370,14.568330,380;50.763501,14.568383,380;50.763820,14.568483,380;50.763944,14.568518,380;50.764070,14.568590,380;50.764342,14.568697,380;50.764569,14.568787,380;50.764826,14.568850,380;50.765115,14.568923,380;50.765194,14.568931,380;50.765269,14.568967,380;50.765343,14.569020,380;50.765371,14.569020,380;50.765387,14.568994,380;50.765405,14.568949,380;50.765410,14.568877,380;50.765410,14.568806,380;50.765405,14.568751,380;50.765365,14.568626,380;50.765274,14.568410,379;50.765194,14.568185,378;50.765138,14.567970,378;50.765013,14.567422,375;50.765092,14.567422,375;50.765155,14.567431,373;50.765229,14.567458,370;50.765337,14.567530,367;50.765984,14.567978,352;50.766166,14.568087,350;50.766320,14.568177,350;50.766627,14.568330,350;50.766723,14.568393,350;50.766825,14.568483,350;50.766956,14.568607,350;50.767087,14.568760,351;50.767155,14.568859,351;50.767211,14.568913,352;50.767274,14.568959,352;50.767348,14.568986,352;50.767769,14.569120,354;50.767831,14.569156,354;50.767848,14.569183,355;50.767871,14.569210,355;50.767922,14.569407,356;50.767979,14.569533,356;50.768104,14.569946,359;50.768149,14.570028,360;50.768189,14.570099,360;50.768234,14.570152,360;50.768268,14.570171,360;50.768280,14.570341,360;50.768297,14.570449,360;50.768325,14.570594,360;50.768371,14.570746,360;50.768399,14.570818,360;50.768461,14.570980,360;50.768507,14.571078,360;50.768558,14.571159,360;50.768621,14.571231,360;50.768803,14.571410,360;50.769001,14.571581,360;50.769075,14.571653,360;50.769263,14.571806,360;50.769410,14.571949,360;50.769751,14.572309,360;50.769848,14.572399,360;50.769939,14.572452,360;50.770103,14.572525,360;50.770228,14.572578,360;50.770354,14.572615,360;50.770478,14.572632,360;50.770660,14.572632,360;50.770797,14.572641,360;50.770876,14.572668,360;50.770938,14.572722,360;50.770995,14.572821,359;50.771018,14.572892,359;50.771041,14.572982,359;50.771069,14.573207,358;50.771149,14.574213,356;50.771172,14.574393,356;50.771188,14.574483,356;50.771217,14.574555,355;50.771245,14.574662,355;50.771251,14.574779,355;50.771234,14.574905,355;50.771126,14.575265,354;50.771001,14.575561,354;50.770950,14.575660,354;50.770899,14.575731,354;50.770842,14.575777,353;50.770779,14.575804,353;50.770689,14.575831,353;50.770626,14.575875,353;50.770563,14.575938,353;50.770513,14.576037,353;50.770223,14.576576,352;50.770126,14.576773,352;50.770064,14.576899,351;50.770018,14.577060,351;50.769973,14.577213,351;50.769859,14.577654,350;50.769774,14.578068,350;50.769694,14.578427,349;50.769632,14.578794,349;50.769558,14.579207,348;50.769495,14.579549,347;50.769439,14.579800,347;50.769382,14.579989,346;50.769365,14.580142,346;50.769365,14.580268,346;50.769371,14.581391,343;50.769371,14.581643,343;50.769354,14.581813,342;50.769308,14.581974,341;50.769246,14.582119,341;50.768996,14.582559,339;50.768933,14.582685,338;50.768882,14.582810,337;50.768825,14.582954,336;50.768780,14.583079,336;50.768757,14.583215,335;50.768729,14.583349,334;50.768723,14.583484,333;50.768695,14.583727,332;50.768695,14.583879,331;50.768706,14.584050,330;50.768660,14.584077,330;50.768626,14.584121,330;50.768569,14.584220,330;50.768189,14.585002,330;50.767985,14.585460,330;50.767882,14.585676,331;50.767848,14.585784,331;50.767831,14.585909,332;50.767842,14.586081,332;50.767888,14.586412,333;50.767939,14.586718,334;50.767967,14.586888,334;50.767990,14.587077,335;50.767996,14.587247,335;50.767990,14.587427,336;50.767979,14.587616,336;50.767956,14.587840,337;50.767865,14.588371,338;50.767638,14.589521,341;50.767604,14.589790,342;50.767558,14.590042,343;50.767354,14.590842,345;50.767263,14.591255,345;50.767160,14.591650,345;50.767115,14.591794,345;50.767052,14.591937,345;50.766831,14.592458,345;50.766694,14.592727,345;50.766632,14.592826,345;50.766478,14.593015,345;50.766428,14.593042,345;50.766342,14.593033,342;50.766155,14.592989,339;50.766064,14.592979,339;50.765888,14.592989,338;50.765786,14.593024,338;50.765706,14.593096,337;50.765626,14.593195,337;50.765530,14.593339,336;50.765456,14.593465,336;50.765394,14.593616,335;50.765348,14.593805,335;50.765189,14.593922,334;50.765115,14.593994,333;50.765035,14.594075,333;50.764962,14.594192,332;50.764820,14.594434,331;50.764695,14.594686,330;50.764569,14.594928,329;50.764445,14.595117,329;50.764309,14.595260,329;50.764121,14.595404,328;50.764144,14.595926,323;50.764144,14.596096,323;50.764126,14.596266,322;50.764052,14.596725,320;50.764018,14.596995,321;50.764001,14.597237,321;50.763995,14.597390,321;50.764007,14.597587,322;50.764024,14.597713,321;50.764052,14.597884,321;50.764070,14.598010,321;50.764070,14.598153,320;50.764058,14.598316,320;50.764052,14.598468,321;50.764064,14.598593,321;50.764064,14.598719,322;50.764093,14.598881,323;50.764109,14.599061,324;50.764183,14.599600,326;50.764246,14.599968,327;50.764291,14.600094,328;50.764353,14.600210,328;50.764417,14.600283,329;50.764502,14.600337,329;50.764535,14.600345,329;50.764769,14.600463,334;50.764893,14.600497,335;50.764956,14.600516,335;50.765001,14.600561,335;50.765041,14.600597,335;50.765092,14.600713,334;50.765200,14.600966,334;50.765274,14.601136,334;50.765501,14.601684,333;50.765513,14.601891,334;50.765513,14.602088,334;50.765507,14.602637,338;50.765490,14.602933,340;50.765490,14.603130,341;50.765507,14.603319,343;50.765547,14.603499,344;50.765626,14.603840,348;50.765672,14.604029,350;50.765689,14.604127,351;50.765701,14.604235,352;50.765689,14.604334,353;50.765666,14.604541,356;50.765621,14.604774,360;50.765603,14.604945,363;50.765593,14.605080,367;50.765593,14.605178,369;50.765598,14.605277,372;50.765649,14.605528,379;50.765695,14.605673,383;50.765786,14.605924,392;50.765848,14.606113,396;50.765876,14.606212,397;50.765922,14.606363,401;50.766024,14.606688,399;50.766053,14.606805,399;50.766069,14.606929,398;50.766104,14.607172,397;50.766189,14.607541,395;50.766263,14.607864,393;50.766371,14.608484,389;50.766416,14.608727,388;50.766434,14.608969,387;50.766439,14.609346,386;50.766439,14.609346,386;50.766445,14.609535,385;50.766473,14.609822,385;50.766490,14.609975,385;50.766519,14.610119,385;50.766604,14.610398,385;50.766876,14.611233,386;50.766945,14.611449,387;50.766984,14.611673,388;50.767013,14.611889,388;50.767030,14.612221,390;50.767047,14.612554,390;50.767075,14.612805,390;50.767103,14.613030,391;50.767144,14.613227,391;50.767297,14.613541,391;50.767394,14.613766,391;50.767496,14.614107,391;50.767569,14.614323,391;50.767643,14.614529,391;50.767740,14.614745,391;50.767877,14.615069,391;50.768024,14.615508,390;50.768115,14.615751,390;50.768257,14.616084,388;50.768348,14.616300,387;50.768410,14.616470,385;50.768711,14.617342,381;50.769132,14.618688,374;50.769177,14.618860,374;50.769183,14.618967,373;50.769194,14.619057,373;50.769183,14.619174,373;50.769166,14.619300,372;50.769019,14.620019,370;50.768780,14.621034,369;50.768723,14.621231,369;50.768609,14.621546,368;50.768422,14.621986,368;50.768394,14.622084,368;50.768359,14.622183,367;50.768342,14.622372,367;50.768325,14.622705,367;50.768308,14.622875,367;50.768263,14.623181,366;50.768234,14.623288,366;50.768200,14.623387,366;50.768155,14.623459,366;50.768064,14.623594,366;50.767985,14.623701,366;50.768251,14.624464,364;50.768405,14.624977,363;50.768870,14.625569,360;50.769126,14.625902,360;50.769495,14.626388,360;50.770507,14.627699,360;50.770876,14.628122,360;50.771149,14.628372,360;50.771507,14.628669,360;50.771779,14.628902,360;50.772052,14.629172,360;50.772359,14.629487,360;50.772745,14.629890,360;50.773148,14.630242,360;50.773682,14.630690,359;50.774109,14.631032,357;50.774455,14.631284,356;50.774648,14.631391,356;50.774819,14.631517,356;50.775006,14.631678,355;50.775114,14.631760,355;50.775239,14.631858,355;50.775387,14.631940,355;50.775682,14.632154,354;50.775773,14.632253,354;50.775881,14.632380,354;50.776108,14.632613,353;50.776290,14.632703,353;50.776631,14.632810,353;50.776699,14.632856,352;50.776784,14.632927,352;50.776790,14.633062,354;50.776847,14.633395,355;50.776886,14.633691,354;50.776909,14.633898,353;50.776949,14.634194,352;50.776994,14.634508,351;50.777051,14.634823,350;50.777125,14.635101,350;50.776818,14.635613,348;50.776966,14.636368,345;50.776994,14.636638,345;50.777000,14.636888,345;50.777000,14.637024,345;50.776994,14.637257,345;50.776961,14.637491,345;50.776818,14.638452,345;50.776727,14.639026,345;50.776642,14.639530,345;50.776552,14.640114,345;50.777142,14.641066,347;50.777079,14.641129,348;50.776971,14.641192,348;50.776881,14.641246,348;50.776835,14.641309,349;50.776773,14.641380,349;50.776699,14.641408,349;50.776631,14.641416,349;50.776614,14.641435,349;50.776591,14.641462,349;50.776585,14.641488,349;50.776585,14.641533,349;50.776596,14.641676,350;50.776631,14.641775,350;50.776665,14.641884,350;50.776688,14.641991,350;50.776704,14.642270,350;50.776534,14.642297,350;50.776552,14.642656,351;50.776568,14.642871,352;50.776733,14.642836,352;50.776886,14.642808,352";
+  var P = RAW.split(";").map(function (s) {
+    var a = s.split(",");
+    return { lat: +a[0], lon: +a[1], ele: +a[2] };
+  });
+  var dir = "fwd";
+  var buttons = document.querySelectorAll(".dir button");
+  var mapSvg = document.getElementById("walk-map");
+  var profSvg = document.getElementById("walk-profile");
+  var link = document.getElementById("gpx-link");
+  var blobUrl = null;
+  var leafEl = document.getElementById("walk-leaflet");
+  var cap = document.getElementById("walk-cap");
+  var haveLeaflet = typeof window.L !== "undefined";
+  var lmap = null, lStart = null, lEnd = null, currentPts = P;
+
+  function rad(d) { return d * Math.PI / 180; }
+  function hav(a, b) {
+    var R = 6371008.8, dLa = rad(b.lat - a.lat), dLo = rad(b.lon - a.lon);
+    var h = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
+      Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  function r1(x) { return Math.round(x * 10) / 10; }
+  function num1(x) { return x.toFixed(1).replace(".", ","); }
+  function duration(min) {
+    var m = Math.round(min / 5) * 5, h = Math.floor(m / 60), r = m % 60;
+    return (h ? h + " h" : "") + (h && r ? " " : "") + (r ? r + " min" : "");
+  }
+
+  /* Pevná projekce schématu trasy (stejná pro oba směry) */
+  var lat0 = Infinity, lat1 = -Infinity, lon0 = Infinity, lon1 = -Infinity, minE = Infinity, maxE = -Infinity;
+  P.forEach(function (p) {
+    lat0 = Math.min(lat0, p.lat); lat1 = Math.max(lat1, p.lat);
+    lon0 = Math.min(lon0, p.lon); lon1 = Math.max(lon1, p.lon);
+    minE = Math.min(minE, p.ele); maxE = Math.max(maxE, p.ele);
+  });
+  var kx = Math.cos(rad((lat0 + lat1) / 2));
+  var MW = 360, pad = 18, padT = 30, padB = 30;
+  var sc = (MW - 2 * pad) / ((lon1 - lon0) * kx);
+  var MH = Math.round((lat1 - lat0) * sc + padT + padB);
+  function px(p) { return pad + (p.lon - lon0) * kx * sc; }
+  function py(p) { return padT + (lat1 - p.lat) * sc; }
+
+  function metrics(pts) {
+    var cum = [0], up = 0, down = 0;
+    for (var i = 1; i < pts.length; i++) {
+      cum.push(cum[i - 1] + hav(pts[i - 1], pts[i]));
+      var d = pts[i].ele - pts[i - 1].ele;
+      if (d > 0) up += d; else down -= d;
+    }
+    return { cum: cum, total: cum[cum.length - 1], up: up, down: down };
+  }
+
+  function drawMap(pts) {
+    var path = pts.map(function (p, i) {
+      return (i ? "L" : "M") + r1(px(p)) + " " + r1(py(p));
+    }).join("");
+    var s = pts[0], e = pts[pts.length - 1];
+    var west = P[0], east = P[P.length - 1];
+    var km = 1000 / 111195 * sc;
+    var bx = MW - pad - km, by = MH - 10;
+    mapSvg.setAttribute("viewBox", "0 0 " + MW + " " + MH);
+    mapSvg.innerHTML =
+      '<path class="route" d="' + path + '"/>' +
+      '<circle class="pt-start" cx="' + r1(px(s)) + '" cy="' + r1(py(s)) + '" r="6"/>' +
+      '<circle class="pt-end" cx="' + r1(px(e)) + '" cy="' + r1(py(e)) + '" r="6"/>' +
+      '<text class="lbl" x="' + r1(px(west) - 6) + '" y="' + r1(py(west) + 24) + '">Nový Bor</text>' +
+      '<text class="lbl" text-anchor="end" x="' + r1(px(east) + 6) + '" y="' + r1(py(east) - 12) + '">Cvikov</text>' +
+      '<line class="grid" x1="' + r1(bx) + '" y1="' + by + '" x2="' + r1(bx + km) + '" y2="' + by + '"/>' +
+      '<text x="' + r1(bx + km) + '" y="' + (by - 5) + '" text-anchor="end">1 km</text>' +
+      '<text x="' + pad + '" y="12">S ↑</text>';
+  }
+
+  function drawProfile(pts, m) {
+    var W = 360, H = 150, L = 36, R = 10, T = 12, B = 24;
+    var pw = W - L - R, ph = H - T - B;
+    var lo = Math.floor(minE / 20) * 20, hi = Math.ceil(maxE / 20) * 20;
+    function x(d) { return L + d / m.total * pw; }
+    function y(e) { return T + (hi - e) / (hi - lo) * ph; }
+    var out = "";
+    for (var v = lo; v <= hi; v += 40) {
+      out += '<line class="grid" x1="' + L + '" y1="' + r1(y(v)) + '" x2="' + (W - R) + '" y2="' + r1(y(v)) + '"/>' +
+        '<text x="' + (L - 4) + '" y="' + r1(y(v) + 3) + '" text-anchor="end">' + v + '</text>';
+    }
+    for (var k = 0; k * 1000 <= m.total; k += 2) {
+      out += '<text x="' + r1(x(k * 1000)) + '" y="' + (H - 8) + '" text-anchor="middle">' + k + (k ? "" : " km") + '</text>';
+    }
+    var line = pts.map(function (p, i) {
+      return (i ? "L" : "M") + r1(x(m.cum[i])) + " " + r1(y(p.ele));
+    }).join("");
+    out += '<path class="area" d="' + line + 'L' + r1(x(m.total)) + " " + r1(y(lo)) + 'L' + L + " " + r1(y(lo)) + 'Z"/>' +
+      '<path class="line" d="' + line + '"/>';
+    profSvg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    profSvg.innerHTML = out;
+  }
+
+  function gpx(pts, name) {
+    var body = pts.map(function (p) {
+      return '<trkpt lat="' + p.lat + '" lon="' + p.lon + '"><ele>' + p.ele + '</ele></trkpt>';
+    }).join("");
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<gpx version="1.1" creator="Pivní výlet" xmlns="http://www.topografix.com/GPX/1/1">' +
+      '<trk><name>' + name + '</name><trkseg>' + body + '</trkseg></trk></gpx>';
+  }
+
+  /* Mapa OpenStreetMap: vytvoří se, až má kontejner velikost (panel B je zprvu skrytý) */
+  function initMap() {
+    lmap = L.map(leafEl, { scrollWheelZoom: false, dragging: !L.Browser.mobile });
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+    }).addTo(lmap);
+    var ll = P.map(function (p) { return [p.lat, p.lon]; });
+    L.polyline(ll, { className: "route-casing", weight: 8, lineJoin: "round", interactive: false }).addTo(lmap);
+    L.polyline(ll, { className: "route-line", weight: 4, lineJoin: "round", interactive: false }).addTo(lmap);
+    lmap.fitBounds(L.latLngBounds(ll), { padding: [24, 24] });
+    drawEnds();
+  }
+  function drawEnds() {
+    if (!lmap) return;
+    if (lStart) lmap.removeLayer(lStart);
+    if (lEnd) lmap.removeLayer(lEnd);
+    var s = currentPts[0], e = currentPts[currentPts.length - 1];
+    var sName = dir === "fwd" ? "Nový Bor" : "Cvikov";
+    var eName = dir === "fwd" ? "Cvikov" : "Nový Bor";
+    var tip = { permanent: true, direction: "top", offset: [0, -8], className: "ptip" };
+    lStart = L.circleMarker([s.lat, s.lon], { className: "pt-start", radius: 8, weight: 3, interactive: false })
+      .bindTooltip(sName + " · start", tip).addTo(lmap);
+    lEnd = L.circleMarker([e.lat, e.lon], { className: "pt-end", radius: 8, weight: 3, interactive: false })
+      .bindTooltip(eName + " · cíl", tip).addTo(lmap);
+  }
+
+  function render() {
+    var pts = dir === "fwd" ? P : P.slice().reverse();
+    currentPts = pts;
+    var m = metrics(pts);
+    document.getElementById("st-dist").textContent = num1(m.total / 1000) + " km";
+    document.getElementById("st-up").textContent = "+" + Math.round(m.up) + " m";
+    document.getElementById("st-down").textContent = "−" + Math.round(m.down) + " m";
+    document.getElementById("st-time").textContent = duration(m.total / 1000 / 4.5 * 60 + m.up / 10);
+    drawMap(pts);
+    drawProfile(pts, m);
+    drawEnds();
+    var name = dir === "fwd" ? "Nový Bor → Cvikov" : "Cvikov → Nový Bor";
+    var file = dir === "fwd" ? "novy-bor-cvikov.gpx" : "cvikov-novy-bor.gpx";
+    try {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      blobUrl = URL.createObjectURL(new Blob([gpx(pts, name)], { type: "application/gpx+xml" }));
+      link.setAttribute("href", blobUrl);
+      link.setAttribute("download", file);
+    } catch (e) {}
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute("aria-pressed", buttons[i].getAttribute("data-dir") === dir ? "true" : "false");
+    }
+  }
+
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener("click", function () {
+      dir = this.getAttribute("data-dir");
+      render();
+    });
+  }
+  render();
+
+  /* Když se Leaflet načetl, schéma trasy nahradí mapa; jinak zůstane schéma */
+  if (haveLeaflet) {
+    leafEl.hidden = false;
+    mapSvg.style.display = "none";
+    cap.textContent = "Trasa na mapě OpenStreetMap." + (L.Browser.mobile ? " Na telefonu posouvej mapu dvěma prsty." : "");
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(function () {
+        if (leafEl.clientWidth > 0 && leafEl.clientHeight > 0) {
+          if (!lmap) initMap(); else lmap.invalidateSize();
+        }
+      }).observe(leafEl);
+    } else {
+      initMap();
+    }
+  }
 })();
 </script>
 </body>
