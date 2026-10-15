@@ -271,6 +271,11 @@
   .detail { color: var(--muted); font-size: 15px; margin: 6px 0 0; }
   .detail a { color: var(--accent); }
 
+  .stop.sun { padding-bottom: 22px; min-height: 0; }
+  .stop.sun .ic { color: var(--accent); border-color: var(--accent); }
+  .stop.sun .time { font-size: 22px; color: var(--accent); }
+  .stop.sun h2 { font-size: 17px; color: var(--muted); }
+
   .badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
   .badge {
     font-size: 12.5px;
@@ -426,6 +431,7 @@
   <symbol id="i-train" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12"/><circle cx="9.5" cy="14" r=".7"/><circle cx="14.5" cy="14" r=".7"/><path d="M9 17l-2 4M15 17l2 4"/></symbol>
   <symbol id="i-bus" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="13" rx="2.5"/><path d="M4 11h16"/><circle cx="8" cy="14.5" r=".7"/><circle cx="16" cy="14.5" r=".7"/><path d="M6.5 17v3M17.5 17v3"/></symbol>
   <symbol id="i-mug" viewBox="0 0 24 24"><path d="M5 7h11v10a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/><path d="M16 10h2.5a2 2 0 0 1 2 2v1.5a2 2 0 0 1-2 2H16"/><path d="M8 3.5c0 1 1 1 1 2M12 3.5c0 1 1 1 1 2"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
 </svg>
 <div class="wrap">
@@ -516,6 +522,12 @@
           <a class="map ghost" href="https://mapy.cz/zakladni?q=Pivovar%20Born%20Nov%C3%BD%20Bor" target="_blank" rel="noopener">Mapy.cz</a>
         </div>
       </div>
+    </li>
+
+    <li class="stop sun">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>
+      <p class="time">16:44</p>
+      <h2>Západ slunce</h2>
     </li>
 
     <li class="stop travel" data-t="19:25">
@@ -620,6 +632,12 @@
       </div>
     </li>
 
+    <li class="stop sun">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>
+      <p class="time">16:44</p>
+      <h2>Západ slunce</h2>
+    </li>
+
     <li class="stop travel" data-t="19:25">
       <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
       <p class="time">19:25</p>
@@ -706,6 +724,12 @@
       </div>
     </li>
 
+    <li class="stop sun">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>
+      <p class="time">16:44</p>
+      <h2>Západ slunce</h2>
+    </li>
+
     <li class="stop travel" data-t="18:00">
       <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
       <p class="time">18:00</p>
@@ -769,7 +793,7 @@
       <figcaption>Výškový profil (m n. m.)</figcaption>
       <svg id="walk-profile" role="img" aria-label="Výškový profil pěší trasy"></svg>
     </figure>
-    <p class="note">Odhad času počítá 4,5 km/h a 10 minut navíc na každých 100 m stoupání, bez zastávek. Je to jen hrubý odhad. Trasa je export z Mapy.com, GPX si můžeš nahrát do navigace nebo do mapové aplikace.</p>
+    <p class="note">Slunce zapadá v 16:44. Na zhruba 2 h 10 min chůze vyrazte nejpozději kolem 14:30, jinak půjdete potmě. Odhad času počítá 4,5 km/h a 10 minut navíc na každých 100 m stoupání, bez zastávek. Je to jen hrubý odhad. Trasa je export z Mapy.com, GPX si můžeš nahrát do navigace nebo do mapové aplikace.</p>
     <a class="map" id="gpx-link" href="#walk" download="novy-bor-cvikov.gpx">Stáhnout GPX</a>
   </section>
 
