@@ -92,62 +92,30 @@
     margin-bottom: 14px;
   }
   .eyebrow { font-size: 14px; color: var(--muted); margin: 0; }
-  .label {
-    position: relative;
-    background: var(--beer);
-    color: var(--label-ink);
-    border-radius: 14px;
-    padding: 40px 22px 22px;
-    overflow: hidden;
-  }
-  .label::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 22px;
-    background:
-      linear-gradient(var(--foam), var(--foam)) top / 100% 9px no-repeat,
-      radial-gradient(circle at 14px 9px, var(--foam) 11px, transparent 12px) 0 0 / 28px 22px repeat-x;
-  }
-  .label::after {
-    content: "";
-    position: absolute;
-    inset: 30px 8px 8px;
-    border: 1.5px solid rgba(42, 22, 4, .32);
-    border-radius: 8px;
-    pointer-events: none;
-  }
-  .date {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: clamp(84px, 27vw, 128px);
-    line-height: .86;
-    letter-spacing: -.01em;
-    margin: 0;
-  }
+  header { border-top: 4px solid var(--accent); padding-top: 8px; margin-bottom: 12px; }
+  .topbar { margin-bottom: 2px; }
   h1 {
-    font-family: var(--display);
-    font-weight: 500;
-    font-size: 30px;
-    line-height: 1.15;
-    margin: 10px 0 2px;
-  }
-  .sub { margin: 0; font-size: 15px; color: rgba(42, 22, 4, .82); }
-  .times {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 28px;
-    margin: 16px 0 0;
-    padding-top: 12px;
-    border-top: 1.5px solid rgba(42, 22, 4, .32);
-  }
-  .times p { margin: 0; font-size: 14px; line-height: 1.2; }
-  .times b {
-    display: block;
     font-family: var(--display);
     font-weight: 600;
     font-size: 28px;
-    line-height: 1.1;
+    line-height: 1.15;
+    margin: 0;
+  }
+  .times {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 12px;
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .times b {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 18px;
+    margin-right: 5px;
+    color: var(--accent);
   }
 
   button {
@@ -464,18 +432,14 @@
 
   <header>
     <div class="topbar">
-      <p class="eyebrow">Středa, státní svátek</p>
+      <h1>Pivní výlet</h1>
       <button type="button" id="theme-btn">Světlý režim</button>
     </div>
-    <div class="label">
-      <p class="date">28.10.</p>
-      <h1>Pivní výlet</h1>
-      <p class="sub">Z Prahy na Lužicko, jen vlakem a autobusem. Vyber si variantu.</p>
-      <div class="times">
-        <p><b>9:00</b>odjezd, Praha hl.n.</p>
-        <p><b id="end-time">21:20</b><span id="end-place">návrat, Praha-Letňany</span></p>
-      </div>
-    </div>
+    <p class="times">
+      <span>St 28. 10.</span>
+      <span><b>9:00</b>Praha</span>
+      <span><b id="end-time">21:20</b><span id="end-place">Letňany</span></span>
+    </p>
   </header>
 
   <div class="tabbar">
@@ -825,7 +789,7 @@
   var panels = [document.getElementById("panel-a"), document.getElementById("panel-b"), document.getElementById("panel-c")];
   var walkEl = document.getElementById("walk");
   var endT = document.getElementById("end-time"), endP = document.getElementById("end-place");
-  var ENDS = [["21:20", "návrat, Praha-Letňany"], ["21:20", "návrat, Praha-Letňany"], ["21:05", "návrat, Černý Most"]];
+  var ENDS = [["21:20", "Letňany"], ["21:20", "Letňany"], ["21:05", "Černý Most"]];
 
   /* Světlý a tmavý režim */
   function label() {
