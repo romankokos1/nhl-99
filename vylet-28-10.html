@@ -16,36 +16,46 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
   :root {
     color-scheme: dark;
-    --bg: #0f1115;
-    --panel: #171a21;
-    --line: #2a2f3a;
-    --text: #e6e8ec;
-    --muted: #9aa3b2;
-    --accent: #f2b84b;
-    --accent-ink: #1a1405;
-    --dot: #f2b84b;
-    --btn: #f2b84b;
+    --bg: #17110b;
+    --panel: #211912;
+    --line: #3a2d1f;
+    --text: #f3e8d2;
+    --muted: #b9a88b;
+    --accent: #f2a93b;
+    --accent-ink: #2a1604;
+    --dot: #f2a93b;
+    --btn: #f2a93b;
+    --beer: #f0a431;
+    --foam: #fbf1d9;
+    --label-ink: #2a1604;
+    --grain: .10;
+    --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .86 0 0 0 0 .62 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --display: "Oswald", "Bebas Neue", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   :root[data-theme="light"] {
     color-scheme: light;
-    --bg: #faf8f3;
-    --panel: #ffffff;
-    --line: #ded9cc;
-    --text: #1c1e23;
-    --muted: #596070;
-    --accent: #8a5200;
-    --accent-ink: #1a1405;
-    --dot: #c27d00;
+    --bg: #f3ead6;
+    --panel: #fffaee;
+    --line: #dccdaa;
+    --text: #2b1e0f;
+    --muted: #6a5840;
+    --accent: #92530a;
+    --accent-ink: #2a1604;
+    --dot: #b8700f;
+    --beer: #eea62e;
+    --foam: #fffaf0;
+    --grain: .07;
+    --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .08 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 76px; }
   body {
     margin: 0;
     background: var(--bg);
@@ -54,133 +64,92 @@
     font-size: 16px;
     line-height: 1.5;
   }
+  /* Zrno na pozadí, pod obsahem */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: var(--grain-img);
+    opacity: var(--grain);
+    pointer-events: none;
+    z-index: 0;
+  }
   .wrap {
+    position: relative;
+    z-index: 1;
     max-width: 640px;
     margin: 0 auto;
-    padding: 32px 16px 56px;
+    padding: 20px 16px 56px;
   }
-  header { margin-bottom: 28px; }
-  .eyebrow {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin: 0 0 8px;
-  }
-  h1 {
-    font-size: 28px;
-    line-height: 1.2;
-    font-weight: 600;
-    margin: 0 0 8px;
-  }
-  .sub { color: var(--muted); margin: 0; }
-  .facts {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 20px;
-  }
-  .fact {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 12px 14px;
-  }
-  .fact b {
-    display: block;
-    font-family: var(--mono);
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .fact span { font-size: 13px; color: var(--muted); }
 
-  ol.timeline {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    position: relative;
-  }
-  ol.timeline::before {
-    content: "";
-    position: absolute;
-    left: 5px;
-    top: 8px;
-    bottom: 8px;
-    width: 2px;
-    background: var(--line);
-  }
-  .stop {
-    position: relative;
-    padding: 0 0 24px 28px;
-  }
-  .stop::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 7px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--muted);
-  }
-  .stop.main::before {
-    background: var(--dot);
-    border-color: var(--dot);
-  }
-  .stop.todo::before {
-    border-style: dashed;
-  }
-  .time {
-    font-family: var(--mono);
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--accent);
-    margin: 0;
-  }
-  .stop.travel .time { color: var(--muted); }
-  .stop h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 2px 0 2px;
-  }
-  .place { color: var(--text); margin: 0; }
-  .detail { color: var(--muted); font-size: 15px; margin: 6px 0 0; }
-  .tag {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--muted);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 2px 10px;
-    margin: 8px 6px 0 0;
-  }
-  a.map {
-    display: inline-block;
-    margin-top: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--accent-ink);
-    background: var(--btn);
-    text-decoration: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-  }
-  a.map:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-
+  /* Hlavička jako pivní etiketa */
+  header { margin-bottom: 16px; }
   .topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 14px;
   }
-  .topbar .eyebrow { margin: 0; }
+  .eyebrow { font-size: 14px; color: var(--muted); margin: 0; }
+  .label {
+    position: relative;
+    background: var(--beer);
+    color: var(--label-ink);
+    border-radius: 14px;
+    padding: 40px 22px 22px;
+    overflow: hidden;
+  }
+  .label::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 22px;
+    background:
+      linear-gradient(var(--foam), var(--foam)) top / 100% 9px no-repeat,
+      radial-gradient(circle at 14px 9px, var(--foam) 11px, transparent 12px) 0 0 / 28px 22px repeat-x;
+  }
+  .label::after {
+    content: "";
+    position: absolute;
+    inset: 30px 8px 8px;
+    border: 1.5px solid rgba(42, 22, 4, .32);
+    border-radius: 8px;
+    pointer-events: none;
+  }
+  .date {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(84px, 27vw, 128px);
+    line-height: .86;
+    letter-spacing: -.01em;
+    margin: 0;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 30px;
+    line-height: 1.15;
+    margin: 10px 0 2px;
+  }
+  .sub { margin: 0; font-size: 15px; color: rgba(42, 22, 4, .82); }
+  .times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 28px;
+    margin: 16px 0 0;
+    padding-top: 12px;
+    border-top: 1.5px solid rgba(42, 22, 4, .32);
+  }
+  .times p { margin: 0; font-size: 14px; line-height: 1.2; }
+  .times b {
+    display: block;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
   button {
     font-family: var(--sans);
     font-size: 14px;
@@ -197,17 +166,32 @@
   #theme-btn { display: none; flex-shrink: 0; }
   .js #theme-btn { display: inline-block; }
 
-  .tabs { display: none; gap: 8px; margin-top: 20px; }
-  .js .tabs { display: grid; grid-template-columns: 1fr 1fr; }
+  /* Přepínač variant, zůstává nahoře při scrollu */
+  .tabbar { display: none; }
+  .js .tabbar {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin: 0 -16px 16px;
+    padding: 10px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .tabs button {
-    min-height: 48px;
-    font-size: 15px;
+    min-height: 52px;
+    padding: 8px 10px;
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 500;
     text-align: left;
-    line-height: 1.25;
+    line-height: 1.2;
   }
   .tabs button small {
     display: block;
-    font-size: 12px;
+    font-family: var(--sans);
+    font-size: 11.5px;
     font-weight: 400;
     color: var(--muted);
   }
@@ -219,15 +203,151 @@
   }
   .tabs button[aria-selected="true"] small { color: var(--accent-ink); }
 
-  .vtitle { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  /* Teď / odpočet */
+  .nowbar {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    font-size: 15px;
+  }
+  .nowbar[hidden] { display: none; }
+  .nowbar b { font-family: var(--display); font-weight: 600; font-size: 17px; color: var(--accent); }
+  .nowbar span { display: block; color: var(--muted); font-size: 14px; }
+
+  /* Mapa celého dne */
+  figure.daymap { margin: 0 0 20px; }
+  figure.daymap[hidden] { display: none; }
+  .daybox { height: 300px; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    list-style: none;
+    margin: 8px 4px 2px;
+    padding: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .legend i { display: inline-block; width: 28px; height: 0; border-top: 4px solid var(--accent); }
+  .legend i.bus { border-top: 4px dashed var(--text); }
+  .legend i.dot { border-top: 4px dotted var(--text); }
+
+  /* Časová osa s ikonami */
+  .vtitle { font-family: var(--display); font-size: 24px; font-weight: 600; margin: 0 0 4px; }
   .vsum { color: var(--muted); margin: 0 0 24px; }
   .variant + .variant { margin-top: 40px; }
   .js .variant + .variant { margin-top: 0; }
-  .time.todo-time {
-    color: var(--muted);
-    font-size: 16px;
-    font-weight: 500;
+  .variant.enter { animation: vin .28s ease-out; }
+  @keyframes vin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  ol.timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+  ol.timeline::before {
+    content: "";
+    position: absolute;
+    left: 17px;
+    top: 20px;
+    bottom: 26px;
+    width: 2px;
+    background: var(--line);
   }
+  .stop { position: relative; padding: 0 0 28px 56px; min-height: 40px; }
+  .ic {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    border: 2px solid var(--line);
+    color: var(--muted);
+  }
+  .ic svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .stop.main .ic { background: var(--btn); border-color: var(--btn); color: var(--accent-ink); }
+  .stop.todo .ic { border-style: dashed; }
+  .stop.now .ic { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .stop.now:not(.main) .ic { border-color: var(--accent); color: var(--accent); }
+  @media (prefers-reduced-motion: no-preference) {
+    .stop.now .ic { animation: pulse 2.4s ease-out infinite; }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+      100% { box-shadow: 0 0 0 12px transparent; }
+    }
+  }
+  .time {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--accent);
+    margin: 0;
+  }
+  .stop.travel .time { color: var(--muted); }
+  .time.todo-time { font-size: 20px; font-weight: 500; color: var(--muted); }
+  .stop h2 { font-family: var(--display); font-size: 20px; font-weight: 500; margin: 2px 0 0; }
+  .place { color: var(--text); margin: 0; }
+  .detail { color: var(--muted); font-size: 15px; margin: 6px 0 0; }
+  .detail a { color: var(--accent); }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+  .badge {
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 3px 8px;
+    background: var(--panel);
+  }
+  .badge.warn { color: var(--accent); border-color: var(--accent); background: transparent; }
+  a.badge { text-decoration: none; }
+  a.badge:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Karty pivovarů */
+  .brew {
+    margin-top: 10px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 14px 16px;
+  }
+  .brew h3 { font-family: var(--display); font-size: 22px; font-weight: 600; line-height: 1.2; margin: 0; }
+  .brew .addr { margin: 2px 0 0; font-size: 15px; }
+  .brew .detail { margin-top: 8px; }
+  .brew .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .brew .actions a.map { margin-top: 0; }
+
+  a.map {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-ink);
+    background: var(--btn);
+    border: 1px solid var(--btn);
+    text-decoration: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    min-height: 40px;
+  }
+  a.map.ghost { background: transparent; color: var(--text); border-color: var(--line); }
+  a.map:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
   section.backup {
     background: var(--panel);
@@ -236,7 +356,7 @@
     padding: 16px;
     margin-top: 8px;
   }
-  section.backup h2 { font-size: 16px; margin: 0 0 4px; }
+  section.backup h2 { font-family: var(--display); font-size: 19px; font-weight: 500; margin: 0 0 4px; }
   section.backup p { margin: 0 0 10px; color: var(--muted); font-size: 15px; }
   section.backup ul { list-style: none; padding: 0; margin: 0; }
   section.backup li {
@@ -246,12 +366,11 @@
   }
   section.backup li:first-child { border-top: 0; padding-top: 0; }
   section.backup li:last-child { padding-bottom: 0; }
-  .mono { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+  .mono { font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--accent); }
 
-  .detail a { color: var(--accent); }
-
-  .walk { margin: 8px 0 24px; }
-  .walk h2 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+  .walk { margin: 24px 0 24px; }
+  .walk[hidden] { display: none; }
+  .walk h2 { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 0 0 4px; }
   .walk .vsum { margin-bottom: 16px; }
   .dir { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .dir button { min-height: 44px; }
@@ -290,7 +409,7 @@
   .note { font-size: 13px; color: var(--muted); margin: 8px 0 12px; }
 
   /* Mapa OpenStreetMap (Leaflet) */
-  .walkmap { height: 320px; border-radius: 8px; background: var(--panel); }
+  .walkmap { position: relative; z-index: 0; height: 320px; border-radius: 8px; background: var(--panel); }
   .walkmap[hidden] { display: none; }
   .leaflet-container { font-family: var(--sans); }
   :root[data-theme="dark"] .leaflet-tile-pane {
@@ -310,6 +429,9 @@
   .leaflet-control-attribution a { color: var(--accent) !important; }
   path.route-casing { stroke: var(--bg); }
   path.route-line { stroke: var(--accent); }
+  path.l-train { stroke: var(--accent); }
+  path.l-bus { stroke: var(--text); }
+  path.pt-stop { stroke: var(--bg); fill: var(--accent); fill-opacity: 1; }
   path.pt-start { stroke: var(--bg); fill: var(--text); fill-opacity: 1; }
   path.pt-end { stroke: var(--bg); fill: var(--accent); fill-opacity: 1; }
   .leaflet-tooltip.ptip {
@@ -332,24 +454,49 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-train" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12"/><circle cx="9.5" cy="14" r=".7"/><circle cx="14.5" cy="14" r=".7"/><path d="M9 17l-2 4M15 17l2 4"/></symbol>
+  <symbol id="i-bus" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="13" rx="2.5"/><path d="M4 11h16"/><circle cx="8" cy="14.5" r=".7"/><circle cx="16" cy="14.5" r=".7"/><path d="M6.5 17v3M17.5 17v3"/></symbol>
+  <symbol id="i-mug" viewBox="0 0 24 24"><path d="M5 7h11v10a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/><path d="M16 10h2.5a2 2 0 0 1 2 2v1.5a2 2 0 0 1-2 2H16"/><path d="M8 3.5c0 1 1 1 1 2M12 3.5c0 1 1 1 1 2"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+</svg>
 <div class="wrap">
 
   <header>
     <div class="topbar">
-      <p class="eyebrow">Středa 28. 10. 2026 · státní svátek</p>
+      <p class="eyebrow">Středa, státní svátek</p>
       <button type="button" id="theme-btn">Světlý režim</button>
     </div>
-    <h1>Pivní výlet</h1>
-    <p class="sub">Z Prahy na Lužicko, jen vlakem a autobusem. Vyber si variantu.</p>
-    <div class="facts">
-      <div class="fact"><b>9:00</b><span>odjezd, Praha hl.n.</span></div>
-      <div class="fact"><b>21:20</b><span>návrat, Praha-Letňany</span></div>
-    </div>
-    <div class="tabs" role="tablist" aria-label="Varianta výletu">
-      <button type="button" role="tab" id="tab-a" aria-controls="panel-a" aria-selected="true">A · Krásná Lípa<small>Falkenštejn a Born</small></button>
-      <button type="button" role="tab" id="tab-b" aria-controls="panel-b" aria-selected="false" tabindex="-1">B · Cvikov<small>Sladovna a Born</small></button>
+    <div class="label">
+      <p class="date">28.10.</p>
+      <h1>Pivní výlet</h1>
+      <p class="sub">Z Prahy na Lužicko, jen vlakem a autobusem. Vyber si variantu.</p>
+      <div class="times">
+        <p><b>9:00</b>odjezd, Praha hl.n.</p>
+        <p><b id="end-time">21:20</b><span id="end-place">návrat, Praha-Letňany</span></p>
+      </div>
     </div>
   </header>
+
+  <div class="tabbar">
+    <div class="tabs" role="tablist" aria-label="Varianta výletu">
+      <button type="button" role="tab" id="tab-a" aria-controls="panel-a" aria-selected="true">A · Krásná Lípa<small>Falkenštejn, Born</small></button>
+      <button type="button" role="tab" id="tab-b" aria-controls="panel-b" aria-selected="false" tabindex="-1">B · Cvikov<small>Sladovna, Born</small></button>
+      <button type="button" role="tab" id="tab-c" aria-controls="panel-c" aria-selected="false" tabindex="-1">C · Liberec<small>Born, Sladovna</small></button>
+    </div>
+  </div>
+
+  <p class="nowbar" id="now" hidden></p>
+
+  <figure class="chart daymap" id="daymap" hidden>
+    <figcaption id="daymap-cap">Trasa dne, schéma spojů (ne přesná trať)</figcaption>
+    <div id="day-leaflet" class="walkmap daybox"></div>
+    <ul class="legend">
+      <li><i></i>vlak</li>
+      <li><i class="bus"></i>autobus domů</li>
+      <li id="leg-440"><i class="dot"></i>autobus 440 nebo pěšky</li>
+    </ul>
+  </figure>
 
   <div class="variant" id="panel-a" role="tabpanel" aria-labelledby="tab-a">
   <h2 class="vtitle">Varianta A: Krásná Lípa a Born</h2>
@@ -357,48 +504,67 @@
 
   <ol class="timeline">
 
-    <li class="stop travel">
+    <li class="stop travel" data-t="9:00">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-train"/></svg></span>
       <p class="time">9:00</p>
       <h2>Odjezd z Prahy</h2>
       <p class="place">Praha hl.n.</p>
-      <p class="detail">Sváteční rychlík Lužickohorský (R 1275), jede přímo až do Krásné Lípy. Cestou stojí v Novém Boru v 11:44.</p>
+      <p class="detail">Sváteční rychlík Lužickohorský jede přímo až do Krásné Lípy. Cestou stojí v Novém Boru v 11:44.</p>
+      <div class="badges"><span class="badge">R 1275</span><span class="badge">přímo do Krásné Lípy</span></div>
     </li>
 
-    <li class="stop main">
+    <li class="stop main" data-t="12:24">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-mug"/></svg></span>
       <p class="time">12:24</p>
-      <h2>Oběd a pivo ve Falkenštejnu</h2>
-      <p class="place">Pivovar Falkenštejn, Křinické nám. 7/12, Krásná Lípa</p>
-      <p class="detail">Vlak staví v zastávce Krásná Lípa město (12:21) i v Krásné Lípě (12:24). Pivovar vaří ležáky i svrchně kvašené ejly a má restauraci s penzionem.</p>
-      <span class="tag">u pivovaru asi 2 h</span>
-      <br>
-      <a class="map" href="https://mapy.cz/zakladni?q=Pivovar%20Falken%C5%A1tejn%20Kr%C3%A1sn%C3%A1%20L%C3%ADpa" target="_blank" rel="noopener">Otevřít v mapě</a>
+      <h2>Oběd a pivo</h2>
+      <div class="brew">
+        <h3>Pivovar Falkenštejn</h3>
+        <p class="addr">Křinické nám. 7/12, Krásná Lípa</p>
+        <p class="detail">Vaří ležáky i svrchně kvašené ejly a má restauraci s penzionem. Vlak staví v zastávce Krásná Lípa město (12:21) i v Krásné Lípě (12:24).</p>
+        <div class="badges"><span class="badge">asi 2 h 20 min</span><span class="badge warn">svátek: ověřit otevírací dobu</span></div>
+        <div class="actions">
+          <a class="map" href="https://www.google.com/maps/dir/?api=1&amp;destination=Pivovar%20Falken%C5%A1tejn%2C%20K%C5%99inick%C3%A9%20n%C3%A1m%C4%9Bst%C3%AD%207%2C%20Kr%C3%A1sn%C3%A1%20L%C3%ADpa&amp;travelmode=walking" target="_blank" rel="noopener">Navigovat</a>
+          <a class="map ghost" href="https://mapy.cz/zakladni?q=Pivovar%20Falken%C5%A1tejn%20Kr%C3%A1sn%C3%A1%20L%C3%ADpa" target="_blank" rel="noopener">Mapy.cz</a>
+        </div>
+      </div>
     </li>
 
-    <li class="stop travel">
+    <li class="stop travel" data-t="14:44">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-train"/></svg></span>
       <p class="time">14:44</p>
       <h2>Vlakem do Nového Boru</h2>
       <p class="place">Krásná Lípa → Nový Bor</p>
-      <p class="detail">Vlak L4 (Die Länderbahn), jízda 31 minut, jízdenka 72&nbsp;Kč.</p>
+      <p class="detail">Vlak L4 (Die Länderbahn).</p>
+      <div class="badges"><span class="badge">31 min</span><span class="badge">72&nbsp;Kč</span></div>
     </li>
 
-    <li class="stop main">
+    <li class="stop main" data-t="15:15">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-mug"/></svg></span>
       <p class="time">15:15</p>
-      <h2>Pivovar Born</h2>
-      <p class="place">nám. Míru 100, Nový Bor</p>
-      <p class="detail">Pivovar sídlí v domě skláře F. Egermanna a zraje v pískovcových ležáckých sklepích. Je tu útulná restaurace s kuchyní.</p>
-      <span class="tag">u pivovaru asi 4 h</span>
-      <br>
-      <a class="map" href="https://mapy.cz/zakladni?q=Pivovar%20Born%20Nov%C3%BD%20Bor" target="_blank" rel="noopener">Otevřít v mapě</a>
+      <h2>Pivo v Novém Boru</h2>
+      <div class="brew">
+        <h3>Pivovar Born</h3>
+        <p class="addr">nám. Míru 100, Nový Bor</p>
+        <p class="detail">Sídlí v domě skláře F. Egermanna a zraje v pískovcových ležáckých sklepích. Má útulnou restauraci s kuchyní.</p>
+        <div class="badges"><span class="badge">asi 4 h 10 min</span><span class="badge warn">svátek: ověřit otevírací dobu</span></div>
+        <div class="actions">
+          <a class="map" href="https://www.google.com/maps/dir/?api=1&amp;destination=Pivovar%20Born%2C%20n%C3%A1m.%20M%C3%ADru%20100%2C%20Nov%C3%BD%20Bor&amp;travelmode=walking" target="_blank" rel="noopener">Navigovat</a>
+          <a class="map ghost" href="https://mapy.cz/zakladni?q=Pivovar%20Born%20Nov%C3%BD%20Bor" target="_blank" rel="noopener">Mapy.cz</a>
+        </div>
+      </div>
     </li>
 
-    <li class="stop travel">
+    <li class="stop travel" data-t="19:25">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
       <p class="time">19:25</p>
       <h2>Domů autobusem</h2>
       <p class="place">Nový Bor, aut. nádr. → Praha, Letňany</p>
-      <p class="detail">Přímý autobus 400, asi 2 hodiny, jízdenka 161&nbsp;Kč.</p>
+      <p class="detail">Přímý autobus 400.</p>
+      <div class="badges"><span class="badge">asi 2 h</span><span class="badge">161&nbsp;Kč</span><span class="badge">záloha ve 20:25</span></div>
     </li>
 
-    <li class="stop travel">
+    <li class="stop travel" data-t="21:20">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-pin"/></svg></span>
       <p class="time">21:20</p>
       <h2>Zpátky v Praze</h2>
       <p class="place">Praha, Letňany</p>
@@ -422,59 +588,192 @@
 
   <ol class="timeline">
 
-    <li class="stop travel">
+    <li class="stop travel" data-t="9:00">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-train"/></svg></span>
       <p class="time">9:00</p>
       <h2>Odjezd z Prahy</h2>
       <p class="place">Praha hl.n.</p>
-      <p class="detail">Sváteční rychlík Lužickohorský (R 1275). Vystupujeme v Novém Boru, kam dojede v 11:44.</p>
+      <p class="detail">Sváteční rychlík Lužickohorský. Vystupujeme v Novém Boru, kam dojede v 11:44.</p>
+      <div class="badges"><span class="badge">R 1275</span><span class="badge">výstup v Novém Boru</span></div>
     </li>
 
-    <li class="stop travel todo">
+    <li class="stop travel todo" data-t="11:44">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
       <p class="time todo-time">čas doplnit</p>
       <h2>Autobusem do Cvikova</h2>
       <p class="place">Nový Bor → Cvikov</p>
       <p class="detail">Linka 440, opačným směrem to trvá 13 až 16 minut. Odjezd z Nového Boru ještě doplnit z IDOS. Nebo pěšky, viz <a href="#walk">trasa níže</a>.</p>
+      <div class="badges"><span class="badge warn">čas doplnit z IDOS</span><span class="badge">13 až 16 min</span></div>
     </li>
 
-    <li class="stop main">
+    <li class="stop main" data-t="12:00">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-mug"/></svg></span>
       <p class="time">do 15:55</p>
-      <h2>Pivo ve Sladovně</h2>
-      <p class="place">Restaurace Sladovna, Pivovarská 405, Cvikov</p>
-      <p class="detail">Restaurace stojí přímo v areálu pivovaru. Pivovar Cvikov vaří Luž 10°, Hvozd 11°, Klíč 12°, polotmavé Sváteční 13° a osmičku Sklář. Stůl se rezervuje na +420 737 383 130. Prohlídka pivovaru je jen pro skupiny od 10 lidí a po předchozí domluvě.</p>
-      <a class="map" href="https://mapy.cz/zakladni?q=Restaurace%20Sladovna%20Cvikov" target="_blank" rel="noopener">Otevřít v mapě</a>
+      <h2>Pivo ve Cvikově</h2>
+      <div class="brew">
+        <h3>Restaurace Sladovna</h3>
+        <p class="addr">Pivovarská 405, Cvikov</p>
+        <p class="detail">Stojí přímo v areálu pivovaru. Pivovar Cvikov vaří Luž 10°, Hvozd 11°, Klíč 12°, polotmavé Sváteční 13° a osmičku Sklář. Prohlídka pivovaru je jen pro skupiny od 10 lidí a po domluvě.</p>
+        <div class="badges"><span class="badge">rezervace +420&nbsp;737&nbsp;383&nbsp;130</span><span class="badge warn">svátek: ověřit otevírací dobu</span></div>
+        <div class="actions">
+          <a class="map" href="https://www.google.com/maps/dir/?api=1&amp;destination=Restaurace%20Sladovna%2C%20Pivovarsk%C3%A1%20405%2C%20Cvikov&amp;travelmode=walking" target="_blank" rel="noopener">Navigovat</a>
+          <a class="map ghost" href="https://mapy.cz/zakladni?q=Restaurace%20Sladovna%20Cvikov" target="_blank" rel="noopener">Mapy.cz</a>
+          <a class="map ghost" href="tel:+420737383130">Zavolat</a>
+        </div>
+      </div>
     </li>
 
-    <li class="stop travel">
+    <li class="stop travel" data-t="15:55">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
       <p class="time">15:55</p>
       <h2>Autobusem zpět do Nového Boru</h2>
       <p class="place">Cvikov, aut. st. → Nový Bor, aut. nádr.</p>
-      <p class="detail">Linka 440, jízda 16 minut. Nebo pěšky, viz <a href="#walk">trasa níže</a>.</p>
+      <p class="detail">Linka 440. Nebo pěšky, viz <a href="#walk">trasa níže</a>.</p>
+      <div class="badges"><span class="badge">16 min</span></div>
     </li>
 
-    <li class="stop main">
+    <li class="stop main" data-t="16:11">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-mug"/></svg></span>
       <p class="time">16:11</p>
-      <h2>Pivovar Born</h2>
-      <p class="place">nám. Míru 100, Nový Bor</p>
-      <p class="detail">Pivovar sídlí v domě skláře F. Egermanna a zraje v pískovcových ležáckých sklepích. Je tu útulná restaurace s kuchyní.</p>
-      <span class="tag">u pivovaru asi 3 h</span>
-      <br>
-      <a class="map" href="https://mapy.cz/zakladni?q=Pivovar%20Born%20Nov%C3%BD%20Bor" target="_blank" rel="noopener">Otevřít v mapě</a>
+      <h2>Pivo v Novém Boru</h2>
+      <div class="brew">
+        <h3>Pivovar Born</h3>
+        <p class="addr">nám. Míru 100, Nový Bor</p>
+        <p class="detail">Sídlí v domě skláře F. Egermanna a zraje v pískovcových ležáckých sklepích. Má útulnou restauraci s kuchyní.</p>
+        <div class="badges"><span class="badge">asi 3 h 15 min</span><span class="badge warn">svátek: ověřit otevírací dobu</span></div>
+        <div class="actions">
+          <a class="map" href="https://www.google.com/maps/dir/?api=1&amp;destination=Pivovar%20Born%2C%20n%C3%A1m.%20M%C3%ADru%20100%2C%20Nov%C3%BD%20Bor&amp;travelmode=walking" target="_blank" rel="noopener">Navigovat</a>
+          <a class="map ghost" href="https://mapy.cz/zakladni?q=Pivovar%20Born%20Nov%C3%BD%20Bor" target="_blank" rel="noopener">Mapy.cz</a>
+        </div>
+      </div>
     </li>
 
-    <li class="stop travel">
+    <li class="stop travel" data-t="19:25">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
       <p class="time">19:25</p>
       <h2>Domů autobusem</h2>
       <p class="place">Nový Bor, aut. nádr. → Praha, Letňany</p>
-      <p class="detail">Přímý autobus 400, asi 2 hodiny, jízdenka 161&nbsp;Kč.</p>
+      <p class="detail">Přímý autobus 400.</p>
+      <div class="badges"><span class="badge">asi 2 h</span><span class="badge">161&nbsp;Kč</span><span class="badge">záloha ve 20:25</span></div>
     </li>
 
-    <li class="stop travel">
+    <li class="stop travel" data-t="21:20">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-pin"/></svg></span>
       <p class="time">21:20</p>
       <h2>Zpátky v Praze</h2>
       <p class="place">Praha, Letňany</p>
     </li>
 
   </ol>
+
+  <section class="backup" aria-labelledby="zaloha-b">
+    <h2 id="zaloha-b">Kdybychom to nestihli</h2>
+    <p>Pozdější spoje z Cvikova a z Nového Boru.</p>
+    <ul>
+      <li><span class="mono">17:55</span> autobus 440 z Cvikova, v Novém Boru v 18:11. Pak autobus 400 v 18:25 (do Prahy 20:25) nebo v 19:25 (do Prahy 21:20).</li>
+      <li><span class="mono">19:54</span> autobus 440 z Cvikova, v Novém Boru na nám. Míru v 20:07. Odtud jede autobus 400 ve 20:27 a v Praze je ve 22:20. Spoj z Cvikova v 19:11 (Nový Bor 19:24) se na autobus 400 v 19:25 nestihne spolehlivě.</li>
+      <li><span class="mono">20:25</span> autobus 400 z Nového Boru přímo do Letňan, příjezd 22:20.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div class="variant" id="panel-c" role="tabpanel" aria-labelledby="tab-c">
+  <h2 class="vtitle">Varianta C: Born, Cvikov a domů přes Liberec</h2>
+  <p class="vsum">Z vlaku vystoupíme v Novém Boru, nejdřív Born, odpoledne Sladovna ve Cvikově. Domů autobusem z Cvikova v 18:00 přes Liberec.</p>
+
+  <ol class="timeline">
+
+    <li class="stop travel" data-t="9:00">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-train"/></svg></span>
+      <p class="time">9:00</p>
+      <h2>Odjezd z Prahy</h2>
+      <p class="place">Praha hl.n.</p>
+      <p class="detail">Sváteční rychlík Lužickohorský. Vystupujeme v Novém Boru, kam dojede v 11:44.</p>
+      <div class="badges"><span class="badge">R 1275</span><span class="badge">výstup v Novém Boru</span></div>
+    </li>
+
+    <li class="stop main" data-t="11:44">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-mug"/></svg></span>
+      <p class="time">od 11:44</p>
+      <h2>Pivo v Novém Boru</h2>
+      <div class="brew">
+        <h3>Pivovar Born</h3>
+        <p class="addr">nám. Míru 100, Nový Bor</p>
+        <p class="detail">Sídlí v domě skláře F. Egermanna a zraje v pískovcových ležáckých sklepích. Má útulnou restauraci s kuchyní.</p>
+        <div class="badges"><span class="badge">do odjezdu do Cvikova</span><span class="badge warn">svátek: ověřit otevírací dobu</span></div>
+        <div class="actions">
+          <a class="map" href="https://www.google.com/maps/dir/?api=1&amp;destination=Pivovar%20Born%2C%20n%C3%A1m.%20M%C3%ADru%20100%2C%20Nov%C3%BD%20Bor&amp;travelmode=walking" target="_blank" rel="noopener">Navigovat</a>
+          <a class="map ghost" href="https://mapy.cz/zakladni?q=Pivovar%20Born%20Nov%C3%BD%20Bor" target="_blank" rel="noopener">Mapy.cz</a>
+        </div>
+      </div>
+    </li>
+
+    <li class="stop travel todo" data-t="14:30">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
+      <p class="time todo-time">čas doplnit</p>
+      <h2>Autobusem do Cvikova</h2>
+      <p class="place">Nový Bor → Cvikov</p>
+      <p class="detail">Linka 440, opačným směrem to trvá 13 až 16 minut. Odjezd z Nového Boru ještě doplnit z IDOS. Nebo pěšky, viz <a href="#walk">trasa níže</a>.</p>
+      <div class="badges"><span class="badge warn">čas doplnit z IDOS</span><span class="badge">13 až 16 min</span></div>
+    </li>
+
+    <li class="stop main" data-t="15:00">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-mug"/></svg></span>
+      <p class="time">do 18:00</p>
+      <h2>Pivo ve Cvikově</h2>
+      <div class="brew">
+        <h3>Restaurace Sladovna</h3>
+        <p class="addr">Pivovarská 405, Cvikov</p>
+        <p class="detail">Stojí přímo v areálu pivovaru. Pivovar Cvikov vaří Luž 10°, Hvozd 11°, Klíč 12°, polotmavé Sváteční 13° a osmičku Sklář. Prohlídka pivovaru je jen pro skupiny od 10 lidí a po domluvě.</p>
+        <div class="badges"><span class="badge">rezervace +420&nbsp;737&nbsp;383&nbsp;130</span><span class="badge warn">svátek: ověřit otevírací dobu</span></div>
+        <div class="actions">
+          <a class="map" href="https://www.google.com/maps/dir/?api=1&amp;destination=Restaurace%20Sladovna%2C%20Pivovarsk%C3%A1%20405%2C%20Cvikov&amp;travelmode=walking" target="_blank" rel="noopener">Navigovat</a>
+          <a class="map ghost" href="https://mapy.cz/zakladni?q=Restaurace%20Sladovna%20Cvikov" target="_blank" rel="noopener">Mapy.cz</a>
+          <a class="map ghost" href="tel:+420737383130">Zavolat</a>
+        </div>
+      </div>
+    </li>
+
+    <li class="stop travel" data-t="18:00">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
+      <p class="time">18:00</p>
+      <h2>Autobusem do Liberce</h2>
+      <p class="place">Cvikov → Liberec, aut. nádr. 2</p>
+      <p class="detail">Linka 440, v Liberci v 18:52. Z Cvikova nejede vlak, domů se jede oklikou přes Liberec.</p>
+      <div class="badges"><span class="badge">52 min</span><span class="badge">v Liberci čekání 48 min</span></div>
+    </li>
+
+    <li class="stop travel" data-t="19:40">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-bus"/></svg></span>
+      <p class="time">19:40</p>
+      <h2>RegioJet do Prahy</h2>
+      <p class="place">Liberec → Praha, Černý Most</p>
+      <p class="detail">Pohodlnější spoj s rezervou. Rychlejší RegioJet v 19:00 má přestup jen 2 minuty, viz záloha níže.</p>
+      <div class="badges"><span class="badge warn">139&nbsp;Kč, částečná cena</span><span class="badge">bez ceny busu 440</span></div>
+    </li>
+
+    <li class="stop travel" data-t="21:05">
+      <span class="ic" aria-hidden="true"><svg><use href="#i-pin"/></svg></span>
+      <p class="time">21:05</p>
+      <h2>Zpátky v Praze</h2>
+      <p class="place">Praha, Černý Most</p>
+    </li>
+
+  </ol>
+
+  <section class="backup" aria-labelledby="zaloha-c">
+    <h2 id="zaloha-c">Kdybychom to nestihli</h2>
+    <p>Jiné spoje ze Cvikova. Z Cvikova nejede vlak.</p>
+    <ul>
+      <li><span class="mono">16:00</span> autobus 440 do Liberce (16:52), FlixBus 852 v 17:30, v Praze na Černém Mostě v 18:45. Částečná cena 128&nbsp;Kč.</li>
+      <li><span class="mono">16:00</span> autobus 440 do Liberce, Růžodol (16:45), autobus 28 (16:50 až 16:58), RegioJet v 17:00 z Fügnerovy, Černý Most v 18:05. Částečná cena 179&nbsp;Kč, druhý přestup má rezervu 2 minuty.</li>
+      <li><span class="mono">18:00</span> autobus 440 do Liberce, Růžodol (18:45), autobus 28 (18:47 až 18:54), RegioJet v 19:00, Černý Most ve 20:05. Částečná cena 139&nbsp;Kč, první přestup má rezervu 2 minuty.</li>
+      <li><span class="mono">17:55</span> autobus 440 do Nového Boru (18:11), autobus 400 v 18:25, Letňany ve 20:25.</li>
+      <li><span class="mono">19:54</span> autobus 440 do Nového Boru, nám. Míru (20:07), autobus 400 ve 20:27, Letňany ve 22:20.</li>
+      <li><span class="mono">20:25</span> autobus 440 do Liberce (21:07), autobus 345 v 21:40, Černý Most ve 23:25. Cena v datech chybí.</li>
+    </ul>
+  </section>
+  </div>
 
   <section class="walk" id="walk" aria-labelledby="walk-title">
     <h2 id="walk-title">Pěšky mezi Novým Borem a Cvikovem</h2>
@@ -502,17 +801,6 @@
     <a class="map" id="gpx-link" href="#walk" download="novy-bor-cvikov.gpx">Stáhnout GPX</a>
   </section>
 
-  <section class="backup" aria-labelledby="zaloha-b">
-    <h2 id="zaloha-b">Kdybychom to nestihli</h2>
-    <p>Pozdější spoje z Cvikova a z Nového Boru.</p>
-    <ul>
-      <li><span class="mono">17:55</span> autobus 440 z Cvikova, v Novém Boru v 18:11. Pak autobus 400 v 18:25 (do Prahy 20:25) nebo v 19:25 (do Prahy 21:20).</li>
-      <li><span class="mono">19:54</span> autobus 440 z Cvikova, v Novém Boru na nám. Míru v 20:07. Odtud jede autobus 400 ve 20:27 a v Praze je ve 22:20. Spoj z Cvikova v 19:11 (Nový Bor 19:24) se na autobus 400 v 19:25 nestihne spolehlivě.</li>
-      <li><span class="mono">20:25</span> autobus 400 z Nového Boru přímo do Letňan, příjezd 22:20.</li>
-    </ul>
-  </section>
-  </div>
-
   <footer>
     <p>Časy spojů jsou z IDOS k 15. 10. 2026. Před výjezdem je zkontroluj, o svátku se jízdní řády mění.</p>
     <p>Otevírací doby pivovarů jsou běžné, o svátku se mohou lišit.</p>
@@ -524,9 +812,12 @@
 (function () {
   var root = document.documentElement;
   var themeBtn = document.getElementById("theme-btn");
-  var keys = ["a", "b"];
-  var tabs = [document.getElementById("tab-a"), document.getElementById("tab-b")];
-  var panels = [document.getElementById("panel-a"), document.getElementById("panel-b")];
+  var keys = ["a", "b", "c"];
+  var tabs = [document.getElementById("tab-a"), document.getElementById("tab-b"), document.getElementById("tab-c")];
+  var panels = [document.getElementById("panel-a"), document.getElementById("panel-b"), document.getElementById("panel-c")];
+  var walkEl = document.getElementById("walk");
+  var endT = document.getElementById("end-time"), endP = document.getElementById("end-place");
+  var ENDS = [["21:20", "návrat, Praha-Letňany"], ["21:20", "návrat, Praha-Letňany"], ["21:05", "návrat, Černý Most"]];
 
   /* Světlý a tmavý režim */
   function label() {
@@ -541,7 +832,7 @@
   label();
 
   /* Přepínač variant, vybraná varianta je i v adrese (#a nebo #b) */
-  function show(i, focus, save) {
+  function show(i, focus, save, animate) {
     for (var k = 0; k < tabs.length; k++) {
       var on = k === i;
       tabs[k].setAttribute("aria-selected", on ? "true" : "false");
@@ -549,23 +840,32 @@
       panels[k].hidden = !on;
     }
     if (focus) tabs[i].focus();
+    if (walkEl) walkEl.hidden = i === 0;
+    if (endT) { endT.textContent = ENDS[i][0]; endP.textContent = ENDS[i][1]; }
+    panels[i].classList.remove("enter");
+    if (animate) { void panels[i].offsetWidth; panels[i].classList.add("enter"); }
+    document.dispatchEvent(new CustomEvent("variantchange"));
     if (save) {
       try { history.replaceState(null, "", "#" + keys[i]); } catch (e) {}
       try { localStorage.setItem("vylet-variant", keys[i]); } catch (e) {}
     }
   }
   tabs.forEach(function (tab, i) {
-    tab.addEventListener("click", function () { show(i, false, true); });
+    tab.addEventListener("click", function () { show(i, false, true, true); });
     tab.addEventListener("keydown", function (e) {
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
         e.preventDefault();
-        show((i + 1) % tabs.length, true, true);
+        var step = e.key === "ArrowRight" ? 1 : tabs.length - 1;
+        show((i + step) % tabs.length, true, true, true);
       }
     });
   });
   function fromHash() {
     var h = (location.hash || "").replace("#", "");
-    if (h === "walk") return 1;
+    if (h === "walk") {
+      for (var k = 0; k < tabs.length; k++) if (tabs[k].getAttribute("aria-selected") === "true" && k > 0) return k;
+      return 1;
+    }
     return keys.indexOf(h);
   }
   function initial() {
@@ -582,6 +882,58 @@
     if (i >= 0) show(i, false, false);
   });
   show(initial(), false, false);
+
+  /* "Teď" na ose: odpočet před výletem, v den výletu aktuální úsek a další odjezd.
+     Pro zkoušku lze přidat ?now=2026-10-28T13:00 */
+  var nowEl = document.getElementById("now");
+  var DAY = new Date(2026, 9, 28);
+  function getNow() {
+    var m = /[?&]now=([^&]+)/.exec(location.search);
+    if (m) { var d = new Date(decodeURIComponent(m[1])); if (!isNaN(d.getTime())) return d; }
+    return new Date();
+  }
+  function span(t) { var e = document.createElement("span"); e.textContent = t; return e; }
+  function dur(min) {
+    var h = Math.floor(min / 60), r = min % 60;
+    return (h ? h + " h" : "") + (h && r ? " " : "") + (r || !h ? r + " min" : "");
+  }
+  function say(head, tail) {
+    nowEl.hidden = false;
+    nowEl.textContent = "";
+    var b = document.createElement("b"); b.textContent = head;
+    nowEl.appendChild(b);
+    if (tail) nowEl.appendChild(span(tail));
+  }
+  function updateNow() {
+    if (!nowEl) return;
+    var n = getNow();
+    var today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    var days = Math.round((DAY - today) / 864e5);
+    var lis = document.querySelectorAll(".stop.now");
+    for (var k = 0; k < lis.length; k++) lis[k].classList.remove("now");
+    if (days < 0) { nowEl.hidden = true; return; }
+    if (days > 0) {
+      say("Do výletu zbývá " + days + " " + (days === 1 ? "den" : days < 5 ? "dny" : "dní") + ".", "Odjezd ve středu 28. 10. v 9:00 z Prahy hl.n.");
+      return;
+    }
+    var cur = 0;
+    for (var p = 0; p < tabs.length; p++) if (tabs[p].getAttribute("aria-selected") === "true") cur = p;
+    var stops = panels[cur].querySelectorAll(".stop[data-t]");
+    var mins = n.getHours() * 60 + n.getMinutes(), idx = -1, ts = [];
+    for (var j = 0; j < stops.length; j++) {
+      var a = stops[j].getAttribute("data-t").split(":");
+      ts.push(+a[0] * 60 + +a[1]);
+      if (ts[j] <= mins) idx = j;
+    }
+    function name(el) { return el.querySelector("h2").textContent; }
+    if (idx < 0) { say("Dnes se jede.", "Odjezd v " + stops[0].getAttribute("data-t") + ", za " + dur(ts[0] - mins) + "."); return; }
+    if (idx === stops.length - 1) { say("Výlet je za vámi.", "Poslední bod: " + name(stops[idx]) + "."); return; }
+    stops[idx].classList.add("now");
+    say("Teď: " + name(stops[idx]), "Další v " + stops[idx + 1].getAttribute("data-t") + ": " + name(stops[idx + 1]) + ", za " + dur(ts[idx + 1] - mins) + ".");
+  }
+  document.addEventListener("variantchange", updateNow);
+  setInterval(updateNow, 30000);
+  updateNow();
 })();
 </script>
 
@@ -753,6 +1105,59 @@
     });
   }
   render();
+
+  /* Mapa celého dne (schéma spojů, přímé čáry mezi zastávkami) */
+  var dayEl = document.getElementById("day-leaflet");
+  var dayFig = document.getElementById("daymap");
+  if (haveLeaflet && dayEl) {
+    dayFig.hidden = false;
+    var PT = {
+      praha: [50.0833, 14.4344, "Praha", "right"],
+      kl: [50.9013, 14.5558, "Krásná Lípa", "right"],
+      nb: [50.7602, 14.5571, "Nový Bor", "left"],
+      cv: [50.7770, 14.6428, "Cvikov", "right"],
+      lb: [50.7650, 15.0600, "Liberec", "right"]
+    };
+    var dmap = L.map(dayEl, { scrollWheelZoom: false, dragging: !L.Browser.mobile });
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+    }).addTo(dmap);
+    var dlayer = L.layerGroup().addTo(dmap);
+    function ll(k) { return [PT[k][0], PT[k][1]]; }
+    function bulge() {   /* návrat autobusem: lehce vyosená čára, ať nesplývá s vlakem */
+      var a = PT.nb, b = PT.praha;
+      return [ll("nb"), [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 0.09], ll("praha")];
+    }
+    function drawDay() {
+      var tb = document.querySelector('[role="tab"][aria-selected="true"]');
+      var v = tb && tb.id === "tab-c" ? "c" : tb && tb.id === "tab-b" ? "b" : "a";
+      dlayer.clearLayers();
+      var keys = v === "a" ? ["praha", "nb", "kl"] : v === "b" ? ["praha", "nb", "cv"] : ["praha", "nb", "cv", "lb"];
+      document.getElementById("leg-440").hidden = v === "a";
+      function line(pts, cls, w, dash) {
+        L.polyline(pts, { className: cls, weight: w, dashArray: dash, lineCap: "round", interactive: false }).addTo(dlayer);
+      }
+      if (v !== "c") line(bulge(), "l-bus", 3, "10 8");
+      if (v === "a") {
+        line([ll("praha"), ll("nb"), ll("kl")], "l-train", 5);
+      } else {
+        line([ll("praha"), ll("nb")], "l-train", 5);
+        line([ll("nb"), ll("cv")], "l-bus", 3, "2 8");
+        if (v === "c") line([ll("cv"), ll("lb"), ll("praha")], "l-bus", 3, "10 8");
+      }
+      keys.forEach(function (k) {
+        L.circleMarker(ll(k), { className: "pt-stop", radius: 7, weight: 3, interactive: false })
+          .bindTooltip(PT[k][2], { permanent: true, direction: PT[k][3], offset: [PT[k][3] === "left" ? -6 : 6, 0], className: "ptip" })
+          .addTo(dlayer);
+      });
+      var pts = keys.map(ll);
+      if (v !== "c") pts.push(bulge()[1]);
+      dmap.fitBounds(L.latLngBounds(pts), { padding: [28, 28] });
+    }
+    drawDay();
+    document.addEventListener("variantchange", drawDay);
+  }
 
   /* Když se Leaflet načetl, schéma trasy nahradí mapa; jinak zůstane schéma */
   if (haveLeaflet) {
