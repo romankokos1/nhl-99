@@ -3,13 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Výlet 28. 10. – Falkenštejn a Born</title>
-<meta name="description" content="Časová osa pivního výletu 28. 10. 2026: Praha, Krásná Lípa, Nový Bor a zpět.">
+<title>Pivní výlet 28. 10.</title>
+<meta name="description" content="Časová osa pivního výletu 28. 10. 2026: Praha, Nový Bor a Krásná Lípa nebo Cvikov, a zpět.">
+<script>
+  /* Motiv a třída "js" se nastaví hned, ať stránka při načtení nebliká. */
+  (function () {
+    var t = "dark";
+    try { t = localStorage.getItem("vylet-theme") === "light" ? "light" : "dark"; } catch (e) {}
+    document.documentElement.setAttribute("data-theme", t);
+    document.documentElement.className += " js";
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
+    color-scheme: dark;
     --bg: #0f1115;
     --panel: #171a21;
     --line: #2a2f3a;
@@ -17,8 +27,21 @@
     --muted: #9aa3b2;
     --accent: #f2b84b;
     --accent-ink: #1a1405;
+    --dot: #f2b84b;
+    --btn: #f2b84b;
     --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #faf8f3;
+    --panel: #ffffff;
+    --line: #ded9cc;
+    --text: #1c1e23;
+    --muted: #596070;
+    --accent: #8a5200;
+    --accent-ink: #1a1405;
+    --dot: #c27d00;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -104,8 +127,11 @@
     border: 2px solid var(--muted);
   }
   .stop.main::before {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--dot);
+    border-color: var(--dot);
+  }
+  .stop.todo::before {
+    border-style: dashed;
   }
   .time {
     font-family: var(--mono);
@@ -139,12 +165,68 @@
     font-size: 14px;
     font-weight: 500;
     color: var(--accent-ink);
-    background: var(--accent);
+    background: var(--btn);
     text-decoration: none;
     border-radius: 8px;
     padding: 8px 14px;
   }
   a.map:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .topbar .eyebrow { margin: 0; }
+  button {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-height: 40px;
+    cursor: pointer;
+  }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #theme-btn { display: none; flex-shrink: 0; }
+  .js #theme-btn { display: inline-block; }
+
+  .tabs { display: none; gap: 8px; margin-top: 20px; }
+  .js .tabs { display: grid; grid-template-columns: 1fr 1fr; }
+  .tabs button {
+    min-height: 48px;
+    font-size: 15px;
+    text-align: left;
+    line-height: 1.25;
+  }
+  .tabs button small {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .tabs button[aria-selected="true"] {
+    background: var(--btn);
+    border-color: var(--btn);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+  .tabs button[aria-selected="true"] small { color: var(--accent-ink); }
+
+  .vtitle { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  .vsum { color: var(--muted); margin: 0 0 24px; }
+  .variant + .variant { margin-top: 40px; }
+  .js .variant + .variant { margin-top: 0; }
+  .time.todo-time {
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 500;
+  }
 
   section.backup {
     background: var(--panel);
@@ -177,14 +259,25 @@
 <div class="wrap">
 
   <header>
-    <p class="eyebrow">Středa 28. 10. 2026 · státní svátek</p>
-    <h1>Falkenštejn a Born</h1>
-    <p class="sub">Praha → Krásná Lípa → Nový Bor a zpátky, jen vlakem a autobusem.</p>
+    <div class="topbar">
+      <p class="eyebrow">Středa 28. 10. 2026 · státní svátek</p>
+      <button type="button" id="theme-btn">Světlý režim</button>
+    </div>
+    <h1>Pivní výlet</h1>
+    <p class="sub">Z Prahy na Lužicko, jen vlakem a autobusem. Vyber si variantu.</p>
     <div class="facts">
       <div class="fact"><b>9:00</b><span>odjezd, Praha hl.n.</span></div>
       <div class="fact"><b>21:20</b><span>návrat, Praha-Letňany</span></div>
     </div>
+    <div class="tabs" role="tablist" aria-label="Varianta výletu">
+      <button type="button" role="tab" id="tab-a" aria-controls="panel-a" aria-selected="true">A · Krásná Lípa<small>Falkenštejn a Born</small></button>
+      <button type="button" role="tab" id="tab-b" aria-controls="panel-b" aria-selected="false" tabindex="-1">B · Cvikov<small>Sladovna a Born</small></button>
+    </div>
   </header>
+
+  <div class="variant" id="panel-a" role="tabpanel" aria-labelledby="tab-a">
+  <h2 class="vtitle">Varianta A: Krásná Lípa a Born</h2>
+  <p class="vsum">Falkenštejn na oběd, odpoledne vlakem do Nového Boru na Born a autobusem domů.</p>
 
   <ol class="timeline">
 
@@ -245,6 +338,78 @@
       <li><span class="mono">18:00</span> vlak do Mladé Boleslavi a přestup do Prahy hl.n., příjezd 20:31. Přestup je jen 7 minut.</li>
     </ul>
   </section>
+  </div>
+
+  <div class="variant" id="panel-b" role="tabpanel" aria-labelledby="tab-b">
+  <h2 class="vtitle">Varianta B: Cvikov a Born</h2>
+  <p class="vsum">Z vlaku vystoupíme v Novém Boru, autobusem do Cvikova na pivo ze Sladovny a zpátky na Born. Domů z Nového Boru.</p>
+
+  <ol class="timeline">
+
+    <li class="stop travel">
+      <p class="time">9:00</p>
+      <h2>Odjezd z Prahy</h2>
+      <p class="place">Praha hl.n.</p>
+      <p class="detail">Sváteční rychlík Lužickohorský (R 1275). Vystupujeme v Novém Boru, kam dojede v 11:44.</p>
+    </li>
+
+    <li class="stop travel todo">
+      <p class="time todo-time">čas doplnit</p>
+      <h2>Autobusem do Cvikova</h2>
+      <p class="place">Nový Bor → Cvikov</p>
+      <p class="detail">Linka 440, opačným směrem to trvá 13 až 16 minut. Odjezd z Nového Boru ještě doplnit z IDOS.</p>
+    </li>
+
+    <li class="stop main">
+      <p class="time">do 15:55</p>
+      <h2>Pivo ve Sladovně</h2>
+      <p class="place">Restaurace Sladovna, Pivovarská 405, Cvikov</p>
+      <p class="detail">Restaurace stojí přímo v areálu pivovaru. Pivovar Cvikov vaří Luž 10°, Hvozd 11°, Klíč 12°, polotmavé Sváteční 13° a osmičku Sklář. Stůl se rezervuje na +420 737 383 130. Prohlídka pivovaru je jen pro skupiny od 10 lidí a po předchozí domluvě.</p>
+      <a class="map" href="https://mapy.cz/zakladni?q=Restaurace%20Sladovna%20Cvikov" target="_blank" rel="noopener">Otevřít v mapě</a>
+    </li>
+
+    <li class="stop travel">
+      <p class="time">15:55</p>
+      <h2>Autobusem zpět do Nového Boru</h2>
+      <p class="place">Cvikov, aut. st. → Nový Bor, aut. nádr.</p>
+      <p class="detail">Linka 440, jízda 16 minut.</p>
+    </li>
+
+    <li class="stop main">
+      <p class="time">16:11</p>
+      <h2>Pivovar Born</h2>
+      <p class="place">nám. Míru 100, Nový Bor</p>
+      <p class="detail">Pivovar sídlí v domě skláře F. Egermanna a zraje v pískovcových ležáckých sklepích. Je tu útulná restaurace s kuchyní.</p>
+      <span class="tag">u pivovaru asi 3 h</span>
+      <br>
+      <a class="map" href="https://mapy.cz/zakladni?q=Pivovar%20Born%20Nov%C3%BD%20Bor" target="_blank" rel="noopener">Otevřít v mapě</a>
+    </li>
+
+    <li class="stop travel">
+      <p class="time">19:25</p>
+      <h2>Domů autobusem</h2>
+      <p class="place">Nový Bor, aut. nádr. → Praha, Letňany</p>
+      <p class="detail">Přímý autobus 400, asi 2 hodiny, jízdenka 161&nbsp;Kč.</p>
+    </li>
+
+    <li class="stop travel">
+      <p class="time">21:20</p>
+      <h2>Zpátky v Praze</h2>
+      <p class="place">Praha, Letňany</p>
+    </li>
+
+  </ol>
+
+  <section class="backup" aria-labelledby="zaloha-b">
+    <h2 id="zaloha-b">Kdybychom to nestihli</h2>
+    <p>Pozdější spoje z Cvikova a z Nového Boru.</p>
+    <ul>
+      <li><span class="mono">17:55</span> autobus 440 z Cvikova, v Novém Boru v 18:11. Pak autobus 400 v 18:25 (do Prahy 20:25) nebo v 19:25 (do Prahy 21:20).</li>
+      <li><span class="mono">19:54</span> autobus 440 z Cvikova, v Novém Boru na nám. Míru v 20:07. Odtud jede autobus 400 ve 20:27 a v Praze je ve 22:20. Spoj z Cvikova v 19:11 (Nový Bor 19:24) se na autobus 400 v 19:25 nestihne spolehlivě.</li>
+      <li><span class="mono">20:25</span> autobus 400 z Nového Boru přímo do Letňan, příjezd 22:20.</li>
+    </ul>
+  </section>
+  </div>
 
   <footer>
     <p>Časy spojů jsou z IDOS k 15. 10. 2026. Před výjezdem je zkontroluj, o svátku se jízdní řády mění.</p>
@@ -252,5 +417,69 @@
   </footer>
 
 </div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var themeBtn = document.getElementById("theme-btn");
+  var keys = ["a", "b"];
+  var tabs = [document.getElementById("tab-a"), document.getElementById("tab-b")];
+  var panels = [document.getElementById("panel-a"), document.getElementById("panel-b")];
+
+  /* Světlý a tmavý režim */
+  function label() {
+    themeBtn.textContent = root.getAttribute("data-theme") === "dark" ? "Světlý režim" : "Tmavý režim";
+  }
+  themeBtn.addEventListener("click", function () {
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("vylet-theme", next); } catch (e) {}
+    label();
+  });
+  label();
+
+  /* Přepínač variant, vybraná varianta je i v adrese (#a nebo #b) */
+  function show(i, focus, save) {
+    for (var k = 0; k < tabs.length; k++) {
+      var on = k === i;
+      tabs[k].setAttribute("aria-selected", on ? "true" : "false");
+      tabs[k].tabIndex = on ? 0 : -1;
+      panels[k].hidden = !on;
+    }
+    if (focus) tabs[i].focus();
+    if (save) {
+      try { history.replaceState(null, "", "#" + keys[i]); } catch (e) {}
+      try { localStorage.setItem("vylet-variant", keys[i]); } catch (e) {}
+    }
+  }
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener("click", function () { show(i, false, true); });
+    tab.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        show((i + 1) % tabs.length, true, true);
+      }
+    });
+  });
+  function fromHash() {
+    var h = (location.hash || "").replace("#", "");
+    return keys.indexOf(h);
+  }
+  function initial() {
+    var i = fromHash();
+    if (i >= 0) return i;
+    try {
+      var s = localStorage.getItem("vylet-variant");
+      if (keys.indexOf(s) >= 0) return keys.indexOf(s);
+    } catch (e) {}
+    return 0;
+  }
+  window.addEventListener("hashchange", function () {
+    var i = fromHash();
+    if (i >= 0) show(i, false, false);
+  });
+  show(initial(), false, false);
+})();
+</script>
 </body>
 </html>
