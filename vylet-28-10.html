@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Výlet 28. 10. – Falkenštejn a Born</title>
+<meta name="description" content="Časová osa pivního výletu 28. 10. 2026: Praha, Krásná Lípa, Nový Bor a zpět.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --line: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #9aa3b2;
+    --accent: #f2b84b;
+    --accent-ink: #1a1405;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 16px 56px;
+  }
+  header { margin-bottom: 28px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .sub { color: var(--muted); margin: 0; }
+  .facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .fact {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .fact b {
+    display: block;
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .fact span { font-size: 13px; color: var(--muted); }
+
+  ol.timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+  }
+  ol.timeline::before {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--line);
+  }
+  .stop {
+    position: relative;
+    padding: 0 0 24px 28px;
+  }
+  .stop::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--muted);
+  }
+  .stop.main::before {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .time {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 0;
+  }
+  .stop.travel .time { color: var(--muted); }
+  .stop h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 2px 0 2px;
+  }
+  .place { color: var(--text); margin: 0; }
+  .detail { color: var(--muted); font-size: 15px; margin: 6px 0 0; }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 10px;
+    margin: 8px 6px 0 0;
+  }
+  a.map {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent-ink);
+    background: var(--accent);
+    text-decoration: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+  }
+  a.map:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  section.backup {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
+  }
+  section.backup h2 { font-size: 16px; margin: 0 0 4px; }
+  section.backup p { margin: 0 0 10px; color: var(--muted); font-size: 15px; }
+  section.backup ul { list-style: none; padding: 0; margin: 0; }
+  section.backup li {
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    font-size: 15px;
+  }
+  section.backup li:first-child { border-top: 0; padding-top: 0; }
+  section.backup li:last-child { padding-bottom: 0; }
+  .mono { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+
+  footer {
+    margin-top: 28px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  footer p { margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Středa 28. 10. 2026 · státní svátek</p>
+    <h1>Falkenštejn a Born</h1>
+    <p class="sub">Praha → Krásná Lípa → Nový Bor a zpátky, jen vlakem a autobusem.</p>
+    <div class="facts">
+      <div class="fact"><b>9:00</b><span>odjezd, Praha hl.n.</span></div>
+      <div class="fact"><b>21:20</b><span>návrat, Praha-Letňany</span></div>
+    </div>
+  </header>
+
+  <ol class="timeline">
+
+    <li class="stop travel">
+      <p class="time">9:00</p>
+      <h2>Odjezd z Prahy</h2>
+      <p class="place">Praha hl.n.</p>
+      <p class="detail">Sváteční rychlík Lužickohorský (R 1275), jede přímo až do Krásné Lípy. Cestou stojí v Novém Boru v 11:44.</p>
+    </li>
+
+    <li class="stop main">
+      <p class="time">12:24</p>
+      <h2>Oběd a pivo ve Falkenštejnu</h2>
+      <p class="place">Pivovar Falkenštejn, Křinické nám. 7/12, Krásná Lípa</p>
+      <p class="detail">Vlak staví v zastávce Krásná Lípa město (12:21) i v Krásné Lípě (12:24). Pivovar vaří ležáky i svrchně kvašené ejly a má restauraci s penzionem.</p>
+      <span class="tag">u pivovaru asi 2 h</span>
+      <br>
+      <a class="map" href="https://mapy.cz/zakladni?q=Pivovar%20Falken%C5%A1tejn%20Kr%C3%A1sn%C3%A1%20L%C3%ADpa" target="_blank" rel="noopener">Otevřít v mapě</a>
+    </li>
+
+    <li class="stop travel">
+      <p class="time">14:44</p>
+      <h2>Vlakem do Nového Boru</h2>
+      <p class="place">Krásná Lípa → Nový Bor</p>
+      <p class="detail">Vlak L4 (Die Länderbahn), jízda 31 minut, jízdenka 72&nbsp;Kč.</p>
+    </li>
+
+    <li class="stop main">
+      <p class="time">15:15</p>
+      <h2>Pivovar Born</h2>
+      <p class="place">nám. Míru 100, Nový Bor</p>
+      <p class="detail">Pivovar sídlí v domě skláře F. Egermanna a zraje v pískovcových ležáckých sklepích. Je tu útulná restaurace s kuchyní.</p>
+      <span class="tag">u pivovaru asi 4 h</span>
+      <br>
+      <a class="map" href="https://mapy.cz/zakladni?q=Pivovar%20Born%20Nov%C3%BD%20Bor" target="_blank" rel="noopener">Otevřít v mapě</a>
+    </li>
+
+    <li class="stop travel">
+      <p class="time">19:25</p>
+      <h2>Domů autobusem</h2>
+      <p class="place">Nový Bor, aut. nádr. → Praha, Letňany</p>
+      <p class="detail">Přímý autobus 400, asi 2 hodiny, jízdenka 161&nbsp;Kč.</p>
+    </li>
+
+    <li class="stop travel">
+      <p class="time">21:20</p>
+      <h2>Zpátky v Praze</h2>
+      <p class="place">Praha, Letňany</p>
+    </li>
+
+  </ol>
+
+  <section class="backup" aria-labelledby="zaloha">
+    <h2 id="zaloha">Kdybychom to nestihli</h2>
+    <p>Pozdější nebo jiné spoje z Nového Boru do Prahy.</p>
+    <ul>
+      <li><span class="mono">20:25</span> autobus 400 přímo do Letňan, příjezd 22:20. V Novém Boru projíždí nám. Míru ve 20:27.</li>
+      <li><span class="mono">18:00</span> vlak do Mladé Boleslavi a přestup do Prahy hl.n., příjezd 20:31. Přestup je jen 7 minut.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Časy spojů jsou z IDOS k 15. 10. 2026. Před výjezdem je zkontroluj, o svátku se jízdní řády mění.</p>
+    <p>Otevírací doby pivovarů jsou běžné, o svátku se mohou lišit.</p>
+  </footer>
+
+</div>
+</body>
+</html>
