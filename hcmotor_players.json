@@ -53,7 +53,8 @@
     "deathcity": "České Budějovice",
     "seasons": "4",
     "seasonsRange": "1931-33, 1936-38",
-    "photo": ""
+    "photo": "https://hcmotor.cz/foto_ceb/otomar-aibl-barevne.jpg",
+    "photoPos": "50% 10%"
   },
   {
     "surname": "Aibl",
@@ -572,7 +573,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2008-09",
-    "photo": "https://hcmotor.cz//foto/hraci/2009/bilek_vitezslav.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2009/bilek_vitezslav.jpg"
   },
   {
     "surname": "Bindulis",
@@ -956,7 +957,7 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "2010-12",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/burian_vilem.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/burian_vilem.jpg"
   },
   {
     "surname": "Buřič",
@@ -1598,7 +1599,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2008-09",
-    "photo": "https://hcmotor.cz//foto/hraci/2008/duda_radek.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2008/duda_radek.jpg"
   },
   {
     "surname": "Dunn-Cholette",
@@ -2309,7 +2310,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2006-07",
-    "photo": "https://hcmotor.cz//foto/hraci/2007/hasek_jiri_velky.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2007/hasek_jiri_velky.jpg"
   },
   {
     "surname": "Havel",
@@ -2923,7 +2924,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2009-10",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/hudec_stanislav.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/hudec_stanislav.jpg"
   },
   {
     "surname": "Hůlka",
@@ -2965,7 +2966,7 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "2008-10",
-    "photo": "https://hcmotor.cz//foto/hraci/2008/huml_ivan.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2008/huml_ivan.jpg"
   },
   {
     "surname": "Hyka",
@@ -3237,7 +3238,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2008-09",
-    "photo": "https://hcmotor.cz//foto/hraci/2009/jares_richard.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2009/jares_richard.jpg"
   },
   {
     "surname": "Jasečko",
@@ -3519,7 +3520,7 @@
     "deathcity": "",
     "seasons": "3",
     "seasonsRange": "2010-13",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/kasparik_pavel.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/kasparik_pavel.jpg"
   },
   {
     "surname": "Kaucký",
@@ -4135,7 +4136,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2006-07",
-    "photo": "https://hcmotor.cz//foto/hraci/2007/krajci_robert_velky.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2007/krajci_robert_velky.jpg"
   },
   {
     "surname": "Krajíček",
@@ -5044,7 +5045,7 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "2010-12",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/martynek_rostislav.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/martynek_rostislav.jpg"
   },
   {
     "surname": "Mařík",
@@ -5285,7 +5286,7 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "2008-10",
-    "photo": "https://hcmotor.cz//foto/hraci/2009/melicharek_tibor.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2009/melicharek_tibor.jpg"
   },
   {
     "surname": "Melka",
@@ -5411,7 +5412,7 @@
     "deathcity": "",
     "seasons": "3",
     "seasonsRange": "2009-12",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/mikeska_michal.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/mikeska_michal.jpg"
   },
   {
     "surname": "Mikulík",
@@ -5978,7 +5979,7 @@
     "deathcity": "",
     "seasons": "3",
     "seasonsRange": "2010-12, 2013-14",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/novak_jan.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/novak_jan.jpg"
   },
   {
     "surname": "Novák",
@@ -6611,7 +6612,7 @@
     "deathcity": "",
     "seasons": "4",
     "seasonsRange": "2004-05, 2009-12",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/pletka_vaclav.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/pletka_vaclav.jpg"
   },
   {
     "surname": "Podlaha",
@@ -6667,7 +6668,7 @@
     "deathcity": "",
     "seasons": "3",
     "seasonsRange": "2010-13",
-    "photo": "https://hcmotor.cz//foto/hraci/2011/podlesak_martin.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2011/podlesak_martin.jpg"
   },
   {
     "surname": "Pokorný",
@@ -6765,7 +6766,7 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "2008-10",
-    "photo": "https://hcmotor.cz//foto/hraci/2008/pozivil_lukas.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2008/pozivil_lukas.jpg"
   },
   {
     "surname": "Pražák",
@@ -6836,7 +6837,7 @@
     "deathcity": "Bavorovice",
     "seasons": "2",
     "seasonsRange": "2012-14",
-    "photo": "https://hcmotor.cz//foto_ceb/mladez_2012/prokop_tomas_velky.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/mladez_2012/prokop_tomas_velky.jpg"
   },
   {
     "surname": "Prospal",
@@ -6878,7 +6879,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2018-19",
-    "photo": "https://hcmotor.cz//foto/hraci/2018/prospal_vaclav_ml.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2018/prospal_vaclav_ml.jpg"
   },
   {
     "surname": "Přibyl",
@@ -6934,7 +6935,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2010-11",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/psurny_michal.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/psurny_michal.jpg"
   },
   {
     "surname": "Pšurný",
@@ -7335,7 +7336,7 @@
     "deathcity": "",
     "seasons": "3",
     "seasonsRange": "2013-16",
-    "photo": "https://hcmotor.cz//foto/hraci/2011/predota_jan_velky.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2011/predota_jan_velky.jpg"
   },
   {
     "surname": "Schrabal",
@@ -7547,7 +7548,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2006-07",
-    "photo": "https://hcmotor.cz//foto/hraci/2007/stantien_roman_velky.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2007/stantien_roman_velky.jpg"
   },
   {
     "surname": "Straka",
@@ -7877,7 +7878,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2014-15",
-    "photo": "https://hcmotor.cz//foto_ceb/mladez_09_10/skopek_petr_velky.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/mladez_09_10/skopek_petr_velky.jpg"
   },
   {
     "surname": "Šoustal",
@@ -8064,7 +8065,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2010-11",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/sulc_jakub.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/sulc_jakub.jpg"
   },
   {
     "surname": "Šulčík",
@@ -8148,7 +8149,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2009-10",
-    "photo": "https://hcmotor.cz//foto/hraci/2010/tahtinen_markku.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2010/tahtinen_markku.jpg"
   },
   {
     "surname": "Tikal",
@@ -8391,7 +8392,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2014-15",
-    "photo": "https://hcmotor.cz//foto_ceb/mladez11/kasi.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/mladez11/kasi.jpg"
   },
   {
     "surname": "Třetina",
@@ -8702,7 +8703,7 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "2013-15",
-    "photo": "https://hcmotor.cz//foto_ceb/mladez_09_10/vanis_marek_velky.jpg"
+    "photo": "https://hcmotor.cz/foto_ceb/mladez_09_10/vanis_marek_velky.jpg"
   },
   {
     "surname": "Vápeník",
@@ -9087,7 +9088,7 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2010-11",
-    "photo": "https://hcmotor.cz//foto/hraci/2011/vykoukal_jiri.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2011/vykoukal_jiri.jpg"
   },
   {
     "surname": "Wabnegger",
