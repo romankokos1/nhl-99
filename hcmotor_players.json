@@ -170,7 +170,8 @@
     "deathcity": "",
     "seasons": "1",
     "seasonsRange": "2026-27",
-    "photo": "https://hcmotor.cz/foto/hraci/2027/andersen_ole_einar_engeland.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2027/andersen_ole_einar_engeland.jpg",
+    "left": true
   },
   {
     "surname": "Antipin",
@@ -5231,6 +5232,20 @@
     "photo": "https://www.hokej.cz/static/images/hraci/m/mazanec_milan/mazanec_milan.jpg"
   },
   {
+    "surname": "McCormack",
+    "firstname": "Graeme",
+    "city": "Thunder Bay",
+    "lat": 48.3809,
+    "lon": -89.2477,
+    "display": "",
+    "born": "22.04.1991",
+    "died": "",
+    "deathcity": "",
+    "seasons": "1",
+    "seasonsRange": "2026-27",
+    "photo": ""
+  },
+  {
     "surname": "Mec",
     "firstname": "Jaroslav",
     "city": "Ostrava",
@@ -8588,7 +8603,8 @@
     "deathcity": "",
     "seasons": "2",
     "seasonsRange": "2025-27",
-    "photo": "https://hcmotor.cz/foto/hraci/2027/vala_ondrej.jpg"
+    "photo": "https://hcmotor.cz/foto/hraci/2027/vala_ondrej.jpg",
+    "left": true
   },
   {
     "surname": "Vališ",
