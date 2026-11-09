@@ -1,0 +1,2434 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fantasy – liga</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0a0b0f; --card:#10111a; --text:#ececf2;
+  --mut:rgba(236,236,242,.46); --mut2:rgba(236,236,242,.26);
+  --line:rgba(255,255,255,.055); --line2:rgba(255,255,255,.1);
+  --hover:rgba(255,255,255,.03); --pill0:rgba(255,255,255,.055);
+  --seg:rgba(255,255,255,.045); --seg-on:rgba(255,255,255,.1);
+  --acc:#d2ff3c; --acc-rgb:210,255,60; --on-acc:#10130a;
+  --me:#b8a6ff; --me-rgb:184,166,255;
+  --neg-rgb:255,122,138; --amber:#f4c95d; --rose:#ff6b7d;
+  --k1:#ff9ec7; --k2:#ffb78a; --k3:#86e3d4; --k4:#9db8ff;
+  --c-wc:#ff7eb6; --c-2k:#ffd24d; --c-lv:#4fc3f7; --c-fp:#b79cff;
+  --bar:rgba(255,255,255,.14); --ha:.42;
+  --sans:"Inter","Geist","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:light){
+  :root{
+    color-scheme:light;
+    --bg:#f5f5f2; --card:#ffffff; --text:#15151d;
+    --mut:rgba(21,21,29,.5); --mut2:rgba(21,21,29,.28);
+    --line:rgba(21,21,29,.07); --line2:rgba(21,21,29,.13);
+    --hover:rgba(21,21,29,.03); --pill0:rgba(21,21,29,.05);
+    --seg:rgba(21,21,29,.05); --seg-on:rgba(21,21,29,.09);
+    --acc:#4f8a00; --acc-rgb:79,138,0; --on-acc:#ffffff;
+    --me:#7a5cf0; --me-rgb:122,92,240;
+    --neg-rgb:214,60,84; --amber:#d99a00; --rose:#d63c54;
+    --k1:#d9488a; --k2:#d9703a; --k3:#139a8a; --k4:#4f6fe0;
+    --c-wc:#d1318a; --c-2k:#b8860b; --c-lv:#0b84c4; --c-fp:#7a5cf0;
+    --bar:rgba(21,21,29,.14); --ha:.5;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(1100px 420px at 78% -8%,rgba(var(--acc-rgb),.055),transparent 62%),var(--bg);
+  background-attachment:fixed;
+  color:var(--text);font:13px/1.4 var(--sans);font-feature-settings:"cv11","ss01";
+  -webkit-font-smoothing:antialiased;
+}
+button,select,input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.tlum{color:var(--mut)}
+b{font-weight:600}
+*{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+button:focus-visible,select:focus-visible{outline:2px solid rgba(var(--acc-rgb),.55);outline-offset:1px}
+
+/* ---------- horní lišta ---------- */
+.lista{display:flex;align-items:center;gap:18px;height:46px;padding:0 20px;position:sticky;top:0;z-index:30;
+  background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line)}
+.znacka{display:flex;align-items:center;gap:10px;font-weight:650;font-size:13px;letter-spacing:-.01em}
+nav{display:flex;gap:2px;padding:3px;background:var(--seg);border-radius:10px}
+nav button{border:0;background:none;padding:0 12px;height:26px;border-radius:7px;cursor:pointer;font-weight:550;color:var(--mut);transition:color .15s,background .15s}
+nav button:hover{color:var(--text)}
+nav button.aktivni{background:var(--seg-on);color:var(--text)}
+.pribeh{margin:0 0 18px;padding:0;list-style:none;display:grid;gap:7px;font-size:13.5px;line-height:1.5;max-width:980px}
+.pribeh li{padding-left:12px;border-left:2px solid rgba(var(--acc-rgb),.45)}
+.podnab{display:flex;gap:2px;margin:0 0 16px;border-bottom:1px solid var(--line);overflow-x:auto}
+.podnab button{flex:none;border:0;background:none;padding:8px 12px;cursor:pointer;color:var(--mut);font-weight:550;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+.podnab button:hover{color:var(--text)}
+.podnab button.aktivni{color:var(--text);border-bottom-color:var(--acc)}
+.soubor{margin-left:auto;font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.jiny{border:1px solid var(--line2);background:none;border-radius:8px;padding:0 12px;height:30px;cursor:pointer;color:var(--mut);white-space:nowrap;transition:color .15s,border-color .15s}
+.jiny:hover{color:var(--text);border-color:var(--mut2)}
+main{padding:16px 20px 32px}
+
+/* ---------- status tečky ---------- */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none;vertical-align:middle;
+  background:var(--ch,var(--acc));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--ch,var(--acc)) 15%,transparent),0 0 10px color-mix(in srgb,var(--ch,var(--acc)) 60%,transparent)}
+.dot.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--mut2)}
+
+/* ---------- bento ---------- */
+.bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.card{position:relative;min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;padding:13px 16px 14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 55%),var(--card)}
+.c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}
+.c6{grid-column:span 6}.c8{grid-column:span 8}.c12{grid-column:span 12}.r2{grid-row:span 2}.r3{grid-row:span 3}
+@media (max-width:1000px){.c2,.c3,.c4,.c5,.c6,.c8{grid-column:span 6}.r2,.r3{grid-row:auto}}
+
+/* ---------- vysvětlivky ---------- */
+.vysv{margin:0 2px 10px;max-width:110ch}
+.vysv p{margin:0;font-size:12.5px;line-height:1.5;color:var(--mut)}
+.vysv .zaver{margin-top:3px;font-size:13px;color:var(--text)}
+.vysv .zaver b{font-weight:650}
+.sl+.vysv{margin-top:-2px}
+:root[data-kontrast="1"] .vysv p{font-size:14px}
+/* ---------- analytika: spravedlivé pořadí, tah kola ---------- */
+.chart .dbl{stroke:var(--line2);stroke-width:2;stroke-linecap:round}
+.chart .dbn{fill:var(--mut)}
+.fair{display:inline-flex;align-items:baseline;justify-content:flex-end;gap:8px}
+.fair>span:first-child{min-width:34px;text-align:right}
+.fair>span:last-child{min-width:26px;text-align:left;font-size:11px}
+.big .zpos,.big .zneg{font-weight:inherit}
+
+/* ---------- vzhled: hustota a projektor ---------- */
+.vzhled{display:flex;gap:6px;margin-left:auto}
+.soubor+.vzhled{margin-left:0}
+.vzhled .jiny[aria-pressed="true"]{color:var(--text);border-color:var(--mut2);background:var(--seg-on)}
+:root[data-hustota="kompakt"] body{font-size:12px}
+:root[data-hustota="kompakt"] th,:root[data-hustota="kompakt"] td{padding:3px 8px}
+:root[data-hustota="kompakt"] th{padding-top:5px;padding-bottom:4px}
+:root[data-hustota="kompakt"] .kolo{padding:1px 3px}
+:root[data-hustota="kompakt"] .v{padding:1px 6px;min-width:26px;border-radius:5px}
+:root[data-hustota="kompakt"] .card{padding:10px 13px 11px}
+:root[data-hustota="kompakt"] .bento{gap:8px;margin-bottom:10px}
+:root[data-hustota="kompakt"] .big{font-size:28px}
+:root[data-hustota="kompakt"] .big.xl{font-size:48px}
+:root[data-hustota="kompakt"] .tabwrap{max-height:calc(100vh - 110px)}
+:root[data-kontrast="1"]{
+  --bg:#000; --card:#0a0b10; --text:#fff;
+  --mut:rgba(255,255,255,.8); --mut2:rgba(255,255,255,.58);
+  --line:rgba(255,255,255,.17); --line2:rgba(255,255,255,.32);
+  --hover:rgba(255,255,255,.08); --pill0:rgba(255,255,255,.14);
+  --seg:rgba(255,255,255,.12); --seg-on:rgba(255,255,255,.26);
+  --ha:.72; --bar:rgba(255,255,255,.3);
+}
+@media (prefers-color-scheme:light){
+  :root[data-kontrast="1"]{
+    --bg:#fff; --card:#fff; --text:#000;
+    --mut:rgba(0,0,0,.8); --mut2:rgba(0,0,0,.58);
+    --line:rgba(0,0,0,.2); --line2:rgba(0,0,0,.42);
+    --hover:rgba(0,0,0,.07); --pill0:rgba(0,0,0,.1);
+    --seg:rgba(0,0,0,.09); --seg-on:rgba(0,0,0,.2);
+    --acc:#3d7000; --acc-rgb:61,112,0; --ha:.8; --bar:rgba(0,0,0,.3);
+  }
+}
+:root[data-kontrast="1"] body{font-size:15px;background-image:none}
+:root[data-kontrast="1"] th{font-size:12px;font-weight:650;color:var(--text)}
+:root[data-kontrast="1"] .sl,:root[data-kontrast="1"] .lab{color:var(--text);font-weight:650}
+:root[data-kontrast="1"] .v{font-weight:750}
+:root[data-kontrast="1"] .card,:root[data-kontrast="1"] .tabwrap,:root[data-kontrast="1"] .panel{border-color:var(--line2);background-image:none}
+:root[data-kontrast="1"] .chart text{font-size:12px;fill:var(--mut)}
+:root[data-kontrast="1"] .chart path[stroke-width]{stroke-width:3px}
+:root[data-kontrast="1"] .bump .ln{stroke-width:2.4}
+:root[data-kontrast="1"] .chart .gl{stroke:var(--line2)}
+:root[data-kontrast="1"] .od{width:11px;height:11px}
+:root[data-kontrast="1"] .cip{font-size:11px}
+@media (max-width:640px){.vzhled{order:2}}
+@media (max-width:640px){.c4,.c5,.c6,.c8{grid-column:span 12}.c2,.c3{grid-column:span 6}main{padding:12px 12px 40px}
+  .lista{height:auto;flex-wrap:wrap;padding:8px 12px;gap:8px}.soubor{display:none}
+  .znacka{flex:1 0 100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  nav{order:3;width:100%;overflow-x:auto}nav button{flex:none}
+  .cw svg.chart{min-width:540px}.cw svg.bump{min-width:640px}
+  .big{font-size:30px}.big.xl{font-size:44px}
+  .tabwrap{max-height:none}
+  .mat .p0{width:32px;min-width:32px}.mat .p1{left:32px;width:104px;min-width:104px}.jm{max-width:96px}
+  .mat .s1{width:116px;min-width:116px}.mat .s2,.mat .s3{display:none}.mat.tm td.kolo,.mat.tm th.rk{width:70px;min-width:70px}}
+
+.lab{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.kpi{display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+.big{font-size:34px;line-height:.95;font-weight:800;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.big.xl{font-size:58px;letter-spacing:-.055em;line-height:.9}
+.big .of{font-size:.42em;font-weight:600;letter-spacing:-.02em;color:var(--mut);margin-left:.18em}
+.sub{margin-top:6px;font-size:12px;color:var(--mut)}
+.sub+.sub{margin-top:3px}
+.sub b{color:var(--text)}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--mut)}
+.lg{display:inline-flex;align-items:center;gap:7px}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.cw{overflow-x:auto;overflow-y:hidden;margin:0 -4px;padding:0 4px}
+.chart text{font:10px var(--sans);fill:var(--mut2);font-variant-numeric:tabular-nums}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.pt .d{opacity:0;transition:opacity .12s}
+.pt:hover .d{opacity:1}
+.bar .hit{fill:transparent}
+.bar:hover .hit{fill:var(--hover)}
+.bar .seg{transition:opacity .12s}
+.bar:hover .seg{opacity:.78}
+.chart .mk{stroke:var(--acc);stroke-width:1;stroke-dasharray:3 3;opacity:.75}
+.slr{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+.slr .sl{margin:0 0 0 2px}
+.skl{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:var(--mut)}
+.skl>i:not(.od){display:block;width:110px;height:8px;border-radius:4px;background:var(--g)}
+.skl .od{position:static}
+.sl{margin:0 0 6px 2px;font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.bc{display:inline-flex;align-items:center;gap:10px;justify-content:flex-end}
+.bc b{min-width:26px;text-align:right}
+.bc .tr{display:inline-block;width:110px;height:6px;border-radius:3px;background:var(--pill0);overflow:hidden}
+.bc .fl{display:block;height:100%;border-radius:3px;background:rgba(var(--acc-rgb),.7)}
+.chipl{display:flex;flex-direction:column;gap:2px;margin-top:2px}
+.chipl>div{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.chipl>div:last-child{border-bottom:0}
+.chipl .nm{flex:1;color:var(--text)}
+.chipl .kl{font-variant-numeric:tabular-nums;font-weight:600}
+
+/* ---------- ovládací prvky ---------- */
+.hlava{display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap}
+select{height:32px;border:1px solid var(--line2);background:var(--card);border-radius:9px;padding:0 10px;min-width:200px;cursor:pointer}
+.jmeno{font-size:15px;font-weight:650;letter-spacing:-.01em}
+.kolacip{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;align-items:center}
+.kolacip .stit{font-size:11px;color:var(--mut);margin-right:8px;text-transform:uppercase;letter-spacing:.05em}
+.kolacip button{min-width:32px;height:26px;border:1px solid var(--line);background:none;border-radius:8px;cursor:pointer;color:var(--mut);font-variant-numeric:tabular-nums;transition:color .12s,border-color .12s}
+.kolacip button:hover{color:var(--text);border-color:var(--line2)}
+.kolacip button.aktivni{background:var(--acc);border-color:var(--acc);color:var(--on-acc);font-weight:700}
+
+/* ---------- tabulky ---------- */
+.tabwrap,.panel{overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.tabwrap{max-height:calc(100vh - 130px);min-height:260px}
+table{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+.panel table{width:100%}
+th,td{padding:6px 10px;white-space:nowrap;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);background:var(--card);border-bottom:1px solid var(--line2);padding-top:8px;padding-bottom:7px}
+tbody tr:last-child td{border-bottom:0}
+.n{text-align:right}
+tbody tr:hover td{background-image:linear-gradient(var(--hover),var(--hover))}
+tr.top td{background-image:linear-gradient(rgba(var(--acc-rgb),.055),rgba(var(--acc-rgb),.055))}
+tr.top td:first-child{box-shadow:inset 2px 0 0 var(--acc)}
+tr.bad td{background-image:linear-gradient(rgba(var(--neg-rgb),.06),rgba(var(--neg-rgb),.06))}
+tr.bad td:first-child{box-shadow:inset 2px 0 0 rgb(var(--neg-rgb))}
+tr.dim td{color:var(--mut)}
+tr.dim .v{opacity:.45}
+.dotc{width:22px;padding-right:0!important}
+.gA{color:var(--acc)}
+.aA{color:var(--k3)}
+.kk{display:inline-flex;gap:1px}
+.tier{display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+.sekce{margin-bottom:14px}
+.sekce>h3{margin:0 0 6px 2px;font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+
+.mat{width:max-content;min-width:100%}
+.mat th{position:sticky;top:0;z-index:2}
+.mat .s1,.mat .s2,.mat .s3{position:sticky;background-color:var(--card);z-index:1}
+.mat th.s1,.mat th.s2,.mat th.s3{z-index:3}
+.mat .p0,.mat .p1{position:sticky;background-color:var(--card);z-index:1}
+.mat th.p0,.mat th.p1{z-index:3}
+.mat .p0{left:0;width:40px;min-width:40px}
+.mat .p1{left:40px;width:170px;min-width:170px}
+.mat .s1{left:0;width:170px;min-width:170px}
+.mat .s2{left:170px;width:62px;min-width:62px}
+.mat .s3{left:232px;width:46px;min-width:46px}
+.jm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.kolo{padding:3px 4px;text-align:right;min-width:56px}
+.mat.tm td.kolo,.mat.tm th.rk{width:78px;min-width:78px}
+.cell{display:inline-flex;align-items:center;justify-content:flex-end;gap:5px}
+.v{display:inline-block;min-width:28px;padding:2px 7px;border-radius:6px;text-align:center;font-weight:600;background:var(--pill0)}
+.v{position:relative}
+.odz{position:absolute;top:-5px;right:-5px;display:flex;gap:2px}
+.od{display:block;width:8px;height:8px;border-radius:50%;flex:none;background:var(--ch);
+  box-shadow:0 0 0 1.5px var(--card),0 0 8px color-mix(in srgb,var(--ch) 55%,transparent)}
+.od.odhad{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--ch),0 0 0 1.5px var(--card)}
+.v.h{background:rgba(var(--c),var(--ha))}
+.v.neg{background:rgba(var(--neg-rgb),.3)}
+.v.best{box-shadow:inset 0 0 0 1px rgba(var(--acc-rgb),.85)}
+.v.nehral{color:var(--mut)}
+.v.lav{background:transparent;color:var(--mut);box-shadow:inset 0 0 0 1px var(--line2);font-weight:500}
+.nic{color:var(--mut2)}
+.kap{font-size:9px;font-weight:600;color:var(--mut)}
+.sum{font-weight:700;background-color:rgba(128,128,140,.05)}
+.mat .s1.sum{background-color:var(--card)}
+tfoot td{position:sticky;bottom:0;background-color:var(--card);border-top:1px solid var(--line2);border-bottom:0;font-weight:600;color:var(--mut)}
+tfoot td.sum{color:var(--text)}
+.nesedi{color:rgb(var(--neg-rgb))!important}
+.m{display:inline-flex;align-items:center;margin-left:1px}
+.m .g{font-size:8px;letter-spacing:-1px;margin-right:2px;color:var(--acc)}
+.m .a{font-size:8px;letter-spacing:-1px;margin-right:2px;color:var(--mut)}
+.zk,.ck{display:inline-block;width:5px;height:9px;margin-left:2px;border-radius:1.5px}
+.zk{background:var(--amber);box-shadow:0 0 6px color-mix(in srgb,var(--amber) 60%,transparent)}
+.ck{background:var(--rose);box-shadow:0 0 6px color-mix(in srgb,var(--rose) 60%,transparent)}
+
+.cip{display:inline-block;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:.03em;border-radius:5px;line-height:1.5;
+  color:var(--ch);background:color-mix(in srgb,var(--ch) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ch) 32%,transparent)}
+.cip.odhad{background:transparent;opacity:.8;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ch) 45%,transparent)}
+.cnm{display:inline-flex;align-items:center;gap:9px}
+.pozn{margin:-4px 2px 12px;font-size:12px;color:var(--mut)}
+
+/* ---------- analytika ---------- */
+.zpos{color:var(--acc);font-weight:600}
+.zneg{color:rgb(var(--neg-rgb));font-weight:600}
+.lnk{font-weight:600;cursor:pointer}
+.lnk:hover{text-decoration:underline;text-decoration-color:var(--mut2);text-underline-offset:3px}
+.seg2{display:inline-flex;gap:2px;padding:2px;background:var(--seg);border-radius:8px}
+.seg2 button{border:0;background:none;padding:0 10px;height:22px;border-radius:6px;cursor:pointer;color:var(--mut);font-size:11px;font-weight:550;white-space:nowrap}
+.seg2 button:hover{color:var(--text)}
+.seg2 button.aktivni{background:var(--seg-on);color:var(--text)}
+.bump .ln{fill:none;stroke:var(--mut2);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .12s}
+.bump .pn{fill:var(--mut2)}
+.bump .nm{fill:var(--mut)}
+.bump .tm:hover .ln{stroke:var(--acc);stroke-width:2.6}
+.bump .tm:hover .pn{fill:var(--acc)}
+.bump .tm:hover .nm{fill:var(--text);font-weight:600}
+.bump:has(.tm:hover) .tm:not(:hover){opacity:.25}
+.chart .gl0{stroke:var(--mut2);stroke-width:1;stroke-dasharray:3 3}
+.chart .zona{fill:rgba(var(--acc-rgb),.06);stroke:rgba(var(--acc-rgb),.4);stroke-dasharray:3 3}
+.sc{cursor:pointer}
+.sc:hover{opacity:1!important;stroke:var(--text);stroke-width:1}
+.tabwrap th{position:sticky;top:0;z-index:2}
+.tabwrap table:not(.mat){width:100%}
+th[data-k]{cursor:pointer;user-select:none;transition:color .12s}
+th[data-k]:hover,th.sorted{color:var(--text)}
+th .ar{color:var(--acc);font-size:9px;margin-left:3px}
+.hlava .jiny{height:28px}
+.tier select{min-width:0;height:26px;font-size:11px;padding:0 8px}
+
+/* ---------- úvodní obrazovka ---------- */
+#prazdny{min-height:100vh;display:grid;place-items:center}
+.nahrat{border:1px dashed var(--line2);border-radius:20px;padding:40px 56px;text-align:center;background:var(--card);transition:border-color .15s}
+.nahrat button{border:0;background:var(--acc);color:var(--on-acc);padding:0 20px;height:38px;border-radius:10px;cursor:pointer;font-weight:700}
+.nahrat p{margin:14px 0 0;color:var(--mut)}
+#chyba{color:rgb(var(--neg-rgb))}
+body.pretahnout .nahrat{border-color:var(--acc)}
+</style>
+</head>
+<body>
+
+<section id="prazdny">
+  <div class="nahrat">
+    <button id="nahrat" type="button">Načíst fantasy-liga.json</button>
+    <p>nebo soubor přetáhni sem</p>
+    <p id="chyba"></p>
+  </div>
+</section>
+
+<div id="app" hidden>
+  <header class="lista">
+    <span class="znacka"><i class="dot"></i><span id="znacka">Fantasy · liga</span></span>
+    <nav id="zalozky"></nav>
+    <span class="soubor" id="soubor"></span>
+    <span class="vzhled"><button class="jiny" id="bHust" type="button" aria-pressed="false">Kompaktní</button><button class="jiny" id="bKon" type="button" aria-pressed="false">Projektor</button></span>
+    <button class="jiny" id="jiny" type="button">Načíst jiný soubor</button>
+  </header>
+  <main id="obsah"></main>
+</div>
+<input type="file" id="vstup" accept=".json,application/json" hidden>
+
+<script>
+(() => {
+'use strict';
+const POZ={Goalkeeper:'BR',Defender:'OB',Midfielder:'ZÁ',Attacker:'ÚT'};
+const ZALOZKY=[['prehled','Přehled'],['poradi','Pořadí'],['tym','Tým'],['kolo','Kolo'],['hraci','Hráči'],['souboj','Souboj'],['rozhodnuti','Rozhodnutí'],['data','Data']];
+const CIPY=[
+  ['wildcard','PK','Přestavba kádru','var(--c-wc)'],
+  ['two_captains','SD','Super duo','var(--c-2k)'],
+  ['benchboost','HL','Hrdinové lavičky','var(--c-lv)'],
+  ['financial_takeover','BM','Bohatý majitel','var(--c-fp)']];
+
+let D=null;
+const UI={zalozka:'prehled',sub:{poradi:'poradi',kolo:'rozbor',hraci:'hraci',souboj:'souboj',rozhodnuti:'spravedlive'},tym:null,kolo:null,hrac:null,souA:null,souB:null,souKolo:'all',rezim:'body',hFiltr:{poz:'',klub:''},
+  trP:{klic:'soucet',smer:-1},trT:{klic:'soucet',smer:-1},trH:{klic:'body',smer:-1},trS:{klic:'d',smer:-1},
+  trK:{klic:'bonus',smer:-1},trL:{klic:'lavNev',smer:-1},trC:{klic:'kolo',smer:1},trF:{klic:'skut',smer:-1},prest:'vse',trPr:{klic:'cisty',smer:-1},trPT:{klic:'k',smer:1},trPo:{klic:'avg',smer:-1},trPod:{klic:'prum',smer:-1},trCI:{klic:'ztr',smer:-1},trSt:{klic:'sd',smer:1},trD:{klic:'zisk',smer:-1}};
+
+const $=s=>document.querySelector(s);
+const el=(t,c,...k)=>{const e=document.createElement(t);if(c)e.className=c;for(const x of k){if(x==null||x===false)continue;e.append(x.nodeType?x:String(x))}return e};
+const NS='http://www.w3.org/2000/svg';
+const sv=(t,a,...k)=>{const e=document.createElementNS(NS,t);for(const[x,y]of Object.entries(a||{}))e.setAttribute(x,y);for(const c of k)if(c!=null)e.append(c);return e};
+const cs=new Intl.Collator('cs');
+const f1=n=>n.toLocaleString('cs-CZ',{minimumFractionDigits:1,maximumFractionDigits:1});
+const kz=id=>D.kluby.get(id)?.zkratka||'?';
+const jm=id=>{const h=D.hraci.get(id);if(!h)return '#'+id;
+  const ini=String(h.jmeno||'').split(/\s+/).filter(Boolean).map(x=>x[0]+'.').join(' ');return `${h.prijmeni} ${ini}`.trim()};
+const soup=r=>`${kz(r.soupernikId)} (${r.doma?'D':'V'})`;
+const STOPS=[[0,[122,92,240]],[.28,[84,140,240]],[.55,[47,196,178]],[.78,[143,224,90]],[1,[210,255,60]]];
+const barvaT=x=>{
+  for(let i=1;i<STOPS.length;i++)if(x<=STOPS[i][0]){
+    const a=STOPS[i-1],b=STOPS[i],f=(x-a[0])/(b[0]-a[0]);
+    return a[1].map((c,k)=>Math.round(c+(b[1][k]-c)*f));
+  }
+  return STOPS[STOPS.length-1][1];
+};
+const skala=vals=>{const v=vals.filter(x=>x!=null&&x>0).sort((a,b)=>a-b);return{v,lo:v[0],hi:v[v.length-1]}};
+function teplo(b,sc){
+  if(b<0)return 'neg';
+  if(!(b>0)||!sc.v.length)return '';
+  const lin=sc.hi>sc.lo?(b-sc.lo)/(sc.hi-sc.lo):1;
+  let lt=0,eq=0;for(const x of sc.v){if(x<b)lt++;else if(x===b)eq++}
+  const pct=(lt+eq/2)/sc.v.length;
+  const c=barvaT(Math.min(1,Math.max(0,.5*lin+.5*pct)));
+  return c.join(',');
+}
+const legendaSkaly=(lg=['méně','více'])=>{const g=el('i');
+  g.style.setProperty('--g','linear-gradient(90deg,'+STOPS.map(([p,c])=>`rgba(${c.join(',')},var(--ha)) ${p*100}%`).join(',')+')');
+  return el('span','skl',lg[0],g,lg[1])};
+const popisek=(txt,extra,ctrl,lg)=>el('div','slr',el('h3','sl',txt),el('span','tier',...(ctrl?[ctrl]:[]),...(extra||[]),legendaSkaly(lg)));
+const odznak=(def,odhad)=>{const s=el('i','od'+(odhad?' odhad':''));s.style.setProperty('--ch',def[3]);
+  s.title=def[2]+(odhad?' (odhad z dat)':'');return s};
+const vyp=n=>n||'';
+const B=t=>el('b',null,t);
+const dot=(c,off)=>{const s=el('i','dot'+(off?' off':''));if(c)s.style.setProperty('--ch',c);return s};
+const sumA=a=>a.reduce((x,y)=>x+y,0);
+
+/* ---------- příprava dat ---------- */
+function pripravit(raw){
+  if(!raw||!Array.isArray(raw.ucastnici)||!Array.isArray(raw.tymKolo)||!Array.isArray(raw.sestavy))
+    throw new Error('Soubor nemá očekávanou strukturu (chybí „ucastnici“, „tymKolo“ nebo „sestavy“). Je to soubor z extraktoru ligy?');
+  const kluby=new Map((raw.kluby||[]).map(k=>[k.id,k]));
+  const hraci=new Map((raw.hraci||[]).map(h=>[h.id,h]));
+  const hk=new Map();
+  for(const r of raw.radky||[]){
+    const k=r.hracId+'|'+r.kolo;let o=hk.get(k);
+    if(!o){o={body:0,min:0,goly:0,asist:0,zlute:0,cervene:0,zapasy:[]};hk.set(k,o)}
+    o.body+=r.body;o.min+=r.min;o.goly+=r.goly;o.asist+=r.asist;o.zlute+=r.zlute;o.cervene+=r.cervene;o.zapasy.push(r);
+  }
+  const ceny=new Map();let cenaMax=0;
+  for(const c of raw.ceny||[]){
+    if(c.cena==null||!isFinite(c.cena))continue;
+    let m=ceny.get(c.hracId);if(!m){m=new Map();ceny.set(c.hracId,m)}
+    m.set(c.kolo,c.cena);if(c.cena>cenaMax)cenaMax=c.cena;
+  }
+  const tymy=new Map(raw.ucastnici.map(u=>[u.tymId,{...u,kola:new Map(),sestava:new Map(),soucet:0,prumer:0}]));
+  for(const t of raw.tymKolo){const u=tymy.get(t.tymId);if(u)u.kola.set(t.kolo,t)}
+  for(const s of raw.sestavy){
+    const u=tymy.get(s.tymId);if(!u)continue;
+    let a=u.sestava.get(s.kolo);if(!a){a=[];u.sestava.set(s.kolo,a)}
+    a.push(s);
+  }
+  for(const u of tymy.values()){
+    let n=0;
+    for(const t of u.kola.values())if(t.body!=null){u.soucet+=t.body;n++}
+    u.prumer=n?u.soucet/n:0;
+    for(const a of u.sestava.values())a.sort((x,y)=>(x.slot==='Bench')-(y.slot==='Bench')||x.poradi-y.poradi);
+  }
+  const cipRaw=new Map((raw.cipy||[]).map(c=>[c.tymId,c]));
+  for(const u of tymy.values()){
+    const c=cipRaw.get(u.tymId),o={};
+    for(const[id]of CIPY)o[id]=c&&id in c?{kolo:c[id],odhad:false}:{kolo:null,odhad:false,bezDat:!c};
+    if(!c){
+      const lv=[...u.kola.values()].filter(t=>t.lavicka).map(t=>t.kolo).sort((a,b)=>a-b)[0];
+      if(lv!=null)o.benchboost={kolo:lv,odhad:true};
+      for(const[kolo,arr]of [...u.sestava].sort((a,b)=>a[0]-b[0]))
+        if(arr.filter(s=>s.kapitan&&s.slot!=='Bench').length>=2){o.two_captains={kolo,odhad:true};break}
+    }
+    u.cipy=o;
+  }
+  const kola=[...new Set(raw.tymKolo.map(t=>t.kolo))].sort((a,b)=>a-b);
+  return{meta:raw.meta||{},tymy,hraci,kluby,hk,kola,ceny,maCeny:ceny.size>0,cenaJ:cenaMax>=1e6?1e6:1};
+}
+/* ceny: jednotka se pozná z dat (miliony se zkrátí na „M“) */
+const fc=v=>{if(v==null)return '';const x=v/D.cenaJ;return x.toLocaleString('cs-CZ',{minimumFractionDigits:D.cenaJ>1||Math.abs(x)<100?2:0,maximumFractionDigits:2})};
+const fcu=v=>v==null?'':fc(v)+(D.cenaJ>1?' M':'');
+const zc=d=>{const a=Math.abs(d)/D.cenaJ,p=d/D.cenaJ>=.005,m=d/D.cenaJ<=-.005;
+  return el('span',p?'zpos':m?'zneg':'tlum',(p?'+':m?'−':'')+(p||m?a.toLocaleString('cs-CZ',{minimumFractionDigits:D.cenaJ>1||a<100?2:0,maximumFractionDigits:2})+(D.cenaJ>1?' M':''):'0'))};
+function hodnotaSestavy(u,k){
+  const a=u.sestava.get(k);if(!a||!a.length)return null;
+  let t=0;for(const x of a){const m=D.ceny.get(x.hracId),c=m&&m.get(k);if(c==null)return null;t+=c}
+  return t;
+}
+const vHre=(u,kolo,s)=>s.slot!=='Bench'||!!(u.kola.get(kolo)&&u.kola.get(kolo).lavicka);
+const bodyKola=(u,k)=>{const t=u&&u.kola.get(k);return t&&t.body!=null?t.body:null};
+const rozsahKola=k=>{const v=[...D.tymy.values()].map(u=>bodyKola(u,k)).filter(x=>x!=null);return v.length?[Math.min(...v),Math.max(...v)]:[null,null]};
+const prumerKola=k=>{const v=[...D.tymy.values()].map(u=>bodyKola(u,k)).filter(x=>x!=null);return v.length?sumA(v)/v.length:null};
+
+const serLiga=()=>[
+  {name:'Nejlepší tým v kole',vals:D.kola.map(k=>rozsahKola(k)[1]),color:'var(--text)',w:1.5},
+  {name:'Ø liga',vals:D.kola.map(prumerKola),color:'var(--acc)',fill:true,w:2.2},
+  {name:'Nejhorší tým v kole',vals:D.kola.map(k=>rozsahKola(k)[0]),color:'var(--mut)',w:1.5}];
+const legLiga=[['var(--text)','Nejlepší tým v kole'],['var(--acc)','Průměr ligy'],['var(--mut)','Nejhorší tým v kole']];
+
+/* ---------- grafy (SVG) ---------- */
+let gid=0;
+const clamp=(v,a,b)=>Math.min(Math.max(a,b),Math.max(Math.min(a,b),v));
+function osaY(lo,hi,n){const t=[];for(let i=0;i<=n;i++)t.push(lo+(hi-lo)*i/n);return t}
+/* hezká osa: kulaté kroky (1, 2, 5 × 10ⁿ); celá čísla, když o to jde */
+function niceAxis(lo,hi,celoc){
+  if(!(hi>lo))hi=lo+1;
+  let raw=(hi-lo)/4;
+  if(celoc)raw=Math.max(1,raw);
+  const mag=Math.pow(10,Math.floor(Math.log10(raw))),nrm=raw/mag;
+  let st=(nrm<=1.25?1:nrm<=2.5?2:nrm<=6?5:10)*mag;
+  if(celoc)st=Math.max(1,Math.round(st));
+  const a=Math.floor(lo/st+1e-9)*st,b=Math.ceil(hi/st-1e-9)*st,t=[];
+  for(let v=a;v<=b+st/2;v+=st)t.push(Math.round(v*1e6)/1e6);
+  return{lo:a,hi:b,ticks:t};
+}
+function krivka(p){
+  let d=`M${p[0][0].toFixed(1)} ${p[0][1].toFixed(1)}`;
+  for(let i=0;i<p.length-1;i++){
+    const a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;
+    const y1=clamp(b[1]+(c[1]-a[1])/6,b[1],c[1]),y2=clamp(c[1]-(e[1]-b[1])/6,b[1],c[1]);
+    d+=`C${(b[0]+(c[0]-a[0])/6).toFixed(1)} ${y1.toFixed(1)} ${(c[0]-(e[0]-b[0])/6).toFixed(1)} ${y2.toFixed(1)} ${c[0].toFixed(1)} ${c[1].toFixed(1)}`;
+  }
+  return d;
+}
+const mrizka=(svg,lo,hi,L,W,R,Y,fmt,ticks)=>{
+  for(const v of (ticks||osaY(lo,hi,4))){
+    const y=Y(v);
+    svg.append(sv('line',{class:'gl',x1:L,x2:W-R,y1:y,y2:y}),
+      sv('text',{x:L-8,y:y+3.5,'text-anchor':'end'},fmt(v)));
+  }
+};
+const popisky=(svg,labels,X,H,B)=>{
+  labels.forEach((l,i)=>svg.append(sv('text',{x:X(i),y:H-B+18,'text-anchor':'middle'},l)));
+};
+
+/* series: [{name,vals,color,fill,dash,w}] */
+function lineChart(labels,series,fmt,o={}){
+  const W=o.W||640,H=o.H||190,L=o.L||34,R=14,T=14,Bt=28,n=labels.length;
+  const vals=series.flatMap(s=>s.vals).filter(v=>v!=null);
+  if(!vals.length)return el('div','tlum','Žádná data.');
+  let lo=Math.min(...vals),hi=Math.max(...vals);
+  if(hi===lo){hi+=1;lo-=1}
+  const pad=(hi-lo)*.12;hi+=pad;lo=lo>=0?Math.max(0,lo-pad):lo-pad;
+  const ax=niceAxis(lo,hi,!o.real);lo=ax.lo;hi=ax.hi;
+  const X=i=>L+(n<2?(W-L-R)/2:i*(W-L-R)/(n-1)),Y=v=>T+(H-T-Bt)*(1-(v-lo)/(hi-lo)),base=H-Bt;
+  const svg=sv('svg',{viewBox:`0 0 ${W} ${H}`,class:'chart',role:'img'});
+  const defs=sv('defs');svg.append(defs);
+  mrizka(svg,lo,hi,L,W,R,Y,o.real?(o.osa||fmt):(v=>String(Math.round(v))),ax.ticks);
+  popisky(svg,labels,X,H,Bt);
+  if(o.zero&&lo<0&&hi>0)svg.append(sv('line',{class:'gl0',x1:L,x2:W-R,y1:Y(0),y2:Y(0)}));
+  if(o.mark!=null){const i=labels.indexOf(String(o.mark));if(i>=0)svg.append(sv('line',{class:'mk',x1:X(i),x2:X(i),y1:T,y2:base}))}
+  for(const s of series){
+    const runs=[];let cur=[];
+    s.vals.forEach((v,i)=>{if(v==null){if(cur.length)runs.push(cur);cur=[]}else cur.push([X(i),Y(v),i,v])});
+    if(cur.length)runs.push(cur);
+    let gradId=null;
+    if(s.fill){
+      gradId='lg'+(++gid);
+      defs.append(sv('linearGradient',{id:gradId,x1:0,y1:0,x2:0,y2:1},
+        sv('stop',{offset:'0%',style:`stop-color:${s.color};stop-opacity:.34`}),
+        sv('stop',{offset:'100%',style:`stop-color:${s.color};stop-opacity:0`})));
+    }
+    for(const r of runs){
+      if(r.length<2)continue;
+      const d=krivka(r);
+      if(s.fill)svg.append(sv('path',{d:`${d}L${r[r.length-1][0].toFixed(1)} ${base}L${r[0][0].toFixed(1)} ${base}Z`,style:`fill:url(#${gradId})`}));
+      svg.append(sv('path',{d,fill:'none','stroke-linecap':'round','stroke-linejoin':'round','stroke-width':s.w||2,
+        'stroke-dasharray':s.dash?'3 5':'none',style:`stroke:${s.color}`}));
+    }
+    const all=runs.flat();
+    for(const p of all){
+      svg.append(sv('g',{class:'pt'},
+        sv('title',null,`Kolo ${labels[p[2]]} · ${s.name}: ${fmt(p[3])}`),
+        sv('circle',{cx:p[0],cy:p[1],r:10,style:'fill:transparent'}),
+        sv('circle',{class:'d',cx:p[0],cy:p[1],r:3.5,style:`fill:${s.color}`})));
+    }
+    const last=all[all.length-1];
+    if(last&&!s.dash)svg.append(sv('circle',{cx:last[0],cy:last[1],r:8,style:`fill:${s.color};opacity:.17`,'pointer-events':'none'}),
+      sv('circle',{cx:last[0],cy:last[1],r:3.5,style:`fill:${s.color}`,'pointer-events':'none'}));
+  }
+  return svg;
+}
+
+/* items: [{label,title,segs:[{v,color}]}] */
+function barChart(items,o={}){
+  const W=o.W||640,H=o.H||175,L=34,R=14,T=14,Bt=28,n=items.length;
+  if(!n)return el('div','tlum','Žádná data.');
+  const tot=i=>sumA(i.segs.map(s=>s.v));
+  const axb=niceAxis(0,Math.max(...items.map(tot),1),true);const hi=axb.hi;
+  const Y=v=>T+(H-T-Bt)*(1-v/hi),base=H-Bt,band=(W-L-R)/n,bw=Math.min(30,band*.64);
+  const svg=sv('svg',{viewBox:`0 0 ${W} ${H}`,class:'chart',role:'img'});
+  mrizka(svg,0,hi,L,W,R,Y,v=>String(Math.round(v)),axb.ticks);
+  items.forEach((it,i)=>{
+    const g=sv('g',{class:'bar'},sv('title',null,it.title||it.label),
+      sv('rect',{class:'hit',x:L+band*i,y:T,width:band,height:H-T-Bt,rx:6}));
+    let y=base;const x=L+band*i+(band-bw)/2;
+    for(const s of it.segs){
+      const h=Math.max(0,s.v/hi*(H-T-Bt));if(!h)continue;
+      y-=h;
+      g.append(sv('rect',{class:'seg',x:x.toFixed(1),y:y.toFixed(1),width:bw.toFixed(1),height:h.toFixed(1),rx:3,
+        style:`fill:${s.color}`+(it.segs.length>1?';stroke:var(--card);stroke-width:1':'')}));
+    }
+    svg.append(g);
+    svg.append(sv('text',{x:L+band*i+band/2,y:H-Bt+18,'text-anchor':'middle'},it.label));
+  });
+  return svg;
+}
+
+/* ---------- karty ---------- */
+const karta=(cls,lab,val,sub)=>el('div','card kpi '+cls,el('div','lab',lab),
+  el('div',null,el('div','big'+(cls.includes('hero')?' xl':''),val),
+    ...(sub||[]).map(l=>el('div','sub',...[].concat(l)))));
+const grafKarta=(cls,lab,legend,body)=>el('div','card '+cls,
+  el('div','chead',el('div','lab',lab),el('div','legend',...legend.map(([c,n])=>el('span','lg',dot(c),n)))),el('div','cw',body));
+const bento=(...k)=>el('div','bento',...k);
+
+/* ---------- pomocné prvky ---------- */
+const cipZnacka=(def,odhad)=>{const s=el('span','cip'+(odhad?' odhad':''),def[1]);s.style.setProperty('--ch',def[3]);
+  s.title=def[2]+(odhad?' (odhad z dat)':'');return s};
+const cipText=c=>c.kolo!=null?`K${c.kolo}${c.odhad?' ~':''}`:(c.bezDat?'?':'–');
+function znacky(k){
+  const s=el('span','m');
+  if(k.goly)s.append(el('span','g','●'.repeat(Math.min(k.goly,6))));
+  if(k.asist)s.append(el('span','a','○'.repeat(Math.min(k.asist,6))));
+  for(let i=0;i<k.zlute;i++)s.append(el('i','zk'));
+  for(let i=0;i<k.cervene;i++)s.append(el('i','ck'));
+  return s;
+}
+function tb(cols,rows){
+  const t=el('table'),hr=el('tr');
+  for(const c of cols)hr.append(el('th',c.c,c.h));
+  t.append(el('thead',null,hr));
+  const b=el('tbody');
+  rows.forEach((r,i)=>{
+    const tr=el('tr',r&&r.__cls);
+    for(const c of cols){
+      const td=el('td',c.c),v=c.f(r,i);
+      if(v!=null&&v!=='')td.append(v.nodeType?v:String(v));
+      tr.append(td);
+    }
+    b.append(tr);
+  });
+  t.append(b);
+  return el('div','panel',t);
+}
+const podnab=(tab,polozky)=>el('div','podnab',...polozky.map(([k,t])=>{
+  const b=el('button',UI.sub[tab]===k?'aktivni':'',t);b.onclick=()=>{UI.sub[tab]=k;kresliVse()};return b}));
+const sekce=(t,x)=>el('div','sekce',el('h3',null,t),x);
+/* vysvětlení běžným jazykem + automatický závěr z dat */
+const vysv=(txt,zaver)=>el('div','vysv',el('p',null,txt),zaver?el('p','zaver',...[].concat(zaver).flat(Infinity)):null);
+const ASC=new Set(['jmeno','tym','klub','poz','kat','cip','oprum','onej']);
+function mkTh(txt,klic,cls,st,rer,title,asc){
+  const t=el('th',(cls||'')+(st.klic===klic?' sorted':''),txt);if(title)t.title=title;t.dataset.k=klic;
+  if(st.klic===klic)t.append(el('span','ar',st.smer>0?'▲':'▼'));
+  t.onclick=()=>{
+    if(st.klic===klic)st.smer*=-1;
+    else{st.klic=klic;st.smer=(asc||ASC.has(klic))?1:-1}
+    rer();
+  };
+  return t;
+}
+function trid(list,st,hod,zaloha){
+  list.sort((a,b)=>{
+    const x=hod(a,st.klic),y=hod(b,st.klic);
+    if(x==null&&y==null)return zaloha(a,b);
+    if(x==null)return 1;if(y==null)return -1;
+    const c=typeof x==='string'?cs.compare(x,y):x-y;
+    return c?c*st.smer:zaloha(a,b);
+  });
+}
+function barCell(v,mx){
+  const f=el('i','fl');f.style.width=(mx>0?Math.max(0,v)/mx*100:0)+'%';
+  return el('span','bc',el('b',null,v),el('i','tr',f));
+}
+function bunka(body,sc,cls){
+  const v=el('span','v'+(cls?' '+cls:''),body);
+  const h=teplo(body,sc);
+  if(h==='neg')v.classList.add('neg');else if(h){v.classList.add('h');v.style.setProperty('--c',h)}
+  return v;
+}
+
+/* ---------- Pořadí ---------- */
+function viewPoradi(root){
+  root.append(podnab('poradi',[['poradi','Pořadí po kolech'],['stabilita','Stabilita']]));
+  (UI.sub.poradi==='stabilita'?viewStabilita:viewPoradiTabulka)(root);
+}
+function viewPoradiTabulka(root){
+  const tymy=[...D.tymy.values()];
+  if(!tymy.length){root.append(el('div','tlum','Soubor neobsahuje žádné týmy.'));return}
+  const best=new Map(D.kola.map(k=>[k,Math.max(...tymy.map(u=>{const t=u.kola.get(k);return t&&t.body!=null?t.body:-Infinity}))]));
+  const pkum=pk();
+
+  /* přehled */
+  const vse=tymy.flatMap(u=>[...u.kola.values()].filter(t=>t.body!=null).map(t=>({u,t})));
+  const nejKolo=vse.reduce((a,x)=>!a||x.t.body>a.t.body?x:a,null);
+  const sou=tymy.map(u=>u.soucet);
+  const serT=[...tymy].sort((a,b)=>b.soucet-a.soucet||cs.compare(a.jmeno,b.jmeno));
+  let posun=null;
+  for(const u of tymy){const a=pkum.get(u.tymId),m=a.length;if(m>1){const d=a[m-2].r-a[m-1].r;if(!posun||d>posun.d)posun={u,d}}}
+  root.append(vysv('Přehled celé ligy: jak týmy bodovaly kolo po kole a jak se měnilo pořadí v tabulce.',
+    [`Po ${D.kola.length} kolech vede `,B(serT[0].jmeno),` (${serT[0].soucet} b)`,
+     serT[1]?[', druhý je ',B(serT[1].jmeno),` (${serT[1].soucet} b)`]:'','.',
+     posun&&posun.d>0?[' V posledním kole se nejvíc posunul nahoru ',B(posun.u.jmeno),` (o ${posun.d}).`]:'']));
+  root.append(bento(
+    grafKarta('c8 r3','Body ligy po kolech',legLiga,lineChart(D.kola.map(String),serLiga(),f1,{H:214})),
+    karta('c4','Průměr týmu za kolo',vse.length?f1(sumA(vse.map(x=>x.t.body))/vse.length):'–',[[`${tymy.length} týmů · ${D.kola.length} kol`]]),
+    karta('c4','Součty bodů týmů',`${Math.min(...sou)}–${Math.max(...sou)}`,[['od nejméně po nejvíc bodů celkem']]),
+    karta('c4','Nejlepší výkon v kole',nejKolo?nejKolo.t.body:'–',nejKolo?[[B(nejKolo.u.jmeno),` · kolo ${nejKolo.t.kolo}`]]:[]),
+    grafKarta('c12','Pořadí v tabulce po každém kole (podle celkových bodů)',[],
+      bumpChart(D.kola.map(String),tymy.map(u=>({id:u.tymId,name:u.jmeno,ranks:pkum.get(u.tymId)})),
+        id=>{UI.tym=id;UI.zalozka='tym';kresliVse()}))));
+
+  /* matice – tři pohledy */
+  const rezim=UI.rezim;
+  const prum=new Map(D.kola.map(k=>[k,prumerKola(k)]));
+  const prk=new Map(D.kola.map(k=>[k,poradiKola(k)]));
+  const hodn=(u,k)=>{
+    const b=bodyKola(u,k);if(b==null)return null;
+    return rezim==='odch'?b-prum.get(k):rezim==='por'?prk.get(k).get(u.tymId):b;
+  };
+  const vals=tymy.flatMap(u=>D.kola.map(k=>hodn(u,k)));
+  const scB=skala(vals),scA=skalaVse(vals);
+  const st=new Map(tymy.map(u=>{
+    const bs=D.kola.map(k=>bodyKola(u,k)).filter(x=>x!=null);
+    const dv=D.kola.map(k=>{const b=bodyKola(u,k);return b==null?null:b-prum.get(k)}).filter(x=>x!=null);
+    const rk=D.kola.map(k=>prk.get(k).get(u.tymId)).filter(x=>x!=null);
+    const n=bs.length,mean=n?sumA(bs)/n:0,a=pkum.get(u.tymId),m=a.length;
+    return [u.tymId,{
+      sodch:sumA(dv),sigma:n>1?Math.sqrt(sumA(bs.map(b=>(b-mean)**2))/(n-1)):0,nad:dv.filter(d=>d>0).length,n,
+      oprum:rk.length?sumA(rk)/rk.length:null,onej:rk.length?Math.min(...rk):null,onejh:rk.length?Math.max(...rk):null,
+      zmena:m>1?a[m-2].r-a[m-1].r:null}];
+  }));
+  const S=id=>st.get(id);
+  /* [klíč, hlavička, tooltip, text, hodnota pro řazení, třída] */
+  const SUM={
+    body:[
+      ['soucet','Součet','Součet bodů za kola',u=>u.soucet,u=>u.soucet,'n sum'],
+      ['prumer','Průměr','Průměr na kolo',u=>f1(u.prumer),u=>u.prumer,'n'],
+      ['liga','Liga','Body podle tabulky ligy',u=>u.body??'',u=>u.body,'n tlum']],
+    odch:[
+      ['sodch','Celkem vs průměr','Součet odchylek od průměru ligy za všechna kola (plus = nad průměrem)',u=>znam(S(u.tymId).sodch,true),u=>S(u.tymId).sodch,'n sum'],
+      ['sigma','Kolísání','Jak moc se body týmu mezi koly liší (nižší číslo = vyrovnanější výkony)',u=>f1(S(u.tymId).sigma),u=>S(u.tymId).sigma,'n'],
+      ['nad','Kol nad průměrem','V kolika kolech byl tým nad průměrem ligy',u=>`${S(u.tymId).nad}/${S(u.tymId).n}`,u=>S(u.tymId).nad,'n']],
+    por:[
+      ['oprum','Průměrné pořadí','Průměrné pořadí v jednotlivých kolech v rámci ligy',u=>S(u.tymId).oprum==null?'':f1(S(u.tymId).oprum),u=>S(u.tymId).oprum,'n sum'],
+      ['onej','Nejlepší','Nejlepší pořadí v kole',u=>S(u.tymId).onej??'',u=>S(u.tymId).onej,'n'],
+      ['onejh','Nejhorší','Nejhorší pořadí v kole',u=>S(u.tymId).onejh??'',u=>S(u.tymId).onejh,'n tlum']]
+  }[rezim];
+
+  const TIT={body:'Body týmů po kolech',odch:'Odchylka od průměru kola',por:'Pořadí v kole'};
+  const ctrl=prepinac([['body','Body'],['odch','Odchylka od Ø'],['por','Pořadí v kole']],rezim,k=>{
+    UI.rezim=k;UI.trP.klic=k==='body'?'soucet':k==='odch'?'sodch':'oprum';UI.trP.smer=k==='por'?1:-1;kresliVse();
+  });
+  root.append(popisek(TIT[rezim],CIPY.map(d=>el('span','skl',odznak(d,false),d[2].split(' (')[0])),ctrl,
+    rezim==='por'?['horší','lepší']:['méně','více']));
+
+  root.append(vysv({
+    body:'Každé políčko jsou body týmu v daném kole. Čím světlejší zelená, tím víc bodů, fialová znamená málo. Rámeček = nejlepší výsledek kola, barevná tečka v rohu = použitý čip (prázdná tečka = odhad z dat).',
+    odch:'Políčko ukazuje, o kolik bodů byl tým v daném kole nad (+) nebo pod (−) průměrem všech týmů. „Kolísání“ říká, jak moc se výkony týmu měnily: čím nižší číslo, tím vyrovnanější.',
+    por:'Políčko ukazuje, kolikátý byl tým v daném kole (1 = nejlepší). Pořadí se počítá jen mezi týmy ve vaší lize.'}[rezim]));
+  const wrap=el('div','tabwrap');root.append(wrap);
+  const hod=(u,k)=>{
+    if(k==='jmeno')return u.jmeno;if(k==='tym')return u.nazevTymu;
+    if(k==='zmena')return S(u.tymId).zmena;
+    const s=SUM.find(x=>x[0]===k);if(s)return s[4](u);
+    if(k[0]==='k')return hodn(u,+k.slice(1));
+    return null;
+  };
+  function kresli(){
+    const list=[...tymy];
+    trid(list,UI.trP,hod,(a,b)=>cs.compare(a.jmeno,b.jmeno));
+    const t=el('table','mat'),hr=el('tr');
+    hr.append(el('th','n p0','#'),mkTh('Hráč','jmeno','p1',UI.trP,kresli),mkTh('Tým','tym','',UI.trP,kresli),
+      mkTh('Změna','zmena','n',UI.trP,kresli,'Posun v pořadí po posledním kole (podle celkových bodů)'));
+    for(const k of D.kola)hr.append(mkTh('K'+k,'k'+k,'n',UI.trP,kresli,`Kolo ${k}`,rezim==='por'));
+    for(const[key,h,title,,,c]of SUM)hr.append(mkTh(h,key,c.replace(' tlum',''),UI.trP,kresli,title));
+    t.append(el('thead',null,hr));
+    const body=el('tbody');
+    for(const u of list){
+      const tr=el('tr'),zm=S(u.tymId).zmena;
+      tr.append(el('td','n tlum p0',u.poradi??''),el('td','p1',B(u.jmeno)),el('td','tlum',u.nazevTymu),
+        el('td','n',zm==null?'':zm>0?el('span','zpos','▲'+zm):zm<0?el('span','zneg','▼'+(-zm)):el('span','nic','–')));
+      for(const k of D.kola){
+        const tk=u.kola.get(k),td=el('td','kolo');
+        if(!tk||tk.body==null){td.append(el('span','nic','·'));tr.append(td);continue}
+        const cell=el('div','cell'),val=hodn(u,k);
+        let v;
+        if(rezim==='body')v=bunka(val,scB);
+        else v=pilulka(rezim==='odch'?(val>0.05?'+':val<-0.05?'−':'')+f1(Math.abs(val)):val,teploT(val,scA,rezim==='por'));
+        if(rezim==='por'?val===1:tk.body===best.get(k))v.classList.add('best');
+        const od=CIPY.filter(d=>u.cipy[d[0]].kolo===k);
+        if(od.length)v.append(el('span','odz',...od.map(d=>odznak(d,u.cipy[d[0]].odhad))));
+        cell.append(v);
+        td.append(cell);
+        const kap=kapEf(u,k);
+        td.title=`Body: ${tk.body} · Ø ligy: ${f1(prum.get(k))} · pořadí v lize: ${prk.get(k).get(u.tymId)}`
+          +(kap.length?`\nKapitán: ${kap.map(x=>`${jm(x.hracId)} (${x.body})${x.kapitan?'':' – zástupce'}`).join(', ')}`:'')+(tk.poradi!=null?`\nPořadí kola v celé hře: ${tk.poradi}`:'');
+        td.style.cursor='pointer';
+        td.onclick=()=>{UI.tym=u.tymId;UI.zalozka='tym';kresliVse()};
+        tr.append(td);
+      }
+      for(const[,,,f,,c]of SUM){const x=f(u);tr.append(el('td',c,x))}
+      body.append(tr);
+    }
+    t.append(body);
+    const ft=el('tr');ft.append(el('td','p0'),el('td','p1',rezim==='body'?'Průměr ligy':''),el('td'),el('td'));
+    for(const k of D.kola){const p=prum.get(k);ft.append(el('td','n',rezim==='body'&&p!=null?f1(p):''))}
+    SUM.forEach(([,,,,,c],i)=>ft.append(el('td',i===0?'n sum':'n')));
+    t.append(el('tfoot',null,ft));
+    wrap.replaceChildren(t);
+  }
+  kresli();
+}
+
+/* ---------- Tým ---------- */
+function viewTym(root){
+  const tymy=[...D.tymy.values()].sort((a,b)=>(a.poradi??1e9)-(b.poradi??1e9)||cs.compare(a.jmeno,b.jmeno));
+  if(!tymy.length){root.append(el('div','tlum','Soubor neobsahuje žádné týmy.'));return}
+  if(!D.tymy.has(UI.tym))UI.tym=tymy[0].tymId;
+  const u=D.tymy.get(UI.tym);
+  const sel=el('select');
+  for(const t of tymy)sel.append(new Option(`${t.poradi??'–'}. ${t.jmeno} · ${t.nazevTymu}`,t.tymId));
+  sel.value=u.tymId;sel.onchange=()=>{UI.tym=Number(sel.value);kresliVse()};
+  root.append(el('div','hlava',sel,el('span','jmeno',u.jmeno),el('span','tlum',u.nazevTymu)));
+
+  const tk=[...u.kola.values()].filter(t=>t.body!=null);
+  const nej=tk.reduce((a,t)=>!a||t.body>a.body?t:a,null),nejh=tk.reduce((a,t)=>!a||t.body<a.body?t:a,null);
+  const labs=D.kola.map(String);
+  const chipRows=el('div','chipl',...CIPY.map(([id,,nazev,col])=>{
+    const c=u.cipy[id],pouzit=c.kolo!=null;
+    return el('div',null,dot(col,!pouzit),el('span','nm',nazev),el('span','kl'+(pouzit?'':' tlum'),cipText(c)));
+  }));
+  const sh=souhrnTym(u);
+  root.append(vysv('Detail jednoho týmu: jak bodoval, jak mu vyšli kapitáni a lavička a z kterých hráčů přišly body.',
+    [B(u.jmeno),` je v lize ${u.poradi??'–'}. s ${u.soucet} b (průměr ${f1(u.prumer)} na kolo).`,
+     nej&&nejh?` Nejlepší bylo kolo ${nej.kolo} (${nej.body} b), nejhorší kolo ${nejh.kolo} (${nejh.body} b).`:'',
+     sh.kn?` Kapitáni přidali ${fb(sh.bonus)} b; s nejlepším možným kapitánem by to bylo o ${fb(sh.ztrata)} b víc.`:'']));
+  root.append(bento(
+    karta('c2','Pořadí v lize',u.poradi??'–',[[`z ${tymy.length} týmů`]]),
+    karta('c2','Součet bodů',u.soucet,[['za všechna kola']]),
+    karta('c2','Ø na kolo',f1(u.prumer),[[`${tk.length} kol`]]),
+    karta('c3','Nejlepší kolo',nej?nej.body:'–',nej?[[`Kolo ${nej.kolo}`]]:[]),
+    karta('c3','Nejhorší kolo',nejh?nejh.body:'–',nejh?[[`Kolo ${nejh.kolo}`]]:[]),
+    karta('c4','Body navíc z kapitána',fb(sh.bonus),[`kapitánovi se body počítají dvakrát · za ${sh.kn} kol`,`nejlepší hráč zvolen ${sh.trefa}×`]),
+    karta('c4','Promarněno výběrem kapitána',fb(sh.ztrata),['o tolik víc by dal nejlepší hráč sestavy']),
+    karta('c4','Body na lavičce (nepočítají se)',fb(sh.lavNev),[sh.nejLav?`nejvíc v kole ${sh.nejLav.k}: ${fb(sh.nejLav.b)} b`:'bez ztrát',...(sh.lavZisk?[`čip Hrdinové lavičky přinesl ${fb(sh.lavZisk)} b`]:[])]),
+    grafKarta('c8','Body týmu po kolech',[['var(--acc)',u.jmeno],['var(--mut)','Ø liga']],
+      lineChart(labs,[
+        {name:'Ø liga',vals:D.kola.map(prumerKola),color:'var(--mut)',dash:true,w:1.5},
+        {name:u.jmeno,vals:D.kola.map(k=>bodyKola(u,k)),color:'var(--acc)',fill:true,w:2.2}],f1)),
+    el('div','card c4',el('div','chead',el('div','lab','Čipy')),chipRows)));
+
+  if(D.maCeny){
+    const hv=D.kola.map(k=>hodnotaSestavy(u,k)),zn=hv.filter(x=>x!=null);
+    const lig=D.kola.map(k=>{const v=[...D.tymy.values()].map(t=>hodnotaSestavy(t,k)).filter(x=>x!=null);return v.length?sumA(v)/v.length:null});
+    if(zn.length){
+      const d=zn.length>1?zn[zn.length-1]-zn[0]:null,lastLig=[...lig].reverse().find(x=>x!=null);
+      root.append(bento(
+        karta('c4','Hodnota sestavy',fcu(zn[zn.length-1]),[d!=null?['od prvního kola ',zc(d)]:['jedno kolo s cenami'],lastLig!=null?['Ø liga ',fcu(lastLig)]:'']),
+        grafKarta('c8','Hodnota sestavy po kolech (součet cen všech hráčů v kádru)'+(D.cenaJ>1?' – v milionech':''),[['var(--acc)',u.jmeno],['var(--mut)','Ø liga']],
+          lineChart(labs,[{name:'Ø liga',vals:lig,color:'var(--mut)',dash:true,w:1.5},{name:u.jmeno,vals:hv,color:'var(--acc)',w:2.2}],fc,{real:true,L:D.cenaJ>1?40:46}))));
+    }
+  }
+  const spr=souhrnPrestupy(u),mode=modPrest(),odd=mode==='odd',AS=mode==='vse'?spr:spr.bez;
+  const prRows=spr.rows.filter(r=>(mode==='vse'||!r.wc)&&(r.n>0||r.pen>0)),wcRows=odd?spr.rows.filter(r=>r.wc):[];
+  if(spr.rows.length){
+    root.append(el('div','slr',el('h3','sl','Přestupy po kolech'),prepPrest()));
+    root.append(vysv('Kdo v kole přibyl do kádru a kdo odešel, kolik se za to zaplatilo (v kole je jeden přestup zdarma, nevyužité se přenášejí do dalších kol, každý další stojí −4 b, s čipem Přestavba kádru nebo Bohatý majitel nic) a jestli přivedení hráči dali víc bodů než odvedení. Čísla v závorce jsou body, které hráč v daném kole získal.'
+      +(maWcPrest()?' Kolo s čipem Přestavba kádru nebo Bohatý majitel (neomezené přestupy) jde započítat dohromady s ostatními, vynechat, nebo ukázat odděleně.':''),
+      AS.n?[B(u.jmeno),` udělal ${AS.n} přestupů${mode==='vse'?'':' (bez čipů s neomezenými přestupy)'} a zaplatil za ně ${AS.pen} b. `,
+        AS.nezn?`Ve ${AS.nezn} kolech neznáme body odvedeného hráče, bilance je tam neúplná. `:'',
+        AS.cisty>0?['Po penalizaci mu přestupy přinesly ',znam(AS.cisty),' b.']:AS.cisty<0?['Po penalizaci ho přestupy stály ',znam(-AS.cisty),' b.']:'Po penalizaci vyšly přestupy nastejno.',
+        odd&&spr.wc.kola?` Čip s neomezenými přestupy v kole ${spr.wc.kolaWcT.join(', ')}: ${spr.wc.n} přestupů.`:'']
+        :(odd&&spr.wc.kola?`Mimo čipy s neomezenými přestupy žádné přestupy. Ty byly v kole ${spr.wc.kolaWcT.join(', ')}: ${spr.wc.n} přestupů.`:'V datech nejsou žádné přestupy.')));
+    root.append(bento(
+      karta('c3','Přestupů celkem',AS.n,[[`v ${prRows.filter(r=>r.n>0).length} kolech`+(mode==='bez'?' · bez těchto čipů':'')]]),
+      karta('c3','Zaplacená penalizace',AS.pen?'−'+AS.pen:'0',[[`${AS.kolPen} kol s penalizací`]]),
+      karta('c3','Rozdíl bodů',znam(AS.delta),[['přivedení minus odvedení hráči']]),
+      karta('c3','Po penalizaci',znam(AS.cisty),[[AS.cisty>0?'přestupy se vyplatily':AS.cisty<0?'přestupy se nevyplatily':'bez rozdílu']])));
+    const cols=[
+      {k:'k',h:'Kolo',c:'n',f:r=>r.k,v:r=>r.k},
+      {k:'n',h:'Přestupů',c:'n',f:r=>r.wc?el('span',null,r.n,' ',el('span','tlum',r.cipTyp==='fp'?'(Bohatý majitel)':'(Přestavba kádru)')):r.n,v:r=>r.n},
+      {k:'pen',h:'Penalizace',c:'n',f:r=>{const e=el('span',r.pen?'zneg':'nic',r.pen?'−'+r.pen:'0');if(r.pen!==r.ocek)e.title=`Podle pravidla s přenosem přestupů zdarma by to bylo ${r.ocek} b, oficiální body ukazují ${r.pen} b`;return e},v:r=>r.pen},
+      {h:'Přivedení hráči',f:r=>el('span','tlum',r.vstup.map(jmB).join(', '))},
+      {h:'Odvedení hráči',f:r=>el('span','tlum',r.odchod.map(jmB).join(', '))},
+      {k:'delta',h:'Rozdíl bodů',c:'n',f:r=>znN(r.delta),v:r=>r.delta},
+      {k:'cisty',h:'Po penalizaci',c:'n',f:r=>el('b',null,znN(r.cisty)),v:r=>r.cisty},
+      {k:'v3in',h:'Další 3 kola: přivedení',c:'n',f:r=>r.v3&&r.n?fb(r.v3.inB)+(r.v3.nIn?' ?':''):'',v:r=>r.v3?r.v3.inB:null,title:'Body přivedených hráčů v dalších třech kolech (u posledních kol méně)'},
+      {k:'v3out',h:'Další 3 kola: odvedení',c:'n',f:r=>r.v3&&r.n?fb(r.v3.outB)+(r.v3.nOut?' ?':''):'',v:r=>r.v3?r.v3.outB:null,title:'Body odvedených hráčů v dalších třech kolech. Otazník = u některých neznáme body, protože je v tom kole nikdo z ligy neměl'},
+      {k:'cisty4',h:'S výhledem',c:'n',f:r=>r.cisty4==null?(r.v3&&r.n?el('span','nic','?'):''):el('b',null,znam(r.cisty4)),v:r=>r.cisty4,title:'Po penalizaci plus rozdíl bodů přivedených a odvedených v dalších třech kolech'}];
+    if(prRows.length)root.append(el('div','sekce',sortTb(cols,prRows,UI.trPT)));
+    if(wcRows.length){
+      root.append(el('div','slr',el('h3','sl','Přestavba kádru a Bohatý majitel')));
+      root.append(el('div','sekce',tb([
+        {h:'Kolo',c:'n',f:r=>r.k},{h:'Čip',f:r=>r.cipTyp==='fp'?'Bohatý majitel':'Přestavba kádru'},{h:'Přestupů',c:'n',f:r=>r.n},
+        {h:'Přivedení hráči',f:r=>el('span','tlum',r.vstup.map(jmB).join(', '))},
+        {h:'Odvedení hráči',f:r=>el('span','tlum',r.odchod.map(jmB).join(', '))},
+        {h:'Rozdíl bodů',c:'n',f:r=>znN(r.delta)}],wcRows)));
+    }
+  }
+  const rows=new Map();
+  for(const[kolo,arr]of u.sestava){
+    for(const s of arr){
+      let r=rows.get(s.hracId);
+      if(!r){r={id:s.hracId,h:D.hraci.get(s.hracId)||{},bunky:new Map(),soucet:0,zapasu:0,goly:0,asist:0,zlute:0,cervene:0};rows.set(s.hracId,r)}
+      const hra=vHre(u,kolo,s),e=D.hk.get(s.hracId+'|'+kolo);
+      r.bunky.set(kolo,{s,hra,e});
+      if(hra){
+        r.soucet+=s.body;
+        if(!e||e.min>0)r.zapasu++;
+        if(e){r.goly+=e.goly;r.asist+=e.asist;r.zlute+=e.zlute;r.cervene+=e.cervene}
+      }
+    }
+  }
+  const lst=[...rows.values()];
+  const sc=skala(lst.flatMap(r=>[...r.bunky.values()].filter(c=>c.hra).map(c=>c.s.body)));
+  const hod=(r,k)=>{
+    if(k==='jmeno')return(r.h.prijmeni||'')+' '+(r.h.jmeno||'');
+    if(k==='soucet')return r.soucet;if(k==='zapasu')return r.zapasu;
+    if(k[0]==='k'){const c=r.bunky.get(+k.slice(1));return c&&c.hra?c.s.body:null}
+    return r[k];
+  };
+  root.append(popisek('Hráči týmu po kolech'));
+  root.append(vysv('Čísla jsou body, které hráč v kole přinesl týmu; ×2 = kapitán. Číslo v závorce = hráč byl na lavičce a jeho body se nepočítaly. ● gól, ○ asistence, žlutý a červený pruh = karty.'));
+  const wrap=el('div','tabwrap');root.append(wrap);
+  function kresli(){
+    trid(lst,UI.trT,hod,(a,b)=>cs.compare(a.h.prijmeni||'',b.h.prijmeni||''));
+    const t=el('table','mat tm'),hr=el('tr');
+    hr.append(mkTh('Hráč','jmeno','s1',UI.trT,kresli),el('th','s2','Klub'),el('th','s3','Poz.'));
+    for(const k of D.kola)hr.append(mkTh('K'+k,'k'+k,'n rk',UI.trT,kresli,`Kolo ${k}`));
+    hr.append(mkTh('Součet','soucet','n sum',UI.trT,kresli,'Body započítané tomuto týmu'),
+      mkTh('Kol hrál','zapasu','n',UI.trT,kresli,'Počet kol, kdy byl v základu a odehrál minuty'),
+      mkTh('G','goly','n',UI.trT,kresli,'Góly v kolech, kdy byl v sestavě'),
+      mkTh('A','asist','n',UI.trT,kresli,'Asistence'),mkTh('ŽK','zlute','n',UI.trT,kresli,'Žluté karty'),mkTh('ČK','cervene','n',UI.trT,kresli,'Červené karty'));
+    t.append(el('thead',null,hr));
+    const body=el('tbody');
+    for(const r of lst){
+      const tr=el('tr'),c1=el('td','s1');
+      const a=hracLink(r.id);a.classList.add('jm');c1.append(a);
+      tr.append(c1,el('td','s2 tlum',kz(r.h.klubId)),el('td','s3 tlum',POZ[r.h.pozice]||''));
+      for(const k of D.kola){
+        const td=el('td','kolo'),c=r.bunky.get(k);
+        if(!c){td.append(el('span','nic','·'));tr.append(td);continue}
+        const e=c.e,cell=el('div','cell');
+        if(c.hra){
+          cell.append(bunka(c.s.body,sc,e&&e.min===0?'nehral':''));
+          if(jeKap(u,k,c.s))cell.append(el('span','kap','×2'));
+          if(e)cell.append(znacky(e));
+        }else{
+          cell.append(el('span','v lav','('+(e?e.body:c.s.body)+')'));
+        }
+        td.append(cell);
+        td.title=[c.s.slot==='Bench'?'Lavička':'Základ',c.s.autoStridani?'auto-střídání':'',jeKap(u,k,c.s)&&!c.s.kapitan?'zástupce kapitána (kapitán nenastoupil)':'',c.s.kapitan&&!jeKap(u,k,c.s)?'kapitán nenastoupil':'',
+          ...(e?e.zapasy.map(z=>`${soup(z)} ${z.skoreTym}:${z.skoreSoupere} · ${z.min} min · ${z.body} b`):[])].filter(Boolean).join('\n');
+        tr.append(td);
+      }
+      tr.append(el('td','n sum',r.soucet),el('td','n',vyp(r.zapasu)),el('td','n',vyp(r.goly)),el('td','n',vyp(r.asist)),
+        el('td','n',vyp(r.zlute)),el('td','n',vyp(r.cervene)));
+      body.append(tr);
+    }
+    t.append(body);
+    const ft=el('tr');ft.append(el('td','s1','Součet kola'),el('td','s2'),el('td','s3'));
+    for(const k of D.kola){
+      const tkk=u.kola.get(k);
+      const suma=lst.reduce((s,r)=>{const c=r.bunky.get(k);return s+(c&&c.hra?c.s.body:0)},0);
+      const td=el('td','n',tkk&&tkk.body!=null?tkk.body:'');
+      if(tkk&&tkk.body!=null&&suma!==tkk.body){td.classList.add('nesedi');td.title=`Součet sestavy ${suma}, oficiálně ${tkk.body}`}
+      ft.append(td);
+    }
+    ft.append(el('td','n sum',u.soucet),el('td'),el('td','n',lst.reduce((s,r)=>s+r.goly,0)),el('td','n',lst.reduce((s,r)=>s+r.asist,0)),
+      el('td','n',lst.reduce((s,r)=>s+r.zlute,0)),el('td','n',lst.reduce((s,r)=>s+r.cervene,0)));
+    t.append(el('tfoot',null,ft));
+    wrap.replaceChildren(t);
+  }
+  kresli();
+}
+
+/* ---------- Kolo ---------- */
+function viewKolo(root){
+  root.append(podnab('kolo',[['rozbor','Rozbor kola'],['shrnuti','Shrnutí kola']]));
+  (UI.sub.kolo==='shrnuti'?viewShrnuti:viewKoloRozbor)(root);
+}
+function viewKoloRozbor(root){
+  if(!D.kola.includes(UI.kolo))UI.kolo=D.kola[D.kola.length-1];
+  const kolo=UI.kolo;
+  const chips=el('div','kolacip',el('span','stit','Kolo'));
+  for(const k of D.kola){const b=el('button',k===kolo?'aktivni':'',k);b.onclick=()=>{UI.kolo=k;kresliVse()};chips.append(b)}
+  root.append(chips);
+
+  const tymy=[...D.tymy.values()].filter(u=>u.kola.get(kolo)&&u.kola.get(kolo).body!=null);
+  tymy.sort((a,b)=>b.kola.get(kolo).body-a.kola.get(kolo).body||cs.compare(a.jmeno,b.jmeno));
+  if(!tymy.length){root.append(el('div','tlum','Pro toto kolo nejsou data.'));return}
+  const nej=tymy[0].kola.get(kolo).body,suma=tymy.reduce((s,u)=>s+u.kola.get(kolo).body,0);
+
+  const poc=tymy.map(u=>u.kola.get(kolo).body).sort((a,b)=>a-b);
+  const med=poc.length%2?poc[(poc.length-1)/2]:(poc[poc.length/2-1]+poc[poc.length/2])/2;
+  root.append(vysv('Co se stalo v jednom kole: pořadí týmů, jak si vedli jednotliví hráči a kterým netradičním volbám se vyplatilo jít proti ostatním.',
+    [`V ${kolo}. kole získal nejvíc bodů tým `,B(tymy[0].jmeno),` (${nej} b). Průměr ligy byl ${f1(suma/tymy.length)} b, nejméně měl tým `,B(tymy[tymy.length-1].jmeno),` (${poc[0]} b).`]));
+  root.append(bento(
+    grafKarta('c8 r3','Body ligy po kolech',legLiga,lineChart(D.kola.map(String),serLiga(),f1,{mark:kolo,H:214})),
+    karta('c4','Průměr týmu v kole',f1(suma/tymy.length),[[`${tymy.length} týmů`]]),
+    karta('c4','Rozpětí bodů',`${poc[0]}–${poc[poc.length-1]}`,[['od nejhoršího po nejlepší tým']]),
+    karta('c4','Prostřední tým',f1(med),[['polovina týmů měla víc bodů, polovina méně']])));
+
+  const radky=tymy.map(u=>{
+    const t=u.kola.get(kolo),arr=(u.sestava.get(kolo)||[]).filter(s=>vHre(u,kolo,s));
+    const kap=kapEf(u,kolo),top=arr.reduce((a,s)=>!a||s.body>a.body?s:a,null);
+    return{u,t,kap,top};
+  });
+  const horni=tb([
+    {h:'#',c:'n tlum',f:(r,i)=>i+1},{h:'Hráč',f:r=>B(r.u.jmeno)},{h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu)},
+    {h:'Body',c:'n',f:r=>barCell(r.t.body,nej)},{h:'Ztráta na 1. místo',c:'n',f:r=>r.t.body===nej?'':el('span','tlum',r.t.body-nej)},
+    {h:'Kapitán',f:r=>r.kap.map(x=>`${jm(x.hracId)} (${x.body})${x.kapitan?'':' – zástupce'}`).join(', ')},
+    {h:'Nejlepší hráč týmu',f:r=>r.top?`${jm(r.top.hracId)} (${r.top.body})`:''},
+    {h:'Pořadí v celé hře',c:'n',f:r=>r.t.poradi??''},
+    {h:'Čipy',f:r=>{const s=el('span');for(const def of CIPY){const c=r.u.cipy[def[0]];if(c.kolo===kolo)s.append(cipZnacka(def,c.odhad),' ')}return s.childNodes.length?s:''}},
+    {h:'Lavička',c:'n',f:r=>{if(!r.t.lavicka)return '';const d=dot('var(--acc)');d.title='Lavička se počítá';return d}}
+  ],radky);
+  root.append(sekce('Pořadí týmů v kole',horni));
+
+  const m=new Map();
+  for(const u of tymy){
+    for(const s of (u.sestava.get(kolo)||[])){
+      if(!vHre(u,kolo,s))continue;
+      let r=m.get(s.hracId);
+      if(!r){
+        const e=D.hk.get(s.hracId+'|'+kolo),h=D.hraci.get(s.hracId)||{};
+        r={id:s.hracId,h,e,body:e?e.body:(jeKap(u,kolo,s)?s.body/2:s.body),meli:[]};m.set(s.hracId,r);
+      }
+      r.meli.push(u.jmeno+(jeKap(u,kolo,s)?' (K)':''));
+    }
+  }
+  const hr=[...m.values()].sort((a,b)=>b.body-a.body||cs.compare(a.h.prijmeni||'',b.h.prijmeni||''));
+  const scH=skala(hr.map(r=>r.body));
+  const pctH=b=>{let lt=0,eq=0;for(const x of scH.v){if(x<b)lt++;else if(x===b)eq++}return scH.v.length?(lt+eq/2)/scH.v.length:0};
+  for(const r of hr){
+    const p=pctH(r.body);
+    r.tier=r.e&&r.e.min===0?'off':r.body<=0?'bad':p>=.85?'top':p>=.55?'good':'mid';
+    r.__cls=r.tier==='top'?'top':r.tier==='bad'?'bad':r.tier==='off'?'dim':'';
+  }
+  const TIER={top:['var(--acc)','Dařilo se'],good:['var(--k3)','Nad průměrem'],mid:[null,'Průměr'],bad:['var(--rose)','Nedařilo se']};
+  const tierDot=r=>{
+    if(r.tier==='off'){const s=el('span','nic','–');s.title='Nenastoupil';return s}
+    const d=dot(TIER[r.tier][0],!TIER[r.tier][0]);d.title=TIER[r.tier][1];return d;
+  };
+  const karty=(n,cls)=>{if(!n)return '';const s=el('span','kk');for(let i=0;i<n;i++)s.append(el('i',cls));return s};
+  const dolni=tb([
+    {h:'',c:'dotc',f:tierDot},
+    {h:'Hráč',f:r=>hracLink(r.id)},{h:'Klub',f:r=>el('span','tlum',kz(r.h.klubId))},{h:'Poz.',f:r=>el('span','tlum',POZ[r.h.pozice]||'')},
+    {h:'Soupeř',f:r=>r.e?r.e.zapasy.map(soup).join(', '):''},
+    {h:'Min',c:'n',f:r=>r.e?(r.e.min?r.e.min:el('span','nic','0')):''},
+    {h:'Body',c:'n',f:r=>bunka(r.body,scH)},
+    {h:'G',c:'n',f:r=>r.e&&r.e.goly?el('b','gA',r.e.goly):''},
+    {h:'A',c:'n',f:r=>r.e&&r.e.asist?el('b','aA',r.e.asist):''},
+    {h:'ŽK',c:'n',f:r=>r.e?karty(r.e.zlute,'zk'):''},{h:'ČK',c:'n',f:r=>r.e?karty(r.e.cervene,'ck'):''},
+    {h:'Kdo ho měl',f:r=>el('span',null,B(r.meli.length+'×'),' ',el('span','tlum',r.meli.join(', ')))}
+  ],hr);
+  const leg=el('span','tier',...Object.entries(TIER).map(([k,[c,n]])=>el('span','skl',dot(c,!c),n)),legendaSkaly());
+  /* tah kola: hráči držení méně než 25 % týmů */
+  const NT=tymy.length,rozd=id=>{const r=m.get(id);return !!r&&r.meli.length/NT<.25};
+  const tah=tymy.map(u=>{
+    const arr=(u.sestava.get(kolo)||[]).filter(s=>vHre(u,kolo,s));
+    const rz=arr.filter(s=>rozd(s.hracId)),os=arr.filter(s=>!rozd(s.hracId));
+    const bR=sumA(rz.map(s=>s.body)),bO=sumA(os.map(s=>s.body)),avgO=os.length?bO/os.length:0;
+    const best=rz.reduce((a,s)=>!a||s.body>a.body?s:a,null),worst=rz.reduce((a,s)=>!a||s.body<a.body?s:a,null);
+    return{u,n:rz.length,bR,avgR:rz.length?bR/rz.length:null,avgO,zisk:bR-rz.length*avgO,best,worst};
+  });
+  const sT=tah.filter(r=>r.n>0),nejT=sT.reduce((a,r)=>!a||r.zisk>a.zisk?r:a,null),nejH=sT.reduce((a,r)=>!a||r.zisk<a.zisk?r:a,null);
+  const pocRozd=[...m.keys()].filter(rozd).length;
+  const hp=s=>s?`${jm(s.hracId)} (${s.body})`:'';
+  if(sT.length){
+    root.append(el('h3','sl','Netradiční volby: hráči, které měla jen menšina týmů'),
+      vysv('Netradiční hráč je takový, kterého v tomto kole mělo v základu méně než 25 % týmů. Tabulka ukazuje, komu se tahle odvaha vyplatila: „Body navíc“ jsou body z netradičních hráčů mínus to, kolik by dali hráči z běžné části sestavy.',
+        nejT===nejH?[B(nejT.u.jmeno),' jako jediný zkusil netradiční volbu.']:
+        ['Nejvíc se vyplatilo ',B(nejT.u.jmeno),' (',znam(nejT.zisk),' b), nejvíc ubralo ',B(nejH.u.jmeno),' (',znam(nejH.zisk),' b).']),bento(
+      karta('c4','Nejvíc se vyplatilo',znam(nejT.zisk),[[B(nejT.u.jmeno),` · ${hp(nejT.best)}`]]),
+      karta('c4','Nejvíc ubralo',znam(nejH.zisk),[[B(nejH.u.jmeno),` · ${hp(nejH.worst)}`]]),
+      karta('c4','Netradičních hráčů v kole',pocRozd,[[`jsou v sestavách ${sT.length} z ${NT} týmů`]])));
+    root.append(el('div','sekce',sortTb([
+      {k:'jmeno',h:'Hráč',f:r=>B(r.u.jmeno),v:r=>r.u.jmeno},
+      {k:'tym',h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu),v:r=>r.u.nazevTymu},
+      {k:'n',h:'Netradičních hráčů',c:'n',f:r=>vyp(r.n),v:r=>r.n,title:'Kolik hráčů s málo držením má tým v sestavě'},
+      {k:'bR',h:'Body z nich',c:'n',f:r=>r.n?r.bR:'',v:r=>r.n?r.bR:null,title:'Body započítané týmu (kapitán dvojnásobně)'},
+      {k:'avgR',h:'Ø netradiční',c:'n',f:r=>r.n?f1(r.avgR):'',v:r=>r.avgR},
+      {k:'avgO',h:'Ø ostatní hráči',c:'n',f:r=>f1(r.avgO),v:r=>r.avgO,title:'Průměr bodů ostatních hráčů v sestavě'},
+      {k:'zisk',h:'Body navíc',c:'n sum',f:r=>r.n?znam(r.zisk):'',v:r=>r.n?r.zisk:null,title:'Body z rozdílových hráčů navíc oproti tomu, co by dali hráči v průměru ostatní'},
+      {k:'best',h:'Nejlepší volba',f:r=>r.best?el('span','tlum',hp(r.best)):'',v:r=>r.best?r.best.body:null},
+      {k:'worst',h:'Nejhorší volba',f:r=>r.worst&&r.worst!==r.best?el('span','tlum',hp(r.worst)):'',v:r=>r.worst?r.worst.body:null}
+    ],tah,UI.trD)));
+  }
+  root.append(el('div','sekce',el('div','slr',el('h3','sl','Hráči v kole: kolik bodů dali a kdo je měl'),leg),
+    vysv('Všichni hráči, kteří byli v tomto kole v něčí sestavě. Barevná tečka ukazuje, jak se hráči dařilo (zelená = výborně, tyrkysová = nad průměrem, červená = špatně, prázdný kroužek = průměr, pomlčka = nenastoupil). Ve sloupci „Kdo ho měl“ znamená (K), že byl u daného týmu kapitánem.'),dolni));
+}
+
+/* ======================================================================
+   ANALYTIKA – pomocné funkce
+   ====================================================================== */
+const fb=n=>{n=Math.round(n*10)/10;return Number.isInteger(n)?String(n):f1(n)};
+const znam=(n,jednoDes)=>{
+  const a=Math.abs(Math.round(n*10)/10),p=n>0.05,m=n<-0.05;
+  return el('span',p?'zpos':m?'zneg':'tlum',(p?'+':m?'−':'')+(jednoDes?f1(a):fb(a)));
+};
+const percentil=(arr,p)=>{if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);return s[Math.floor(p*(s.length-1))]};
+const prepinac=(opts,cur,fn)=>el('div','seg2',...opts.map(([k,t])=>{
+  const b=el('button',k===cur?'aktivni':'',t);b.onclick=()=>fn(k);return b}));
+const hracLink=id=>{
+  const s=el('span','lnk',jm(id)),h=D.hraci.get(id)||{};
+  s.title=`${h.jmeno||''} ${h.prijmeni||''}`.trim();
+  s.onclick=()=>{UI.hrac=id;UI.zalozka='hraci';kresliVse()};
+  return s;
+};
+const skalaVse=vals=>{const v=vals.filter(x=>x!=null).sort((a,b)=>a-b);return{v,lo:v[0],hi:v[v.length-1]}};
+function teploT(b,sc,inv){
+  if(b==null||!sc.v.length)return '';
+  const lin=sc.hi>sc.lo?(b-sc.lo)/(sc.hi-sc.lo):.5;
+  let lt=0,eq=0;for(const x of sc.v){if(x<b)lt++;else if(x===b)eq++}
+  let t=.5*lin+.5*(lt+eq/2)/sc.v.length;if(inv)t=1-t;
+  return barvaT(Math.min(1,Math.max(0,t))).join(',');
+}
+function pilulka(text,c,cls){
+  const v=el('span','v'+(cls?' '+cls:''),text);
+  if(c){v.classList.add('h');v.style.setProperty('--c',c)}
+  return v;
+}
+
+/* sortovatelná tabulka: cols [{k,h,c,f(r,i),v(r),title}] */
+function sortTb(cols,rows,st,o={}){
+  const box=el('div',o.cls||'panel');
+  function kresli(){
+    const list=[...rows];
+    trid(list,st,(r,k)=>{const c=cols.find(x=>x.k===k);return c&&c.v?c.v(r):null},o.zaloha||(()=>0));
+    const t=el('table'),hr=el('tr');
+    for(const c of cols)hr.append(c.k?mkTh(c.h,c.k,c.c||'',st,kresli,c.title):el('th',c.c,c.h));
+    t.append(el('thead',null,hr));
+    const b=el('tbody');
+    list.forEach((r,i)=>{
+      const tr=el('tr',r&&r.__cls);
+      for(const c of cols){const td=el('td',c.c),v=c.f(r,i);if(v!=null&&v!=='')td.append(v.nodeType?v:String(v));tr.append(td)}
+      b.append(tr);
+    });
+    t.append(b);box.replaceChildren(t);
+  }
+  kresli();
+  return box;
+}
+
+/* pořadí po kolech (kumulativní body) a pořadí v jednotlivých kolech */
+function poradiKum(){
+  const tymy=[...D.tymy.values()],cum=new Map(tymy.map(u=>[u.tymId,0])),out=new Map(tymy.map(u=>[u.tymId,[]]));
+  for(const k of D.kola){
+    for(const u of tymy)cum.set(u.tymId,cum.get(u.tymId)+(bodyKola(u,k)||0));
+    const s=[...tymy].sort((a,b)=>cum.get(b.tymId)-cum.get(a.tymId)||cs.compare(a.jmeno,b.jmeno));
+    let prev=null,pos=0;
+    s.forEach((u,i)=>{const v=cum.get(u.tymId);if(v!==prev){pos=i+1;prev=v}out.get(u.tymId).push({r:pos,s:v})});
+  }
+  return out;
+}
+const pk=()=>D.pk||(D.pk=poradiKum());
+function poradiKola(k){
+  D.pkola=D.pkola||new Map();
+  if(D.pkola.has(k))return D.pkola.get(k);
+  const l=[...D.tymy.values()].filter(u=>bodyKola(u,k)!=null).sort((a,b)=>bodyKola(b,k)-bodyKola(a,k)||cs.compare(a.jmeno,b.jmeno));
+  const m=new Map();let prev=null,pos=0;
+  l.forEach((u,i)=>{const v=bodyKola(u,k);if(v!==prev){pos=i+1;prev=v}m.set(u.tymId,pos)});
+  D.pkola.set(k,m);return m;
+}
+
+/* kapitáni a lavička v jednom kole jednoho týmu */
+/* kdo má v kole zdvojené body: nominovaný kapitán, který hrál; když nenastoupil, jeho roli přebírá zástupce */
+function kapEf(u,k){
+  D.kef=D.kef||new Map();
+  const key=u.tymId+'|'+k;
+  if(D.kef.has(key))return D.kef.get(key);
+  const all=u.sestava.get(k)||[];
+  const hrala=s=>{const e=D.hk.get(s.hracId+'|'+k);return e?e.min>0:s.body!==0};
+  const dbl=s=>{const e=D.hk.get(s.hracId+'|'+k);return !!e&&e.body!==0&&s.body===2*e.body};
+  const nom=all.filter(s=>s.kapitan);
+  const res=nom.filter(s=>vHre(u,k,s)&&(hrala(s)||dbl(s)));
+  let need=nom.length-res.length;
+  for(const v of all.filter(s=>s.vicekapitan&&!s.kapitan&&vHre(u,k,s))){
+    if(need<=0)break;
+    if(hrala(v)||dbl(v)){res.push(v);need--}
+  }
+  D.kef.set(key,res);
+  return res;
+}
+const jeKap=(u,k,s)=>kapEf(u,k).includes(s);
+function analyzaTK(u,k){
+  D.an=D.an||new Map();
+  const key=u.tymId+'|'+k;
+  if(D.an.has(key))return D.an.get(key);
+  const arr=u.sestava.get(k)||[],tk=u.kola.get(k),lav=!!(tk&&tk.lavicka);
+  const ef=kapEf(u,k),nomN=arr.filter(s=>s.kapitan).length;
+  const rawOf=s=>{const e=D.hk.get(s.hracId+'|'+k);return e?e.body:(ef.includes(s)?s.body/2:s.body)};
+  const hra=arr.filter(s=>vHre(u,k,s));
+  const kap=ef.map(rawOf).sort((a,b)=>b-a);
+  const bonus=sumA(kap);
+  const vice=ef.some(s=>!s.kapitan);
+  const opt=sumA(hra.map(rawOf).sort((a,b)=>b-a).slice(0,nomN));
+  const lavka=arr.filter(s=>s.slot==='Bench');
+  const lavBody=sumA(lavka.map(s=>{const e=D.hk.get(s.hracId+'|'+k);return e?e.body:s.body}));
+  const raws=hra.map(rawOf),exp=raws.length?nomN*sumA(raws)/raws.length:0;
+  const r={kapN:nomN,kapRaws:kap,vice,bonus,opt,exp,ztrata:Math.max(0,opt-bonus),lav,lavBody};
+  D.an.set(key,r);
+  return r;
+}
+function souhrnTym(u){
+  const o={bonus:0,ztrata:0,trefa:0,kn:0,vice:0,lavNev:0,lavZisk:0,nejLav:null,nejZtr:null,kolBezLav:0,slotu:0,mrtva:0};
+  for(const k of D.kola){
+    if(!u.sestava.has(k))continue;
+    const a=analyzaTK(u,k);
+    if(!a.lav)for(const s of (u.sestava.get(k)||[])){
+      if(s.slot==='Bench')continue;
+      o.slotu++;const e=D.hk.get(s.hracId+'|'+k);if(!e||e.min===0)o.mrtva++;
+    }
+    if(a.kapN){
+      o.kn++;if(a.vice)o.vice++;o.bonus+=a.bonus;o.ztrata+=a.ztrata;if(a.ztrata<1e-9)o.trefa++;
+      if(a.ztrata>1e-9&&(!o.nejZtr||a.ztrata>o.nejZtr.z))o.nejZtr={k,z:a.ztrata};
+    }
+    if(a.lav)o.lavZisk+=a.lavBody;
+    else{o.lavNev+=a.lavBody;o.kolBezLav++;if(a.lavBody>0&&(!o.nejLav||a.lavBody>o.nejLav.b))o.nejLav={k,b:a.lavBody}}
+  }
+  return o;
+}
+
+/* ======================================================================
+   GRAFY – pořadí a rozptyl
+   ====================================================================== */
+function bumpChart(labels,rows,onClick){
+  const N=rows.length,n=labels.length,W=1100,L=30,R=170,T=12,Bt=26,H=Math.max(190,N*17+T+Bt);
+  const X=i=>L+(n<2?(W-L-R)/2:i*(W-L-R)/(n-1)),Y=r=>T+(N<2?0:(r-1)*(H-T-Bt)/(N-1));
+  const svg=sv('svg',{viewBox:`0 0 ${W} ${H}`,class:'chart bump',role:'img'});
+  for(let r=1;r<=N;r++)svg.append(sv('line',{class:'gl',x1:L,x2:W-R,y1:Y(r),y2:Y(r)}),sv('text',{x:L-10,y:Y(r)+3.5,'text-anchor':'end'},String(r)));
+  labels.forEach((l,i)=>svg.append(sv('text',{x:X(i),y:H-Bt+18,'text-anchor':'middle'},l)));
+  for(const t of rows){
+    if(!t.ranks.length)continue;
+    const p=t.ranks.map((q,i)=>[X(i),Y(q.r)]),g=sv('g',{class:'tm'});
+    if(p.length>1)g.append(sv('path',{class:'ln',d:krivka(p)}));
+    p.forEach((q,i)=>g.append(sv('circle',{class:'pn',cx:q[0],cy:q[1],r:3}),
+      sv('circle',{cx:q[0],cy:q[1],r:9,style:'fill:transparent'},sv('title',null,`Kolo ${labels[i]} · ${t.name}: ${t.ranks[i].r}. místo (${t.ranks[i].s} b)`))));
+    const last=t.ranks[t.ranks.length-1],nm=t.name.length>22?t.name.slice(0,21)+'…':t.name;
+    g.append(sv('text',{class:'nm',x:X(n-1)+10,y:Y(last.r)+3.5},nm));
+    g.style.cursor='pointer';g.onclick=()=>onClick(t.id);
+    svg.append(g);
+  }
+  return svg;
+}
+
+/* pts: [{x (0–100), y, r, name, hl, fn}] */
+function scatter(pts,o){
+  const W=640,H=270,L=40,R=14,T=26,Bt=38;
+  if(!pts.length)return el('div','tlum','Žádná data.');
+  const axs=niceAxis(0,Math.max(1,...pts.map(p=>p.y)),false),ymax=axs.hi,X=v=>L+(W-L-R)*v/100,Y=v=>T+(H-T-Bt)*(1-Math.max(0,v)/ymax);
+  const svg=sv('svg',{viewBox:`0 0 ${W} ${H}`,class:'chart',role:'img'});
+  mrizka(svg,0,ymax,L,W,R,Y,v=>String(Math.round(v*10)/10).replace('.',','),axs.ticks);
+  for(const v of [0,25,50,75,100])svg.append(sv('text',{x:X(v),y:H-Bt+16,'text-anchor':'middle'},v+' %'));
+  svg.append(sv('text',{x:L+(W-L-R)/2,y:H-4,'text-anchor':'middle'},'Kolik týmů hráče má v základu (průměr za kola)'),
+    sv('text',{x:2,y:10},'Body na kolo (průměr)'));
+  if(o&&o.xmax!=null&&o.ymin!=null&&o.ymin<ymax)
+    svg.append(sv('rect',{class:'zona',x:X(0),y:Y(ymax),width:X(o.xmax)-X(0),height:Y(o.ymin)-Y(ymax),rx:6}));
+  for(const p of [...pts].sort((a,b)=>b.r-a.r)){
+    const c=sv('circle',{class:'sc',cx:X(p.x).toFixed(1),cy:Y(p.y).toFixed(1),r:p.r,
+      style:`fill:${p.hl?'var(--acc)':'var(--mut)'};opacity:${p.hl?.9:.5}`},sv('title',null,p.name));
+    c.onclick=p.fn;svg.append(c);
+  }
+  return svg;
+}
+
+/* ======================================================================
+   HRÁČI
+   ====================================================================== */
+function hraciStat(){
+  if(D.hs)return D.hs;
+  const vl=new Map(),pts=new Map(),pocetTymu=new Map();
+  for(const u of D.tymy.values())for(const[k,arr]of u.sestava){
+    pocetTymu.set(k,(pocetTymu.get(k)||0)+1);
+    for(const s of arr){
+      const key=s.hracId+'|'+k;
+      if(!pts.has(key)){const e=D.hk.get(key);pts.set(key,{id:s.hracId,k,b:e?e.body:(jeKap(u,k,s)?s.body/2:s.body)})}
+      if(vHre(u,k,s)){let o=vl.get(key);if(!o){o={n:0,teams:[]};vl.set(key,o)}o.n++;o.teams.push(u.jmeno+(jeKap(u,k,s)?' (K)':''))}
+    }
+  }
+  for(const[key,e]of D.hk)if(!pts.has(key)&&e.zapasy.length)pts.set(key,{id:e.zapasy[0].hracId,k:e.zapasy[0].kolo,b:e.body});
+  const map=new Map(),nk=D.kola.length||1;
+  for(const{id,k,b}of pts.values()){
+    let h=map.get(id);
+    if(!h){h={id,h:D.hraci.get(id)||{},body:0,kola:0,min:0,goly:0,asist:0,zlute:0,cervene:0,vlSum:0,kolaList:[]};map.set(id,h)}
+    const e=D.hk.get(id+'|'+k),o=vl.get(id+'|'+k),n=o?o.n:0,tot=pocetTymu.get(k)||0;
+    h.body+=b;if(!e||e.min>0)h.kola++;
+    if(e){h.min+=e.min;h.goly+=e.goly;h.asist+=e.asist;h.zlute+=e.zlute;h.cervene+=e.cervene}
+    if(tot)h.vlSum+=n/tot;
+    h.kolaList.push({k,b,e,n,tot,teams:o?o.teams:[]});
+  }
+  for(const h of map.values()){h.prumer=h.kola?h.body/h.kola:0;h.b90=h.min>0?h.body/h.min*90:null;h.vlast=h.vlSum/nk}
+  let meni=false;
+  if(D.maCeny){
+    for(const h of map.values()){
+      const m=D.ceny.get(h.id);if(!m||!m.size)continue;
+      const sr=[...m].sort((a,b)=>a[0]-b[0]);
+      h.cenaS=sr;h.cena=sr[sr.length-1][1];h.cena0=sr[0][1];
+      h.zmena=sr.length>1?h.cena-h.cena0:null;
+      if(sr.some(x=>x[1]!==sr[0][1]))meni=true;
+    }
+    const pom=[...map.values()].filter(h=>h.cena>0&&h.kola>=2).map(h=>h.prumer/h.cena);
+    const med=percentil(pom,.5);
+    for(const h of map.values())h.vyhod=med>0&&h.cena>0&&h.kola>=2?h.prumer/h.cena/med:null;
+  }
+  const p70=percentil([...map.values()].filter(h=>h.kola>0).map(h=>h.prumer),.7);
+  for(const h of map.values())h.rozd=h.kola>=2&&h.vlast<.25&&h.prumer>0&&h.prumer>=p70;
+  return D.hs={map,p70,meni};
+}
+const jmenoH=h=>`${h.h.jmeno||''} ${h.h.prijmeni||''}`.trim()||('#'+h.id);
+
+function viewHraci(root){
+  const H=hraciStat();
+  if(UI.hrac!=null&&H.map.has(UI.hrac)){kartaHrace(root,H);return}
+  UI.hrac=null;
+  root.append(podnab('hraci',[['hraci','Hráči'],['pozice','Pozice']]));
+  (UI.sub.hraci==='pozice'?viewPozice:viewHraciSeznam)(root);
+}
+function viewHraciSeznam(root){
+  const H=hraciStat();
+  const vse=[...H.map.values()],akt=vse.filter(h=>h.kola>0);
+  const bodyScat=akt.map(h=>({x:h.vlast*100,y:h.prumer,r:Math.min(8,Math.max(3,2.5+Math.sqrt(Math.max(0,h.body))*.45)),hl:h.rozd,
+    name:`${jmenoH(h)} · ${kz(h.h.klubId)} · Ø ${f1(h.prumer)} b · drží ho ${Math.round(h.vlast*100)} % týmů · ${fb(h.body)} b celkem`,
+    fn:()=>{UI.hrac=h.id;kresliVse()}}));
+  const nejDrz=[...akt].sort((a,b)=>b.vlast-a.vlast||b.body-a.body)[0];
+  const nejRozd=vse.filter(h=>h.rozd).sort((a,b)=>b.body-a.body)[0];
+  const topH=[...akt].sort((a,b)=>b.body-a.body)[0];
+  root.append(vysv('Všichni hráči ligy: kolik bodů dávají a kolik týmů je má v sestavě. „Skrytý tip“ je hráč, kterého má méně než čtvrtina týmů a který přitom bodoval lépe než 70 % ostatních.',
+    topH?['Nejvíc bodů má ',B(jmenoH(topH)),` (${fb(topH.body)} b)`,nejRozd?[', nejlepší skrytý tip je ',B(jmenoH(nejRozd)),` (${fb(nejRozd.body)} b, drží ho ${Math.round(nejRozd.vlast*100)} % týmů)`]:'','.']:null));
+  root.append(bento(
+    grafKarta('c8 r3','Kolik týmů hráče má a kolik bodů dává',[['var(--acc)','Skrytý tip'],['var(--mut)','Ostatní hráči']],
+      scatter(bodyScat,{xmax:25,ymin:H.p70})),
+    karta('c4','Hráčů v lize',vse.length,[[`${akt.length} s odehraným kolem`]]),
+    karta('c4','Nejčastěji vybíraný hráč',nejDrz?Math.round(nejDrz.vlast*100)+' %':'–',nejDrz?[[B(jmenoH(nejDrz)),` · ${kz(nejDrz.h.klubId)}`]]:[]),
+    karta('c4','Nejlepší skrytý tip',nejRozd?fb(nejRozd.body):'–',nejRozd?[[B(jmenoH(nejRozd)),` · Ø ${f1(nejRozd.prumer)} b na kolo · drží ho ${Math.round(nejRozd.vlast*100)} % týmů`]]:[['hráč s málo držením a nadprůměrnými body']])));
+
+  if(D.maCeny){
+    const sCen=vse.filter(h=>h.cena!=null);
+    const mini=(nadpis,rows,sloupec)=>el('div','card c4',el('div','chead',el('div','lab',nadpis)),tb([
+      {h:'Hráč',f:h=>hracLink(h.id)},{h:'Klub',f:h=>el('span','tlum',kz(h.h.klubId))},...sloupec],rows));
+    const rust=H.meni?[...sCen].filter(h=>h.zmena>0).sort((a,b)=>b.zmena-a.zmena).slice(0,8):[];
+    const pokles=H.meni?[...sCen].filter(h=>h.zmena<0).sort((a,b)=>a.zmena-b.zmena).slice(0,8):[];
+    const vyh=sCen.filter(h=>h.vyhod!=null&&h.kola>=3).sort((a,b)=>b.vyhod-a.vyhod).slice(0,8);
+    const nejdr=[...sCen].sort((a,b)=>b.cena-a.cena)[0];
+    root.append(el('div','slr',el('h3','sl','Ceny hráčů')));
+    root.append(vysv(H.meni
+      ?'Cena hráče se mezi koly mění. Tabulky ukazují, komu cena od prvního sledovaného kola nejvíc vzrostla a klesla. „Výhodnost“ říká, kolik bodů hráč dává vzhledem k ceně: 1,0 je průměr ligy, víc znamená, že dává víc, než by odpovídalo ceně. Cena je známa jen v kolech, kdy hráče měl aspoň jeden tým z ligy.'
+      :'V datech je u každého hráče jen jedna cena (v jednotlivých kolech se neliší), proto nejde sledovat její vývoj. „Výhodnost“ říká, kolik bodů hráč dává vzhledem k ceně: 1,0 je průměr ligy, víc znamená, že dává víc, než by odpovídalo ceně.',
+      [vyh[0]?['Nejvýhodnější je ',B(jmenoH(vyh[0])),` (cena ${fcu(vyh[0].cena)}, Ø ${f1(vyh[0].prumer)} b na kolo)`]:'',
+       H.meni&&rust[0]?[', nejvíc zdražil ',B(jmenoH(rust[0])),' (',zc(rust[0].zmena),')']:'',
+       H.meni&&pokles[0]?[', nejvíc zlevnil ',B(jmenoH(pokles[0])),' (',zc(pokles[0].zmena),')']:'','.']));
+    root.append(bento(
+      ...(H.meni?[
+        mini('Nejvíc zdražili',rust,[{h:'Změna',c:'n',f:h=>zc(h.zmena)},{h:'Cena',c:'n',f:h=>fcu(h.cena)}]),
+        mini('Nejvíc zlevnili',pokles,[{h:'Změna',c:'n',f:h=>zc(h.zmena)},{h:'Cena',c:'n',f:h=>fcu(h.cena)}])]:
+        [karta('c4','Nejdražší hráč',nejdr?fcu(nejdr.cena):'–',nejdr?[[B(jmenoH(nejdr)),` · ${kz(nejdr.h.klubId)}`]]:[])]),
+      mini('Nejvýhodnější hráči',vyh,[{h:'Výhodnost',c:'n',f:h=>f1(h.vyhod)},{h:'Cena',c:'n',f:h=>fcu(h.cena)}])));
+  }
+  const f=UI.hFiltr;
+  const pozP=prepinac([['','Vše'],...Object.entries(POZ)],f.poz,k=>{f.poz=k;kresliVse()});
+  const sel=el('select');sel.append(new Option('Všechny kluby',''));
+  for(const k of [...D.kluby.values()].sort((a,b)=>cs.compare(a.zkratka||'',b.zkratka||'')))sel.append(new Option(k.zkratka||('#'+k.id),String(k.id)));
+  sel.value=String(f.klub);sel.onchange=()=>{f.klub=sel.value;kresliVse()};
+  const rows=vse.filter(h=>(!f.poz||h.h.pozice===f.poz)&&(!f.klub||String(h.h.klubId)===String(f.klub)));
+  const scB=skala(rows.map(h=>h.body));
+  const rd=dot('var(--acc)');rd.title='Skrytý tip: má ho méně než čtvrtina týmů a bodoval lépe než 70 % hráčů';
+  root.append(el('div','slr',el('h3','sl',`Všichni hráči (${rows.length})`),el('span','tier',pozP,sel,el('span','skl',dot('var(--acc)'),'skrytý tip'),legendaSkaly())));
+  root.append(sortTb([
+    {c:'dotc',h:'',f:h=>h.rozd?dot('var(--acc)'):''},
+    {k:'jmeno',h:'Hráč',f:h=>hracLink(h.id),v:h=>(h.h.prijmeni||'')+' '+(h.h.jmeno||'')},
+    {k:'klub',h:'Klub',f:h=>el('span','tlum',kz(h.h.klubId)),v:h=>kz(h.h.klubId)},
+    {k:'poz',h:'Poz.',f:h=>el('span','tlum',POZ[h.h.pozice]||''),v:h=>POZ[h.h.pozice]||''},
+    {k:'body',h:'Body',c:'n',f:h=>bunka(h.body,scB),v:h=>h.body},
+    ...(D.maCeny?[
+      {k:'cena',h:'Cena',c:'n',f:h=>h.cena==null?'':fc(h.cena),v:h=>h.cena,title:'Poslední známá cena'+(D.cenaJ>1?' (v milionech)':'')},
+      ...(H.meni?[{k:'zmena',h:'Změna ceny',c:'n',f:h=>h.zmena==null?'':zc(h.zmena),v:h=>h.zmena,title:'Poslední cena minus cena v prvním kole, kdy ji máme'}]:[]),
+      {k:'vyhod',h:'Výhodnost',c:'n',f:h=>h.vyhod==null?'':f1(h.vyhod),v:h=>h.vyhod,title:'Body na kolo vzhledem k ceně. 1,0 = průměr ligy, víc = dává víc, než odpovídá ceně'}]:[]),
+    {k:'prumer',h:'Ø/kolo',c:'n',f:h=>f1(h.prumer),v:h=>h.prumer,title:'Body na odehrané kolo'},
+    {k:'b90',h:'Body/90',c:'n',f:h=>h.b90==null?'':f1(h.b90),v:h=>h.b90,title:'Body na 90 odehraných minut'},
+    {k:'kola',h:'Kol hrál',c:'n',f:h=>h.kola,v:h=>h.kola},
+    {k:'min',h:'Minut',c:'n',f:h=>h.min||'',v:h=>h.min},
+    {k:'goly',h:'G',c:'n',f:h=>h.goly?el('b','gA',h.goly):'',v:h=>h.goly},
+    {k:'asist',h:'A',c:'n',f:h=>h.asist?el('b','aA',h.asist):'',v:h=>h.asist},
+    {k:'zlute',h:'ŽK',c:'n',f:h=>vyp(h.zlute),v:h=>h.zlute},
+    {k:'cervene',h:'ČK',c:'n',f:h=>vyp(h.cervene),v:h=>h.cervene},
+    {k:'vlast',h:'Drží týmů',c:'n',f:h=>Math.round(h.vlast*100)+' %',v:h=>h.vlast,title:'Průměrný podíl týmů, které hráče měly v základu'}
+  ],rows,UI.trH,{cls:'tabwrap',zaloha:(a,b)=>cs.compare(a.h.prijmeni||'',b.h.prijmeni||'')}));
+}
+
+function kartaHrace(root,H){
+  const h=H.map.get(UI.hrac);
+  const back=el('button','jiny','← Všichni hráči');back.onclick=()=>{UI.hrac=null;kresliVse()};
+  root.append(el('div','hlava',back,el('span','jmeno',jmenoH(h)),el('span','tlum',`${kz(h.h.klubId)} · ${POZ[h.h.pozice]||''}`)));
+  const kl=[...h.kolaList].sort((a,b)=>a.k-b.k),byK=new Map(kl.map(x=>[x.k,x]));
+  root.append(bento(
+    karta('c3','Body celkem',fb(h.body),[[`${h.kola} odehraných kol · ${h.min} min`]]),
+    karta('c3','Ø na kolo',f1(h.prumer),h.b90!=null?[[`${f1(h.b90)} b na 90 min`]]:[]),
+    karta('c3','Góly · asistence',`${h.goly} · ${h.asist}`,[[`ŽK ${h.zlute} · ČK ${h.cervene}`]]),
+    karta('c3','Drží ho týmů',Math.round(h.vlast*100)+' %',[['průměr přes všechna kola']]),
+    grafKarta('c6','Body po kolech',[],barChart(D.kola.map(k=>{
+      const x=byK.get(k);
+      return{label:String(k),title:`Kolo ${k} · ${x?fb(x.b)+' b':'bez dat'}`,segs:[{v:x?Math.max(0,x.b):0,color:'var(--acc)'}]};
+    }))),
+    grafKarta('c6','Kolik týmů ho mělo v jednotlivých kolech',[],lineChart(D.kola.map(String),[{name:'Držen v týmech',
+      vals:D.kola.map(k=>{const x=byK.get(k);return x&&x.tot?Math.round(x.n/x.tot*100):0}),color:'var(--k3)',fill:true,w:2.2}],v=>Math.round(v)+' %'))));
+  if(h.cenaS){
+    const cm=new Map(h.cenaS);
+    root.append(bento(
+      karta('c4','Cena hráče',fcu(h.cena),[h.zmena!=null&&H.meni?['od kola '+h.cenaS[0][0]+': ',zc(h.zmena)]:['v datech se cena neliší mezi koly'],
+        h.vyhod!=null?['výhodnost ',B(f1(h.vyhod)),' (1,0 = průměr ligy)']:'',
+        ...(H.meni?(()=>{const mx=h.cenaS.reduce((a,x)=>x[1]>a[1]?x:a),mn=h.cenaS.reduce((a,x)=>x[1]<a[1]?x:a);
+          return[['nejvyšší '+fcu(mx[1])+' (kolo '+mx[0]+')'],['nejnižší '+fcu(mn[1])+' (kolo '+mn[0]+')']]})():[])]),
+      ...(h.cenaS.length>1&&H.meni?[grafKarta('c8','Vývoj ceny'+(D.cenaJ>1?' (v milionech)':''),[],lineChart(D.kola.map(String),
+        [{name:'Cena',vals:D.kola.map(k=>cm.has(k)?cm.get(k):null),color:'var(--k3)',w:2.2}],fc,{real:true,L:D.cenaJ>1?40:46}))]:[])));
+  }
+  const sc=skala(kl.map(r=>r.b));
+  root.append(sekce('Kolo po kole',tb([
+    {h:'Kolo',c:'n',f:r=>r.k},
+    {h:'Soupeř',f:r=>r.e?r.e.zapasy.map(z=>`${soup(z)} ${z.skoreTym}:${z.skoreSoupere}`).join(', '):''},
+    {h:'Min',c:'n',f:r=>r.e?(r.e.min?r.e.min:el('span','nic','0')):''},
+    {h:'Body',c:'n',f:r=>bunka(r.b,sc)},
+    {h:'G',c:'n',f:r=>r.e&&r.e.goly?el('b','gA',r.e.goly):''},{h:'A',c:'n',f:r=>r.e&&r.e.asist?el('b','aA',r.e.asist):''},
+    {h:'ŽK',c:'n',f:r=>r.e?vyp(r.e.zlute):''},{h:'ČK',c:'n',f:r=>r.e?vyp(r.e.cervene):''},
+    {h:'Týmů v základu',c:'n',f:r=>`${r.n}/${r.tot}`},
+    {h:'Kdo ho měl',f:r=>el('span','tlum',r.teams.join(', '))}
+  ],kl)));
+}
+
+/* ======================================================================
+   SOUBOJ TÝMŮ
+   ====================================================================== */
+function viewSouboj(root){
+  root.append(podnab('souboj',[['souboj','Souboj dvou týmů'],['podobnost','Podobnost týmů']]));
+  (UI.sub.souboj==='podobnost'?viewPodobnost:viewSoubojDvou)(root);
+}
+function viewSoubojDvou(root){
+  const tymy=[...D.tymy.values()].sort((a,b)=>(a.poradi??1e9)-(b.poradi??1e9)||cs.compare(a.jmeno,b.jmeno));
+  if(tymy.length<2){root.append(el('div','tlum','Pro souboj jsou potřeba aspoň dva týmy.'));return}
+  if(!D.tymy.has(UI.souA))UI.souA=tymy[0].tymId;
+  if(!D.tymy.has(UI.souB)||UI.souB===UI.souA)UI.souB=tymy.find(t=>t.tymId!==UI.souA).tymId;
+  const T1=D.tymy.get(UI.souA),T2=D.tymy.get(UI.souB),CA='var(--acc)',CB='var(--text)';
+  const mkSel=(cur,key)=>{
+    const s=el('select');
+    for(const t of tymy)s.append(new Option(`${t.poradi??'–'}. ${t.jmeno} · ${t.nazevTymu}`,t.tymId));
+    s.value=cur;s.onchange=()=>{UI[key]=Number(s.value);kresliVse()};return s;
+  };
+  root.append(el('div','hlava',dot(CA),mkSel(T1.tymId,'souA'),el('span','tlum','vs'),dot(CB),mkSel(T2.tymId,'souB')));
+
+  const rows=D.kola.filter(k=>bodyKola(T1,k)!=null&&bodyKola(T2,k)!=null).map(k=>({k,a:bodyKola(T1,k),b:bodyKola(T2,k)}));
+  let cum=0;rows.forEach(r=>{r.d=r.a-r.b;cum+=r.d;r.cum=cum});
+  const wa=rows.filter(r=>r.d>0).length,wb=rows.filter(r=>r.d<0).length;
+  const maxD=rows.reduce((a,r)=>!a||Math.abs(r.d)>Math.abs(a.d)?r:a,null),avgD=rows.length?cum/rows.length:0;
+  const cumBy=new Map(rows.map(r=>[r.k,r.cum]));
+  const sg=n=>(n>0.05?'+':n<-0.05?'−':'');
+  const dSou=T1.soucet-T2.soucet;
+  root.append(vysv('Přímé srovnání dvou týmů: kdo byl kdy lepší a v čem se jejich sestavy liší.',
+    [dSou===0?'Týmy mají stejný součet bodů':['Celkově vede ',B(dSou>0?T1.jmeno:T2.jmeno),` o ${Math.abs(dSou)} b`],
+     `, v jednotlivých kolech je skóre ${wa}:${wb} (${T1.jmeno}:${T2.jmeno}) a remíz ${rows.length-wa-wb}.`]));
+  root.append(bento(
+    karta('c3','Součet bodů',`${T1.soucet} : ${T2.soucet}`,[['rozdíl ',znam(T1.soucet-T2.soucet)]]),
+    karta('c3','Vyhraná kola',`${wa} : ${wb}`,[[`remíz ${rows.length-wa-wb}`]]),
+    karta('c3','Ø rozdíl na kolo',sg(avgD)+f1(Math.abs(avgD)),[[`z pohledu ${T1.jmeno}`]]),
+    karta('c3','Největší rozdíl v kole',maxD?sg(maxD.d)+fb(Math.abs(maxD.d)):'–',maxD?[[`kolo ${maxD.k}`]]:[]),
+    grafKarta('c6','Body po kolech',[[CA,T1.jmeno],[CB,T2.jmeno]],lineChart(D.kola.map(String),[
+      {name:T2.jmeno,vals:D.kola.map(k=>bodyKola(T2,k)),color:CB,w:2},
+      {name:T1.jmeno,vals:D.kola.map(k=>bodyKola(T1,k)),color:CA,w:2}],f1)),
+    grafKarta('c6','Průběžný rozdíl (nad nulou vede první tým)',[[CA,`${T1.jmeno} − ${T2.jmeno}`]],lineChart(D.kola.map(String),[
+      {name:`${T1.jmeno} − ${T2.jmeno}`,vals:D.kola.map(k=>cumBy.has(k)?cumBy.get(k):null),color:CA,w:2.2}],fb,{zero:true}))));
+
+  /* hráči – společní a rozdíloví */
+  const chips=el('div','kolacip',el('span','stit','Kolo'));
+  const bAll=el('button',UI.souKolo==='all'?'aktivni':'','Vše');bAll.onclick=()=>{UI.souKolo='all';kresliVse()};chips.append(bAll);
+  for(const k of D.kola){const b=el('button',k===UI.souKolo?'aktivni':'',k);b.onclick=()=>{UI.souKolo=k;kresliVse()};chips.append(b)}
+  const R=UI.souKolo==='all'||!D.kola.includes(UI.souKolo)?D.kola:[UI.souKolo];
+  const agg=u=>{
+    const m=new Map();
+    for(const k of R)for(const s of (u.sestava.get(k)||[])){
+      if(!vHre(u,k,s))continue;
+      let o=m.get(s.hracId);if(!o){o={b:0,n:0};m.set(s.hracId,o)}
+      o.b+=s.body;o.n++;
+    }
+    return m;
+  };
+  const ma=agg(T1),mb=agg(T2),ids=new Set([...ma.keys(),...mb.keys()]);
+  const rp=[...ids].map(id=>{
+    const a=ma.get(id),b=mb.get(id),pa=a?a.b:0,pb=b?b.b:0;
+    return{id,h:D.hraci.get(id)||{},a,b,pa,pb,d:pa-pb,kat:a&&b?'oba':a?'a':'b'};
+  });
+  const sm=(kat,f)=>sumA(rp.filter(r=>r.kat===kat).map(f)),nk=kat=>rp.filter(r=>r.kat===kat).length;
+  const dOba=sm('oba',r=>r.d),dA=sm('a',r=>r.pa),dB=sm('b',r=>r.pb);
+  root.append(el('h3','sl','Hráči: kdo je v obou týmech a kdo jen v jednom'),
+    vysv('Rozdíl u hráče = body, které přinesl prvnímu týmu, mínus body, které přinesl druhému. U společných hráčů vzniká rozdíl jen kapitánem nebo počtem kol v základu, hráči jen v jednom týmu rozdíl „dělají“ všemi svými body.'),chips,bento(
+    karta('c4','Společní hráči',sg(dOba)+fb(Math.abs(dOba)),[[`${nk('oba')} hráčů · rozdíl z kapitánů a počtu kol v základu`]]),
+    karta('c4',`Jen ${T1.jmeno}`,'+'+fb(dA),[[`${nk('a')} hráčů, které druhý tým nemá`]]),
+    karta('c4',`Jen ${T2.jmeno}`,'−'+fb(dB),[[`${nk('b')} hráčů, které první tým nemá`]])));
+  const sc=skala(rp.flatMap(r=>[r.a&&r.a.b,r.b&&r.b.b]));
+  const katDot=r=>{const d=r.kat==='oba'?dot(null,true):dot(r.kat==='a'?CA:CB);d.title=r.kat==='oba'?'Mají oba':r.kat==='a'?`Jen ${T1.jmeno}`:`Jen ${T2.jmeno}`;return d};
+  root.append(el('div','sekce',sortTb([
+    {k:'kat',h:'',c:'dotc',f:katDot,v:r=>r.kat},
+    {k:'jmeno',h:'Hráč',f:r=>hracLink(r.id),v:r=>(r.h.prijmeni||'')+' '+(r.h.jmeno||'')},
+    {k:'klub',h:'Klub',f:r=>el('span','tlum',kz(r.h.klubId)),v:r=>kz(r.h.klubId)},
+    {k:'poz',h:'Poz.',f:r=>el('span','tlum',POZ[r.h.pozice]||''),v:r=>POZ[r.h.pozice]||''},
+    {k:'pa',h:T1.jmeno,c:'n',f:r=>r.a?bunka(r.a.b,sc):el('span','nic','–'),v:r=>r.a?r.a.b:null,title:`Body započítané týmu ${T1.jmeno}`},
+    {k:'pb',h:T2.jmeno,c:'n',f:r=>r.b?bunka(r.b.b,sc):el('span','nic','–'),v:r=>r.b?r.b.b:null,title:`Body započítané týmu ${T2.jmeno}`},
+    {k:'d',h:'Rozdíl',c:'n',f:r=>znam(r.d),v:r=>r.d,title:'Body pro první tým minus body pro druhý tým'},
+    {k:'na',h:'Kol A',c:'n',f:r=>r.a?r.a.n:'',v:r=>r.a?r.a.n:null,title:`Kol v základu – ${T1.jmeno}`},
+    {k:'nb',h:'Kol B',c:'n',f:r=>r.b?r.b.n:'',v:r=>r.b?r.b.n:null,title:`Kol v základu – ${T2.jmeno}`}
+  ],rp,UI.trS,{zaloha:(a,b)=>cs.compare(a.h.prijmeni||'',b.h.prijmeni||'')})));
+
+  /* kolo po kole */
+  const kapTxt=(u,k)=>{const s=kapEf(u,k);return s.map(x=>`${jm(x.hracId)} (${x.body})`).join(', ')};
+  root.append(sekce('Kolo po kole',tb([
+    {h:'Kolo',c:'n',f:r=>r.k},{h:T1.jmeno,c:'n',f:r=>r.a},{h:T2.jmeno,c:'n',f:r=>r.b},
+    {h:'Rozdíl',c:'n',f:r=>znam(r.d)},{h:'Kumulativně',c:'n',f:r=>znam(r.cum)},
+    {h:`Kapitán – ${T1.jmeno}`,f:r=>el('span','tlum',kapTxt(T1,r.k))},{h:`Kapitán – ${T2.jmeno}`,f:r=>el('span','tlum',kapTxt(T2,r.k))}
+  ],rows)));
+}
+
+/* ======================================================================
+   ROZHODNUTÍ – kapitáni a lavička
+   ====================================================================== */
+function dumbbell(rows,o={}){
+  const N=rows.length,W=900,L=130,R=24,T=10,Bt=26,RH=22,H=N*RH+T+Bt;
+  const all=rows.flatMap(r=>r.pts.map(p=>p.v));
+  const ax=niceAxis(Math.min(...all),Math.max(...all),!o.real);
+  const X=v=>L+(W-L-R)*(v-ax.lo)/(ax.hi-ax.lo),Y=i=>T+RH/2+i*RH;
+  const svg=sv('svg',{viewBox:`0 0 ${W} ${H}`,class:'chart',role:'img'});
+  for(const t of ax.ticks)svg.append(sv('line',{class:'gl',x1:X(t),x2:X(t),y1:T,y2:H-Bt}),sv('text',{x:X(t),y:H-Bt+16,'text-anchor':'middle'},o.real?f1(t):String(t)));
+  rows.forEach((r,i)=>{
+    const vs=r.pts.map(p=>p.v),nm=r.name.length>18?r.name.slice(0,17)+'…':r.name;
+    svg.append(sv('text',{class:'dbn',x:L-10,y:Y(i)+3.5,'text-anchor':'end'},nm),
+      sv('line',{class:'dbl',x1:X(Math.min(...vs)),x2:X(Math.max(...vs)),y1:Y(i),y2:Y(i)}));
+    for(const p of r.pts)svg.append(sv('circle',{cx:X(p.v).toFixed(1),cy:Y(i),r:p.r||4.5,
+      style:p.hollow?`fill:var(--card);stroke:${p.color};stroke-width:1.8`:`fill:${p.color}`},sv('title',null,`${r.name} · ${p.t}: ${fb(p.v)}`)));
+  });
+  return svg;
+}
+/* ---------- přestupy: kdo v kole přibyl a odešel oproti předchozímu kolu, penalizace a bilance bodů ---------- */
+function rawPts(){
+  if(D.raw)return D.raw;
+  const m=new Map();
+  for(const u of D.tymy.values())for(const[k,arr]of u.sestava)for(const s of arr){
+    const key=s.hracId+'|'+k;if(m.has(key))continue;
+    const e=D.hk.get(key);m.set(key,e?e.body:(jeKap(u,k,s)?s.body/2:s.body));
+  }
+  return D.raw=m;
+}
+function prestupyTK(u,k){
+  D.pre=D.pre||new Map();
+  const key=u.tymId+'|'+k;if(D.pre.has(key))return D.pre.get(key);
+  let res=null;
+  const i=D.kola.indexOf(k);let kp=i>0?D.kola[i-1]:null,vrat=false;
+  const cur=u.sestava.get(k);let prev=kp!=null?u.sestava.get(kp):null;
+  /* Bohatý majitel (financial_takeover) funguje jako Free Hit: pokud se sestava po něm vrátila na tu před ním, přestupy se počítají proti ní */
+  if(prev&&i>1&&u.cipy.financial_takeover.kolo===kp){
+    const kpp=D.kola[i-2],pp=u.sestava.get(kpp);
+    if(pp&&pp.length&&cur&&cur.length){
+      const sc=new Set(cur.map(x=>x.hracId)),shoda=a=>a.filter(x=>sc.has(x.hracId)).length;
+      if(shoda(pp)>shoda(prev)){prev=pp;kp=kpp;vrat=true}
+    }
+  }
+  if(cur&&prev&&cur.length&&prev.length){
+    const ic=new Set(cur.map(x=>x.hracId)),ip=new Set(prev.map(x=>x.hracId)),RP=rawPts();
+    const vstup=cur.filter(x=>!ip.has(x.hracId)).map(x=>({id:x.hracId,b:RP.get(x.hracId+'|'+k)}));
+    const odchod=prev.filter(x=>!ic.has(x.hracId)).map(x=>{
+      const kk=x.hracId+'|'+k,e=D.hk.get(kk);
+      return{id:x.hracId,b:RP.has(kk)?RP.get(kk):(e?e.body:null)};
+    });
+    const n=vstup.length,cipTyp=u.cipy.wildcard.kolo===k?'wildcard':u.cipy.financial_takeover.kolo===k?'fp':null,wc=!!cipTyp;
+    const ocek=wc?0:4*Math.max(0,n-1);
+    const tk=u.kola.get(k);
+    let pen=ocek,zdroj='pravidlo';
+    if(tk&&tk.body!=null){
+      const diff=(tk.lavicka?tk.soucetVse:tk.soucetSestavy)-tk.body;
+      if(diff>=0&&diff%4===0){pen=diff;zdroj='oficiální body'}
+    }
+    const inB=sumA(vstup.map(x=>x.b)),nezn=odchod.filter(x=>x.b==null).length;
+    const outB=nezn?null:sumA(odchod.map(x=>x.b));
+    const delta=outB==null?null:inB-outB;
+    const kd=D.kola.slice(i+1,i+4),bH=(id,kk)=>{const key=id+'|'+kk,e=D.hk.get(key);return e?e.body:(RP.has(key)?RP.get(key):null)};
+    let vIn=0,vOut=0,nIn=0,nOut=0;
+    for(const kk of kd){
+      for(const x of vstup){const v=bH(x.id,kk);if(v==null)nIn++;else vIn+=v}
+      for(const x of odchod){const v=bH(x.id,kk);if(v==null)nOut++;else vOut+=v}
+    }
+    const v3=kd.length?{kol:kd.length,inB:vIn,outB:vOut,nIn,nOut,delta:(nIn||nOut)?null:vIn-vOut}:null;
+    const cisty=delta==null?null:delta-pen;
+    res={k,n,wc,cipTyp,vrat,pen,ocek,zdroj,vstup,odchod,inB,outB,nezn,delta,cisty,v3,cisty4:v3&&v3.delta!=null&&cisty!=null?cisty+v3.delta:null};
+  }
+  D.pre.set(key,res);return res;
+}
+function agrPrest(rows){
+  const o={n:0,pen:0,kolPen:0,delta:0,cisty:0,nezn:0,cisty4:0,nezn4:0,nej:null,nejh:null,kola:rows.length,kolaWc:rows.map(r=>r.k),kolaWcT:rows.map(r=>r.k+(r.cipTyp==='fp'?' (BM)':''))};
+  for(const r of rows){
+    o.n+=r.n;o.pen+=r.pen;if(r.pen>0)o.kolPen++;
+    if(r.delta!=null){
+      o.delta+=r.delta;o.cisty+=r.cisty;
+      if(r.n>0){if(!o.nej||r.cisty>o.nej.cisty)o.nej=r;if(!o.nejh||r.cisty<o.nejh.cisty)o.nejh=r}
+    }else if(r.n>0)o.nezn++;
+    if(r.cisty4!=null)o.cisty4+=r.cisty4;else if(r.n>0&&r.v3)o.nezn4++;
+  }
+  return o;
+}
+/* Nevyužité přestupy zdarma se přenášejí do dalších kol (z dat vychází strop 4 a víc, počítá se s 5), čip jejich počet nemění.
+   Počet zdarma na začátku dat neznáme, proto se u týmu vybere ten, se kterým nejlíp sedí oficiální penalizace. */
+const STROP_VOLNYCH=5;
+function modelVolnych(rows){
+  const beh=start=>{
+    let z=start,ok=0;const plat=new Map();
+    for(const r of rows){
+      const v=r.wc?0:Math.min(z,r.n),p=r.wc?0:4*(r.n-v);
+      plat.set(r,p);
+      if(r.zdroj==='oficiální body'){
+        if(p===r.pen)ok++;
+        /* oficiální penalizace je jistá: po zaplaceném přestupu je přenos vyčerpaný, jinak se spotřebovali viditelné přestupy.
+           Přestupy uvnitř kola, které se v sestavách nepoznají (hráč přivedený a hned prodaný), tak nerozhodí model u dalších kol. */
+        if(!r.wc)z=r.pen>0?1:Math.min(STROP_VOLNYCH,Math.max(z,r.n)-r.n+1);
+      }else if(!r.wc)z=Math.min(STROP_VOLNYCH,z-v+1);
+    }
+    return{ok,plat};
+  };
+  let b=null;for(let st=1;st<=STROP_VOLNYCH;st++){const x=beh(st);if(!b||x.ok>b.ok)b=x}
+  for(const r of rows){
+    r.ocek=b.plat.get(r);
+    if(r.zdroj==='pravidlo'){
+      r.pen=r.ocek;
+      r.cisty=r.delta==null?null:r.delta-r.pen;
+      r.cisty4=r.v3&&r.v3.delta!=null&&r.cisty!=null?r.cisty+r.v3.delta:null;
+    }
+  }
+}
+function souhrnPrestupy(u){
+  D.psu=D.psu||new Map();if(D.psu.has(u.tymId))return D.psu.get(u.tymId);
+  const rows=D.kola.map(k=>prestupyTK(u,k)).filter(Boolean);
+  modelVolnych(rows);
+  const o=Object.assign({rows},agrPrest(rows));
+  o.bez=agrPrest(rows.filter(r=>!r.wc));o.wc=agrPrest(rows.filter(r=>r.wc));
+  D.psu.set(u.tymId,o);return o;
+}
+/* režim zobrazení přestupů: vse = dohromady, bez = bez čipů s neomezenými přestupy, odd = odděleně; přepínač se ukáže, jen když v lize nějaký Wildcard je */
+const maWcPrest=()=>D.maWcP!=null?D.maWcP:(D.maWcP=[...D.tymy.values()].some(t=>souhrnPrestupy(t).wc.kola>0));
+const modPrest=()=>maWcPrest()?UI.prest:'vse';
+const prepPrest=()=>maWcPrest()?el('span','tier',prepinac([['vse','Dohromady'],['bez','Bez těchto čipů'],['odd','Odděleně']],UI.prest,k=>{UI.prest=k;kresliVse()})):null;
+const jmB=x=>jm(x.id)+' ('+(x.b==null?'?':fb(x.b))+')';
+
+function sekceSpravedlive(root,tymy){
+  const rows=tymy.map(u=>{
+    let lavZisk=0,bonus=0,exp=0,ztrata=0;
+    for(const k of D.kola){
+      if(!u.sestava.has(k))continue;
+      const a=analyzaTK(u,k);
+      if(a.lav)lavZisk+=a.lavBody;
+      if(a.kapN){bonus+=a.bonus;exp+=a.exp;ztrata+=a.ztrata}
+    }
+    const skut=u.soucet,pen=souhrnPrestupy(u).pen;
+    return{u,skut,pen,bezPen:skut+pen,bezLV:skut-lavZisk,lavZisk,prum:skut-bonus+exp,ideal:skut+ztrata,stesti:bonus-exp,bonus,ztrata};
+  });
+  const poradi=key=>{
+    const l=[...rows].sort((a,b)=>b[key]-a[key]),m=new Map();let prev=null,pos=0;
+    l.forEach((r,i)=>{if(r[key]!==prev){pos=i+1;prev=r[key]}m.set(r.u.tymId,pos)});return m;
+  };
+  const P={skut:poradi('skut'),bezLV:poradi('bezLV'),bezPen:poradi('bezPen'),prum:poradi('prum'),ideal:poradi('ideal')};
+  const maPen=rows.some(r=>r.pen>0);
+  for(const r of rows)for(const k of ['bezLV','bezPen','prum','ideal'])r['d_'+k]=P.skut.get(r.u.tymId)-P[k].get(r.u.tymId);
+  const vitez=key=>rows.reduce((a,r)=>!a||r[key]>a[key]?r:a,null);
+  const vi=vitez('ideal'),vp=vitez('prum'),vb=vitez('bezPen');
+  const stMax=rows.reduce((a,r)=>!a||r.stesti>a.stesti?r:a,null),stMin=rows.reduce((a,r)=>!a||r.stesti<a.stesti?r:a,null);
+  const serad=[...rows].sort((a,b)=>b.skut-a.skut||cs.compare(a.u.jmeno,b.u.jmeno));
+  const prvni=rows.find(r=>P.skut.get(r.u.tymId)===1);
+  root.append(el('h3','sl','Spravedlivé pořadí: kapitáni a čipy'),
+    vysv('Vyhrává ten, kdo líp vybírá hráče, nebo ten, kdo má štěstí na kapitána? Kapitánovi se body počítají dvakrát, takže jeho volba umí zamíchat pořadím. Plná tečka = skutečný součet, bílý kroužek = kdyby kapitán dal body průměrného hráče sestavy, tyrkysový kroužek = kdyby byl kapitánem vždy nejlepší hráč sestavy. Šipky v tabulce ukazují, o kolik míst by se tým posunul. Sloupec „Bez penalizací“ přičte zpět body, které týmy zaplatily za přestupy navíc.',
+      [vi.u===prvni.u?['I s ideálními kapitány by vedl ',B(vi.u.jmeno),', pořadí na špici by se nezměnilo.']:['Skutečně vede ',B(prvni.u.jmeno),', ale s ideálními kapitány by vedl ',B(vi.u.jmeno),'.'],
+       maPen?[' Bez penalizací za přestupy by vedl ',B(vb.u.jmeno),' (',fb(vb.bezPen),' b).']:'',
+       rows.length>1?[' Největší štěstí s kapitánem měl ',B(stMax.u.jmeno),' (',znam(stMax.stesti),' b), největší smůlu ',B(stMin.u.jmeno),' (',znam(stMin.stesti),' b).']:'']),
+    bento(
+    grafKarta('c8 r3','Kolik bodů by tým měl s jiným kapitánem',
+      [['var(--text)','S průměrným kapitánem'],['var(--acc)','Skutečně'],['var(--k3)','S ideálním kapitánem']],
+      dumbbell(serad.map(r=>({name:r.u.jmeno,pts:[
+        {v:r.prum,color:'var(--text)',hollow:true,t:'průměrný kapitán'},
+        {v:r.ideal,color:'var(--k3)',hollow:true,t:'ideální kapitán'},
+        {v:r.skut,color:'var(--acc)',t:'skutečně',r:5}]})))),
+    karta('c4','Vítěz s ideálním kapitánem',vi.u.jmeno,[[`${fb(vi.ideal)} b · skutečně ${P.skut.get(vi.u.tymId)}. místo`]]),
+    karta('c4','Vítěz s průměrným kapitánem',vp.u.jmeno,[[`${fb(vp.prum)} b · skutečně ${P.skut.get(vp.u.tymId)}. místo`]]),
+    karta('c4','Největší štěstí s kapitánem',znam(stMax.stesti),[[B(stMax.u.jmeno),' · nejhůř ',B(stMin.u.jmeno),' ',znam(stMin.stesti)]])));
+  const bunkaD=(v,d)=>el('span','fair',el('span',null,fb(v)),
+    d>0?el('span','zpos','▲'+d):d<0?el('span','zneg','▼'+(-d)):el('span','nic','–'));
+  root.append(el('div','sekce',sortTb([
+    {k:'poz',h:'#',c:'n tlum',f:r=>P.skut.get(r.u.tymId),v:r=>-P.skut.get(r.u.tymId)},
+    {k:'jmeno',h:'Hráč',f:r=>B(r.u.jmeno),v:r=>r.u.jmeno},
+    {k:'tym',h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu),v:r=>r.u.nazevTymu},
+    {k:'skut',h:'Skutečně',c:'n sum',f:r=>fb(r.skut),v:r=>r.skut,title:'Součet bodů za všechna kola'},
+    {k:'bezLV',h:'Bez čipu Lavička',c:'n',f:r=>bunkaD(r.bezLV,r.d_bezLV),v:r=>r.bezLV,title:'Součet bez bodů lavičky započítaných čipem Hrdinové lavičky. ▲▼ = posun v pořadí oproti skutečnosti'},
+    ...(maPen?[{k:'bezPen',h:'Bez penalizací',c:'n',f:r=>bunkaD(r.bezPen,r.d_bezPen),v:r=>r.bezPen,title:'Součet bodů s přičtenými penalizacemi za přestupy navíc (−4 b za každý přestup nad ty zdarma). ▲▼ = posun v pořadí oproti skutečnosti'}]:[]),
+    {k:'prum',h:'S průměrným kapitánem',c:'n',f:r=>bunkaD(r.prum,r.d_prum),v:r=>r.prum,title:'Součet, kdyby kapitán získal body průměrného hráče sestavy. ▲▼ = posun v pořadí oproti skutečnosti'},
+    {k:'ideal',h:'S ideálním kapitánem',c:'n',f:r=>bunkaD(r.ideal,r.d_ideal),v:r=>r.ideal,title:'Součet, kdyby byl kapitánem v každém kole nejlepší hráč sestavy. ▲▼ = posun v pořadí oproti skutečnosti'},
+    {k:'stesti',h:'Štěstí s kapitánem',c:'n',f:r=>znam(r.stesti),v:r=>r.stesti,title:'Body navíc ze skutečných kapitánů minus body navíc, které by dal průměrný hráč sestavy. Plus = kapitáni dopadli lépe než průměr'},
+    {k:'ztrata',h:'Ušlé body (kapitán)',c:'n',f:r=>r.ztrata?el('span','zneg','−'+fb(r.ztrata)):'0',v:r=>r.ztrata,title:'Kolik bodů tým přišel o tím, že kapitánem nebyl nejlepší hráč sestavy'}
+  ],rows,UI.trF)));
+}
+
+const znN=x=>x==null?el('span','nic','?'):znam(x);
+function sekcePrestupy(root,tymy){
+  const rows=tymy.map(u=>Object.assign({u},souhrnPrestupy(u))).filter(r=>r.rows.length);
+  if(!rows.length)return;
+  const mode=modPrest(),odd=mode==='odd',A=r=>mode==='vse'?r:r.bez;
+  const vse=rows.reduce((a,r)=>a+A(r).n,0),pen=rows.reduce((a,r)=>a+A(r).pen,0);
+  const wcN=rows.reduce((a,r)=>a+r.wc.n,0),wcTym=rows.filter(r=>r.wc.kola>0).length;
+  const nejP=rows.reduce((a,r)=>!a||A(r).pen>A(a).pen?r:a,null);
+  const kandidati=rows.filter(r=>A(r).nej),nejK=kandidati.reduce((a,r)=>!a||A(r).nej.cisty>A(a).nej.cisty?r:a,null),nejS=kandidati.reduce((a,r)=>!a||A(r).nejh.cisty<A(a).nejh.cisty?r:a,null);
+  const cistyMax=rows.filter(r=>A(r).n>0).reduce((a,r)=>!a||A(r).cisty>A(a).cisty?r:a,null);
+  root.append(el('div','slr',el('h3','sl','Přestupy'),prepPrest()));
+  root.append(vysv('Přestup je hráč, který v kole přibyl do kádru oproti předchozímu kolu. V každém kole je jeden přestup zdarma, nevyužité se přenášejí do dalších kol, každý další stojí −4 b (s čipem Přestavba kádru nebo Bohatý majitel se neplatí nic). „Rozdíl bodů“ je součet bodů přivedených hráčů minus součet bodů odvedených v kole přestupu. „Po penalizaci“ je ten rozdíl minus zaplacená penalizace: kladné číslo znamená, že se přestupy vyplatily. Počítají se body, které hráč v kole získal, ať už byl v základu, nebo na lavičce, a jen za kolo, kdy přestup proběhl.'
+    +(maWcPrest()?' Kolo s čipem Přestavba kádru nebo Bohatý majitel (výměna kádru bez penalizace; Bohatý majitel funguje jako Free Hit a sestava se po něm může vrátit) jde započítat dohromady s ostatními, vynechat, nebo ukázat odděleně.':''),
+      [nejP&&A(nejP).pen>0?['Nejvíc na penalizacích zaplatil ',B(nejP.u.jmeno),` (${A(nejP).pen} b v ${A(nejP).kolPen} kolech)`]:'Nikdo v lize nezaplatil žádnou penalizaci',
+       cistyMax?[', nejlepší bilanci přestupů má ',B(cistyMax.u.jmeno),' (',znam(A(cistyMax).cisty),' b po penalizaci)']:'','.',
+       nejK&&A(nejK).nej.cisty>0?[' Nejvýhodnější přestup kola udělal ',B(nejK.u.jmeno),` v kole ${A(nejK).nej.k} (`,znam(A(nejK).nej.cisty),' b).']:'',
+       mode==='bez'&&wcN?` Kola s čipem Přestavba kádru nebo Bohatý majitel (${wcTym} týmů, ${wcN} přestupů) jsou vynechaná.`:'']));
+  root.append(bento(
+      karta('c3','Přestupů v lize',vse,[[mode==='vse'?`${rows.length} týmů`:`bez těchto čipů · ${rows.length} týmů`],...(odd&&wcN?[[`Čipy s neomezenými přestupy zvlášť: ${wcN} přestupů`]]:[])]),
+      karta('c3','Zaplaceno na penalizacích',pen?'−'+pen:'0',[['b za přestupy nad ty zdarma']]),
+      karta('c3','Nejvýhodnější přestup kola',nejK?znam(A(nejK).nej.cisty):'–',nejK?[[B(nejK.u.jmeno),` · kolo ${A(nejK).nej.k}`]]:[]),
+      karta('c3','Nejhorší přestup kola',nejS?znam(A(nejS).nejh.cisty):'–',nejS?[[B(nejS.u.jmeno),` · kolo ${A(nejS).nejh.k}`]]:[])));
+  const zakl=[
+    {k:'jmeno',h:'Hráč',f:r=>B(r.u.jmeno),v:r=>r.u.jmeno},
+    {k:'tym',h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu),v:r=>r.u.nazevTymu},
+    {k:'n',h:'Přestupů',c:'n',f:r=>A(r).n,v:r=>A(r).n},
+    {k:'pen',h:'Penalizace',c:'n',f:r=>A(r).pen?el('span','zneg','−'+A(r).pen):el('span','nic','0'),v:r=>A(r).pen,title:'Body zaplacené za přestupy nad ty zdarma'},
+    {k:'delta',h:'Rozdíl bodů',c:'n',f:r=>znam(A(r).delta),v:r=>A(r).delta,title:'Body přivedených hráčů minus body odvedených v kolech přestupů'},
+    {k:'cisty',h:'Po penalizaci',c:'n',f:r=>el('b',null,znam(A(r).cisty)),v:r=>A(r).cisty,title:'Rozdíl bodů minus penalizace. Kladné = přestupy se vyplatily'},
+    {k:'nej',h:'Nejlepší přestup',f:r=>A(r).nej&&A(r).nej.cisty>0?el('span','tlum',`kolo ${A(r).nej.k} · +${fb(A(r).nej.cisty)}`):'',v:r=>A(r).nej?A(r).nej.cisty:null},
+    {k:'nejh',h:'Nejhorší přestup',f:r=>A(r).nejh&&A(r).nejh.cisty<0?el('span','tlum',`kolo ${A(r).nejh.k} · −${fb(-A(r).nejh.cisty)}`):'',v:r=>A(r).nejh?-A(r).nejh.cisty:null}];
+  const wcCols=odd?[
+    {k:'wk',h:'Čip (PK / BM) v kole',c:'n',f:r=>r.wc.kola?r.wc.kolaWcT.join(', '):el('span','nic','–'),v:r=>r.wc.kola?r.wc.kolaWc[0]:null},
+    {k:'wn',h:'Čip: přestupů',c:'n',f:r=>r.wc.kola?r.wc.n:'',v:r=>r.wc.kola?r.wc.n:null},
+    {k:'wd',h:'Čip: rozdíl bodů',c:'n',f:r=>r.wc.kola?znN(r.wc.nezn?null:r.wc.delta):'',v:r=>r.wc.kola&&!r.wc.nezn?r.wc.delta:null,title:'Body přivedených hráčů minus odvedených v kole s čipem Přestavba kádru nebo Bohatý majitel (penalizace žádná)'}]:[];
+  root.append(el('div','sekce',sortTb([...zakl,...wcCols,
+    {k:'cisty4',h:'S výhledem 3 kol',c:'n',f:r=>A(r).kola?znam(A(r).cisty4):'',v:r=>A(r).cisty4,title:'Součet „po penalizaci“ plus rozdíl bodů přivedených a odvedených hráčů v dalších třech kolech. Počítají se jen přestupy, u kterých body všech hráčů známe.'},
+    {k:'nezn',h:'Neúplné',c:'n',f:r=>(A(r).nezn||A(r).nezn4)?el('span','nic',A(r).nezn+(A(r).nezn4?` (+${A(r).nezn4})`:'')):'',v:r=>A(r).nezn+A(r).nezn4,title:'Kol s přestupem, kde neznáme body odvedeného hráče (nikdo z ligy ho v tom kole neměl). V závorce navíc přestupy, kde chybí body ve výhledu'}
+  ],rows,UI.trPr)));
+}
+
+function rozCtx(){
+  const tymy=[...D.tymy.values()];
+  return{tymy,nazvy:u=>B(u.jmeno),AT:k=>tymy.filter(u=>u.sestava.has(k)).map(u=>analyzaTK(u,k)),
+    avg:a=>a.length?sumA(a)/a.length:0,rows:tymy.map(u=>Object.assign({u},souhrnTym(u)))};
+}
+function viewRozhodnuti(root){
+  const tymy=[...D.tymy.values()];
+  if(!tymy.length){root.append(el('div','tlum','Soubor neobsahuje žádné týmy.'));return}
+  root.append(podnab('rozhodnuti',[['spravedlive','Spravedlivé pořadí'],['kapitani','Kapitáni'],['lavicka','Lavička'],['prestupy','Přestupy'],['cipy','Čipy']]));
+  const c=rozCtx();
+  ({spravedlive:()=>sekceSpravedlive(root,tymy),kapitani:()=>sekceKapitani(root,c),lavicka:()=>sekceLavicka(root,c),
+    prestupy:()=>sekcePrestupy(root,tymy),cipy:()=>viewCipy(root)})[UI.sub.rozhodnuti]();
+}
+function sekceKapitani(root,{tymy,nazvy,AT,avg,rows}){
+  const vsechnyK=D.kola.flatMap(k=>AT(k).filter(a=>a.kapN));
+  const trefaPct=vsechnyK.length?vsechnyK.filter(a=>a.ztrata<1e-9).length/vsechnyK.length*100:0;
+  const kr=rows.filter(r=>r.kn>0),kb=kr.reduce((a,r)=>!a||r.ztrata/r.kn<a.ztrata/a.kn?r:a,null),kh=kr.reduce((a,r)=>!a||r.ztrata/r.kn>a.ztrata/a.kn?r:a,null);
+  root.append(el('h3','sl','Kapitáni'),
+    vysv('Kapitán dostává dvojnásobek bodů. „Body navíc“ je to, co kapitán přidal oproti situaci, kdyby kapitánem nebyl. „Promarněno“ je rozdíl proti tomu, kdyby byl kapitánem nejlepší hráč sestavy v daném kole.',
+      kb?[`V ${Math.round(trefaPct)} % případů zvolil tým jako kapitána nejlepšího hráče sestavy. Nejlépe vybíral `,B(kb.u.jmeno),` (průměrně ${f1(kb.ztrata/kb.kn)} b promarněno za kolo), nejhůř `,B(kh.u.jmeno),` (${f1(kh.ztrata/kh.kn)} b).`]:null),bento(
+    grafKarta('c8 r3','Kapitáni po kolech (Ø na tým)',[['var(--acc)','Body navíc z kapitána'],['var(--rose)','Promarněno (nejlepší hráč byl jiný)']],
+      barChart(D.kola.map(k=>{
+        const a=AT(k).filter(x=>x.kapN),b=avg(a.map(x=>x.bonus)),z=avg(a.map(x=>x.ztrata));
+        return{label:String(k),title:`Kolo ${k} · bonus Ø ${f1(b)} · ztráta Ø ${f1(z)}`,segs:[{v:b,color:'var(--acc)'},{v:z,color:'var(--rose)'}]};
+      }))),
+    karta('c4','Průměrně navíc z kapitána',f1(avg(vsechnyK.map(a=>a.bonus))),[['na tým a kolo, body navíc díky zdvojení']]),
+    karta('c4','Průměrně promarněno',f1(avg(vsechnyK.map(a=>a.ztrata))),[['oproti nejlepšímu hráči v sestavě']]),
+    karta('c4','Nejlepší hráč zvolen kapitánem',Math.round(trefaPct)+' %',[['týmů a kol s optimální volbou']])));
+  root.append(el('div','sekce',sortTb([
+    {k:'jmeno',h:'Hráč',f:r=>nazvy(r.u),v:r=>r.u.jmeno},
+    {k:'tym',h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu),v:r=>r.u.nazevTymu},
+    {k:'bonus',h:'Body navíc celkem',c:'n',f:r=>fb(r.bonus),v:r=>r.bonus,title:'Body navíc díky zdvojení kapitána'},
+    {k:'ztrata',h:'Promarněno celkem',c:'n',f:r=>r.ztrata?el('span','zneg',fb(r.ztrata)):'0',v:r=>r.ztrata,title:'Součet bodů, o které tým přišel tím, že kapitánem nebyl nejlepší hráč sestavy'},
+    {k:'zprum',h:'Promarněno na kolo',c:'n',f:r=>r.kn?f1(r.ztrata/r.kn):'',v:r=>r.kn?r.ztrata/r.kn:null},
+    {k:'vice',h:'Převzal zástupce',c:'n',f:r=>r.vice?r.vice+'×':el('span','nic','–'),v:r=>r.vice,title:'V kolika kolech kapitán nenastoupil a body se zdvojily jeho zástupci'},
+    {k:'trefa',h:'Nejlepší volba (kol)',c:'n',f:r=>r.kn?`${r.trefa}/${r.kn}`:'',v:r=>r.kn?r.trefa/r.kn:null,title:'Kol, kdy byl kapitán nejlepším hráčem sestavy'},
+    {k:'nejz',h:'Nejhorší volba',f:r=>r.nejZtr?el('span','tlum',`kolo ${r.nejZtr.k} · −${fb(r.nejZtr.z)}`):'',v:r=>r.nejZtr?r.nejZtr.z:null}
+  ],rows,UI.trK)));
+}
+function sekceLavicka(root,{tymy,nazvy,AT,avg,rows}){
+  const vsechnyL=D.kola.flatMap(k=>AT(k));
+  const nevyuz=vsechnyL.filter(a=>!a.lav);
+  const rekord=tymy.flatMap(u=>D.kola.filter(k=>u.sestava.has(k)&&!analyzaTK(u,k).lav).map(k=>({u,k,b:analyzaTK(u,k).lavBody})))
+    .reduce((a,x)=>!a||x.b>a.b?x:a,null);
+  const lr=rows.filter(r=>r.kolBezLav>0),lb=lr.reduce((a,r)=>!a||r.lavNev>a.lavNev?r:a,null);
+  root.append(el('h3','sl','Lavička'),
+    vysv('Na lavičce sedí hráči, jejichž body se týmu nepočítají (kromě kola s čipem Hrdinové lavičky). Tady je vidět, kolik bodů tak zůstalo ležet.',
+      lb?['Nejvíc bodů nechal na lavičce ',B(lb.u.jmeno),` (${fb(lb.lavNev)} b celkem)`,rekord?[', v jediném kole nejvíc ',B(rekord.u.jmeno),` (${fb(rekord.b)} b v kole ${rekord.k})`]:'','.']:null),bento(
+    grafKarta('c8 r3','Body lavičky po kolech (Ø na tým)',[['var(--rose)','Body, které se nepočítaly'],['var(--c-lv)','Započítáno čipem Hrdinové lavičky']],
+      barChart(D.kola.map(k=>{
+        const a=AT(k),n=avg(a.map(x=>x.lav?0:x.lavBody)),z=avg(a.map(x=>x.lav?x.lavBody:0));
+        return{label:String(k),title:`Kolo ${k} · nevyužito Ø ${f1(n)} · započítáno Ø ${f1(z)}`,segs:[{v:n,color:'var(--rose)'},{v:z,color:'var(--c-lv)'}]};
+      }))),
+    karta('c4','Body na lavičce celkem',fb(sumA(nevyuz.map(a=>a.lavBody))),[['součet za celou ligu']]),
+    karta('c4','Průměr na tým a kolo',f1(avg(nevyuz.map(a=>a.lavBody))),[['na tým a kolo bez čipu']]),
+    karta('c4','Největší ztráta v jednom kole',rekord?fb(rekord.b):'–',rekord?[[B(rekord.u.jmeno),` · kolo ${rekord.k}`]]:[])));
+  root.append(el('div','sekce',sortTb([
+    {k:'jmeno',h:'Hráč',f:r=>nazvy(r.u),v:r=>r.u.jmeno},
+    {k:'tym',h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu),v:r=>r.u.nazevTymu},
+    {k:'lavNev',h:'Body na lavičce',c:'n',f:r=>fb(r.lavNev),v:r=>r.lavNev,title:'Body hráčů na lavičce v kolech bez čipu Hrdinové lavičky'},
+    {k:'lavPrum',h:'Ø/kolo',c:'n',f:r=>r.kolBezLav?f1(r.lavNev/r.kolBezLav):'',v:r=>r.kolBezLav?r.lavNev/r.kolBezLav:null},
+    {k:'nejl',h:'Nejvíc v kole',f:r=>r.nejLav?el('span','tlum',`kolo ${r.nejLav.k} · ${fb(r.nejLav.b)}`):'',v:r=>r.nejLav?r.nejLav.b:null},
+    {k:'lvk',h:'Čip Hrdinové lavičky',c:'n',f:r=>cipText(r.u.cipy.benchboost),v:r=>r.u.cipy.benchboost.kolo},
+    {k:'lavZisk',h:'Body získané čipem',c:'n',f:r=>r.lavZisk?fb(r.lavZisk):'',v:r=>r.lavZisk||null,title:'Body lavičky započítané díky čipu'},
+    {k:'mrtva',h:'Nehrající v základu',c:'n',f:r=>r.slotu?`${r.mrtva} (${Math.round(r.mrtva/r.slotu*100)} %)`:'',v:r=>r.slotu?r.mrtva/r.slotu:null,title:'Míst v základu obsazených hráči, kteří v daném kole nenastoupili (nebo neměli zápas) a nikdo je nenahradil z lavičky. Bez kol s čipem Hrdinové lavičky'}
+  ],rows,UI.trL)));
+}
+
+/* ======================================================================
+   ČIPY – využití a návratnost
+   ====================================================================== */
+function viewCipy(root){
+  const tymy=[...D.tymy.values()].sort((a,b)=>(a.poradi??1e9)-(b.poradi??1e9)||cs.compare(a.jmeno,b.jmeno));
+  const avg=a=>a.length?sumA(a)/a.length:null;
+  const uses=tymy.flatMap(u=>CIPY.filter(([id])=>u.cipy[id].kolo!=null).map(def=>{
+    const c=u.cipy[def[0]],k=c.kolo,body=bodyKola(u,k),liga=prumerKola(k);
+    const mimo=D.kola.filter(x=>x!==k).map(x=>bodyKola(u,x)).filter(x=>x!=null);
+    const pred=avg(D.kola.filter(x=>x<k).map(x=>bodyKola(u,x)).filter(x=>x!=null));
+    const po=avg(D.kola.filter(x=>x>k).map(x=>bodyKola(u,x)).filter(x=>x!=null));
+    const a=u.sestava.has(k)?analyzaTK(u,k):null;
+    let prima=null;
+    if(a){
+      if(def[0]==='benchboost'&&a.lav)prima=a.lavBody;
+      else if(def[0]==='two_captains'&&a.kapRaws.length>=2)prima=a.bonus-a.kapRaws[0];
+    }
+    return{u,def,c,kolo:k,body,vsLiga:body!=null&&liga!=null?body-liga:null,vsTym:body!=null&&mimo.length?body-avg(mimo):null,
+      prima,pred,po,delta:pred!=null&&po!=null?po-pred:null};
+  }));
+  const kpis=CIPY.map(([id,,nazev,col])=>{
+    const n=tymy.filter(u=>u.cipy[id].kolo!=null).length,mine=uses.filter(x=>x.def[0]===id&&x.vsLiga!=null),av=avg(mine.map(x=>x.vsLiga));
+    return el('div','card kpi c3',el('div','lab',el('span','lg',dot(col),nazev)),
+      el('div',null,el('div','big',n,el('span','of','/ '+tymy.length)),
+        el('div','sub',...(av==null?['zatím bez použití']:['Ø ',znam(av,true),' b proti lize v kole']))));
+  });
+  const items=D.kola.map(k=>{
+    const segs=CIPY.map(([id,zk,,col])=>({v:tymy.filter(u=>u.cipy[id].kolo===k).length,color:col,zk})).filter(s=>s.v>0);
+    return{label:String(k),title:`Kolo ${k}`+(segs.length?' · '+segs.map(s=>`${s.zk} ${s.v}`).join(', '):' · bez čipů'),segs};
+  });
+  const cards=[...kpis];
+  if(items.some(i=>i.segs.length))
+    cards.push(grafKarta('c12','Použité čipy po kolech',CIPY.map(c=>[c[3],c[2]]),barChart(items,{W:1000,H:190})));
+  const hodn=uses.filter(x=>x.vsLiga!=null).sort((a,b)=>b.vsLiga-a.vsLiga),cn=x=>x.def[2].split(' (')[0];
+  root.append(vysv('Čipy jsou bonusy, které jde použít jen v jednom kole: Přestavba kádru (neomezené přestupy), Super duo (dva kapitáni), Hrdinové lavičky (počítají se i body lavičky) a Bohatý majitel (neomezené přestupy i rozpočet v jednom kole). Tady je vidět, kdo je kdy použil a jak se mu to vyplatilo.',
+    !uses.length?'Zatím nikdo žádný čip nepoužil.':
+    hodn.length>1?['Nejvíc se čip vyplatil ',B(hodn[0].u.jmeno),` (${cn(hodn[0])}, kolo ${hodn[0].kolo}: `,znam(hodn[0].vsLiga,true),' b proti průměru ligy), nejméně ',B(hodn[hodn.length-1].u.jmeno),` (${cn(hodn[hodn.length-1])}, kolo ${hodn[hodn.length-1].kolo}: `,znam(hodn[hodn.length-1].vsLiga,true),' b).']:null));
+  root.append(bento(...cards));
+
+  const bez=tymy.filter(u=>u.cipy[CIPY[0][0]].bezDat).length;
+  if(bez)root.append(el('div','pozn',`Bez čipů ze serveru: ${bez} týmů. U nich jsou jen odhady (~) pro lavičku a dva kapitány.`));
+
+  const cipBunka=(c,col)=>c.kolo!=null?el('span','cnm',dot(col),cipText(c)):el('span','nic',cipText(c));
+  const cols=[{h:'#',c:'n tlum',f:u=>u.poradi??''},{h:'Hráč',f:u=>B(u.jmeno)},{h:'Tým',f:u=>el('span','tlum',u.nazevTymu)}];
+  for(const[id,,nazev,col]of CIPY)cols.push({h:nazev,c:'n',f:u=>cipBunka(u.cipy[id],col)});
+  root.append(sekce('Čipy podle týmů',tb(cols,tymy)));
+
+  const z=(n,fx)=>n==null?'':znam(n,fx);
+  root.append(el('div','sekce',el('h3',null,'Vyplatil se čip?'),
+    vysv('„Proti průměru ligy“ srovnává body týmu v kole s čipem s průměrem ligy v témže kole. „Body přímo z čipu“: u čipu Hrdinové lavičky body hráčů z lavičky, u čipu Super duo body slabšího z kapitánů. „Změna formy“ je rozdíl mezi průměrem týmu po čipu a před ním. Vlnovka (~) znamená, že kolo čipu je odhadnuté z dat.'),sortTb([
+    {k:'kolo',h:'Kolo',c:'n',f:r=>r.kolo,v:r=>r.kolo},
+    {k:'jmeno',h:'Hráč',f:r=>B(r.u.jmeno),v:r=>r.u.jmeno},
+    {k:'cip',h:'Čip',f:r=>el('span','cnm',dot(r.def[3]),r.def[2].split(' (')[0]+(r.c.odhad?' ~':'')),v:r=>r.def[2]},
+    {k:'body',h:'Body kola',c:'n',f:r=>r.body??'',v:r=>r.body},
+    {k:'vsLiga',h:'Proti průměru ligy',c:'n',f:r=>z(r.vsLiga,true),v:r=>r.vsLiga,title:'Body kola oproti průměru ligy v tom kole'},
+    {k:'vsTym',h:'Proti vlastnímu průměru',c:'n',f:r=>z(r.vsTym,true),v:r=>r.vsTym,title:'Body kola oproti průměru týmu v ostatních kolech'},
+    {k:'prima',h:'Body přímo z čipu',c:'n',f:r=>r.prima==null?el('span','nic','–'):znam(r.prima),v:r=>r.prima,title:'Hrdinové lavičky: body lavičky v kole. Super duo: body slabšího z kapitánů.'},
+    {k:'pred',h:'Ø týmu před čipem',c:'n',f:r=>r.pred==null?'':f1(r.pred),v:r=>r.pred,title:'Průměr týmu v kolech před použitím'},
+    {k:'po',h:'Ø týmu po čipu',c:'n',f:r=>r.po==null?'':f1(r.po),v:r=>r.po,title:'Průměr týmu v kolech po použití'},
+    {k:'delta',h:'Změna formy',c:'n',f:r=>z(r.delta,true),v:r=>r.delta}
+  ],uses,UI.trC)));
+  sekceIdealCip(root,tymy);
+}
+function sekceIdealCip(root,tymy){
+  const RP=rawPts(),CH=[['benchboost','Hrdinové lavičky'],['two_captains','Super duo']];
+  const hodn=(id,u,k)=>{
+    if(!u.sestava.has(k))return null;
+    if(id==='benchboost')return analyzaTK(u,k).lavBody;
+    const r=(u.sestava.get(k)||[]).filter(s=>vHre(u,k,s)).map(s=>RP.get(s.hracId+'|'+k)||0).sort((a,b)=>b-a);
+    return r.length>1?r[1]:null;
+  };
+  const rows=[];
+  for(const u of tymy)for(const[id,nazev]of CH){
+    const c=u.cipy[id],hv=D.kola.map(k=>({k,v:hodn(id,u,k)})).filter(x=>x.v!=null);
+    if(!hv.length)continue;
+    const nej=hv.reduce((a,x)=>!a||x.v>a.v?x:a,null),pouzito=c.kolo!=null?hv.find(x=>x.k===c.kolo):null;
+    rows.push({u,id,nazev,c,pouzito,nej,ztr:pouzito?nej.v-pouzito.v:null});
+  }
+  if(!rows.length)return;
+  const pou=rows.filter(r=>r.pouzito);
+  const sum=sumA(pou.map(r=>r.ztr)),nejZ=pou.reduce((a,r)=>!a||r.ztr>a.ztr?r:a,null),trefa=pou.filter(r=>r.ztr<=0).length;
+  const nepouz=rows.filter(r=>!r.pouzito&&r.c.kolo==null);
+  root.append(el('div','sekce',el('h3',null,'Ideální načasování čipů'),
+    vysv('Ve kterém kole by se čip vyplatil nejvíc. U čipu Hrdinové lavičky jde o body hráčů na lavičce v daném kole, u čipu Super duo o body druhého nejlepšího hráče základní sestavy (ten by dostal dvojnásobek navíc). Počítá se se sestavou, kterou měl tým v tom kole, takže je to pohled zpětně. Přestavba kádru a Bohatý majitel se takhle spočítat nedají.',
+      pou.length?[`Čipy použité v nejlepším možném kole: ${trefa} z ${pou.length}. Dohromady zůstalo ležet ${fb(sum)} b`,nejZ&&nejZ.ztr>0?[', nejvíc u ',B(nejZ.u.jmeno),` (${nejZ.nazev}: použil v kole ${nejZ.c.kolo}, nejlepší bylo kolo ${nejZ.nej.k}, rozdíl ${fb(nejZ.ztr)} b)`]:'','.',
+        nepouz.length?` ${nepouz.length} čipů zatím není použito; sloupec „Nejlepší dosud“ ukazuje, kdy by se zatím vyplatil nejvíc.`:'']:null),
+    sortTb([
+      {k:'jmeno',h:'Hráč',f:r=>B(r.u.jmeno),v:r=>r.u.jmeno},
+      {k:'cip',h:'Čip',f:r=>el('span','cnm',dot(r.id==='benchboost'?'var(--c-lv)':'var(--c-2k)'),r.nazev),v:r=>r.nazev},
+      {k:'kolo',h:'Použil v kole',c:'n',f:r=>r.c.kolo!=null?r.c.kolo+(r.c.odhad?' ~':''):el('span','nic','zatím ne'),v:r=>r.c.kolo},
+      {k:'prinesl',h:'Přineslo',c:'n',f:r=>r.pouzito?fb(r.pouzito.v):'',v:r=>r.pouzito?r.pouzito.v:null,title:'Body přímo z čipu v použitém kole'},
+      {k:'nejk',h:'Nejlepší kolo',c:'n',f:r=>r.nej.k,v:r=>r.nej.k,title:'Kolo, ve kterém by čip přinesl nejvíc'},
+      {k:'nejv',h:'Mohlo přinést',c:'n',f:r=>fb(r.nej.v),v:r=>r.nej.v},
+      {k:'ztr',h:'Ušlé body',c:'n sum',f:r=>r.ztr==null?el('span','nic','–'):r.ztr>0?el('span','zneg','−'+fb(r.ztr)):el('span','zpos','ideální'),v:r=>r.ztr,title:'Rozdíl mezi nejlepším možným kolem a použitým kolem'}
+    ],rows,UI.trCI)));
+}
+
+/* ======================================================================
+   PŘEHLED
+   ====================================================================== */
+function stabTym(u){
+  const v=D.kola.map(k=>bodyKola(u,k)).filter(x=>x!=null);
+  if(v.length<2)return null;
+  const m=sumA(v)/v.length,sd=Math.sqrt(sumA(v.map(x=>(x-m)*(x-m)))/v.length);
+  return{n:v.length,m,sd,cv:m?sd/m:0,min:Math.min(...v),max:Math.max(...v)};
+}
+function drzeniKola(k){
+  D.drz=D.drz||new Map();if(D.drz.has(k))return D.drz.get(k);
+  const m=new Map();
+  for(const u of D.tymy.values())for(const s of (u.sestava.get(k)||[]))if(vHre(u,k,s))m.set(s.hracId,(m.get(s.hracId)||0)+1);
+  D.drz.set(k,m);return m;
+}
+function hracKola(k){
+  let best=null;
+  for(const[key,e]of D.hk){
+    if(!key.endsWith('|'+k)||!e.zapasy.length)continue;
+    if(!best||e.body>best.e.body||(e.body===best.e.body&&e.min>best.e.min))best={id:e.zapasy[0].hracId,e};
+  }
+  return best;
+}
+const zaokr=n=>Math.round(n*10)/10;
+function viewPrehled(root){
+  const tymy=[...D.tymy.values()];
+  if(!tymy.length||!D.kola.length){root.append(el('div','tlum','Soubor neobsahuje žádná kola.'));return}
+  const P=pk(),kon=D.kola.length-1,K=D.kola[kon],rk=(u,i)=>P.get(u.tymId)[i].r,bd=(u,i)=>P.get(u.tymId)[i].s;
+  const serad=[...tymy].sort((a,b)=>rk(a,kon)-rk(b,kon)||cs.compare(a.jmeno,b.jmeno));
+  const vedouci=serad[0],druhy=serad[1],vedou=serad.filter(u=>rk(u,kon)===1);
+  const naskok=druhy?bd(vedouci,kon)-bd(druhy,kon):0;
+  const kolaVedl=u=>D.kola.filter((k,i)=>rk(u,i)===1).length;
+  const kolaT=tymy.filter(u=>bodyKola(u,K)!=null).sort((a,b)=>bodyKola(b,K)-bodyKola(a,K)||cs.compare(a.jmeno,b.jmeno));
+  const vitezK=kolaT[0],prumK=prumerKola(K);
+  const H=hraciStat(),hr=[...H.map.values()].filter(h=>h.kola>0),top=hr.reduce((a,h)=>!a||h.body>a.body?h:a,null);
+  const tip=hr.filter(h=>h.rozd).sort((a,b)=>b.body-a.body)[0];
+  const hk=hracKola(K),hkH=hk?(D.hraci.get(hk.id)||{}):null,hkN=hk?(drzeniKola(K).get(hk.id)||0):0;
+  const posun=kon>0?tymy.map(u=>({u,d:rk(u,kon-1)-rk(u,kon)})):[];
+  const nahoru=posun.filter(x=>x.d>0).sort((a,b)=>b.d-a.d)[0],dolu=posun.filter(x=>x.d<0).sort((a,b)=>a.d-b.d)[0];
+  const sh=tymy.map(u=>Object.assign({u},souhrnTym(u))),kr=sh.filter(r=>r.kn>0);
+  const kBest=kr.reduce((a,r)=>!a||r.ztrata/r.kn<a.ztrata/a.kn?r:a,null);
+  const ideal=tymy.map(u=>({u,v:u.soucet+souhrnTym(u).ztrata})).reduce((a,r)=>!a||r.v>a.v?r:a,null);
+  const lav=sh.reduce((a,r)=>!a||r.lavNev>a.lavNev?r:a,null);
+  const pr=tymy.map(u=>Object.assign({u},souhrnPrestupy(u))).filter(r=>r.n>0);
+  const prB=pr.filter(r=>r.cisty!==0||r.pen>0).reduce((a,r)=>!a||r.cisty>a.cisty?r:a,null),prP=pr.reduce((a,r)=>!a||r.pen>a.pen?r:a,null);
+  const st=tymy.map(u=>({u,s:stabTym(u)})).filter(x=>x.s),stS=st.reduce((a,x)=>!a||x.s.cv<a.s.cv?x:a,null),stH=st.reduce((a,x)=>!a||x.s.cv>a.s.cv?x:a,null);
+  const prumTym=sumA(tymy.map(u=>u.prumer))/tymy.length;
+
+  root.append(vysv('Souhrn ligy v několika větách: kdo vede, co se stalo v posledním kole, kdo vyniká a komu se dařilo ve volbách kapitánů a přestupech. Podrobnosti jsou v dalších záložkách.'));
+  const li=(...k)=>el('li',null,...k.flat(Infinity));
+  const body=[];
+  body.push(vedou.length>1?li('Vedení se dělí ',vedou.map(u=>B(u.jmeno)).flatMap((x,i)=>i?[', ',x]:[x]),` (${fb(bd(vedouci,kon))} b).`)
+    :li(B(vedouci.jmeno),` vede s ${fb(bd(vedouci,kon))} b`,druhy?`, náskok na druhého (${druhy.jmeno}) je ${fb(naskok)} b`:'',`. Vedl v ${kolaVedl(vedouci)} z ${D.kola.length} kol.`));
+  if(vitezK)body.push(li(`V ${K}. kole vyhrál `,B(vitezK.jmeno),` (${bodyKola(vitezK,K)} b, průměr ligy ${f1(prumK)} b).`,
+    nahoru?[' Nejvíc se v pořadí posunul nahoru ',B(nahoru.u.jmeno),` (o ${nahoru.d} ${nahoru.d===1?'místo':nahoru.d<5?'místa':'míst'})`,dolu?[', nejvíc dolů ',B(dolu.u.jmeno),` (o ${-dolu.d})`]:'','.']:'',
+    hk?[' Hráčem kola byl ',B(`${hkH.jmeno||''} ${hkH.prijmeni||''}`.trim()||('#'+hk.id)),` (${fb(hk.e.body)} b, v základu ho mělo ${hkN} z ${tymy.length} týmů).`]:''));
+  if(top)body.push(li('Hráč sezóny je ',B(jmenoH(top)),` (${fb(top.body)} b)`,tip?[', nejlepší skrytý tip ',B(jmenoH(tip)),` (${fb(tip.body)} b, drží ho ${Math.round(tip.vlast*100)} % týmů)`]:'','.'));
+  if(kBest)body.push(li('Nejlépe vybírá kapitány ',B(kBest.u.jmeno),` (v průměru ${f1(kBest.ztrata/kBest.kn)} b promarněno za kolo).`,
+    ideal&&ideal.u!==vedouci?[' S ideálními kapitány by vedl ',B(ideal.u.jmeno),'.']:' S ideálními kapitány by se pořadí na špici nezměnilo.'));
+  if(prB&&prB.cisty>0)body.push(li('Nejlépe vyšly přestupy ',B(prB.u.jmeno),' (',znam(prB.cisty),' b po penalizaci)',prP&&prP.pen>0?[', nejvíc na penalizacích zaplatil ',B(prP.u.jmeno),` (${prP.pen} b)`]:'','.'));
+  if(stS&&stH&&stS!==stH)body.push(li('Nejvyrovnanější výkony má ',B(stS.u.jmeno),` (od svého průměru se v kolech liší obvykle o ±${f1(stS.s.sd)} b), největší výkyvy `,B(stH.u.jmeno),` (±${f1(stH.s.sd)} b).`));
+  if(lav&&lav.lavNev>0)body.push(li('Nejvíc bodů nechal na lavičce ',B(lav.u.jmeno),` (${fb(lav.lavNev)} b).`));
+  root.append(el('ul','pribeh',...body));
+
+  const N=Math.min(5,serad.length),barvy=['var(--acc)','var(--k3)','var(--k4)','var(--k1)','var(--k2)'];
+  const ser=serad.slice(0,N).map((u,i)=>({name:u.jmeno,color:barvy[i],w:i?1.8:2.4,
+    vals:D.kola.map((k,j)=>{const lid=Math.max(...tymy.map(t=>bd(t,j)));return bd(u,j)-lid})}));
+  const tabTop=serad.slice(0,6).map((u,i)=>({u,i,d:kon>0?rk(u,kon-1)-rk(u,kon):0}));
+  root.append(bento(
+    karta('c3','Vede',vedouci.jmeno,[[`${fb(bd(vedouci,kon))} b`+(druhy&&vedou.length===1?` · náskok ${fb(naskok)} b`:'')]]),
+    karta('c3',`${K}. kolo: nejlepší tým`,vitezK?vitezK.jmeno:'–',vitezK?[[`${bodyKola(vitezK,K)} b · průměr ligy ${f1(prumK)} b`]]:[]),
+    karta('c3','Hráč sezóny',top?jmenoH(top):'–',top?[[`${fb(top.body)} b · ${kz(top.h.klubId)} · ${POZ[top.h.pozice]||''}`]]:[]),
+    karta('c3','Ø bodů týmu na kolo',f1(prumTym),[[`${tymy.length} týmů · ${D.kola.length} kol`]]),
+    grafKarta('c8 r2','Ztráta na vedoucího týmu po kolech',ser.map(x=>[x.color,x.name]),lineChart(D.kola.map(String),ser,fb,{zero:true,H:214})),
+    el('div','card c4',el('div','chead',el('div','lab',`Stav po ${K}. kole`)),tb([
+      {h:'#',c:'n tlum',f:r=>rk(r.u,kon)},{h:'Tým',f:r=>B(r.u.jmeno)},{h:'Body',c:'n',f:r=>fb(bd(r.u,kon))},
+      {h:'Změna',c:'n',f:r=>kon>0?znam(r.d):''}],tabTop))));
+}
+/* ======================================================================
+   SHRNUTÍ KOLA – automatický text ke zkopírování
+   ====================================================================== */
+const sgn=n=>(n>0?'+':n<0?'−':'')+fb(Math.abs(n));
+function kopiruj(text,tlac){
+  const hotovo=()=>{const t=tlac.textContent;tlac.textContent='Zkopírováno';setTimeout(()=>{tlac.textContent=t},1600)};
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(hotovo,()=>zaloha());return}
+  }catch(e){}
+  zaloha();
+  function zaloha(){
+    try{const t=el('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.append(t);t.select();document.execCommand('copy');t.remove();hotovo()}catch(e){}
+  }
+}
+function shrnutiData(K){
+  const tymy=[...D.tymy.values()],i=D.kola.indexOf(K),P=pk();
+  const kolaT=tymy.filter(u=>bodyKola(u,K)!=null).sort((a,b)=>bodyKola(b,K)-bodyKola(a,K)||cs.compare(a.jmeno,b.jmeno));
+  if(!kolaT.length)return null;
+  const max=bodyKola(kolaT[0],K),min=bodyKola(kolaT[kolaT.length-1],K);
+  const viteze=kolaT.filter(u=>bodyKola(u,K)===max),posledni=kolaT.filter(u=>bodyKola(u,K)===min);
+  const rekord=D.kola.every(k=>tymy.every(u=>{const b=bodyKola(u,k);return b==null||b<=max}));
+  const rk=u=>P.get(u.tymId)[i].r,bd=u=>P.get(u.tymId)[i].s;
+  const serad=[...tymy].sort((a,b)=>rk(a)-rk(b)||cs.compare(a.jmeno,b.jmeno));
+  const posun=i>0?tymy.map(u=>({u,d:P.get(u.tymId)[i-1].r-rk(u)})):[];
+  const nahoru=posun.filter(x=>x.d>0).sort((a,b)=>b.d-a.d)[0],dolu=posun.filter(x=>x.d<0).sort((a,b)=>a.d-b.d)[0];
+  const hk=hracKola(K),drz=drzeniKola(K),NT=tymy.filter(u=>u.sestava.has(K)).length;
+  let tip=null;
+  for(const[key,e]of D.hk){
+    if(!key.endsWith('|'+K)||!e.zapasy.length||e.min<=0)continue;
+    const id=e.zapasy[0].hracId,n=drz.get(id)||0;
+    if(n>0&&n/NT<.25&&(!tip||e.body>tip.e.body))tip={id,e,n};
+  }
+  const kap=tymy.filter(u=>u.sestava.has(K)).map(u=>{
+    const a=analyzaTK(u,K),hra=(u.sestava.get(K)||[]).filter(s=>vHre(u,K,s));
+    const raw=s=>{const e=D.hk.get(s.hracId+'|'+K);return e?e.body:(jeKap(u,K,s)?s.body/2:s.body)};
+    const best=hra.reduce((x,s)=>!x||raw(s)>raw(x)?s:x,null);
+    return{u,a,best,bestB:best?raw(best):0};
+  }).filter(r=>r.a.kapN>0);
+  const kBest=kap.reduce((x,r)=>!x||r.a.bonus>x.a.bonus||(r.a.bonus===x.a.bonus&&r.a.ztrata<x.a.ztrata)?r:x,null);
+  const kZtrata=kap.filter(r=>r.a.ztrata>0).reduce((x,r)=>!x||r.a.ztrata>x.a.ztrata?r:x,null);
+  const lav=tymy.filter(u=>u.sestava.has(K)).map(u=>({u,a:analyzaTK(u,K)})).filter(r=>!r.a.lav&&r.a.lavBody>0).reduce((x,r)=>!x||r.a.lavBody>x.a.lavBody?r:x,null);
+  const pre=tymy.map(u=>({u,p:prestupyTK(u,K)})).filter(r=>r.p);
+  const preN=sumA(pre.map(r=>r.p.n)),prePen=sumA(pre.map(r=>r.p.pen));
+  const preK=pre.filter(r=>r.p.cisty!=null&&r.p.n>0);
+  const preB=preK.reduce((x,r)=>!x||r.p.cisty>x.p.cisty?r:x,null),preH=preK.reduce((x,r)=>!x||r.p.cisty<x.p.cisty?r:x,null);
+  const cipy=[];
+  for(const u of tymy)for(const def of CIPY)if(u.cipy[def[0]].kolo===K)cipy.push({u,def,odhad:u.cipy[def[0]].odhad});
+  return{K,i,tymy,kolaT,max,min,viteze,posledni,rekord,serad,rk,bd,nahoru,dolu,hk,tip,NT,drz,kBest,kZtrata,lav,pre,preN,prePen,preB,preH,cipy,avg:prumerKola(K)};
+}
+function viewShrnuti(root){
+  if(!D.kola.includes(UI.kolo))UI.kolo=D.kola[D.kola.length-1];
+  const K=UI.kolo;
+  const chips=el('div','kolacip',el('span','stit','Kolo'));
+  for(const k of D.kola){const b=el('button',k===K?'aktivni':'',k);b.onclick=()=>{UI.kolo=k;kresliVse()};chips.append(b)}
+  root.append(chips);
+  const d=shrnutiData(K);
+  if(!d){root.append(el('div','tlum','Pro toto kolo nejsou data.'));return}
+  const jh=id=>{const h=D.hraci.get(id)||{};return `${h.jmeno||''} ${h.prijmeni||''}`.trim()||('#'+id)};
+  const L=[];                       /* řádky zprávy: části jsou texty, {b:jméno} tučně, {z:číslo} se znaménkem */
+  const rad=(...c)=>L.push(c.flat(Infinity));
+  const jm2=us=>us.flatMap((u,i)=>i?[', ',{b:u.jmeno}]:[{b:u.jmeno}]);
+  rad(`${K}. kolo vyhrál `,jm2(d.viteze),` (${d.max} b, průměr ligy ${f1(d.avg)} b)`,d.rekord&&D.kola.length>1?', je to nejlepší výkon sezóny':'',
+    d.kolaT.length>1?[`. Nejméně bodů měl `,jm2(d.posledni),` (${d.min} b).`]:'.');
+  if(d.i>=0)rad(`Po kole vede `,{b:d.serad[0].jmeno},` (${fb(d.bd(d.serad[0]))} b)`,d.serad[1]?`, náskok na druhého je ${fb(d.bd(d.serad[0])-d.bd(d.serad[1]))} b`:'','.',
+    d.nahoru?[' Nejvíc se posunul nahoru ',{b:d.nahoru.u.jmeno},` (o ${d.nahoru.d}), nejvíc dolů `,d.dolu?[{b:d.dolu.u.jmeno},` (o ${-d.dolu.d}).`]:'nikdo.']:'');
+  if(d.hk)rad('Hráč kola: ',{b:jh(d.hk.id)},` (${kz((D.hraci.get(d.hk.id)||{}).klubId)}, ${fb(d.hk.e.body)} b, v základu ho mělo ${d.drz.get(d.hk.id)||0} z ${d.NT} týmů).`,
+    d.tip&&d.tip.id!==d.hk.id?[' Nejlepší netradiční volba: ',{b:jh(d.tip.id)},` (${fb(d.tip.e.body)} b, v základu ho mělo jen ${d.tip.n} z ${d.NT} týmů).`]:'');
+  if(d.kBest)rad('Nejvíc z kapitána vytěžil ',{b:d.kBest.u.jmeno},` (${fb(d.kBest.a.bonus)} b navíc)`,
+    d.kZtrata?[', nejvíc bodů promarnil ',{b:d.kZtrata.u.jmeno},` (${fb(d.kZtrata.a.ztrata)} b, nejlepší hráč sestavy byl `,{b:jh(d.kZtrata.best.hracId)},` s ${fb(d.kZtrata.bestB)} b).`]:'. Žádný tým nepromarnil kapitána.');
+  if(d.lav)rad('Nejvíc bodů nechal na lavičce ',{b:d.lav.u.jmeno},` (${fb(d.lav.a.lavBody)} b).`);
+  if(d.pre.length)rad(d.preN?`Přestupů v kole: ${d.preN}, na penalizacích se zaplatilo ${d.prePen} b.`:'V kole nebyl žádný přestup.',
+    d.preB&&d.preB.p.cisty>0?[' Nejlépe vyšel přestup ',{b:d.preB.u.jmeno},` (${sgn(d.preB.p.cisty)} b po penalizaci)`,d.preH&&d.preH!==d.preB&&d.preH.p.cisty<0?[', nejhůř ',{b:d.preH.u.jmeno},` (${sgn(d.preH.p.cisty)} b).`]:'.']:
+    d.preH&&d.preH.p.cisty<0?[' Nejhůř vyšel přestup ',{b:d.preH.u.jmeno},` (${sgn(d.preH.p.cisty)} b po penalizaci).`]:'');
+  if(d.cipy.length)rad('Čipy v kole: ',d.cipy.flatMap((c,i)=>[i?', ':'',{b:c.u.jmeno},` – ${c.def[2].split(' (')[0]}${c.odhad?' (odhad)':''}`]),'.');
+  const naDom=c=>typeof c==='object'&&c!==null&&'b' in c?B(c.b):c;
+  const naTxt=c=>typeof c==='object'&&c!==null&&'b' in c?c.b:c;
+  const text=`Fantasy liga – ${K}. kolo\n`+L.map(r=>'• '+r.map(naTxt).join('')).join('\n');
+  const tlac=el('button','jiny','Kopírovat text');tlac.onclick=()=>kopiruj(text,tlac);
+  root.append(el('div','slr',el('h3','sl',`Shrnutí ${K}. kola`),el('span','tier',tlac)));
+  root.append(el('ul','pribeh',...L.map(r=>el('li',null,...r.map(naDom)))));
+  const hkH=d.hk?D.hraci.get(d.hk.id)||{}:null;
+  root.append(bento(
+    karta('c3','Nejlepší tým kola',d.viteze.map(u=>u.jmeno).join(', '),[[`${d.max} b · průměr ligy ${f1(d.avg)} b`]]),
+    karta('c3','Hráč kola',d.hk?jh(d.hk.id):'–',d.hk?[[`${fb(d.hk.e.body)} b · ${kz(hkH.klubId)} · v základu ${d.drz.get(d.hk.id)||0} z ${d.NT} týmů`]]:[]),
+    karta('c3','Největší posun nahoru',d.nahoru?d.nahoru.u.jmeno:'–',d.nahoru?[[`o ${d.nahoru.d} ${d.nahoru.d===1?'místo':d.nahoru.d<5?'místa':'míst'} v celkovém pořadí`]]:[['v tomto kole se nikdo neposunul nahoru']]),
+    karta('c3','Přestupy v kole',d.pre.length?d.preN:'–',d.pre.length?[[d.prePen?`penalizace celkem −${d.prePen} b`:'bez penalizací']]:[['v prvním kole se přestupy nehodnotí']])));
+}
+/* ======================================================================
+   POZICE – kde se boduje a který tým dává nejvíc na hráče
+   ====================================================================== */
+const POZ_O=['Goalkeeper','Defender','Midfielder','Attacker'];
+const POZ_N={Goalkeeper:'Brankáři',Defender:'Obránci',Midfielder:'Záložníci',Attacker:'Útočníci'};
+const POZ_B={Goalkeeper:'var(--k4)',Defender:'var(--k3)',Midfielder:'var(--k2)',Attacker:'var(--acc)'};
+function pozStat(){
+  if(D.ps)return D.ps;
+  const mk=()=>Object.fromEntries(POZ_O.map(p=>[p,{ids:new Set(),n:0,body:0,min:0}]));
+  const A=mk(),Bq=mk(),T=new Map(),RP=rawPts();
+  for(const[key,e]of D.hk){
+    if(!e.zapasy.length||e.min<=0)continue;
+    const id=e.zapasy[0].hracId,p=(D.hraci.get(id)||{}).pozice;if(!A[p])continue;
+    const a=A[p];a.ids.add(id);a.n++;a.body+=e.body;a.min+=e.min;
+  }
+  for(const u of D.tymy.values()){
+    const t={slots:0,body:0,poz:mk()};T.set(u.tymId,t);
+    for(const[k,arr]of u.sestava)for(const s of arr){
+      if(!vHre(u,k,s))continue;
+      const p=(D.hraci.get(s.hracId)||{}).pozice;if(!Bq[p])continue;
+      const b=RP.get(s.hracId+'|'+k)||0;
+      Bq[p].n++;Bq[p].body+=b;t.slots++;t.body+=b;t.poz[p].n++;t.poz[p].body+=b;
+    }
+  }
+  const celkB=sumA(POZ_O.map(p=>Bq[p].body));
+  for(const t of T.values()){
+    t.avg=t.slots?t.body/t.slots:null;
+    t.exp=t.slots?sumA(POZ_O.map(p=>t.poz[p].n*(Bq[p].n?Bq[p].body/Bq[p].n:0)))/t.slots:null;
+    t.rozdil=t.avg!=null&&t.exp!=null?t.avg-t.exp:null;
+  }
+  return D.ps={A,B:Bq,T,celkB};
+}
+function viewPozice(root){
+  const S=pozStat(),tymy=[...D.tymy.values()];
+  const avgA=p=>S.A[p].n?S.A[p].body/S.A[p].n:0,avgB=p=>S.B[p].n?S.B[p].body/S.B[p].n:0;
+  const topB=[...POZ_O].sort((a,b)=>avgB(b)-avgB(a)),topA=[...POZ_O].sort((a,b)=>avgA(b)-avgA(a));
+  const radky=tymy.map(u=>Object.assign({u},S.T.get(u.tymId))).filter(r=>r.slots>0);
+  const nej=radky.reduce((a,r)=>!a||r.avg>a.avg?r:a,null),nejh=radky.reduce((a,r)=>!a||r.avg<a.avg?r:a,null);
+  const nejR=radky.reduce((a,r)=>!a||r.rozdil>a.rozdil?r:a,null);
+  root.append(vysv('Která pozice dává nejvíc bodů a který tým z každého svého hráče v základu vytěží nejvíc. Počítají se body hráčů bez zdvojení kapitána. Data obsahují hráče, které si někdo z naší ligy vybral do kádru; celá hra (všichni hráči soutěže) v nich není, takže to jsou čísla za naši ligu.',
+    [`Na hráče a kolo dávají v sestavách týmů nejvíc `,B(POZ_N[topB[0]].toLowerCase()),` (Ø ${f1(avgB(topB[0]))} b), nejméně `,B(POZ_N[topB[3]].toLowerCase()),` (Ø ${f1(avgB(topB[3]))} b).`,
+     nej&&nejh&&nej!==nejh?[' Z hráče v základu vytěží nejvíc ',B(nej.u.jmeno),` (Ø ${f1(nej.avg)} b), nejméně `,B(nejh.u.jmeno),` (Ø ${f1(nejh.avg)} b).`]:'',
+     nejR&&nejR.rozdil>0?[' I po zohlednění složení kádru je nejlepší ',B(nejR.u.jmeno),' (',znam(nejR.rozdil,true),' b na hráče nad očekávání).']:'']));
+
+  root.append(el('h3','sl','Kde se nejvíc boduje'));
+  const bars=(f,zn)=>barChart(POZ_O.map(p=>({label:POZ_N[p],title:`${POZ_N[p]} · Ø ${f1(f(p))} b`,segs:[{v:f(p),color:POZ_B[p]}]})),{H:190});
+  root.append(bento(
+    grafKarta('c6','Naše liga: Ø bodů hráče v základu na kolo',[],bars(avgB)),
+    grafKarta('c6','Všichni hráči v datech: Ø bodů na odehrané kolo',[],bars(avgA))));
+  const celkA=sumA(POZ_O.map(p=>S.A[p].body));
+  root.append(el('div','sekce',tb([
+    {h:'Pozice',f:p=>el('span','cnm',dot(POZ_B[p]),POZ_N[p])},
+    {h:'Hráčů v datech',c:'n',f:p=>S.A[p].ids.size},
+    {h:'Ø na odehrané kolo',c:'n',f:p=>f1(avgA(p)),title:'Body hráče v kolech, kdy odehrál aspoň minutu (všichni hráči v datech)'},
+    {h:'Ø na 90 minut',c:'n',f:p=>S.A[p].min?f1(S.A[p].body/S.A[p].min*90):''},
+    {h:'Podíl bodů hráčů',c:'n',f:p=>celkA?Math.round(S.A[p].body/celkA*100)+' %':''},
+    {h:'Míst v základech týmů',c:'n',f:p=>S.B[p].n,title:'Součet hráč × kolo × tým v základních sestavách'},
+    {h:'Ø na místo v základu',c:'n',f:p=>el('b',null,f1(avgB(p))),title:'Body hráče na jedno místo v základu a kolo'},
+    {h:'Podíl bodů v sestavách',c:'n',f:p=>S.celkB?Math.round(S.B[p].body/S.celkB*100)+' %':''}
+  ],topB)));
+
+  /* nejlepší hráči podle pozic */
+  const H=hraciStat(),hr=[...H.map.values()].filter(h=>h.kola>0);
+  root.append(el('h3','sl','Nejlepší hráči na pozicích'));
+  root.append(bento(...POZ_O.map(p=>el('div','card c3',el('div','chead',el('div','lab',el('span','lg',dot(POZ_B[p]),POZ_N[p]))),
+    tb([{h:'Hráč',f:h=>hracLink(h.id)},{h:'Body',c:'n',f:h=>fb(h.body)},{h:'Ø',c:'n',f:h=>f1(h.prumer)}],
+      hr.filter(h=>h.h.pozice===p).sort((a,b)=>b.body-a.body).slice(0,6))))));
+
+  /* týmy */
+  root.append(el('h3','sl','Který tým dává nejvíc na jednoho hráče'));
+  root.append(vysv('„Ø na hráče“ jsou body, které tým získal z hráčů v základu, dělené počtem míst v základu za všechna kola. Sloupce BR až ÚT ukazují to samé zvlášť po pozicích. „Podle složení“ je průměr, který by tým měl, kdyby každý jeho hráč bodoval jako průměr ligy na své pozici. Rozdíl proto ukazuje, jak dobře tým vybírá hráče uvnitř pozic, nezávisle na tom, kolik má útočníků a obránců.'));
+  const serad=[...radky].sort((a,b)=>b.avg-a.avg);
+  root.append(bento(grafKarta('c12','Ø bodů na hráče v základu: skutečně a podle složení týmu',[['var(--acc)','Skutečně'],['var(--text)','Podle složení']],
+    dumbbell(serad.map(r=>({name:r.u.jmeno,pts:[{v:r.exp,color:'var(--text)',hollow:true,t:'podle složení'},{v:r.avg,color:'var(--acc)',t:'skutečně',r:5}]})),{real:true}))));
+  const poradi=new Map(serad.map((r,i)=>[r.u.tymId,i+1]));
+  root.append(el('div','sekce',sortTb([
+    {k:'por',h:'#',c:'n tlum',f:r=>poradi.get(r.u.tymId),v:r=>-poradi.get(r.u.tymId)},
+    {k:'jmeno',h:'Hráč',f:r=>B(r.u.jmeno),v:r=>r.u.jmeno},
+    {k:'tym',h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu),v:r=>r.u.nazevTymu},
+    {k:'avg',h:'Ø na hráče',c:'n sum',f:r=>f1(r.avg),v:r=>r.avg,title:'Body hráčů v základu na jedno místo v základu a kolo'},
+    ...POZ_O.map(p=>({k:'p_'+p,h:POZ[p],c:'n',f:r=>r.poz[p].n?f1(r.poz[p].body/r.poz[p].n):'',v:r=>r.poz[p].n?r.poz[p].body/r.poz[p].n:null,title:POZ_N[p]})),
+    {k:'exp',h:'Podle složení',c:'n',f:r=>f1(r.exp),v:r=>r.exp,title:'Průměr, který by tým měl při průměrném bodování hráčů na každé pozici'},
+    {k:'rozdil',h:'Rozdíl',c:'n',f:r=>znam(r.rozdil,true),v:r=>r.rozdil,title:'Ø na hráče minus průměr podle složení: kladné = tým vybírá uvnitř pozic nadprůměrně'},
+    {k:'slots',h:'Míst v základu',c:'n tlum',f:r=>r.slots,v:r=>r.slots}
+  ],radky,UI.trPo)));
+}
+/* ======================================================================
+   PODOBNOST TÝMŮ
+   ====================================================================== */
+function podobnostData(){
+  if(D.pod)return D.pod;
+  const tymy=[...D.tymy.values()],sets=new Map(),RP=rawPts();
+  for(const u of tymy){const m=new Map();for(const[k,arr]of u.sestava)m.set(k,new Set(arr.map(s=>s.hracId)));sets.set(u.tymId,m)}
+  const par=new Map();
+  for(const a of tymy)for(const b of tymy){
+    if(a===b)continue;
+    let sum=0,sh=0,vel=0,n=0;
+    for(const k of D.kola){
+      const A=sets.get(a.tymId).get(k),B=sets.get(b.tymId).get(k);if(!A||!B||!A.size)continue;
+      let c=0;for(const id of A)if(B.has(id))c++;
+      sum+=c/Math.min(A.size,B.size);sh+=c;vel+=Math.min(A.size,B.size);n++;
+    }
+    par.set(a.tymId+'|'+b.tymId,n?{p:sum/n,sh:sh/n,vel:vel/n}:null);
+  }
+  const T=new Map();
+  for(const u of tymy){
+    const o={u,pary:[],uniN:0,uniB:0,othN:0,othB:0};
+    for(const b of tymy){if(b===u)continue;const x=par.get(u.tymId+'|'+b.tymId);if(x)o.pary.push({b,p:x.p})}
+    o.prum=o.pary.length?sumA(o.pary.map(x=>x.p))/o.pary.length:null;
+    o.nej=o.pary.reduce((a,x)=>!a||x.p>a.p?x:a,null);o.nejh=o.pary.reduce((a,x)=>!a||x.p<a.p?x:a,null);
+    for(const[k,arr]of u.sestava){
+      const drz=drzeniKola(k),NT=tymy.filter(t=>t.sestava.has(k)).length||1;
+      for(const s of arr){
+        if(!vHre(u,k,s))continue;
+        const b=RP.get(s.hracId+'|'+k)||0,uni=(drz.get(s.hracId)||0)/NT<.25;
+        if(uni){o.uniN++;o.uniB+=b}else{o.othN++;o.othB+=b}
+      }
+    }
+    o.uniPod=o.uniN+o.othN?o.uniN/(o.uniN+o.othN):0;
+    o.zisk=o.uniN&&o.othN?o.uniB-o.uniN*(o.othB/o.othN):null;
+    T.set(u.tymId,o);
+  }
+  return D.pod={par,T};
+}
+function viewPodobnost(root){
+  const tymy=[...D.tymy.values()].sort((a,b)=>(a.poradi??1e9)-(b.poradi??1e9)||cs.compare(a.jmeno,b.jmeno));
+  if(tymy.length<2){root.append(el('div','tlum','Na podobnost jsou potřeba aspoň dva týmy.'));return}
+  const Pd=podobnostData(),radky=tymy.map(u=>Pd.T.get(u.tymId));
+  let dvojice=null,odl=null;
+  for(const a of tymy)for(const b of tymy){
+    if(a.tymId>=b.tymId)continue;const x=Pd.par.get(a.tymId+'|'+b.tymId);if(!x)continue;
+    if(!dvojice||x.p>dvojice.x.p)dvojice={a,b,x};if(!odl||x.p<odl.x.p)odl={a,b,x};
+  }
+  const prumAll=sumA(radky.filter(r=>r.prum!=null).map(r=>r.prum))/Math.max(1,radky.filter(r=>r.prum!=null).length);
+  const nejO=[...radky].sort((a,b)=>a.prum-b.prum)[0],nejK=[...radky].sort((a,b)=>b.prum-a.prum)[0];
+  const ziskB=radky.filter(r=>r.zisk!=null).sort((a,b)=>b.zisk-a.zisk)[0];
+  const proc=x=>Math.round(x*100)+' %';
+  root.append(vysv('Jak moc se kádry týmů v lize překrývají. Překryv dvou týmů je průměrný podíl hráčů v kádru, které mají oba (100 % = totožné kádry), spočítaný přes všechna kola. „Netradiční hráč“ je takový, kterého měla v základu méně než čtvrtina týmů.',
+    [`Nejvíc si jsou podobné týmy `,B(dvojice.a.jmeno),' a ',B(dvojice.b.jmeno),` (${proc(dvojice.x.p)} překryv), nejvíc se liší `,B(odl.a.jmeno),' a ',B(odl.b.jmeno),` (${proc(odl.x.p)}).`,
+     ` Nejoriginálnější kádr má `,B(nejO.u.jmeno),` (Ø překryv ${proc(nejO.prum)}), nejvíc se drží davu `,B(nejK.u.jmeno),` (${proc(nejK.prum)}).`,
+     ziskB&&ziskB.zisk>0?[' Netradiční hráči se nejvíc vyplatili ',B(ziskB.u.jmeno),' (',znam(ziskB.zisk),' b oproti tomu, co by dali běžní hráči).']:'']));
+  root.append(bento(
+    karta('c3','Ø překryv týmů',proc(prumAll),[['průměrný podíl společných hráčů']]),
+    karta('c3','Nejpodobnější dvojice',proc(dvojice.x.p),[[B(dvojice.a.jmeno),' a ',B(dvojice.b.jmeno)]]),
+    karta('c3','Nejodlišnější dvojice',proc(odl.x.p),[[B(odl.a.jmeno),' a ',B(odl.b.jmeno)]]),
+    karta('c3','Nejoriginálnější kádr',nejO.u.jmeno,[[`Ø překryv ${proc(nejO.prum)}`]])));
+  const vals=[...Pd.par.values()].filter(Boolean).map(x=>x.p),sc=skalaVse(vals);
+  const t=el('table','pod'),hr=el('tr');hr.append(el('th',null,''));
+  for(const b of tymy)hr.append(el('th','n',b.jmeno));
+  t.append(el('thead',null,hr));
+  const tbd=el('tbody');
+  for(const a of tymy){
+    const tr=el('tr'),c0=el('td',null,B(a.jmeno));tr.append(c0);
+    for(const b of tymy){
+      const td=el('td','n');
+      if(a===b)td.append(el('span','nic','–'));
+      else{
+        const x=Pd.par.get(a.tymId+'|'+b.tymId);
+        if(x){const v=el('span','v h',String(Math.round(x.p*100)));v.style.setProperty('--c',teploT(x.p,sc));td.append(v);td.title=`${a.jmeno} × ${b.jmeno}: v průměru ${f1(x.sh)} společných hráčů z ${f1(x.vel)}`}
+      }
+      tr.append(td);
+    }
+    tbd.append(tr);
+  }
+  t.append(tbd);
+  root.append(el('div','sekce',el('div','slr',el('h3','sl','Překryv kádrů v procentech'),el('span','tier',legendaSkaly(['méně podobní','více podobní']))),el('div','tabwrap',t)));
+  root.append(el('div','sekce',el('h3',null,'Originalita týmů'),sortTb([
+    {k:'jmeno',h:'Hráč',f:r=>B(r.u.jmeno),v:r=>r.u.jmeno},
+    {k:'tym',h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu),v:r=>r.u.nazevTymu},
+    {k:'prum',h:'Ø překryv s ostatními',c:'n',f:r=>r.prum==null?'':proc(r.prum),v:r=>r.prum,title:'Průměr z překryvů s každým dalším týmem. Nižší = originálnější kádr'},
+    {k:'nej',h:'Nejpodobnější tým',f:r=>r.nej?el('span','tlum',`${r.nej.b.jmeno} · ${proc(r.nej.p)}`):'',v:r=>r.nej?r.nej.p:null},
+    {k:'nejh',h:'Nejodlišnější tým',f:r=>r.nejh?el('span','tlum',`${r.nejh.b.jmeno} · ${proc(r.nejh.p)}`):'',v:r=>r.nejh?-r.nejh.p:null},
+    {k:'uni',h:'Netradiční hráči v základu',c:'n',f:r=>proc(r.uniPod),v:r=>r.uniPod,title:'Podíl míst v základu obsazených hráči, které měla v daném kole v základu méně než čtvrtina týmů'},
+    {k:'uniB',h:'Body z nich',c:'n',f:r=>r.uniN?fb(r.uniB):'',v:r=>r.uniN?r.uniB:null},
+    {k:'zisk',h:'Body navíc oproti běžným',c:'n',f:r=>r.zisk==null?'':znam(r.zisk),v:r=>r.zisk,title:'Body z netradičních hráčů minus to, co by dali v průměru ostatní hráči týmu na stejném počtu míst'}
+  ],radky,UI.trPod)));
+}
+
+/* ======================================================================
+   STABILITA
+   ====================================================================== */
+function viewStabilita(root){
+  const tymy=[...D.tymy.values()];
+  const st=tymy.map(u=>{
+    const s=stabTym(u);if(!s)return null;
+    const poradi=D.kola.map(k=>poradiKola(k).get(u.tymId)).filter(x=>x!=null);
+    const nad=D.kola.filter(k=>{const b=bodyKola(u,k),p=prumerKola(k);return b!=null&&p!=null&&b>p}).length;
+    return Object.assign({u,poradi:poradi.length?sumA(poradi)/poradi.length:null,nad,kol:s.n},s);
+  }).filter(Boolean);
+  if(!st.length){root.append(el('div','tlum','Na stabilitu jsou potřeba aspoň dvě kola.'));return}
+  const cvs=st.map(r=>r.cv),p33=percentil(cvs,1/3),p66=percentil(cvs,2/3);
+  for(const r of st)r.typ=st.length<3?'Vyrovnaný':r.cv<=p33?'Stabilní':r.cv>=p66?'Hazardér':'Vyrovnaný';
+  const TYP={'Stabilní':'var(--k3)','Vyrovnaný':null,'Hazardér':'var(--rose)'};
+  const sS=st.reduce((a,r)=>!a||r.cv<a.cv?r:a,null),sH=st.reduce((a,r)=>!a||r.cv>a.cv?r:a,null);
+  const mx=st.reduce((a,r)=>!a||r.max>a.max?r:a,null),mn=st.reduce((a,r)=>!a||r.min<a.min?r:a,null);
+  root.append(vysv('Jak moc body týmu kolísají z kola na kolo. „Kolísání“ říká, o kolik bodů se tým v kole obvykle liší od svého průměru. „Variabilita“ je totéž v procentech průměru, takže jde porovnat i týmy s různým průměrem. Stabilní tým bodá podobně každé kolo, hazardér střídá velká kola s propady.',
+    st.length>1?['Nejvyrovnanější je ',B(sS.u.jmeno),` (±${f1(sS.sd)} b, variabilita ${Math.round(sS.cv*100)} %), největší výkyvy má `,B(sH.u.jmeno),` (±${f1(sH.sd)} b, ${Math.round(sH.cv*100)} %). Nejlepší jedno kolo měl `,B(mx.u.jmeno),` (${mx.max} b), nejhorší `,B(mn.u.jmeno),` (${mn.min} b).`]:null));
+  const serad=[...st].sort((a,b)=>b.m-a.m);
+  root.append(bento(
+    karta('c3','Nejvyrovnanější tým',sS.u.jmeno,[[`±${f1(sS.sd)} b · variabilita ${Math.round(sS.cv*100)} %`]]),
+    karta('c3','Největší výkyvy',sH.u.jmeno,[[`±${f1(sH.sd)} b · variabilita ${Math.round(sH.cv*100)} %`]]),
+    karta('c3','Nejlepší kolo ligy',mx.max,[[B(mx.u.jmeno)]]),
+    karta('c3','Nejhorší kolo ligy',mn.min,[[B(mn.u.jmeno)]]),
+    grafKarta('c12','Rozsah bodů v kolech: nejhorší a nejlepší kolo a průměr',[['var(--acc)','Průměr na kolo'],['var(--text)','Nejhorší a nejlepší kolo']],
+      dumbbell(serad.map(r=>({name:r.u.jmeno,pts:[{v:r.min,color:'var(--text)',hollow:true,t:'nejhorší kolo'},{v:r.max,color:'var(--text)',hollow:true,t:'nejlepší kolo'},{v:r.m,color:'var(--acc)',t:'průměr',r:5}]}))))));
+  root.append(el('div','sekce',sortTb([
+    {k:'jmeno',h:'Hráč',f:r=>B(r.u.jmeno),v:r=>r.u.jmeno},
+    {k:'tym',h:'Tým',f:r=>el('span','tlum',r.u.nazevTymu),v:r=>r.u.nazevTymu},
+    {k:'m',h:'Ø na kolo',c:'n',f:r=>f1(r.m),v:r=>r.m},
+    {k:'sd',h:'Kolísání (±)',c:'n sum',f:r=>f1(r.sd),v:r=>r.sd,title:'Směrodatná odchylka bodů v kolech'},
+    {k:'cv',h:'Variabilita',c:'n',f:r=>Math.round(r.cv*100)+' %',v:r=>r.cv,title:'Kolísání v procentech průměru'},
+    {k:'rozsah',h:'Nejhorší – nejlepší kolo',c:'n',f:r=>`${r.min} – ${r.max}`,v:r=>r.max-r.min},
+    {k:'nad',h:'Kol nad Ø ligy',c:'n',f:r=>`${r.nad}/${r.kol}`,v:r=>r.nad/r.kol},
+    {k:'poradi',h:'Ø pořadí v kole',c:'n',f:r=>r.poradi==null?'':f1(r.poradi),v:r=>r.poradi,title:'Průměrné pořadí týmu v jednotlivých kolech (1 = nejvíc bodů v kole)'},
+    {k:'typ',h:'Typ',f:r=>el('span','cnm',dot(TYP[r.typ],!TYP[r.typ]),r.typ),v:r=>r.cv}
+  ],st,UI.trSt)));
+}
+/* ======================================================================
+   DATA – kontrola kvality souboru
+   ====================================================================== */
+function kontrolaData(){
+  const out=[],add=(stav,nazev,vysl,det)=>out.push({stav,nazev,vysl,det:det||[]});
+  const tymy=[...D.tymy.values()],m=D.meta||{},jmT=u=>u.jmeno;
+
+  /* stažení */
+  if(m.neuplne)add('chyba','Stahování dat',m.chyby&&m.chyby.length?`přerušeno, ${m.chyby.length} neúspěšných požadavků`:'přerušeno',(m.chyby||[]).slice(0,8));
+  else if(m.chyby&&m.chyby.length)add('pozor','Stahování dat',`${m.chyby.length} neúspěšných požadavků`,m.chyby.slice(0,8));
+  else add('ok','Stahování dat','bez chyb');
+
+  /* chybějící kola */
+  const chyb=tymy.map(u=>{
+    const bezBodu=D.kola.filter(k=>!u.kola.has(k)||u.kola.get(k).body==null),bezSest=D.kola.filter(k=>!u.sestava.has(k));
+    return{u,bezBodu,bezSest};
+  }).filter(x=>x.bezBodu.length||x.bezSest.length);
+  chyb.length?add('pozor','Úplnost kol',`${chyb.length} týmů má chybějící kolo`,chyb.map(x=>`${jmT(x.u)}: ${x.bezSest.length?'sestava chybí v kolech '+x.bezSest.join(', '):''}${x.bezSest.length&&x.bezBodu.length?'; ':''}${x.bezBodu.length?'body chybí v kolech '+x.bezBodu.join(', '):''}`).slice(0,8))
+    :add('ok','Úplnost kol',`všech ${tymy.length} týmů má všech ${D.kola.length} kol`);
+
+  /* součet sestavy a oficiální body */
+  let sh=0,pen=0,nev=0,bezOf=0,celk=0,bezSouctu=0;const nevL=[];
+  for(const u of tymy)for(const[k,t]of u.kola){
+    if(t.soucetSestavy==null&&t.soucetVse==null){bezSouctu++;continue}
+    if(t.sedi==null&&(t.poradi==null)){bezOf++;continue}
+    celk++;
+    const ls=t.lavicka?t.soucetVse:t.soucetSestavy;
+    if(t.body===t.soucetSestavy||t.body===t.soucetVse)sh++;
+    else{const d=ls-t.body;if(d>0&&d%4===0)pen++;else{nev++;const cn=CIPY.filter(c=>u.cipy[c[0]].kolo===k).map(c=>c[2]);nevL.push(`${jmT(u)}, kolo ${k}: sestava ${ls} b, oficiálně ${t.body} b (rozdíl ${d})${cn.length?', čip: '+cn.join(', '):', bez čipu'}`)}}
+  }
+  if(bezSouctu&&!celk)add('info','Součet sestavy a body kola','soubor neobsahuje součty sestav');
+  else add(nev?'pozor':'ok','Součet sestavy a body kola',`${sh} z ${celk} kol sedí přesně, ${pen} se liší o násobek 4 b (penalizace za přestupy)${nev?`, ${nev} nevysvětleno`:''}`,nevL.slice(0,12));
+  if(bezOf)add('info','Oficiální body kola',`u ${bezOf} týmů a kol chybí oficiální body, počítá se součet sestavy`);
+
+  /* kádry */
+  const velk=new Map();for(const u of tymy)for(const[k,a]of u.sestava)velk.set(a.length,(velk.get(a.length)||0)+1);
+  const mod=[...velk].sort((a,b)=>b[1]-a[1])[0];
+  if(mod){
+    const odl=[];for(const u of tymy)for(const[k,a]of u.sestava)if(a.length!==mod[0])odl.push(`${jmT(u)}, kolo ${k}: ${a.length} hráčů`);
+    odl.length?add('pozor','Velikost kádru',`obvykle ${mod[0]} hráčů, ${odl.length} sestav se liší`,odl.slice(0,8)):add('ok','Velikost kádru',`všechny sestavy mají ${mod[0]} hráčů`);
+  }
+
+  /* zápasy hráčů */
+  if(!D.hk.size)add('pozor','Zápasy hráčů','soubor neobsahuje řádky hráč × zápas, chybí minuty, góly a karty');
+  else{
+    let mist=0,bez=0;
+    for(const u of tymy)for(const[k,a]of u.sestava)for(const x of a){if(x.slot==='Bench')continue;mist++;if(!D.hk.has(x.hracId+'|'+k))bez++}
+    add('info','Zápasy hráčů',`${D.hk.size} záznamů hráč × kolo; ${bez} z ${mist} míst v základu je bez zápasu v daném kole (hráč neměl zápas)`);
+  }
+
+  /* kapitáni */
+  let bezK=0,dva=0,prevz=0;const dvaL=[];
+  for(const u of tymy)for(const[k,a]of u.sestava){
+    const nom=a.filter(x=>x.kapitan).length;
+    if(!nom)bezK++;
+    if(nom>=2&&!u.cipy.two_captains.odhad&&u.cipy.two_captains.kolo!==k){dva++;dvaL.push(`${jmT(u)}, kolo ${k}`)}
+    if(kapEf(u,k).some(x=>!x.kapitan))prevz++;
+  }
+  add(bezK||dva?'pozor':'ok','Kapitáni',bezK?`${bezK} sestav bez kapitána`:dva?`${dva} sestav se dvěma kapitány bez čipu`:'každá sestava má kapitána',dvaL.slice(0,8));
+  add('info','Zástupce kapitána',`v ${prevz} sestavách převzal zdvojení zástupce, protože kapitán nenastoupil`);
+
+  /* čipy */
+  const bezC=tymy.filter(u=>u.cipy.wildcard.bezDat);
+  bezC.length?add('pozor','Čipy',`u ${bezC.length} týmů nejsou čipy ze serveru, Hrdinové lavičky a Super duo jsou jen odhad`,bezC.map(jmT).slice(0,8)):add('ok','Čipy','čipy jsou načtené ze serveru u všech týmů');
+
+  /* přestupy */
+  const pr=tymy.flatMap(u=>souhrnPrestupy(u).rows.filter(r=>r.n>0));
+  if(pr.length){
+    const nezn=pr.filter(r=>r.nezn>0),roz=pr.filter(r=>r.pen!==r.ocek),nizsi=roz.filter(r=>r.pen<r.ocek).length;
+    add(nezn.length?'info':'ok','Přestupy: body odvedených hráčů',nezn.length?`u ${nezn.length} z ${pr.length} kol s přestupem neznáme body odvedeného hráče (nikdo z ligy ho v kole neměl), bilance tam není úplná`:'body odvedených hráčů známe vždy');
+    add(roz.length?'pozor':'ok','Přestupy: penalizace podle pravidla',roz.length?`${roz.length} z ${pr.length} kol se liší od pravidla „přestupy zdarma se přenášejí, každý další −4 b“ (oficiálně nižší penalizace v ${nizsi}, vyšší v ${roz.length-nizsi})`:'penalizace odpovídají pravidlu v ${pr.length} kolech'.replace('${pr.length}',pr.length),
+      roz.map(r=>{const u=tymy.find(t=>souhrnPrestupy(t).rows.includes(r));return `${u?jmT(u):'?'}, kolo ${r.k}: ${r.n} přestupů, pravidlo ${r.ocek} b, oficiálně ${r.pen} b${r.cipTyp?' ('+(r.cipTyp==='fp'?'Bohatý majitel':'Přestavba kádru')+')':''}`}).slice(0,14));
+    /* zkouška, jestli se nevyužité přestupy zdarma nepřenášejí do dalšího kola (strop 1 = pravidlo „1 za kolo“);
+       počet zdarma na začátku dat neznáme, proto se u každého týmu zkusí všechny možnosti a vybere nejlepší */
+    const simTym=(u,strop,zadrz,start)=>{
+      let zdarma=start,ok=0,celk=0;const spatne=[];
+      for(const r of souhrnPrestupy(u).rows){
+        if(r.zdroj!=='oficiální body')continue;
+        const vyuz=r.wc?0:Math.min(zdarma,r.n),plat=r.wc?0:4*(r.n-vyuz);
+        celk++;if(plat===r.pen)ok++;else spatne.push(`${jmT(u)}, kolo ${r.k}: ${r.n} přestupů, oficiálně ${r.pen} b, model ${plat} b`);
+        zdarma=(r.wc&&zadrz)?zdarma:r.wc?Math.min(strop,zdarma+1):r.pen>0?1:Math.min(strop,Math.max(zdarma,r.n)-r.n+1);
+      }
+      return{ok,celk,spatne,start};
+    };
+    const sim=(strop,zadrz)=>{
+      let ok=0,celk=0;const spatne=[];
+      for(const u of tymy){
+        let b=null;for(let st=1;st<=Math.min(strop,6);st++){const x=simTym(u,strop,zadrz,st);if(!b||x.ok>b.ok)b=x}
+        ok+=b.ok;celk+=b.celk;spatne.push(...b.spatne);
+      }
+      return{strop,zadrz,ok,celk,spatne};
+    };
+    const hyp=[1,2,3,4,5,99].map(st=>{const a=sim(st,false),b=sim(st,true);return b.ok>a.ok?b:a}),best=hyp.reduce((a,x)=>x.ok>a.ok?x:a,hyp[0]);
+    const nazS=h=>h.strop===99?'bez stropu':'strop '+h.strop;
+    if(hyp[0].celk)add(hyp[0].ok===hyp[0].celk?'ok':'info','Přestupy zdarma: nepoužité se přenášejí?',
+      hyp.map(h=>`${nazS(h)}: sedí ${h.ok} z ${h.celk}`).join(' · ')+(best.strop>1&&best.ok>hyp[0].ok?`. Nejlépe vychází přenos nevyužitých přestupů zdarma (${nazS(best)}${best.zadrz?', čip počet nemění':''}), nesedí ${best.celk-best.ok} kol`:'')
+      +(best.spatne.length?'. Nesedí: '+best.spatne.slice(0,8).join(' · '):''));
+    const fpU=tymy.filter(u=>u.cipy.financial_takeover.kolo!=null);
+    if(fpU.length){
+      const vr=fpU.filter(u=>souhrnPrestupy(u).rows.some(r=>r.vrat));
+      add('info','Bohatý majitel (jako Free Hit)',`použilo ${fpU.length} týmů, u ${vr.length} se sestava po něm vrátila na tu před ním (přestupy se pak počítají proti ní)`,fpU.map(u=>`${jmT(u)}: kolo ${u.cipy.financial_takeover.kolo}${souhrnPrestupy(u).rows.some(r=>r.vrat)?', sestava se vrátila':', sestava se nevrátila'}`).slice(0,12));
+    }
+  }else add('info','Přestupy','v datech nejsou žádné přestupy');
+
+  /* ceny */
+  if(D.maCeny){
+    let meni=false;for(const mm of D.ceny.values()){const v=[...mm.values()];if(v.some(x=>x!==v[0])){meni=true;break}}
+    add(meni?'ok':'info','Ceny hráčů',meni?`ceny u ${D.ceny.size} hráčů, v kolech se mění`:`ceny u ${D.ceny.size} hráčů, ale v kolech se neliší, jde o jednu (aktuální) cenu`);
+  }else add('info','Ceny hráčů','soubor ceny neobsahuje');
+
+  /* hráči */
+  const bezP=[...D.hraci.values()].filter(h=>!h.pozice||h.klubId==null);
+  add(bezP.length?'pozor':'ok','Hráči: pozice a klub',bezP.length?`${bezP.length} hráčů bez pozice nebo klubu`:`${D.hraci.size} hráčů, všichni mají pozici i klub`,bezP.map(h=>`${h.jmeno||''} ${h.prijmeni||''}`.trim()||('#'+h.id)).slice(0,8));
+
+  /* součet kol vs. body ligy */
+  const rozdil=tymy.filter(u=>typeof u.body==='number'&&u.body!==u.soucet);
+  tymy.some(u=>typeof u.body==='number')?add(rozdil.length?'pozor':'ok','Součet kol a body v tabulce ligy',rozdil.length?`${rozdil.length} týmů má jiný součet kol, než uvádí liga`:'součty kol sedí s tabulkou ligy u všech týmů',
+    rozdil.map(u=>`${jmT(u)}: součet kol ${u.soucet} b, liga ${u.body} b`).slice(0,8)):add('info','Součet kol a body v tabulce ligy','soubor neobsahuje body z tabulky ligy');
+  return out;
+}
+function viewData(root){
+  const K=kontrolaData(),m=D.meta||{};
+  const poc=s=>K.filter(x=>x.stav===s).length;
+  root.append(vysv('Jak moc se dá souboru věřit: kontroly úplnosti a souhlasu čísel. Zelená tečka je v pořádku, žlutá upozornění, červená chyba, prázdný kroužek jen informace.',
+    [`Z ${K.length} kontrol je v pořádku ${poc('ok')}, upozornění ${poc('pozor')}`,poc('chyba')?`, chyb ${poc('chyba')}`:'',`, ${poc('info')} jen informativních.`]));
+  const nRadku=[...D.hk.values()].reduce((a,e)=>a+e.zapasy.length,0);
+  root.append(bento(
+    karta('c3','Týmů · kol',`${D.tymy.size} · ${D.kola.length}`,[[m.sezona?`sezóna ${m.sezona}`:'']]),
+    karta('c3','Hráčů v datech',D.hraci.size,[[`${nRadku} zápasů hráčů`]]),
+    karta('c3','Staženo',m.vytvoreno?new Date(m.vytvoreno).toLocaleDateString('cs-CZ'):'–',[[m.vytvoreno?new Date(m.vytvoreno).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}):'']]),
+    karta('c3','Verze extraktoru',m.verze!=null?m.verze:'–',[[m.liga&&m.liga.nazev?m.liga.nazev:'']])));
+  const bar={ok:'var(--acc)',pozor:'var(--amber)',chyba:'var(--rose)',info:null};
+  root.append(el('div','sekce',tb([
+    {h:'',c:'dotc',f:r=>dot(bar[r.stav],!bar[r.stav])},
+    {h:'Kontrola',f:r=>B(r.nazev)},
+    {h:'Výsledek',f:r=>r.vysl},
+    {h:'Podrobnosti',f:r=>{if(!r.det.length)return '';const e=el('span','tlum',r.det.join(' · '));e.style.cssText='white-space:normal;display:block;min-width:260px';return e}}
+  ],K)));
+}
+/*STUB*/
+/*ENDSTUB*/
+
+/* ---------- vykreslení a načtení ---------- */
+function kresliVse(){
+  $('#zalozky').replaceChildren(...ZALOZKY.map(([k,t])=>{
+    const b=el('button',k===UI.zalozka?'aktivni':'',t);b.onclick=()=>{UI.zalozka=k;kresliVse()};return b;
+  }));
+  const root=$('#obsah');root.replaceChildren();
+  ({prehled:viewPrehled,poradi:viewPoradi,tym:viewTym,kolo:viewKolo,hraci:viewHraci,souboj:viewSouboj,rozhodnuti:viewRozhodnuti,data:viewData})[UI.zalozka](root);
+}
+async function nacti(f){
+  const ch=$('#chyba');ch.textContent='';
+  try{
+    let raw;
+    try{raw=JSON.parse(await f.text())}catch{throw new Error('Soubor není platný JSON.')}
+    D=pripravit(raw);
+  }catch(e){ch.textContent=e.message;return}
+  UI.tym=null;UI.kolo=null;UI.hrac=null;UI.souA=null;UI.souB=null;UI.souKolo='all';
+  $('#prazdny').hidden=true;$('#app').hidden=false;
+  const m=D.meta||{};
+  $('#znacka').textContent='Fantasy · '+(m.liga&&m.liga.nazev?m.liga.nazev:'liga');
+  $('#soubor').textContent=[f.name,`${D.tymy.size} týmů`,D.kola.length?`kola ${D.kola[0]}–${D.kola[D.kola.length-1]}`:'',
+    m.vytvoreno?`staženo ${new Date(m.vytvoreno).toLocaleString('cs-CZ')}`:''].filter(Boolean).join(' · ');
+  kresliVse();
+}
+/* vzhled: hustota tabulek a kontrastní režim (pamatuje se v prohlížeči, pokud to jde) */
+const VZ={hust:false,kon:false};
+try{const x=JSON.parse(localStorage.getItem('liga-vzhled')||'{}');VZ.hust=!!x.hust;VZ.kon=!!x.kon}catch{}
+function vzhled(uloz){
+  const r=document.documentElement;
+  if(VZ.hust)r.setAttribute('data-hustota','kompakt');else r.removeAttribute('data-hustota');
+  if(VZ.kon)r.setAttribute('data-kontrast','1');else r.removeAttribute('data-kontrast');
+  $('#bHust').setAttribute('aria-pressed',String(VZ.hust));$('#bKon').setAttribute('aria-pressed',String(VZ.kon));
+  if(uloz){try{localStorage.setItem('liga-vzhled',JSON.stringify(VZ))}catch{}}
+}
+$('#bHust').onclick=()=>{VZ.hust=!VZ.hust;vzhled(true)};
+$('#bKon').onclick=()=>{VZ.kon=!VZ.kon;vzhled(true)};
+vzhled(false);
+$('#nahrat').onclick=()=>$('#vstup').click();
+$('#jiny').onclick=()=>$('#vstup').click();
+$('#vstup').onchange=e=>{const f=e.target.files[0];if(f)nacti(f);e.target.value=''};
+addEventListener('dragover',e=>{e.preventDefault();document.body.classList.add('pretahnout')});
+addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('pretahnout')});
+addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('pretahnout');const f=e.dataTransfer.files[0];if(f)nacti(f)});
+})();
+</script>
+</body>
+</html>
