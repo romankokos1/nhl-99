@@ -2466,6 +2466,24 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   // similarity 0..1 (1 = identical after normalization)
   function sim(a,b){ const A=norm(a),B=norm(b); if(!A||!B) return 0; const d=lev(A,B); return 1 - d/Math.max(A.length,B.length); }
 
+  // whole-word containment: "Matuška" ⊂ "Pivovar Matuška", but "Vik" is NOT inside "Cvikov"
+  function wordContains(A,B){ return (' '+A+' ').includes(' '+B+' ') || (' '+B+' ').includes(' '+A+' '); }
+  // two names that both carry numbers which differ (Fabián 10 / Fabián 12) are different beers
+  function numsClash(a,b){
+    const x=(String(a).match(/\d+/g)||[]).join(','), y=(String(b).match(/\d+/g)||[]).join(',');
+    return !!x && !!y && x!==y;
+  }
+  // "these are not the same" answers from the merge tools, remembered per pair
+  const MERGE_IGNORE_KEY='pivni-denik-merge-ignore-v1';
+  let mergeIgnore=new Set();
+  try{ mergeIgnore=new Set(JSON.parse(localStorage.getItem(MERGE_IGNORE_KEY))||[]); }catch(e){}
+  function mergePairKey(kind,a,b){ const x=norm(a), y=norm(b); return kind+'::'+(x<y?x+'||'+y:y+'||'+x); }
+  function mergeIgnored(kind,a,b){ return mergeIgnore.has(mergePairKey(kind,a,b)); }
+  function ignoreCluster(kind, names){
+    for(let i=0;i<names.length;i++) for(let j=i+1;j<names.length;j++) mergeIgnore.add(mergePairKey(kind,names[i],names[j]));
+    try{ localStorage.setItem(MERGE_IGNORE_KEY, JSON.stringify([...mergeIgnore])); }catch(e){}
+  }
+
   // distinct beer names / breweries currently known (from data)
   function knownBeers(){
     const m=new Map();
@@ -6625,6 +6643,8 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         const brewSim=(!a.brewery||!b.brewery)?0.8:sim(a.brewery,b.brewery);
         // if brewery matches strongly, be more lenient on the name (same brewer + similar name ≈ same beer)
         const nameThresh = brewSim>=0.85 ? 0.55 : 0.72;
+        if(numsClash(a.name,b.name)) continue;
+        if(mergeIgnored('beer', a.name+'|'+a.brewery, b.name+'|'+b.brewery)) continue;
         if(nameSim>=nameThresh && brewSim>=0.6 && !(norm(a.name)===norm(b.name)&&norm(a.brewery)===norm(b.brewery))){
           group.push(list[j]); used.add(j);
         }
@@ -6668,6 +6688,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'<div class="mc-head">Podobná piva — vyber správný název:</div>'
         +opts
         +'<button class="btn btn-primary btn-sm merge-go" data-ci="'+ci+'" style="width:100%; margin-top:10px">Sloučit do vybraného</button>'
+        +'<button class="btn btn-ghost btn-sm merge-ignore" data-kind="beer" data-ci="'+ci+'" style="width:100%; margin-top:6px">Nejsou stejné</button>'
         +'</div>';
     }).join('');
     // store clusters for handlers
@@ -6743,7 +6764,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const A=norm(a), B=norm(b);
     if(!A||!B) return 0;
     if(A===B) return 1;
-    if(A.includes(B) || B.includes(A)) return 0.95;
+    if(wordContains(A,B)) return 0.95;
     const strip=s=>s.replace(/^(pivovar|pivovary|rodinny pivovar|mestansky pivovar|brewery|brewing)\s+/,'')
                     .replace(/\s+(pivovar|brewery|brewing co|brewing|a\.s\.|s\.r\.o\.)$/,'').trim();
     const A2=strip(A), B2=strip(B);
@@ -6763,7 +6784,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const group=[list[i]]; used.add(i);
       for(let j=i+1;j<list.length;j++){
         if(used.has(j)) continue;
-        if(brewSim(list[i].name, list[j].name)>=0.8 && norm(list[i].name)!==norm(list[j].name)){
+        if(!mergeIgnored('brewery', list[i].name, list[j].name) && brewSim(list[i].name, list[j].name)>=0.8 && norm(list[i].name)!==norm(list[j].name)){
           group.push(list[j]); used.add(j);
         }
       }
@@ -6817,12 +6838,14 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     const A=norm(a), B=norm(b);
     if(!A||!B) return 0;
     if(A===B) return 1;
-    if(A.includes(B) || B.includes(A)) return 0.95;
     const strip=s=>s.replace(/^(restaurace|hospoda|hospudka|pivnice|hostinec|bar|kavarna|bistro|sklipek|penzion|hotel)\s+/,'')
                     .replace(/\s+(restaurace|hospoda|hospudka|pivnice|bar)$/,'').trim();
     const A2=strip(A), B2=strip(B);
-    if(A2 && A2===B2) return 0.97;
-    return sim(A2||A, B2||B);
+    // a bare type word ("Bar", "Hospoda") says nothing about which place it is
+    if(!A2 || !B2) return 0;
+    if(A2===B2) return 0.97;
+    if(wordContains(A2,B2)) return 0.95;
+    return sim(A2, B2);
   }
   function findPlaceDupClusters(){
     const variants=new Map();
@@ -6838,7 +6861,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       const group=[list[i]]; used.add(i);
       for(let j=i+1;j<list.length;j++){
         if(used.has(j)) continue;
-        if(placeSim(list[i].name, list[j].name)>=0.8 && norm(list[i].name)!==norm(list[j].name)){
+        if(!mergeIgnored('place', list[i].name, list[j].name) && placeSim(list[i].name, list[j].name)>=0.8 && norm(list[i].name)!==norm(list[j].name)){
           group.push(list[j]); used.add(j);
         }
       }
@@ -6891,6 +6914,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'<div class="mc-head">Vyber správný název místa:</div>'
         +opts
         +'<button class="btn btn-primary btn-sm placemerge-go" data-ci="'+ci+'" style="width:100%; margin-top:10px">Sloučit do vybraného</button>'
+        +'<button class="btn btn-ghost btn-sm merge-ignore" data-kind="place" data-ci="'+ci+'" style="width:100%; margin-top:6px">Nejsou stejné</button>'
         +'</div>';
     }).join('');
     box._clusters=clusters;
@@ -6955,6 +6979,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         +'<div class="mc-head">Vyber správný název pivovaru:</div>'
         +opts
         +'<button class="btn btn-primary btn-sm brewmerge-go" data-ci="'+ci+'" style="width:100%; margin-top:10px">Sloučit do vybraného</button>'
+        +'<button class="btn btn-ghost btn-sm merge-ignore" data-kind="brewery" data-ci="'+ci+'" style="width:100%; margin-top:6px">Nejsou stejné</button>'
         +'</div>';
     }).join('');
     box._clusters=clusters;
@@ -9975,6 +10000,14 @@ var qrcode = function() {
     const b=parseInt($('#goal-beers').value,10), s=parseInt($('#goal-styles').value,10), r=parseInt($('#goal-rated').value,10);
     cfg.goals={ beers: b>0?b:10, styles: s>0?s:4, rated: r>0?r:8 };
     saveCfg(); $('#goals-overlay').classList.remove('show'); renderRings(); toast('Cíle uloženy');
+  });
+  document.addEventListener('click', e=>{
+    const ig=e.target.closest('.merge-ignore'); if(!ig) return;
+    const kind=ig.dataset.kind, ci=+ig.dataset.ci;
+    const cfgMap={ beer:['#merge-body',v=>v.name+'|'+v.brewery,renderMerge], brewery:['#brewmerge-body',v=>v.name,renderBrewMerge], place:['#placemerge-body',v=>v.name,renderPlaceMerge] };
+    const [sel,keyOf,rerender]=cfgMap[kind]; const cl=($(sel)._clusters||[])[ci]; if(!cl) return;
+    ignoreCluster(kind, cl.map(keyOf)); rerender();
+    toast('Zapamatováno — už je nabízet nebudu');
   });
   $('#merge-body').addEventListener('click', e=>{
     const go=e.target.closest('.merge-go'); if(!go) return;
