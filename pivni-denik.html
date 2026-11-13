@@ -892,6 +892,16 @@
   .comment-body span{font-size:13px; color:var(--text-2); line-height:1.4;}
   .comment-del{flex-shrink:0; width:22px; height:22px; display:flex; align-items:center; justify-content:center; background:none; border:none; color:var(--text-4); cursor:pointer;}
   .comment-del svg{width:12px; height:12px;}
+  /* comments straight on the feed card */
+  .card-comments{margin-top:10px; padding-top:9px; border-top:1px solid var(--hairline); display:flex; flex-direction:column; gap:5px; cursor:default;}
+  .cc-row{display:flex; gap:7px; align-items:flex-start; font-size:13px; line-height:1.4; color:var(--text-2);}
+  .cc-row .mini-avatar{width:18px; height:18px; font-size:8px; margin-top:1px; flex-shrink:0;}
+  .cc-text{min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere;}
+  .cc-text b{color:var(--text); font-weight:700; margin-right:5px; font-size:12.5px;}
+  .cc-more{align-self:flex-start; background:none; border:none; padding:0; font:inherit; font-size:12px; color:var(--text-3); cursor:pointer;}
+  .cc-more:hover{color:var(--text-2);}
+  .card-comments .comment-input-row{margin-top:3px;}
+  .card-comments .comment-input{padding:7px 12px; font-size:13px;}
   .comment-input-row{display:flex; gap:8px; margin-top:6px; align-items:center;}
   .comment-input{
     flex:1; min-width:0; background:var(--surface-2); border:1px solid var(--hairline); border-radius:var(--r-pill);
@@ -3127,6 +3137,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
         map[row.pivo_id].push({ id:row.id, osoba:row.osoba, text:row.text, date:row.vytvoreno });
       });
       commentsMap=map;
+      refreshAllCardComments();
     } catch(e){}
   }
   async function commentAdd(pivoId, text){
@@ -3842,7 +3853,56 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     html+='</div>';
     return html;
   }
+  /* ---- comments shown directly on the feed card: last two + quick input ---- */
+  function cardCommentsInner(b){
+    const list=commentsMap[b.id]||[];
+    const last=list.slice(-2);
+    let html='';
+    if(list.length>2) html+='<button class="cc-more" data-cc-more="'+b.id+'">Zobrazit všech '+list.length+' '+commentWord(list.length)+'</button>';
+    html+=last.map(c=>'<div class="cc-row"><span class="mini-avatar" style="background:'+avatarColor(c.osoba)+'">'+esc(initials(c.osoba))+'</span>'
+      +'<span class="cc-text"><b>'+esc(c.osoba)+'</b>'+esc(c.text)+'</span></div>').join('');
+    html+='<div class="comment-input-row">'
+      +'<input type="text" class="comment-input" data-cc-input="'+b.id+'" placeholder="'+(list.length?'Odpovědět…':'Napsat komentář…')+'" maxlength="240" autocomplete="off">'
+      +'<button class="comment-send" data-cc-send="'+b.id+'" aria-label="Odeslat">'+sendIcon()+'</button>'
+      +'</div>';
+    return html;
+  }
+  function cardCommentsHtml(b){
+    if(!sbConfigured() && !(commentsMap[b.id]||[]).length) return '';
+    return '<div class="card-comments" data-card-comments="'+b.id+'">'+cardCommentsInner(b)+'</div>';
+  }
+  function refreshCardComment(pivoId, force){
+    const box=document.querySelector('[data-card-comments="'+pivoId+'"]');
+    const b=beers.find(x=>x.id===pivoId);
+    if(!box||!b) return;
+    const inp=box.querySelector('[data-cc-input]');
+    if(!force && inp && (inp.value || document.activeElement===inp)) return; // never wipe what someone is typing
+    box.innerHTML=cardCommentsInner(b);
+  }
+  function refreshAllCardComments(){
+    document.querySelectorAll('[data-card-comments]').forEach(el=>refreshCardComment(el.dataset.cardComments));
+  }
+  async function sendCardComment(pivoId){
+    const input=document.querySelector('[data-cc-input="'+pivoId+'"]');
+    if(!input) return;
+    const text=input.value.trim();
+    if(!text) return;
+    if(!sbConfigured()){ toast('Zapni sdílení v Profilu, ať můžeš psát komentáře', true); return; }
+    input.disabled=true;
+    const id=await commentAdd(pivoId, text);
+    if(id){
+      if(!commentsMap[pivoId]) commentsMap[pivoId]=[];
+      commentsMap[pivoId].push({ id, osoba:cfg.name, text, date:new Date().toISOString() });
+      refreshCardComment(pivoId, true);
+      refreshCommentThread(pivoId, true);
+      const again=document.querySelector('[data-cc-input="'+pivoId+'"]'); if(again) again.focus();
+    } else {
+      toast('Komentář se nepodařilo uložit', true);
+      input.disabled=false;
+    }
+  }
   function refreshCommentThread(pivoId, keepOpen){
+    refreshCardComment(pivoId, true);
     const block=document.querySelector('[data-comment-block="'+pivoId+'"]');
     const x=beers.find(b=>b.id===pivoId);
     if(!block||!x) return;
@@ -4233,7 +4293,6 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
     galerie:['galerie piva','galerie piva krymska','galerie'],
     sedm:['sedm','sedm stupnu','7 stupnu','sedmstupnu','sedm karlin'],
     clock:['pivnice clock','clock potstejn'],
-    kmpcb:['kmp cb','kmpcb','kmp ceske budejovice','kmp budejovice','klub malych pivovaru ceske budejovice','klub malych pivovaru cb','kmp husova'],
     kmp:['kmp','klub malych pivovaru','kmp plzen'],
     zlatakrava:['zlata krava','zlata krava bandaska','bandaska'],
     beerandfriends:['beer and friends','beer friends','beer and friends smecky'],
@@ -4267,17 +4326,13 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
   function otMatchVenue(where){
     const w=norm(where); if(!w || !otVenues) return null;
     const pad=x=>' '+x+' ';
-    // nejlepší shoda vyhrává („KMP ČB“ → České Budějovice, ne Plzeň přes „kmp“)
-    let best=null, bestScore=0;
     for(const v of otVenues){
       const names=[norm(v.nazev), ...(OT_ALIASES[v.id]||[])].filter(Boolean);
       for(const n of names){
-        const sc = w===n ? 1000 : pad(w).includes(pad(n)) ? 500+n.length
-                 : (w.length>=4 && pad(n).includes(pad(w))) ? 100-n.length : 0;
-        if(sc>bestScore){ bestScore=sc; best=v; }
+        if(w===n || pad(w).includes(pad(n)) || (w.length>=4 && pad(n).includes(pad(w)))) return v;
       }
     }
-    return best;
+    return null;
   }
   // velikost písmen jako na stránce hlídače: „FINA CERVA“ → „Fina Cerva“, „pivorožec“ → „Pivorožec“
   const OT_ACR=new Set('WC NE IPA APA NEIPA DIPA TIPA IIPA IPL DDH TDH NZ ESB XPA EPA PA BW KMP IBU ABV DH II III IV IT SK CZ DE BE US USA UK DK NL PL AT FR ES'.split(' '));
@@ -4689,6 +4744,7 @@ create policy "komentare mazat"  on komentare for delete using (true);</div>
       +     likeButtonHtml(b)
       +     (showWho&&dateShort?'<span class="foot-date">'+dateShort+'</span>':'')
       +   '</div>'
+      +   cardCommentsHtml(b)
       + '</div>'
       + '</article>';
   }
@@ -9529,6 +9585,14 @@ var qrcode = function() {
     loadUntil();
   }
   $('#feed').addEventListener('click',e=>{
+    if(e.target.closest('.card-comments')){
+      e.stopPropagation();
+      const more=e.target.closest('[data-cc-more]');
+      if(more){ openBeerDetail(more.dataset.ccMore); setTimeout(()=>{ const t=document.getElementById('ct-'+more.dataset.ccMore); if(t) t.style.display='block'; },0); return; }
+      const send=e.target.closest('[data-cc-send]');
+      if(send) sendCardComment(send.dataset.ccSend);
+      return;
+    }
     const cm=e.target.closest('[data-cardmenu]');
     if(cm){ e.stopPropagation(); toggleCardMenu(cm); return; }
     const lk=e.target.closest('[data-like-btn]');
@@ -9689,6 +9753,10 @@ var qrcode = function() {
       toast('Komentář se nepodařilo smazat', true);
     }
   }
+  $('#feed').addEventListener('keydown', e=>{
+    const ci=e.target.closest('[data-cc-input]');
+    if(ci && e.key==='Enter'){ e.preventDefault(); sendCardComment(ci.dataset.ccInput); }
+  });
   $('#detail-body').addEventListener('keydown', e=>{
     const ci=e.target.closest('[data-comment-input]');
     if(ci && e.key==='Enter'){ e.preventDefault(); sendComment(ci.dataset.commentInput); }
